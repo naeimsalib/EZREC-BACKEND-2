@@ -173,6 +173,11 @@ setup_environment() {
 install_systemd_service() {
     print_status "Installing systemd service..."
     
+    # Check if service file exists
+    if [ ! -f "${SERVICE_NAME}.service" ]; then
+        print_error "Service file ${SERVICE_NAME}.service not found in $(pwd). Please make sure it exists."
+        exit 1
+    fi
     # Copy service file
     sudo cp ${SERVICE_NAME}.service /etc/systemd/system/
     
