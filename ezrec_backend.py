@@ -90,14 +90,15 @@ class DatabaseManager:
             raise
     
     def get_active_bookings(self) -> List[Dict]:
-        """Get current active bookings for this camera"""
+        """Get current active bookings for this user"""
         try:
             now = datetime.now()
             current_date = now.strftime('%Y-%m-%d')
             current_time = now.strftime('%H:%M:%S')
             
+            logger.info(f"Fetching bookings for user_id={self.user_id}, date={current_date}, status=confirmed")
             response = self.supabase.table('bookings').select('*').eq(
-                'camera_id', Config.CAMERA_ID
+                'user_id', self.user_id
             ).eq('date', current_date).eq('status', 'confirmed').execute()
             
             active_bookings = []
@@ -105,6 +106,7 @@ class DatabaseManager:
                 if booking['start_time'] <= current_time <= booking['end_time']:
                     active_bookings.append(booking)
             
+            logger.info(f"Found {len(active_bookings)} active bookings for user_id={self.user_id}")
             return active_bookings
         except Exception as e:
             logger.error(f"Failed to get active bookings: {e}")
