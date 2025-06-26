@@ -1,0 +1,27 @@
+[Unit]
+Description=EZREC Backend Video Recording Service
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=pi
+Group=pi
+WorkingDirectory=/opt/ezrec-backend
+Environment=PATH=/opt/ezrec-backend/venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PYTHONPATH=/opt/ezrec-backend
+ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/ezrec_backend.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ezrec-backend
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/ezrec-backend
+
+[Install]
+WantedBy=multi-user.target 
