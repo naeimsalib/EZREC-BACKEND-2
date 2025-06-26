@@ -17,7 +17,7 @@ NC='\033[0m' # No Color
 # Configuration
 PROJECT_DIR="/opt/ezrec-backend"
 SERVICE_NAME="ezrec-backend"
-USER="pi"
+USER=$(whoami)
 
 # Print colored output
 print_status() {

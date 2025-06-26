@@ -36,7 +36,7 @@ load_dotenv()
 # Configuration
 class Config:
     SUPABASE_URL = os.getenv('SUPABASE_URL')
-    SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+    SUPABASE_KEY = os.getenv('SUPABASE_KEY') or os.getenv('SUPABASE_ANON_KEY')
     CAMERA_ID = os.getenv('CAMERA_ID', '0')
     TEMP_DIR = Path('/opt/ezrec-backend/temp')
     LOG_DIR = Path('/opt/ezrec-backend/logs')
