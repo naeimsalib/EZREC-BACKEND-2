@@ -8,9 +8,9 @@ Type=simple
 User=michomanoly14892
 Group=michomanoly14892
 WorkingDirectory=/opt/ezrec-backend
-Environment=PATH=/opt/ezrec-backend/venv/bin:/usr/local/bin:/usr/bin:/bin
+Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=PYTHONPATH=/opt/ezrec-backend
-ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/ezrec_backend.py
+ExecStart=/usr/bin/python3 /opt/ezrec-backend/ezrec_backend.py
 Restart=always
 RestartSec=10
 StandardOutput=journal

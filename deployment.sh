@@ -137,25 +137,6 @@ copy_project_files() {
     print_success "Project files copied"
 }
 
-# Setup Python virtual environment
-setup_virtual_environment() {
-    print_status "Setting up Python virtual environment..."
-    
-    cd $PROJECT_DIR
-    
-    # Create virtual environment
-    python3 -m venv venv
-    source venv/bin/activate
-    
-    # Upgrade pip
-    pip install --upgrade pip
-    
-    # Install Python packages
-    pip install -r requirements.txt
-    
-    print_success "Virtual environment setup completed"
-}
-
 # Setup environment configuration
 setup_environment() {
     print_status "Setting up environment configuration..."
@@ -259,11 +240,15 @@ main() {
     install_system_packages
     setup_project_directory
     copy_project_files
-    setup_virtual_environment
     setup_environment
     setup_camera_permissions
     install_systemd_service
     test_camera
+    
+    # Instead, install Python packages system-wide
+    print_status "Installing Python packages system-wide..."
+    pip3 install --upgrade pip
+    pip3 install -r $PROJECT_DIR/requirements.txt
     
     display_final_instructions
 }

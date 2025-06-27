@@ -25,18 +25,10 @@ cp env.example $PROJECT_DIR/ 2>/dev/null || true
 chmod +x $PROJECT_DIR/*.py
 
 # Setup Python virtual environment
-echo "🐍 Setting up Python virtual environment..."
-cd $PROJECT_DIR
-
-# Create virtual environment
-python3 -m venv venv
-source venv/bin/activate
-
-# Upgrade pip
-pip install --upgrade pip
-
-# Install Python packages
-pip install -r requirements.txt
+# (removed venv setup)
+# Install Python packages system-wide
+pip3 install --upgrade pip
+pip3 install -r requirements.txt
 
 # Copy environment file if not exists
 if [ ! -f "$PROJECT_DIR/.env" ]; then
