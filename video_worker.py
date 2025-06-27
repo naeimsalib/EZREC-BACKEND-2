@@ -11,10 +11,13 @@ import shutil
 import uuid
 import json
 
-# Load environment
-load_dotenv("/opt/ezrec-backend/.env")
+# Load .env for manual runs, but do not override systemd env vars
+load_dotenv("/opt/ezrec-backend/.env", override=False)
+
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+USER_ID = os.getenv("USER_ID")
+CAMERA_ID = os.getenv("CAMERA_ID")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
