@@ -382,10 +382,8 @@ display_final_instructions() {
 fix_venv_and_install_requirements() {
     print_status "Fixing venv ownership and installing Python dependencies in venv..."
     sudo chown -R $USER:$USER $PROJECT_DIR
-    source $PROJECT_DIR/venv/bin/activate
-    pip install --upgrade pip
-    pip install -r $PROJECT_DIR/requirements.txt
-    deactivate
+    $PROJECT_DIR/venv/bin/pip install --upgrade pip
+    $PROJECT_DIR/venv/bin/pip install -r $PROJECT_DIR/requirements.txt
     print_success "Python dependencies installed in venv and ownership fixed."
 }
 
