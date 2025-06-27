@@ -250,6 +250,9 @@ main() {
     pip3 install --upgrade pip --break-system-packages
     pip3 install -r $PROJECT_DIR/requirements.txt --break-system-packages
     
+    # Ensure correct supabase version for systemd/system Python
+    sudo /usr/bin/python3 -m pip install --force-reinstall --break-system-packages supabase==2.3.4
+    
     display_final_instructions
 }
 
