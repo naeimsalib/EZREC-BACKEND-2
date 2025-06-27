@@ -350,22 +350,19 @@ display_final_instructions() {
     print_success "🎉 EZREC Backend deployment completed!"
     echo
     print_status "Next steps:"
-    echo "1. Edit the environment file: nano $PROJECT_DIR/.env"
-    echo "2. Add your Supabase URL and key"
-    echo "3. Set your camera ID"
-    echo "4. Start all services:"
+    echo "1. Start all services:"
     echo "   sudo systemctl start booking_sync"
     echo "   sudo systemctl start recorder"
     echo "   sudo systemctl start video_worker"
     echo "   sudo systemctl start system_status"
     echo "   sudo systemctl start log_collector"
-    echo "5. Check service status:"
+    echo "2. Check service status:"
     echo "   sudo systemctl status booking_sync"
     echo "   sudo systemctl status recorder"
     echo "   sudo systemctl status video_worker"
     echo "   sudo systemctl status system_status"
     echo "   sudo systemctl status log_collector"
-    echo "6. View logs:"
+    echo "3. View logs:"
     echo "   sudo journalctl -u booking_sync -f"
     echo "   sudo journalctl -u recorder -f"
     echo "   sudo journalctl -u video_worker -f"
@@ -408,13 +405,11 @@ main() {
     
     print_status "Starting EZREC Backend deployment on Raspberry Pi"
     
-    backup_env
     cleanup_old_installation
     update_system
     install_system_packages
     setup_project_directory
     copy_project_files
-    setup_environment
     setup_camera_permissions
     install_python_deps
     fix_venv_and_install_requirements
@@ -422,8 +417,6 @@ main() {
     create_service_files
     install_systemd_services
     test_camera
-    restore_env
-    validate_env
     print_versions
     print_warning "If you are using ezrec_backend.py, disable recorder.py in systemd to avoid parallel recorders."
     display_final_instructions
