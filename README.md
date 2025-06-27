@@ -1,6 +1,61 @@
-# EZREC Backend - Raspberry Pi Video Recording System
+# EZREC Backend - Automated Video Recording System
 
-A complete backend solution for automated video recording on Raspberry Pi with **picamera2**, **FFmpeg** processing, and **Supabase** integration.
+EZREC Backend is a robust, modular backend system for automated video recording, processing, and upload, designed for Raspberry Pi and similar devices. It is built to be resilient to internet outages, scalable, and easy to maintain.
+
+## 🚀 Overview
+- **Automates video recording based on bookings from Supabase**
+- **Processes videos with optional intro and logo overlays**
+- **Uploads videos to Supabase Storage and updates the database**
+- **Tracks and reports system health/status**
+- **Fully modular: each core function runs as a separate service/process**
+
+## 🏗️ Architecture
+
+The backend is split into four independent microservices, each running as a separate process (or systemd service):
+
+1. **Booking Sync Service (`booking_sync.py`)**
+   - Fetches bookings from Supabase and keeps a local cache up to date.
+2. **Main Recording Service (`recorder.py`)**
+   - Reads bookings from the local cache and records video at scheduled times.
+3. **Video Processing & Upload Service (`video_worker.py`)**
+   - Processes raw recordings, adds intro/logo, uploads to Supabase, and manages upload retries.
+4. **System Status Service (`system_status.py`)**
+   - Collects and uploads system health metrics to Supabase.
+
+### System Diagram
+
+```mermaid
+graph TD
+    BookingSync["Booking Sync Service\n(booking_sync.py)"]
+    Recorder["Main Recording Service\n(recorder.py)"]
+    VideoWorker["Video Processing & Upload\n(video_worker.py)"]
+    SystemStatus["System Status Service\n(system_status.py)"]
+    Supabase[(Supabase Cloud)]
+    LocalCache["bookings_cache.json"]
+    RawRecordings["raw_recordings/"]
+    ProcessedRecordings["processed_recordings/"]
+    MediaCache["media_cache/ (intro/logo)"]
+
+    BookingSync-->|"Update"|LocalCache
+    Recorder-->|"Read"|LocalCache
+    Recorder-->|"Write"|RawRecordings
+    VideoWorker-->|"Read"|RawRecordings
+    VideoWorker-->|"Write"|ProcessedRecordings
+    VideoWorker-->|"Sync"|MediaCache
+    BookingSync-->|"Fetch/Push"|Supabase
+    VideoWorker-->|"Upload/Update"|Supabase
+    SystemStatus-->|"Update"|Supabase
+```
+
+## ⚡ Quickstart
+1. **Clone the repo and install dependencies**
+2. **Configure your `.env` file** with Supabase credentials and paths
+3. **Run each service as a separate process or systemd service**
+4. **See [documentation.md](./documentation.md) for detailed service/algorithm explanations**
+
+---
+
+For detailed algorithms, service internals, and troubleshooting, see [documentation.md](./documentation.md).
 
 ## 🎯 Features
 
@@ -165,12 +220,41 @@ sudo journalctl -u ezrec-backend -f
 
 # View logs from last boot
 sudo journalctl -u ezrec-backend -b
+
+# Check warnings or erros 
+sudo journalctl -u ezrec-backend.service | grep -i 'error\|warning'
 ```
 
 ### Log Files
 
 - **Service logs**: `sudo journalctl -u ezrec-backend -f`
 - **Application logs**: `/opt/ezrec-backend/logs/ezrec.log`
+
+## 📜 Logging Commands
+
+### View Live Service Logs (systemd)
+```bash
+sudo journalctl -u ezrec-backend.service -f
+```
+- Shows real-time logs from the systemd service. Press Ctrl+C to stop.
+
+### View Last 50 Lines and Follow
+```bash
+sudo journalctl -u ezrec-backend.service -n 50 -f
+```
+- Shows the last 50 lines, then continues to show new logs as they appear.
+
+### Filter for Errors and Warnings
+```bash
+sudo journalctl -u ezrec-backend.service | grep -i 'error\|warning'
+```
+- Shows only lines containing 'error' or 'warning'.
+
+### View Application Log File Directly
+```bash
+tail -f /opt/ezrec-backend/logs/ezrec.log
+```
+- Shows the backend's own log file in real time.
 
 ## 🐛 Troubleshooting
 
@@ -273,6 +357,77 @@ For issues and questions:
 1. Check the troubleshooting section above
 2. Review the service logs
 3. Open an issue on GitHub
+
+## 🚦 Offline/Resilience Features
+
+### Local Booking Cache
+- The backend fetches bookings from Supabase and saves them to a local cache file.
+- If the device loses internet, it continues to process and record based on the last known bookings.
+- Recordings will start and stop at the correct times even if the Pi is offline, as long as bookings were fetched before the outage.
+
+### Deferred Uploads & Retry
+- If a video upload fails due to internet loss, the backend saves the upload info to a local file.
+- The device will keep operating normally and will retry all failed uploads automatically when internet connectivity is restored.
+- Successfully uploaded videos are removed from the retry queue.
+
+### Summary
+- The device is robust against temporary internet outages: it will not miss scheduled recordings and will eventually upload all videos once the connection is back.
+
+## 🗺️ Architecture & Flow Diagrams
+
+### System Architecture
+
+```mermaid
+graph TD
+    User((User/Booking))
+    Supabase[(Supabase Cloud)]
+    Pi["Raspberry Pi (EZREC Backend)"]
+    Camera["Camera (picamera2)"]
+    Storage[(Supabase Storage)]
+    DB[(Supabase DB)]
+    LocalCache["Local Booking Cache<br/>(bookings_cache.json)"]
+    FailedUploads["Failed Uploads<br/>(failed_uploads.json)"]
+    Logs["Logs<br/>(ezrec.log)"]
+
+    User-- Bookings -->Supabase
+    Supabase-- Bookings/API -->Pi
+    Pi-- Video Stream -->Camera
+    Camera-- Raw Video -->Pi
+    Pi-- Processed Video -->Storage
+    Pi-- Status/Updates -->DB
+    Pi-- Save -->LocalCache
+    Pi-- Save -->FailedUploads
+    Pi-- Write -->Logs
+    Pi-- Retry Uploads -->Storage
+    Pi-- Fetch Bookings -->Supabase
+    Pi-- Update Status -->Supabase
+```
+
+### Main Loop & Offline Resilience Flow
+
+```mermaid
+flowchart TD
+    Start([Start])
+    FetchBookings{Internet Available?}
+    GetFromSupabase["Fetch Bookings from Supabase"]
+    SaveCache["Save to Local Cache"]
+    LoadCache["Load Bookings from Local Cache"]
+    ProcessBookings["Process Bookings<br/>(Start/Stop Recording)"]
+    RetryUploads{Internet Available?}
+    RetryFailed["Retry Failed Uploads"]
+    UpdateStatus["Update System Status"]
+    Sleep["Wait (Interval)"]
+    End([Loop])
+
+    Start --> FetchBookings
+    FetchBookings -- Yes --> GetFromSupabase --> SaveCache --> ProcessBookings
+    FetchBookings -- No --> LoadCache --> ProcessBookings
+    ProcessBookings --> RetryUploads
+    RetryUploads -- Yes --> RetryFailed --> UpdateStatus
+    RetryUploads -- No --> UpdateStatus
+    UpdateStatus --> Sleep --> End
+    End --> FetchBookings
+```
 
 ---
 

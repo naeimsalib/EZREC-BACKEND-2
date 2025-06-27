@@ -117,7 +117,7 @@ setup_project_directory() {
     sudo chown -R $USER:$USER $PROJECT_DIR
     
     # Create subdirectories
-    mkdir -p $PROJECT_DIR/{temp,logs}
+    mkdir -p $PROJECT_DIR/{temp,logs,raw_recordings,processed_recordings,media_cache}
     
     print_success "Project directory created: $PROJECT_DIR"
 }
@@ -130,6 +130,11 @@ copy_project_files() {
     cp *.py $PROJECT_DIR/ 2>/dev/null || true
     cp requirements.txt $PROJECT_DIR/ 2>/dev/null || true
     cp env.example $PROJECT_DIR/ 2>/dev/null || true
+    
+    # Copy log_collector.py if present
+    if [ -f "$HOME/EZREC-BACKEND-2/log_collector.py" ]; then
+        cp $HOME/EZREC-BACKEND-2/log_collector.py $PROJECT_DIR/
+    fi
     
     # Set permissions
     chmod +x $PROJECT_DIR/*.py
@@ -150,23 +155,22 @@ setup_environment() {
     fi
 }
 
-# Install systemd service
-install_systemd_service() {
-    print_status "Installing systemd service..."
-    
-    # Check if service file exists in the source directory
-    if [ ! -f "$HOME/EZREC-BACKEND-2/${SERVICE_NAME}.service" ]; then
-        print_error "Service file ${SERVICE_NAME}.service not found in $HOME/EZREC-BACKEND-2. Please make sure it exists."
-        exit 1
-    fi
-    # Copy service file from source directory
-    sudo cp $HOME/EZREC-BACKEND-2/${SERVICE_NAME}.service /etc/systemd/system/
-    
-    # Reload systemd and enable service
+# Install systemd services for all microservices and log_collector
+install_systemd_services() {
+    print_status "Installing systemd services for all microservices..."
+    for svc in booking_sync recorder video_worker system_status log_collector; do
+        SERVICE_FILE_NAME="${svc}.service"
+        if [ ! -f "$HOME/EZREC-BACKEND-2/$SERVICE_FILE_NAME" ]; then
+            print_error "Service file $SERVICE_FILE_NAME not found in $HOME/EZREC-BACKEND-2. Please make sure it exists."
+            exit 1
+        fi
+        # Update user/group in service file and copy
+        sed "s/User=.*/User=michomanoly14892/; s/Group=.*/Group=michomanoly14892/" "$HOME/EZREC-BACKEND-2/$SERVICE_FILE_NAME" > "/tmp/$SERVICE_FILE_NAME"
+        sudo cp "/tmp/$SERVICE_FILE_NAME" "/etc/systemd/system/$SERVICE_FILE_NAME"
+        sudo systemctl enable $svc
+    done
     sudo systemctl daemon-reload
-    sudo systemctl enable ${SERVICE_NAME}
-    
-    print_success "Systemd service installed and enabled"
+    print_success "All systemd services installed and enabled"
 }
 
 # Setup camera permissions
@@ -215,16 +219,31 @@ display_final_instructions() {
     echo "1. Edit the environment file: nano $PROJECT_DIR/.env"
     echo "2. Add your Supabase URL and key"
     echo "3. Set your camera ID"
-    echo "4. Start the service: sudo systemctl start ${SERVICE_NAME}"
-    echo "5. Check service status: sudo systemctl status ${SERVICE_NAME}"
-    echo "6. View logs: sudo journalctl -u ${SERVICE_NAME} -f"
+    echo "4. Start all services:"
+    echo "   sudo systemctl start booking_sync"
+    echo "   sudo systemctl start recorder"
+    echo "   sudo systemctl start video_worker"
+    echo "   sudo systemctl start system_status"
+    echo "   sudo systemctl start log_collector"
+    echo "5. Check service status:"
+    echo "   sudo systemctl status booking_sync"
+    echo "   sudo systemctl status recorder"
+    echo "   sudo systemctl status video_worker"
+    echo "   sudo systemctl status system_status"
+    echo "   sudo systemctl status log_collector"
+    echo "6. View logs:"
+    echo "   sudo journalctl -u booking_sync -f"
+    echo "   sudo journalctl -u recorder -f"
+    echo "   sudo journalctl -u video_worker -f"
+    echo "   sudo journalctl -u system_status -f"
+    echo "   sudo journalctl -u log_collector -f"
     echo
-    print_status "Service management commands:"
-    echo "• Start:   sudo systemctl start ${SERVICE_NAME}"
-    echo "• Stop:    sudo systemctl stop ${SERVICE_NAME}"
-    echo "• Restart: sudo systemctl restart ${SERVICE_NAME}"
-    echo "• Status:  sudo systemctl status ${SERVICE_NAME}"
-    echo "• Logs:    sudo journalctl -u ${SERVICE_NAME} -f"
+    print_status "Service management commands (replace <service> with one of: booking_sync, recorder, video_worker, system_status, log_collector):"
+    echo "• Start:   sudo systemctl start <service>"
+    echo "• Stop:    sudo systemctl stop <service>"
+    echo "• Restart: sudo systemctl restart <service>"
+    echo "• Status:  sudo systemctl status <service>"
+    echo "• Logs:    sudo journalctl -u <service> -f"
     echo
     print_warning "A reboot may be required for camera changes to take effect"
 }
@@ -242,7 +261,7 @@ main() {
     copy_project_files
     setup_environment
     setup_camera_permissions
-    install_systemd_service
+    install_systemd_services
     test_camera
     
     # Instead, install Python packages system-wide

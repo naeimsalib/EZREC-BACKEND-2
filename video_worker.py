@@ -1,0 +1,207 @@
+#!/usr/bin/env python3
+"""
+Video Processing & Upload Service
+- Watches /opt/ezrec-backend/raw_recordings/ for new files
+- Fetches latest intro video and logo from Supabase (user_settings)
+- Manages local cache for intro/logo (downloads new, deletes old if removed)
+- Processes video (concatenates intro, overlays logo)
+- Uploads to Supabase Storage, updates DB, retries failed uploads
+- Designed to run as a standalone process (systemd service)
+"""
+import os
+import time
+import json
+import logging
+import shutil
+from pathlib import Path
+from datetime import datetime
+from dotenv import load_dotenv
+from supabase import create_client
+import subprocess
+
+load_dotenv()
+
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+USER_ID = os.getenv('USER_ID')
+RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/raw_recordings/'))
+PROCESSED_DIR = Path(os.getenv('PROCESSED_RECORDINGS_DIR', '/opt/ezrec-backend/processed_recordings/'))
+CACHE_DIR = Path(os.getenv('MEDIA_CACHE_DIR', '/opt/ezrec-backend/media_cache/'))
+LOG_FILE = Path(os.getenv('VIDEO_WORKER_LOG', '/opt/ezrec-backend/logs/video_worker.log'))
+FAILED_UPLOADS_FILE = Path(os.getenv('FAILED_UPLOADS_FILE', '/opt/ezrec-backend/failed_uploads.json'))
+CHECK_INTERVAL = int(os.getenv('VIDEO_WORKER_CHECK_INTERVAL', '5'))
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s',
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger(__name__)
+
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def get_user_settings():
+    try:
+        response = supabase.table('user_settings').select('*').eq('user_id', USER_ID).execute()
+        return response.data[0] if response.data else None
+    except Exception as e:
+        logger.error(f"Failed to fetch user_settings: {e}")
+        return None
+
+def sync_media_file(path_key, cache_name):
+    """Download or delete intro/logo as needed. Returns local path or None."""
+    user_settings = get_user_settings()
+    if not user_settings or not user_settings.get(path_key):
+        # Remove local file if it exists
+        local_path = CACHE_DIR / cache_name
+        if local_path.exists():
+            local_path.unlink()
+            logger.info(f"Deleted local {cache_name} (no longer in DB)")
+        return None
+    remote_path = user_settings[path_key]
+    local_path = CACHE_DIR / cache_name
+    # Download if not present or changed
+    if not local_path.exists() or local_path.stat().st_size == 0:
+        try:
+            data = supabase.storage.from_('usermedia').download(remote_path)
+            with open(local_path, 'wb') as f:
+                f.write(data)
+            logger.info(f"Downloaded {cache_name} from Supabase")
+        except Exception as e:
+            logger.warning(f"Failed to download {cache_name}: {e}")
+            return None
+    return local_path
+
+def process_video(raw_path, intro_path, logo_path, output_path):
+    """Process video: concatenate intro, overlay logo, encode."""
+    try:
+        input_video = raw_path
+        if intro_path and intro_path.exists():
+            temp_concat = output_path.parent / f"temp_concat_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', str(intro_path),
+                '-i', str(raw_path),
+                '-filter_complex', '[0:v:0][1:v:0]concat=n=2:v=1[outv]',
+                '-map', '[outv]',
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                str(temp_concat)
+            ]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            if result.returncode != 0:
+                logger.error(f"FFmpeg concat failed: {result.stderr}")
+                temp_concat = raw_path
+            input_video = temp_concat
+        if logo_path and logo_path.exists():
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', str(input_video),
+                '-i', str(logo_path),
+                '-filter_complex', 'overlay=W-w-10:H-h-10',
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                str(output_path)
+            ]
+        else:
+            cmd = [
+                'ffmpeg', '-y',
+                '-i', str(input_video),
+                '-c:v', 'libx264',
+                '-preset', 'medium',
+                '-crf', '23',
+                str(output_path)
+            ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            logger.error(f"FFmpeg processing failed: {result.stderr}")
+            shutil.copy(str(raw_path), str(output_path))
+        logger.info(f"Video processed: {output_path}")
+        if intro_path and intro_path.exists() and input_video != raw_path:
+            input_video.unlink(missing_ok=True)
+        return True
+    except Exception as e:
+        logger.error(f"Video processing error: {e}")
+        return False
+
+def upload_video(local_path, remote_path):
+    try:
+        with open(local_path, 'rb') as f:
+            supabase.storage.from_('videos').upload(remote_path, f)
+        url = supabase.storage.from_('videos').get_public_url(remote_path)
+        logger.info(f"Uploaded video to {remote_path}")
+        return url
+    except Exception as e:
+        logger.error(f"Upload failed: {e}")
+        return None
+
+def update_db(video_meta):
+    try:
+        supabase.table('videos').insert(video_meta).execute()
+        logger.info(f"DB updated for video {video_meta['filename']}")
+    except Exception as e:
+        logger.error(f"Failed to update DB: {e}")
+
+def update_booking_status(booking_id, status):
+    try:
+        supabase.table('bookings').update({'status': status}).eq('id', booking_id).execute()
+        logger.info(f"Booking {booking_id} status set to '{status}' in Supabase.")
+    except Exception as e:
+        logger.error(f"Failed to update booking status in Supabase: {e}")
+
+def main():
+    logger.info("Video Worker Service started")
+    while True:
+        for raw_file in RAW_DIR.glob('*.mp4'):
+            try:
+                # Extract booking_id from filename (assumes format: raw_<booking_id>_YYYYMMDD_HHMMSS.mp4)
+                try:
+                    booking_id = raw_file.name.split('_')[1]
+                except Exception:
+                    booking_id = None
+                # Prepare output path
+                output_file = PROCESSED_DIR / f"processed_{raw_file.name}"
+                # Sync intro and logo
+                intro_path = sync_media_file('intro_video_path', 'intro.mp4')
+                logo_path = sync_media_file('logo_path', 'logo.png')
+                # Process video
+                if not process_video(raw_file, intro_path, logo_path, output_file):
+                    continue
+                # After processing, update booking status to 'video_processed'
+                if booking_id:
+                    update_booking_status(booking_id, 'video_processed')
+                # Upload
+                remote_path = f"{USER_ID}/{output_file.name}"
+                url = upload_video(output_file, remote_path)
+                if url:
+                    video_meta = {
+                        'filename': output_file.name,
+                        'storage_path': remote_path,
+                        'user_id': USER_ID,
+                        'file_url': url,
+                        'file_size': output_file.stat().st_size,
+                        'created_at': datetime.now().isoformat(),
+                        'upload_timestamp': datetime.now().isoformat(),
+                    }
+                    update_db(video_meta)
+                    # After upload, update booking status to 'video_uploaded'
+                    if booking_id:
+                        update_booking_status(booking_id, 'video_uploaded')
+                    raw_file.unlink(missing_ok=True)
+                    output_file.unlink(missing_ok=True)
+                else:
+                    logger.error(f"Failed to upload {output_file}; will retry later.")
+            except Exception as e:
+                logger.error(f"Error processing {raw_file}: {e}")
+        time.sleep(CHECK_INTERVAL)
+
+if __name__ == "__main__":
+    main() 
