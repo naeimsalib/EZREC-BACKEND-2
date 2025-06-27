@@ -7,4 +7,4 @@ httpx==0.23.0
 postgrest==0.10.6
 realtime==1.0.6
 storage3==0.5.3
-supafunc==0.3.3
+supafunc==0.10.1
