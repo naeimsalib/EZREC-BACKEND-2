@@ -200,6 +200,99 @@ print_versions() {
     print_status "picamera2 version:"; python3 -c "import picamera2; print(picamera2.__version__)" 2>/dev/null || echo "picamera2 not installed"
 }
 
+# Create systemd service files for all microservices
+create_service_files() {
+    print_status "Creating/updating systemd service files..."
+    SVC_USER="$USER"
+    SVC_DIR="/etc/systemd/system"
+    # booking_sync
+    sudo tee $SVC_DIR/booking_sync.service > /dev/null <<EOF
+[Unit]
+Description=EZREC Booking Sync Service
+After=network.target
+
+[Service]
+Type=simple
+User=$SVC_USER
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/booking_sync.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    # recorder
+    sudo tee $SVC_DIR/recorder.service > /dev/null <<EOF
+[Unit]
+Description=EZREC Recorder Service
+After=network.target
+
+[Service]
+Type=simple
+User=$SVC_USER
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/recorder.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    # video_worker
+    sudo tee $SVC_DIR/video_worker.service > /dev/null <<EOF
+[Unit]
+Description=EZREC Video Worker Service
+After=network.target
+
+[Service]
+Type=simple
+User=$SVC_USER
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/video_worker.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    # system_status
+    sudo tee $SVC_DIR/system_status.service > /dev/null <<EOF
+[Unit]
+Description=EZREC System Status Service
+After=network.target
+
+[Service]
+Type=simple
+User=$SVC_USER
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/system_status.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    # log_collector
+    sudo tee $SVC_DIR/log_collector.service > /dev/null <<EOF
+[Unit]
+Description=EZREC Log Collector Service
+After=network.target
+
+[Service]
+Type=simple
+User=$SVC_USER
+WorkingDirectory=$PROJECT_DIR
+ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/log_collector.py
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    print_success "All systemd service files created/updated."
+}
+
 # Install systemd services for all microservices and log_collector
 install_systemd_services() {
     print_status "Installing systemd services for all microservices..."
@@ -308,6 +401,7 @@ main() {
     setup_environment
     setup_camera_permissions
     install_python_deps
+    create_service_files
     install_systemd_services
     test_camera
     restore_env
