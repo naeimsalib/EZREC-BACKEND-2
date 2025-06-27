@@ -27,8 +27,8 @@ chmod +x $PROJECT_DIR/*.py
 # Setup Python virtual environment
 # (removed venv setup)
 # Install Python packages system-wide
-pip3 install --upgrade pip
-pip3 install -r requirements.txt
+pip3 install --upgrade pip --break-system-packages
+pip3 install -r requirements.txt --break-system-packages
 
 # Copy environment file if not exists
 if [ ! -f "$PROJECT_DIR/.env" ]; then

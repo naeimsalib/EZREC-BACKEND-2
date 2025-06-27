@@ -247,8 +247,8 @@ main() {
     
     # Instead, install Python packages system-wide
     print_status "Installing Python packages system-wide..."
-    pip3 install --upgrade pip
-    pip3 install -r $PROJECT_DIR/requirements.txt
+    pip3 install --upgrade pip --break-system-packages
+    pip3 install -r $PROJECT_DIR/requirements.txt --break-system-packages
     
     display_final_instructions
 }
