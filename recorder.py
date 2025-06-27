@@ -96,6 +96,12 @@ class RecordingSession:
             self.picam2.start_recording(self.encoder, self.output)
             self.active = True
             logger.info(f"Started recording: {self.filepath}")
+            # Set is_recording True in cameras table
+            try:
+                supabase.table('cameras').update({'is_recording': True}).eq('id', CAMERA_ID).execute()
+                logger.info(f"Camera {CAMERA_ID} is_recording set to True in Supabase.")
+            except Exception as e:
+                logger.error(f"Failed to update camera is_recording=True in Supabase: {e}")
             return True
         except Exception as e:
             logger.error(f"Failed to start recording: {e}")
@@ -113,6 +119,12 @@ class RecordingSession:
                     logger.info(f"Booking {self.booking['id']} status set to 'completed' in Supabase.")
                 except Exception as e:
                     logger.error(f"Failed to update booking status in Supabase: {e}")
+                # Set is_recording False in cameras table
+                try:
+                    supabase.table('cameras').update({'is_recording': False}).eq('id', CAMERA_ID).execute()
+                    logger.info(f"Camera {CAMERA_ID} is_recording set to False in Supabase.")
+                except Exception as e:
+                    logger.error(f"Failed to update camera is_recording=False in Supabase: {e}")
             except Exception as e:
                 logger.error(f"Failed to stop recording: {e}")
             self.active = False
