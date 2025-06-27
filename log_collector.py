@@ -15,6 +15,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 import subprocess
+from shutil import which
 
 load_dotenv()
 
@@ -38,6 +39,8 @@ logger = logging.getLogger(__name__)
 
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+def has_journalctl():
+    return which('journalctl') is not None
 
 def collect_logs(archive_path):
     """Collect all .log files and systemd journal into a zip archive."""
@@ -48,15 +51,18 @@ def collect_logs(archive_path):
                 zipf.write(log_file, arcname=log_file.name)
             # Add systemd journal for each service
             services = ['booking_sync', 'recorder', 'video_worker', 'system_status', 'log_collector']
-            for svc in services:
-                try:
-                    out = subprocess.check_output([
-                        'journalctl', '-u', f'{svc}.service', '--since', '1 hour ago', '--no-pager'
-                    ], text=True, timeout=10)
-                    journal_name = f'journal_{svc}.log'
-                    zipf.writestr(journal_name, out)
-                except Exception as e:
-                    logger.warning(f"Failed to collect journal for {svc}: {e}")
+            if has_journalctl():
+                for svc in services:
+                    try:
+                        out = subprocess.check_output([
+                            'journalctl', '-u', f'{svc}.service', '--since', '1 hour ago', '--no-pager'
+                        ], text=True, timeout=10)
+                        journal_name = f'journal_{svc}.log'
+                        zipf.writestr(journal_name, out)
+                    except Exception as e:
+                        logger.warning(f"Failed to collect journal for {svc}: {e}")
+            else:
+                logger.warning("journalctl not available; skipping systemd journal logs.")
     except Exception as e:
         logger.error(f"Failed to create log archive: {e}")
         return False
@@ -64,6 +70,10 @@ def collect_logs(archive_path):
 
 def upload_log_archive(archive_path):
     """Upload the log archive to Supabase Storage under /<camera_id>/"""
+    # Exclude .zip files older than 1 day
+    if archive_path.stat().st_mtime < time.time() - 86400:
+        logger.info(f"Skipping old archive: {archive_path}")
+        return False
     try:
         remote_path = f"{CAMERA_ID}/{archive_path.name}"
         with open(archive_path, 'rb') as f:

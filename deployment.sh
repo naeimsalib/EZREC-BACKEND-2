@@ -155,6 +155,51 @@ setup_environment() {
     fi
 }
 
+# Install Python dependencies in venv
+install_python_deps() {
+    print_status "Setting up Python virtual environment..."
+    if [ ! -d "$PROJECT_DIR/venv" ]; then
+        python3 -m venv $PROJECT_DIR/venv
+    fi
+    source $PROJECT_DIR/venv/bin/activate
+    pip install --upgrade pip
+    pip install -r $PROJECT_DIR/requirements.txt
+    deactivate
+    print_success "Python dependencies installed in venv."
+}
+
+# Backup and restore .env
+backup_env() {
+    if [ -f "$PROJECT_DIR/.env" ]; then
+        cp $PROJECT_DIR/.env $PROJECT_DIR/.env.bak
+        print_status ".env backed up to .env.bak"
+    fi
+}
+restore_env() {
+    if [ -f "$PROJECT_DIR/.env.bak" ]; then
+        cp $PROJECT_DIR/.env.bak $PROJECT_DIR/.env
+        print_status ".env restored from .env.bak"
+    fi
+}
+
+# Validate .env for required keys
+validate_env() {
+    REQUIRED_KEYS=(SUPABASE_URL SUPABASE_KEY CAMERA_ID)
+    for key in "${REQUIRED_KEYS[@]}"; do
+        if ! grep -q "^$key=" $PROJECT_DIR/.env; then
+            print_error ".env missing required key: $key"
+            exit 1
+        fi
+    done
+    print_success ".env validation passed."
+}
+
+# Print FFmpeg and picamera2 versions
+print_versions() {
+    print_status "FFmpeg version:"; ffmpeg -version | head -n 1
+    print_status "picamera2 version:"; python3 -c "import picamera2; print(picamera2.__version__)" 2>/dev/null || echo "picamera2 not installed"
+}
+
 # Install systemd services for all microservices and log_collector
 install_systemd_services() {
     print_status "Installing systemd services for all microservices..."
@@ -254,6 +299,7 @@ main() {
     
     print_status "Starting EZREC Backend deployment on Raspberry Pi"
     
+    backup_env
     cleanup_old_installation
     update_system
     install_system_packages
@@ -261,17 +307,13 @@ main() {
     copy_project_files
     setup_environment
     setup_camera_permissions
+    install_python_deps
     install_systemd_services
     test_camera
-    
-    # Instead, install Python packages system-wide
-    print_status "Installing Python packages system-wide..."
-    pip3 install --upgrade pip --break-system-packages
-    pip3 install -r $PROJECT_DIR/requirements.txt --break-system-packages
-    
-    # Ensure correct supabase version for systemd/system Python
-    sudo /usr/bin/python3 -m pip install --force-reinstall --break-system-packages supabase==2.3.4
-    
+    restore_env
+    validate_env
+    print_versions
+    print_warning "If you are using ezrec_backend.py, disable recorder.py in systemd to avoid parallel recorders."
     display_final_instructions
 }
 

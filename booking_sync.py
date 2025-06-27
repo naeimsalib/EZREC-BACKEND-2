@@ -20,7 +20,7 @@ SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID', '0')
-BOOKING_CACHE_FILE = Path(os.getenv('BOOKING_CACHE_FILE', '/opt/ezrec-backend/bookings_cache.json'))
+BOOKING_CACHE_FILE = Path(os.getenv('BOOKING_CACHE_FILE', '/opt/ezrec-backend/bookings_cache.v1.json'))
 LOG_FILE = Path(os.getenv('BOOKING_SYNC_LOG', '/opt/ezrec-backend/logs/booking_sync.log'))
 FETCH_INTERVAL = int(os.getenv('BOOKING_FETCH_INTERVAL', '3'))
 
@@ -38,7 +38,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_bookings():
     try:
-        response = supabase.table('bookings').select('*').eq('user_id', USER_ID).eq('camera_id', CAMERA_ID).execute()
+        response = supabase.table('bookings').select('*').eq('user_id', USER_ID).eq('camera_id', CAMERA_ID).eq('status', 'confirmed').execute()
         return response.data if response.data else []
     except Exception as e:
         logger.error(f"Failed to fetch bookings: {e}")

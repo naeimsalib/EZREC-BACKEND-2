@@ -15,6 +15,7 @@ from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
+from uuid import UUID
 
 try:
     from picamera2 import Picamera2
@@ -109,6 +110,13 @@ def get_active_booking(bookings):
         if booking['date'] == today and booking['start_time'] <= now <= booking['end_time']:
             return booking
     return None
+
+def is_valid_uuid(val):
+    try:
+        UUID(str(val))
+        return True
+    except Exception:
+        return False
 
 def main():
     logger.info("Recorder Service started")

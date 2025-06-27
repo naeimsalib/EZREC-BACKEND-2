@@ -11,8 +11,9 @@ WorkingDirectory=/opt/ezrec-backend
 Environment=PATH=/usr/local/bin:/usr/bin:/bin
 Environment=PYTHONPATH=/opt/ezrec-backend
 ExecStart=/usr/bin/python3 /opt/ezrec-backend/log_collector.py
-Restart=always
+Restart=on-failure
 RestartSec=10
+StartLimitIntervalSec=600
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=log_collector

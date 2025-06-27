@@ -79,6 +79,17 @@ This checklist is based strictly on the code logic of each service. Use it to ve
 
 ---
 
+## Shared/All Services
+- [ ] Validate `.env` on boot, log if keys are missing
+- [ ] Verify that booking IDs and file names are safe (no injection or path traversal)
+- [ ] Prevent parallel recorders (disable `recorder.py` if using `ezrec_backend.py`)
+- [ ] Add `.lock` or `.inprogress` files during processing to prevent double execution
+- [ ] Handle stale `.mp4` files in `raw_recordings/` that failed in a previous crash
+- [ ] Add `FFmpeg` and `picamera2` version checks on startup
+- [ ] Log full Supabase response on error if `.data` is `None`
+
+---
+
 **All services:**
 - [ ] Use environment variables for configuration
 - [ ] Log to both file and stdout

@@ -18,6 +18,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 import subprocess
+from uuid import UUID
 
 load_dotenv()
 
@@ -157,16 +158,39 @@ def update_booking_status(booking_id, status):
     except Exception as e:
         logger.error(f"Failed to update booking status in Supabase: {e}")
 
+def is_valid_uuid(val):
+    try:
+        UUID(str(val))
+        return True
+    except Exception:
+        return False
+
 def main():
     logger.info("Video Worker Service started")
     while True:
         for raw_file in RAW_DIR.glob('*.mp4'):
+            # Skip files still being written
+            if raw_file.stat().st_mtime > time.time() - 30:
+                continue
+            # Use lock file to prevent double-processing
+            lock_file = raw_file.with_suffix('.lock')
+            if lock_file.exists():
+                continue
             try:
-                # Extract booking_id from filename (assumes format: raw_<booking_id>_YYYYMMDD_HHMMSS.mp4)
+                lock_file.touch()
+                # Extract booking_id and validate
                 try:
                     booking_id = raw_file.name.split('_')[1]
+                    if not is_valid_uuid(booking_id):
+                        logger.warning(f"Invalid booking_id: {booking_id}")
+                        continue
                 except Exception:
                     booking_id = None
+                # Handle stale files (older than 6 hours)
+                if raw_file.stat().st_mtime < time.time() - 21600:
+                    logger.warning(f"Stale raw file: {raw_file}")
+                    raw_file.unlink(missing_ok=True)
+                    continue
                 # Prepare output path
                 output_file = PROCESSED_DIR / f"processed_{raw_file.name}"
                 # Sync intro and logo
@@ -190,6 +214,7 @@ def main():
                         'file_size': output_file.stat().st_size,
                         'created_at': datetime.now().isoformat(),
                         'upload_timestamp': datetime.now().isoformat(),
+                        'duration_seconds': raw_file.stat().st_size / 1024 / 1024,  # Assuming file size in MB
                     }
                     update_db(video_meta)
                     # After upload, update booking status to 'video_uploaded'
@@ -201,6 +226,9 @@ def main():
                     logger.error(f"Failed to upload {output_file}; will retry later.")
             except Exception as e:
                 logger.error(f"Error processing {raw_file}: {e}")
+            finally:
+                if lock_file.exists():
+                    lock_file.unlink()
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
