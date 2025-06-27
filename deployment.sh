@@ -378,6 +378,17 @@ display_final_instructions() {
     print_warning "A reboot may be required for camera changes to take effect"
 }
 
+# After copying project files, fix venv ownership and install requirements
+fix_venv_and_install_requirements() {
+    print_status "Fixing venv ownership and installing Python dependencies in venv..."
+    sudo chown -R $USER:$USER $PROJECT_DIR
+    source $PROJECT_DIR/venv/bin/activate
+    pip install --upgrade pip
+    pip install -r $PROJECT_DIR/requirements.txt
+    deactivate
+    print_success "Python dependencies installed in venv and ownership fixed."
+}
+
 # Main deployment function
 main() {
     check_root
@@ -393,6 +404,7 @@ main() {
     setup_environment
     setup_camera_permissions
     install_python_deps
+    fix_venv_and_install_requirements
     create_service_files
     install_systemd_services
     test_camera
