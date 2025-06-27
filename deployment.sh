@@ -387,6 +387,17 @@ fix_venv_and_install_requirements() {
     print_success "Python dependencies installed in venv and ownership fixed."
 }
 
+# Ensure all service scripts use absolute path for .env
+ensure_dotenv_absolute_path() {
+    print_status "Ensuring all service scripts use absolute path for .env..."
+    for script in $PROJECT_DIR/*.py; do
+        if grep -q "load_dotenv()" "$script"; then
+            sed -i "s/load_dotenv()/load_dotenv(\"\/opt\/ezrec-backend\/.env\")/g" "$script"
+        fi
+    done
+    print_success ".env absolute path enforced in all service scripts."
+}
+
 # Main deployment function
 main() {
     check_root
@@ -403,6 +414,7 @@ main() {
     setup_camera_permissions
     install_python_deps
     fix_venv_and_install_requirements
+    ensure_dotenv_absolute_path
     create_service_files
     install_systemd_services
     test_camera

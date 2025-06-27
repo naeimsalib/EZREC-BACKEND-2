@@ -15,7 +15,7 @@ import psutil
 from zoneinfo import ZoneInfo
 import uuid
 
-load_dotenv()
+load_dotenv("/opt/ezrec-backend/.env")
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')

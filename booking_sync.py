@@ -17,7 +17,7 @@ from dotenv import load_dotenv
 from supabase import create_client
 from zoneinfo import ZoneInfo
 
-load_dotenv()
+load_dotenv("/opt/ezrec-backend/.env")
 
 # Validate required environment variables
 REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]

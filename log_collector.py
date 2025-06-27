@@ -17,7 +17,7 @@ from supabase import create_client
 import subprocess
 from shutil import which
 
-load_dotenv()
+load_dotenv("/opt/ezrec-backend/.env")
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')

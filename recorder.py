@@ -29,7 +29,7 @@ try:
 except ImportError:
     Picamera2 = None
 
-load_dotenv()
+load_dotenv("/opt/ezrec-backend/.env")
 
 # Validate required environment variables
 REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
