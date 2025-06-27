@@ -76,8 +76,10 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 class RecordingSession:
     def __init__(self, booking):
         self.booking = booking
-        self.filename = f"raw_{booking['id']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.mp4"
-        self.filepath = RAW_DIR / self.filename
+        self.filename = f"raw_{booking['id']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"  # no .mp4 yet
+        self.filepath = RAW_DIR / (self.filename + ".mp4")
+        self.lockfile = RAW_DIR / (self.filename + ".lock")
+        self.completed_marker = RAW_DIR / (self.filename + ".completed")
         self.picam2 = None
         self.encoder = None
         self.output = None
@@ -88,6 +90,8 @@ class RecordingSession:
             logger.error("picamera2 not available; cannot record.")
             return False
         try:
+            # Create lock file
+            self.lockfile.touch()
             self.picam2 = Picamera2()
             config = self.picam2.create_video_configuration(main={"size": (1920, 1080)}, controls={"FrameRate": 30})
             self.picam2.configure(config)
@@ -105,6 +109,9 @@ class RecordingSession:
             return True
         except Exception as e:
             logger.error(f"Failed to start recording: {e}")
+            # Remove lock file if failed
+            if self.lockfile.exists():
+                self.lockfile.unlink()
             return False
 
     def stop(self):
@@ -113,6 +120,9 @@ class RecordingSession:
                 self.picam2.stop_recording()
                 self.picam2.close()
                 logger.info(f"Stopped recording: {self.filepath}")
+                # Write .completed marker
+                self.completed_marker.touch()
+                logger.info(f"Completed marker written: {self.completed_marker}")
                 # Update booking status to 'completed' in Supabase
                 try:
                     supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()
@@ -127,6 +137,10 @@ class RecordingSession:
                     logger.error(f"Failed to update camera is_recording=False in Supabase: {e}")
             except Exception as e:
                 logger.error(f"Failed to stop recording: {e}")
+            finally:
+                # Remove lock file
+                if self.lockfile.exists():
+                    self.lockfile.unlink()
             self.active = False
 
 
