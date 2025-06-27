@@ -190,6 +190,16 @@ class DatabaseManager:
         except Exception as e:
             logger.error(f"Failed to insert video record: {e}")
             raise
+    
+    def update_booking_status(self, booking_id: str, status: str = 'completed'):
+        """Update the status of a booking in the bookings table"""
+        try:
+            response = self.supabase.table('bookings').update({'status': status}).eq('id', booking_id).execute()
+            logger.info(f"Booking {booking_id} status updated to {status}")
+            return response
+        except Exception as e:
+            logger.error(f"Failed to update booking status: {e}")
+            return None
 
 class StorageManager:
     """Handles file storage and Supabase uploads"""
@@ -403,6 +413,8 @@ class VideoProcessor:
                 video_id = self.db_manager.insert_video_record(video_data)
                 logger.info(f"Video uploaded successfully: {video_id}")
                 
+                # Update booking status to completed
+                self.db_manager.update_booking_status(booking['id'], status='completed')
                 self.db_manager.update_system_status(
                     camera_status='idle',
                     successful_uploads=1,
