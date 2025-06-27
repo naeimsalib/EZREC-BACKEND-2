@@ -13,6 +13,7 @@ from dotenv import load_dotenv
 from supabase import create_client
 import psutil
 from zoneinfo import ZoneInfo
+import uuid
 
 load_dotenv()
 
@@ -73,7 +74,7 @@ def main():
             if existing.data:
                 supabase.table('system_status').update(update_data).eq('camera_id', CAMERA_ID).execute()
             else:
-                update_data['id'] = os.urandom(16).hex()
+                update_data['id'] = str(uuid.uuid4())
                 supabase.table('system_status').insert(update_data).execute()
         except Exception as e:
             logger.error(f"Failed to update system status: {e}")

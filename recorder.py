@@ -12,7 +12,7 @@ import time
 import json
 import logging
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, time as dt_time
 from dotenv import load_dotenv
 from supabase import create_client
 from uuid import UUID
@@ -20,6 +20,7 @@ import sys
 import pytz
 import psutil
 from zoneinfo import ZoneInfo
+import uuid
 
 try:
     from picamera2 import Picamera2
@@ -127,10 +128,15 @@ def load_bookings():
     return []
 
 def get_active_booking(bookings):
-    now = datetime.now(LOCAL_TZ).strftime('%H:%M')
+    now = datetime.now(LOCAL_TZ).time()
     today = datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
     for booking in bookings:
-        if booking['date'] == today and booking['start_time'] <= now <= booking['end_time']:
+        try:
+            start_time = datetime.strptime(booking['start_time'], "%H:%M").time()
+            end_time = datetime.strptime(booking['end_time'], "%H:%M").time()
+        except Exception:
+            continue
+        if booking['date'] == today and start_time <= now <= end_time:
             return booking
     return None
 
@@ -156,7 +162,14 @@ def main():
         else:
             if current_session:
                 current_session.stop()
-                current_session = None
+                # After stopping, check for another active booking
+                bookings = load_bookings()
+                next_booking = get_active_booking(bookings)
+                if next_booking:
+                    current_session = RecordingSession(next_booking)
+                    current_session.start()
+                else:
+                    current_session = None
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":

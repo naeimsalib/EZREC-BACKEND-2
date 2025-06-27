@@ -216,6 +216,17 @@ def retry_failed_uploads():
     with open(FAILED_UPLOADS_FILE, 'w') as f:
         json.dump(still_failed, f)
 
+def get_video_duration(video_path):
+    try:
+        cmd = [
+            'ffprobe', '-v', 'quiet', '-show_entries', 'format=duration',
+            '-of', 'default=noprint_wrappers=1:nokey=1', str(video_path)
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        return float(result.stdout.strip())
+    except Exception:
+        return 0.0
+
 def main():
     logger.info("Video Worker Service started")
     while True:
@@ -238,6 +249,16 @@ def main():
                         continue
                 except Exception:
                     booking_id = None
+                # Only process if booking status is 'completed'
+                booking_status = None
+                if booking_id:
+                    try:
+                        resp = supabase.table('bookings').select('status').eq('id', booking_id).execute()
+                        if resp.data and resp.data[0]['status'] != 'completed':
+                            continue
+                        booking_status = resp.data[0]['status'] if resp.data else None
+                    except Exception:
+                        continue
                 # Handle stale files (older than 6 hours)
                 if raw_file.stat().st_mtime < time.time() - 21600:
                     logger.warning(f"Stale raw file: {raw_file}")
@@ -259,24 +280,9 @@ def main():
                 # Upload
                 remote_path = f"{USER_ID}/{output_file.name}"
                 url = upload_video(output_file, remote_path)
-                if url:
-                    video_meta = {
-                        'filename': output_file.name,
-                        'storage_path': remote_path,
-                        'user_id': USER_ID,
-                        'file_url': url,
-                        'file_size': output_file.stat().st_size,
-                        'created_at': datetime.now(LOCAL_TZ).isoformat(),
-                        'upload_timestamp': datetime.now(LOCAL_TZ).isoformat(),
-                        'duration_seconds': raw_file.stat().st_size / 1024 / 1024,  # Placeholder
-                    }
-                    update_db(video_meta)
-                    # After upload, update booking status to 'video_uploaded'
-                    if booking_id:
-                        update_booking_status(booking_id, 'video_uploaded')
-                    raw_file.unlink(missing_ok=True)
-                    output_file.unlink(missing_ok=True)
-                else:
+                # Validate upload
+                if not url or not url.startswith('http'):
+                    logger.error(f"Upload failed or invalid URL for {output_file}")
                     # Save failed upload info for retry
                     failed_uploads = []
                     if FAILED_UPLOADS_FILE.exists():
@@ -293,6 +299,24 @@ def main():
                     with open(FAILED_UPLOADS_FILE, 'w') as f:
                         json.dump(failed_uploads, f)
                     logger.error(f"Failed to upload {output_file}; will retry later.")
+                    continue
+                duration = get_video_duration(output_file)
+                video_meta = {
+                    'filename': output_file.name,
+                    'storage_path': remote_path,
+                    'user_id': USER_ID,
+                    'file_url': url,
+                    'file_size': output_file.stat().st_size,
+                    'created_at': datetime.now(LOCAL_TZ).isoformat(),
+                    'upload_timestamp': datetime.now(LOCAL_TZ).isoformat(),
+                    'duration_seconds': duration,
+                }
+                update_db(video_meta)
+                # After upload, update booking status to 'video_uploaded'
+                if booking_id:
+                    update_booking_status(booking_id, 'video_uploaded')
+                raw_file.unlink(missing_ok=True)
+                output_file.unlink(missing_ok=True)
             except Exception as e:
                 logger.error(f"Error processing {raw_file}: {e}")
             finally:
