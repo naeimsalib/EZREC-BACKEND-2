@@ -295,20 +295,12 @@ EOF
 
 # Install systemd services for all microservices and log_collector
 install_systemd_services() {
-    print_status "Installing systemd services for all microservices..."
+    print_status "Enabling and reloading systemd services..."
     for svc in booking_sync recorder video_worker system_status log_collector; do
-        SERVICE_FILE_NAME="${svc}.service"
-        if [ ! -f "$HOME/EZREC-BACKEND-2/$SERVICE_FILE_NAME" ]; then
-            print_error "Service file $SERVICE_FILE_NAME not found in $HOME/EZREC-BACKEND-2. Please make sure it exists."
-            exit 1
-        fi
-        # Update user/group in service file and copy
-        sed "s/User=.*/User=michomanoly14892/; s/Group=.*/Group=michomanoly14892/" "$HOME/EZREC-BACKEND-2/$SERVICE_FILE_NAME" > "/tmp/$SERVICE_FILE_NAME"
-        sudo cp "/tmp/$SERVICE_FILE_NAME" "/etc/systemd/system/$SERVICE_FILE_NAME"
         sudo systemctl enable $svc
     done
     sudo systemctl daemon-reload
-    print_success "All systemd services installed and enabled"
+    print_success "All systemd services enabled and systemd reloaded."
 }
 
 # Setup camera permissions
