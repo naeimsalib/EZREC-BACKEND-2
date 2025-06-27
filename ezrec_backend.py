@@ -17,6 +17,8 @@ from pathlib import Path
 from typing import Optional, Dict, Any, List
 import psutil
 import signal
+import pytz
+from zoneinfo import ZoneInfo
 
 try:
     from picamera2 import Picamera2
@@ -37,6 +39,7 @@ load_dotenv()
 class Config:
     SUPABASE_URL = os.getenv('SUPABASE_URL')
     SUPABASE_KEY = os.getenv('SUPABASE_KEY') or os.getenv('SUPABASE_ANON_KEY')
+    USER_ID = os.getenv('USER_ID')
     CAMERA_ID = os.getenv('CAMERA_ID', '0')
     TEMP_DIR = Path('/opt/ezrec-backend/temp')
     LOG_DIR = Path('/opt/ezrec-backend/logs')
@@ -44,6 +47,8 @@ class Config:
     RECORDING_FPS = int(os.getenv('RECORDING_FPS', '30'))
     BOOKING_CHECK_INTERVAL = 3  # seconds
     STATUS_UPDATE_INTERVAL = 3  # seconds
+    # Detect local timezone
+    LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exists('/etc/timezone') else None
 
 # Setup logging
 def setup_logging():
@@ -70,8 +75,8 @@ class DatabaseManager:
             raise ValueError("SUPABASE_URL and SUPABASE_KEY must be set")
         
         self.supabase: Client = create_client(Config.SUPABASE_URL, Config.SUPABASE_KEY)
+        self.user_id = Config.USER_ID
         self.camera_info = None
-        self.user_id = None
         self._initialize_camera_info()
     
     def _initialize_camera_info(self):
@@ -80,21 +85,18 @@ class DatabaseManager:
             response = self.supabase.table('cameras').select('*').eq('id', Config.CAMERA_ID).execute()
             if response.data:
                 self.camera_info = response.data[0]
-                self.user_id = self.camera_info['user_id']
-                logger.info(f"Camera initialized: {self.camera_info['name']} for user {self.user_id}")
+                logger.info(f"Camera initialized: {self.camera_info.get('name', '')}")
             else:
-                logger.error(f"Camera with ID {Config.CAMERA_ID} not found")
-                raise ValueError(f"Camera {Config.CAMERA_ID} not found")
+                logger.warning(f"Camera with ID {Config.CAMERA_ID} not found (optional)")
         except Exception as e:
             logger.error(f"Failed to initialize camera info: {e}")
-            raise
     
     def get_active_bookings(self) -> List[Dict]:
         """Get current active bookings for this user"""
         try:
-            now = datetime.now()
+            now = datetime.now(Config.LOCAL_TZ)
             current_date = now.strftime('%Y-%m-%d')
-            current_time = now.strftime('%H:%M:%S')
+            current_time = now.strftime('%H:%M')
             
             logger.info(f"Fetching bookings for user_id={self.user_id}, date={current_date}, status=confirmed")
             response = self.supabase.table('bookings').select('*').eq(
@@ -116,8 +118,8 @@ class DatabaseManager:
         """Update camera status in database"""
         try:
             update_data = {
-                'last_heartbeat': datetime.utcnow().isoformat(),
-                'last_seen': datetime.utcnow().isoformat(),
+                'last_heartbeat': datetime.now(Config.LOCAL_TZ).isoformat(),
+                'last_seen': datetime.now(Config.LOCAL_TZ).isoformat(),
                 **kwargs
             }
             self.supabase.table('cameras').update(update_data).eq('id', Config.CAMERA_ID).execute()
@@ -141,7 +143,7 @@ class DatabaseManager:
                 'user_id': self.user_id,
                 'camera_id': Config.CAMERA_ID,
                 'pi_active': True,
-                'last_heartbeat': datetime.utcnow().isoformat(),
+                'last_heartbeat': datetime.now(Config.LOCAL_TZ).isoformat(),
                 'cpu_usage_percent': cpu_percent,
                 'memory_usage_percent': memory.percent,
                 'disk_usage_percent': (disk.used / disk.total) * 100,
@@ -150,7 +152,7 @@ class DatabaseManager:
                 'memory_available_gb': memory.available / (1024**3),
                 'disk_total_gb': disk.total / (1024**3),
                 'disk_free_gb': disk.free / (1024**3),
-                'updated_at': datetime.utcnow().isoformat(),
+                'updated_at': datetime.now(Config.LOCAL_TZ).isoformat(),
                 **kwargs
             }
             
@@ -180,8 +182,8 @@ class DatabaseManager:
             video_data['id'] = str(uuid.uuid4())
             video_data['user_id'] = self.user_id
             video_data['camera_id'] = Config.CAMERA_ID
-            video_data['created_at'] = datetime.utcnow().isoformat()
-            video_data['upload_timestamp'] = datetime.utcnow().isoformat()
+            video_data['created_at'] = datetime.now(Config.LOCAL_TZ).isoformat()
+            video_data['upload_timestamp'] = datetime.now(Config.LOCAL_TZ).isoformat()
             
             response = self.supabase.table('videos').insert(video_data).execute()
             return response.data[0]['id']
@@ -254,7 +256,7 @@ class VideoProcessor:
         self.is_recording = True
         self.current_recording = {
             'booking': booking,
-            'start_time': datetime.now(),
+            'start_time': datetime.now(Config.LOCAL_TZ),
             'recording_id': str(uuid.uuid4())
         }
         
@@ -319,7 +321,7 @@ class VideoProcessor:
             picam2.stop_recording()
             picam2.close()
             
-            self.current_recording['end_time'] = datetime.now()
+            self.current_recording['end_time'] = datetime.now(Config.LOCAL_TZ)
             self.current_recording['raw_video_path'] = raw_video_path
             
             logger.info(f"Recording completed: {raw_video_path}")
@@ -348,7 +350,10 @@ class VideoProcessor:
                 return
             
             start_time = self.current_recording['start_time']
-            filename = f"recording_{start_time.strftime('%Y%m%d_%H%M%S')}_{recording_id}.mp4"
+            # New filename and path
+            date_str = start_time.strftime('%Y%m%d')
+            time_str = start_time.strftime('%H%M')
+            filename = f"recordings.{date_str}.{time_str}.{booking['id']}.mp4"
             final_video_path = Config.TEMP_DIR / filename
             
             # Download intro video and logo if available
@@ -386,12 +391,13 @@ class VideoProcessor:
                     'filename': filename,
                     'storage_path': remote_path,
                     'booking_id': booking['id'],
+                    'user_id': self.db_manager.user_id,
                     'file_url': public_url,
                     'file_size': file_size,
                     'duration_seconds': duration,
                     'recording_date': start_time.date().isoformat(),
-                    'recording_start_time': start_time.strftime('%H:%M:%S'),
-                    'recording_end_time': self.current_recording['end_time'].strftime('%H:%M:%S')
+                    'recording_start_time': start_time.strftime('%H:%M'),
+                    'recording_end_time': self.current_recording['end_time'].strftime('%H:%M')
                 }
                 
                 video_id = self.db_manager.insert_video_record(video_data)
@@ -530,7 +536,7 @@ class EZRECBackend:
             status='running',
             orchestrator_status='running',
             camera_status='idle',
-            uptime_start=datetime.utcnow().isoformat()
+            uptime_start=datetime.now(Config.LOCAL_TZ).isoformat()
         )
         
         try:
