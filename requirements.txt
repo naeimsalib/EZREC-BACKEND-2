@@ -1,5 +1,6 @@
 python-dotenv
 pytz
+psutil
 supabase==2.3.4
 gotrue==2.9.1
 httpx==0.25.2
