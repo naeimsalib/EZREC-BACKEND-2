@@ -145,13 +145,12 @@ copy_project_files() {
 # Setup environment configuration
 setup_environment() {
     print_status "Setting up environment configuration..."
-    
     if [ ! -f "$PROJECT_DIR/.env" ]; then
         cp $PROJECT_DIR/env.example $PROJECT_DIR/.env
         print_warning "Environment file created at $PROJECT_DIR/.env"
         print_warning "Please edit this file with your Supabase credentials and camera ID"
     else
-        print_success "Environment file already exists"
+        print_success "Environment file already exists and will NOT be overwritten."
     fi
 }
 
