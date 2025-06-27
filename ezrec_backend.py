@@ -48,6 +48,22 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Validate required environment variables
+REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
+missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
+if missing:
+    print(f"Missing required environment variables: {missing}")
+    sys.exit(1)
+
+# Prevent running if recorder.py is active
+for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+    try:
+        if 'recorder.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
+            print("ERROR: recorder.py is running. ezrec_backend.py should not run in parallel. Exiting.")
+            sys.exit(1)
+    except Exception:
+        continue
+
 # Configuration class for all settings
 class Config:
     """
@@ -498,11 +514,19 @@ class VideoProcessor:
             result = subprocess.run(cmd, capture_output=True, text=True)
             if result.returncode != 0:
                 logger.error(f"FFmpeg processing failed: {result.stderr}")
-                subprocess.run(['cp', str(raw_video), str(output_video)])
+                try:
+                    subprocess.run(['cp', str(raw_video), str(output_video)])
+                    logger.info(f"Fallback: copied raw video to {output_video}")
+                except Exception as e:
+                    logger.error(f"Fallback copy failed: {e}")
             logger.info(f"Video processed successfully: {output_video}")
         except Exception as e:
             logger.error(f"FFmpeg processing error: {e}")
-            subprocess.run(['cp', str(raw_video), str(output_video)])
+            try:
+                subprocess.run(['cp', str(raw_video), str(output_video)])
+                logger.info(f"Fallback: copied raw video to {output_video}")
+            except Exception as e2:
+                logger.error(f"Fallback copy failed: {e2}")
 
     def _get_video_duration(self, video_path: Path) -> int:
         """

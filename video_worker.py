@@ -19,8 +19,21 @@ from dotenv import load_dotenv
 from supabase import create_client
 import subprocess
 from uuid import UUID
+import sys
+import pytz
+from zoneinfo import ZoneInfo
+import uuid
 
 load_dotenv()
+
+# Validate required environment variables
+REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID"]
+missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
+if missing:
+    print(f"Missing required environment variables: {missing}")
+    sys.exit(1)
+
+LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exists('/etc/timezone') else None
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
@@ -80,7 +93,7 @@ def sync_media_file(path_key, cache_name):
     return local_path
 
 def process_video(raw_path, intro_path, logo_path, output_path):
-    """Process video: concatenate intro, overlay logo, encode."""
+    """Process video: concatenate intro, overlay logo, encode. Fallback to copy if ffmpeg fails."""
     try:
         input_video = raw_path
         if intro_path and intro_path.exists():
@@ -124,7 +137,13 @@ def process_video(raw_path, intro_path, logo_path, output_path):
         result = subprocess.run(cmd, capture_output=True, text=True)
         if result.returncode != 0:
             logger.error(f"FFmpeg processing failed: {result.stderr}")
-            shutil.copy(str(raw_path), str(output_path))
+            # Fallback: try to copy raw video
+            try:
+                shutil.copy(str(raw_path), str(output_path))
+                logger.info(f"Fallback: copied raw video to {output_path}")
+            except Exception as e:
+                logger.error(f"Fallback copy failed: {e}")
+                return False
         logger.info(f"Video processed: {output_path}")
         if intro_path and intro_path.exists() and input_video != raw_path:
             input_video.unlink(missing_ok=True)
@@ -136,12 +155,17 @@ def process_video(raw_path, intro_path, logo_path, output_path):
 def upload_video(local_path, remote_path):
     try:
         with open(local_path, 'rb') as f:
-            supabase.storage.from_('videos').upload(remote_path, f)
+            resp = supabase.storage.from_('videos').upload(remote_path, f)
         url = supabase.storage.from_('videos').get_public_url(remote_path)
         logger.info(f"Uploaded video to {remote_path}")
         return url
     except Exception as e:
         logger.error(f"Upload failed: {e}")
+        # Log full Supabase response if available
+        try:
+            logger.error(f"Supabase upload response: {resp}")
+        except Exception:
+            pass
         return None
 
 def update_db(video_meta):
@@ -165,11 +189,39 @@ def is_valid_uuid(val):
     except Exception:
         return False
 
+def retry_failed_uploads():
+    if not FAILED_UPLOADS_FILE.exists():
+        return
+    try:
+        with open(FAILED_UPLOADS_FILE, 'r') as f:
+            failed_uploads = json.load(f)
+    except Exception:
+        failed_uploads = []
+    still_failed = []
+    for upload in failed_uploads:
+        local_path = Path(upload['local_path'])
+        remote_path = upload['remote_path']
+        bucket = upload.get('bucket', 'videos')
+        if not local_path.exists():
+            continue
+        url = upload_video(local_path, remote_path)
+        if url:
+            logger.info(f"Retried upload succeeded: {local_path}")
+            try:
+                local_path.unlink()
+            except Exception:
+                pass
+        else:
+            still_failed.append(upload)
+    with open(FAILED_UPLOADS_FILE, 'w') as f:
+        json.dump(still_failed, f)
+
 def main():
     logger.info("Video Worker Service started")
     while True:
+        retry_failed_uploads()
         for raw_file in RAW_DIR.glob('*.mp4'):
-            # Skip files still being written
+            # Only process files older than 30 seconds
             if raw_file.stat().st_mtime > time.time() - 30:
                 continue
             # Use lock file to prevent double-processing
@@ -191,8 +243,10 @@ def main():
                     logger.warning(f"Stale raw file: {raw_file}")
                     raw_file.unlink(missing_ok=True)
                     continue
-                # Prepare output path
-                output_file = PROCESSED_DIR / f"processed_{raw_file.name}"
+                # Prepare output path with UUID and timestamp
+                unique_id = str(uuid.uuid4())
+                timestamp = datetime.now(LOCAL_TZ).strftime('%Y%m%d_%H%M%S')
+                output_file = PROCESSED_DIR / f"processed_{timestamp}_{unique_id}.mp4"
                 # Sync intro and logo
                 intro_path = sync_media_file('intro_video_path', 'intro.mp4')
                 logo_path = sync_media_file('logo_path', 'logo.png')
@@ -212,9 +266,9 @@ def main():
                         'user_id': USER_ID,
                         'file_url': url,
                         'file_size': output_file.stat().st_size,
-                        'created_at': datetime.now().isoformat(),
-                        'upload_timestamp': datetime.now().isoformat(),
-                        'duration_seconds': raw_file.stat().st_size / 1024 / 1024,  # Assuming file size in MB
+                        'created_at': datetime.now(LOCAL_TZ).isoformat(),
+                        'upload_timestamp': datetime.now(LOCAL_TZ).isoformat(),
+                        'duration_seconds': raw_file.stat().st_size / 1024 / 1024,  # Placeholder
                     }
                     update_db(video_meta)
                     # After upload, update booking status to 'video_uploaded'
@@ -223,6 +277,21 @@ def main():
                     raw_file.unlink(missing_ok=True)
                     output_file.unlink(missing_ok=True)
                 else:
+                    # Save failed upload info for retry
+                    failed_uploads = []
+                    if FAILED_UPLOADS_FILE.exists():
+                        try:
+                            with open(FAILED_UPLOADS_FILE, 'r') as f:
+                                failed_uploads = json.load(f)
+                        except Exception:
+                            pass
+                    failed_uploads.append({
+                        'local_path': str(output_file),
+                        'remote_path': remote_path,
+                        'bucket': 'videos'
+                    })
+                    with open(FAILED_UPLOADS_FILE, 'w') as f:
+                        json.dump(failed_uploads, f)
                     logger.error(f"Failed to upload {output_file}; will retry later.")
             except Exception as e:
                 logger.error(f"Error processing {raw_file}: {e}")

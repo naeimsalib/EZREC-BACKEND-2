@@ -9,12 +9,25 @@ import os
 import time
 import json
 import logging
+import sys
+import pytz
 from pathlib import Path
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
+from zoneinfo import ZoneInfo
 
 load_dotenv()
+
+# Validate required environment variables
+REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
+missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
+if missing:
+    print(f"Missing required environment variables: {missing}")
+    sys.exit(1)
+
+from zoneinfo import ZoneInfo
+LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exists('/etc/timezone') else None
 
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
@@ -39,6 +52,8 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 def fetch_bookings():
     try:
         response = supabase.table('bookings').select('*').eq('user_id', USER_ID).eq('camera_id', CAMERA_ID).eq('status', 'confirmed').execute()
+        if response.data is None:
+            logger.error(f"Supabase response has no data: {response}")
         return response.data if response.data else []
     except Exception as e:
         logger.error(f"Failed to fetch bookings: {e}")

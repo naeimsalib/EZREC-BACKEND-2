@@ -16,6 +16,10 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 from uuid import UUID
+import sys
+import pytz
+import psutil
+from zoneinfo import ZoneInfo
 
 try:
     from picamera2 import Picamera2
@@ -25,6 +29,25 @@ except ImportError:
     Picamera2 = None
 
 load_dotenv()
+
+# Validate required environment variables
+REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
+missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
+if missing:
+    print(f"Missing required environment variables: {missing}")
+    sys.exit(1)
+
+# Prevent running if ezrec_backend.py is active
+for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+    try:
+        if 'ezrec_backend.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
+            print("ERROR: ezrec_backend.py is running. recorder.py should not run in parallel. Exiting.")
+            sys.exit(1)
+    except Exception:
+        continue
+
+# Use timezone-aware datetime
+LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exists('/etc/timezone') else None
 
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID', '0')
@@ -104,8 +127,8 @@ def load_bookings():
     return []
 
 def get_active_booking(bookings):
-    now = datetime.now().strftime('%H:%M')
-    today = datetime.now().strftime('%Y-%m-%d')
+    now = datetime.now(LOCAL_TZ).strftime('%H:%M')
+    today = datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
     for booking in bookings:
         if booking['date'] == today and booking['start_time'] <= now <= booking['end_time']:
             return booking
