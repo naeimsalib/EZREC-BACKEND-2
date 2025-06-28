@@ -83,6 +83,8 @@ def main():
     last_bookings = load_local_cache()
     while True:
         bookings = fetch_bookings()
+        logger.info(f"Fetched bookings: {bookings}")
+        logger.info(f"Last bookings: {last_bookings}")
         if bookings is not None and bookings_changed(last_bookings, bookings):
             logger.info("Bookings updated; saving to cache.")
             save_local_cache(bookings)
