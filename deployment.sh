@@ -5,6 +5,15 @@
 
 set -e
 
+# Lock File or Idempotency Protection
+LOCK_FILE="/tmp/ezrec_deploy.lock"
+if [ -f "$LOCK_FILE" ]; then
+  print_error "Deployment already running. Remove $LOCK_FILE to retry."
+  exit 1
+fi
+trap "rm -f $LOCK_FILE" EXIT
+touch "$LOCK_FILE"
+
 echo "🚀 Starting EZREC Backend Deployment..."
 
 # Colors for output
@@ -20,407 +29,184 @@ SERVICE_NAME="ezrec-backend"
 USER=$(whoami)
 
 # Print colored output
-print_status() {
-    echo -e "${BLUE}[INFO]${NC} $1"
-}
+print_status() { echo -e "${BLUE}[INFO]${NC} $1"; }
+print_success() { echo -e "${GREEN}[SUCCESS]${NC} $1"; }
+print_warning() { echo -e "${YELLOW}[WARNING]${NC} $1"; }
+print_error() { echo -e "${RED}[ERROR]${NC} $1"; }
 
-print_success() {
-    echo -e "${GREEN}[SUCCESS]${NC} $1"
-}
-
-print_warning() {
-    echo -e "${YELLOW}[WARNING]${NC} $1"
-}
-
-print_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
-}
-
-# Check if running as root for some operations
 check_root() {
-    if [[ $EUID -eq 0 ]]; then
-        print_error "This script should not be run as root. Run as pi user instead."
-        exit 1
-    fi
+  if [[ $EUID -eq 0 ]]; then
+    print_error "Do not run this script as root."
+    exit 1
+  fi
 }
 
-# Clean up old installations
 cleanup_old_installation() {
-    print_status "Cleaning up old installations..."
-    
-    # Stop and disable old service
-    sudo systemctl stop ${SERVICE_NAME} 2>/dev/null || true
-    sudo systemctl disable ${SERVICE_NAME} 2>/dev/null || true
-    
-    # Kill any existing camera processes
-    sudo pkill -f "ezrec" 2>/dev/null || true
-    sudo pkill -f "picamera" 2>/dev/null || true
-    sudo pkill -f "camera" 2>/dev/null || true
-    
-    # Remove old service file
-    sudo rm -f /etc/systemd/system/${SERVICE_NAME}.service
-    
-    # Backup and remove old installation
-    if [ -d "$PROJECT_DIR" ]; then
-        print_warning "Found existing installation at $PROJECT_DIR"
-        sudo rm -rf ${PROJECT_DIR}.backup 2>/dev/null || true
-        sudo mv $PROJECT_DIR ${PROJECT_DIR}.backup 2>/dev/null || true
-        print_success "Old installation backed up to ${PROJECT_DIR}.backup"
-    fi
-    
-    # Reload systemd
-    sudo systemctl daemon-reload
-    
-    print_success "Cleanup completed"
+  print_status "Cleaning up old installations..."
+  for svc in booking_sync recorder video_worker system_status log_collector; do
+    sudo systemctl stop $svc 2>/dev/null || true
+    sudo systemctl disable $svc 2>/dev/null || true
+    sudo rm -f /etc/systemd/system/$svc.service
+  done
+  sudo pkill -f "ezrec|picamera|camera" 2>/dev/null || true
+  [ -d "$PROJECT_DIR" ] && sudo mv "$PROJECT_DIR" "${PROJECT_DIR}.backup" || true
+  sudo systemctl daemon-reload
+  print_success "Cleanup complete"
 }
 
-# Update system packages
 update_system() {
-    print_status "Updating system packages..."
-    sudo apt-get update
-    sudo apt-get upgrade -y
-    print_success "System updated"
+  print_status "Updating system packages..."
+  sudo apt-get update
+  sudo apt-get upgrade -y
+  print_success "System packages updated"
 }
 
-# Install required system packages
 install_system_packages() {
-    print_status "Installing required system packages..."
-    
-    # Essential packages
-    sudo apt-get install -y \
-        python3 \
-        python3-pip \
-        python3-venv \
-        git \
-        ffmpeg \
-        v4l-utils \
-        python3-dev \
-        libffi-dev \
-        libssl-dev \
-        build-essential
-    
-    # Raspberry Pi specific packages
-    sudo apt-get install -y \
-        python3-picamera2 \
-        python3-libcamera \
-        libcamera-apps \
-        libcamera-dev
-    
-    print_success "System packages installed"
+  print_status "Installing required packages..."
+  sudo apt-get install -y python3 python3-pip python3-venv git ffmpeg v4l-utils \
+    python3-dev libffi-dev libssl-dev build-essential \
+    python3-picamera2 python3-libcamera libcamera-apps libcamera-dev
+  print_success "System packages installed"
 }
 
-# Create project directory and set permissions
 setup_project_directory() {
-    print_status "Setting up project directory..."
-    
-    sudo mkdir -p $PROJECT_DIR
-    sudo chown -R $USER:$USER $PROJECT_DIR
-    
-    # Create subdirectories
-    mkdir -p $PROJECT_DIR/{temp,logs,raw_recordings,processed_recordings,media_cache}
-    
-    print_success "Project directory created: $PROJECT_DIR"
+  print_status "Setting up project directory..."
+  sudo mkdir -p "$PROJECT_DIR"
+  sudo chown -R "$USER:$USER" "$PROJECT_DIR"
+  mkdir -p "$PROJECT_DIR"/{temp,logs,raw_recordings,processed_recordings,media_cache}
+  print_success "Project directory ready"
 }
 
-# Copy project files
 copy_project_files() {
-    print_status "Copying project files..."
-    
-    # Copy all Python files
-    cp *.py $PROJECT_DIR/ 2>/dev/null || true
-    cp requirements.txt $PROJECT_DIR/ 2>/dev/null || true
-    cp env.example $PROJECT_DIR/ 2>/dev/null || true
-    
-    # Copy log_collector.py if present
-    if [ -f "$HOME/EZREC-BACKEND-2/log_collector.py" ]; then
-        cp $HOME/EZREC-BACKEND-2/log_collector.py $PROJECT_DIR/
-    fi
-    
-    # Set permissions
-    chmod +x $PROJECT_DIR/*.py
-    
-    print_success "Project files copied"
+  print_status "Copying project files..."
+  cp ./*.py "$PROJECT_DIR"/ 2>/dev/null || true
+  cp requirements.txt "$PROJECT_DIR"/ 2>/dev/null || true
+  cp env.example "$PROJECT_DIR"/ 2>/dev/null || true
+  chmod +x "$PROJECT_DIR"/*.py
+  print_success "Project files copied"
 }
 
-# Setup environment configuration
-setup_environment() {
-    print_status "Setting up environment configuration..."
-    if [ ! -f "$PROJECT_DIR/.env" ]; then
-        cp $PROJECT_DIR/env.example $PROJECT_DIR/.env
-        print_warning "Environment file created at $PROJECT_DIR/.env"
-        print_warning "Please edit this file with your Supabase credentials and camera ID"
-    else
-        print_success "Environment file already exists and will NOT be overwritten."
-    fi
-}
-
-# Install Python dependencies in venv
-install_python_deps() {
-    print_status "Setting up Python virtual environment..."
-    if [ ! -d "$PROJECT_DIR/venv" ]; then
-        python3 -m venv $PROJECT_DIR/venv
-    fi
-    source $PROJECT_DIR/venv/bin/activate
-    pip install --upgrade pip
-    pip install -r $PROJECT_DIR/requirements.txt
-    deactivate
-    print_success "Python dependencies installed in venv."
-}
-
-# Backup and restore .env
-backup_env() {
-    if [ -f "$PROJECT_DIR/.env" ]; then
-        cp $PROJECT_DIR/.env $PROJECT_DIR/.env.bak
-        print_status ".env backed up to .env.bak"
-    fi
-}
-restore_env() {
-    if [ -f "$PROJECT_DIR/.env.bak" ]; then
-        cp $PROJECT_DIR/.env.bak $PROJECT_DIR/.env
-        print_status ".env restored from .env.bak"
-    fi
-}
-
-# Validate .env for required keys
-validate_env() {
-    REQUIRED_KEYS=(SUPABASE_URL SUPABASE_KEY CAMERA_ID)
-    for key in "${REQUIRED_KEYS[@]}"; do
-        if ! grep -q "^$key=" $PROJECT_DIR/.env; then
-            print_error ".env missing required key: $key"
-            exit 1
-        fi
-    done
-    print_success ".env validation passed."
-}
-
-# Print FFmpeg and picamera2 versions
-print_versions() {
-    print_status "FFmpeg version:"; ffmpeg -version | head -n 1
-    print_status "picamera2 version:"; python3 -c "import picamera2; print(picamera2.__version__)" 2>/dev/null || echo "picamera2 not installed"
-}
-
-# Create systemd service files for all microservices
-create_service_files() {
-    print_status "Creating/updating systemd service files..."
-    SVC_USER="$USER"
-    SVC_DIR="/etc/systemd/system"
-    # booking_sync
-    sudo tee $SVC_DIR/booking_sync.service > /dev/null <<EOF
-[Unit]
-Description=EZREC Booking Sync Service
-After=network.target
-
-[Service]
-Type=simple
-User=$SVC_USER
-WorkingDirectory=$PROJECT_DIR
-EnvironmentFile=$PROJECT_DIR/.env
-ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/booking_sync.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    # recorder
-    sudo tee $SVC_DIR/recorder.service > /dev/null <<EOF
-[Unit]
-Description=EZREC Recorder Service
-After=network.target
-
-[Service]
-Type=simple
-User=$SVC_USER
-WorkingDirectory=$PROJECT_DIR
-EnvironmentFile=$PROJECT_DIR/.env
-ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/recorder.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    # video_worker
-    sudo tee $SVC_DIR/video_worker.service > /dev/null <<EOF
-[Unit]
-Description=EZREC Video Worker Service
-After=network.target
-
-[Service]
-Type=simple
-User=$SVC_USER
-WorkingDirectory=$PROJECT_DIR
-EnvironmentFile=$PROJECT_DIR/.env
-ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/video_worker.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    # system_status
-    sudo tee $SVC_DIR/system_status.service > /dev/null <<EOF
-[Unit]
-Description=EZREC System Status Service
-After=network.target
-
-[Service]
-Type=simple
-User=$SVC_USER
-WorkingDirectory=$PROJECT_DIR
-EnvironmentFile=$PROJECT_DIR/.env
-ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/system_status.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    # log_collector
-    sudo tee $SVC_DIR/log_collector.service > /dev/null <<EOF
-[Unit]
-Description=EZREC Log Collector Service
-After=network.target
-
-[Service]
-Type=simple
-User=$SVC_USER
-WorkingDirectory=$PROJECT_DIR
-EnvironmentFile=$PROJECT_DIR/.env
-ExecStart=$PROJECT_DIR/venv/bin/python3 $PROJECT_DIR/log_collector.py
-Restart=always
-RestartSec=10
-
-[Install]
-WantedBy=multi-user.target
-EOF
-    print_success "All systemd service files created/updated."
-}
-
-# Install systemd services for all microservices and log_collector
-install_systemd_services() {
-    print_status "Enabling and reloading systemd services..."
-    for svc in booking_sync recorder video_worker system_status log_collector; do
-        sudo systemctl enable $svc
-    done
-    sudo systemctl daemon-reload
-    print_success "All systemd services enabled and systemd reloaded."
-}
-
-# Setup camera permissions
 setup_camera_permissions() {
-    print_status "Setting up camera permissions..."
-    
-    # Add user to video group
-    sudo usermod -a -G video $USER
-    
-    # Set camera permissions
-    sudo chmod 666 /dev/video* 2>/dev/null || true
-    
-    # Enable camera if on Raspberry Pi
-    if [ -f /boot/config.txt ]; then
-        if ! grep -q "camera_auto_detect=1" /boot/config.txt; then
-            echo "camera_auto_detect=1" | sudo tee -a /boot/config.txt
-        fi
-        if ! grep -q "dtoverlay=vc4-kms-v3d" /boot/config.txt; then
-            echo "dtoverlay=vc4-kms-v3d" | sudo tee -a /boot/config.txt
-        fi
-    fi
-    
-    print_success "Camera permissions configured"
+  print_status "Setting camera permissions..."
+  sudo usermod -a -G video "$USER"
+  sudo chmod 666 /dev/video* 2>/dev/null || true
+  sudo sed -i '/^camera_auto_detect=/d' /boot/config.txt
+  sudo sed -i '/^dtoverlay=vc4-kms-v3d/d' /boot/config.txt
+  echo "camera_auto_detect=1" | sudo tee -a /boot/config.txt
+  echo "dtoverlay=vc4-kms-v3d" | sudo tee -a /boot/config.txt
+  print_success "Camera permissions set"
 }
 
-# Test camera connectivity
-test_camera() {
-    print_status "Testing camera connectivity..."
-    
-    if command -v libcamera-hello &> /dev/null; then
-        if timeout 5 libcamera-hello --list-cameras &> /dev/null; then
-            print_success "Camera detected successfully"
-        else
-            print_warning "Camera not detected or not accessible"
-        fi
-    else
-        print_warning "libcamera-hello not available for testing"
-    fi
+install_python_deps() {
+  print_status "Installing Python dependencies..."
+  python3 -m venv "$PROJECT_DIR/venv"
+  source "$PROJECT_DIR/venv/bin/activate"
+  pip install --upgrade pip
+  pip install -r "$PROJECT_DIR/requirements.txt"
+  deactivate
+  print_success "Python dependencies installed"
 }
 
-# Display final instructions
-display_final_instructions() {
-    print_success "🎉 EZREC Backend deployment completed!"
-    echo
-    print_status "Next steps:"
-    echo "1. Start all services:"
-    echo "   sudo systemctl start booking_sync"
-    echo "   sudo systemctl start recorder"
-    echo "   sudo systemctl start video_worker"
-    echo "   sudo systemctl start system_status"
-    echo "   sudo systemctl start log_collector"
-    echo "2. Check service status:"
-    echo "   sudo systemctl status booking_sync"
-    echo "   sudo systemctl status recorder"
-    echo "   sudo systemctl status video_worker"
-    echo "   sudo systemctl status system_status"
-    echo "   sudo systemctl status log_collector"
-    echo "3. View logs:"
-    echo "   sudo journalctl -u booking_sync -f"
-    echo "   sudo journalctl -u recorder -f"
-    echo "   sudo journalctl -u video_worker -f"
-    echo "   sudo journalctl -u system_status -f"
-    echo "   sudo journalctl -u log_collector -f"
-    echo
-    print_status "Service management commands (replace <service> with one of: booking_sync, recorder, video_worker, system_status, log_collector):"
-    echo "• Start:   sudo systemctl start <service>"
-    echo "• Stop:    sudo systemctl stop <service>"
-    echo "• Restart: sudo systemctl restart <service>"
-    echo "• Status:  sudo systemctl status <service>"
-    echo "• Logs:    sudo journalctl -u <service> -f"
-    echo
-    print_warning "A reboot may be required for camera changes to take effect"
+fix_venv_ownership() {
+  sudo chown -R "$USER:$USER" "$PROJECT_DIR"
 }
 
-# After copying project files, fix venv ownership and install requirements
-fix_venv_and_install_requirements() {
-    print_status "Fixing venv ownership and installing Python dependencies in venv..."
-    sudo chown -R $USER:$USER $PROJECT_DIR
-    $PROJECT_DIR/venv/bin/pip install --upgrade pip
-    $PROJECT_DIR/venv/bin/pip install -r $PROJECT_DIR/requirements.txt
-    print_success "Python dependencies installed in venv and ownership fixed."
-}
-
-# Ensure all service scripts use absolute path for .env
 ensure_dotenv_absolute_path() {
-    print_status "Ensuring all service scripts use absolute path for .env..."
-    for script in $PROJECT_DIR/*.py; do
-        if grep -q "load_dotenv()" "$script"; then
-            sed -i "s/load_dotenv()/load_dotenv(\"\/opt\/ezrec-backend\/.env\")/g" "$script"
+  print_status "Ensuring absolute path to .env..."
+  for script in "$PROJECT_DIR"/*.py; do
+    sed -i 's/load_dotenv()/load_dotenv("\/opt\/ezrec-backend\/.env")/g' "$script"
+  done
+  print_success ".env paths updated"
+}
+
+setup_systemd_services() {
+  print_status "Copying systemd service files..."
+  sudo cp "$PROJECT_DIR/systemd"/*.service /etc/systemd/system/
+  sudo systemctl daemon-reload
+  print_success "Systemd service files copied and systemd reloaded"
+}
+
+enable_services() {
+  print_status "Enabling services..."
+  for svc in booking_sync recorder video_worker system_status log_collector health_api; do
+    sudo systemctl enable "$svc"
+  done
+  print_success "Services enabled"
+}
+
+# Start and verify services after enabling
+start_and_verify_services() {
+    print_status "Starting services..."
+    for svc in booking_sync recorder video_worker system_status log_collector; do
+        sudo systemctl restart "$svc"
+        sleep 2
+        if systemctl is-active --quiet "$svc"; then
+            print_success "$svc started successfully"
+        else
+            print_error "$svc failed to start"
+            sudo journalctl -u "$svc" --no-pager | tail -n 10
         fi
     done
-    print_success ".env absolute path enforced in all service scripts."
 }
 
-# Main deployment function
+print_versions() {
+  print_status "FFmpeg version: $(ffmpeg -version | head -n1)"
+  print_status "picamera2 version: $(python3 -c 'import picamera2; print(picamera2.__version__)' 2>/dev/null || echo 'Not installed')"
+}
+
+test_camera() {
+  print_status "Testing camera..."
+  if command -v libcamera-hello &>/dev/null; then
+    if timeout 5 libcamera-hello --list-cameras &>/dev/null; then
+      print_success "Camera detected"
+    else
+      print_warning "Camera not detected"
+    fi
+  else
+    print_warning "libcamera-hello not installed"
+  fi
+}
+
+display_final_instructions() {
+  echo -e "\n🎉 ${GREEN}EZREC Backend is ready!${NC}"
+  echo -e "${BLUE}[INFO]${NC} Start services:"
+  echo "  sudo systemctl start booking_sync recorder video_worker system_status log_collector"
+  echo -e "${BLUE}[INFO]${NC} View logs:"
+  echo "  sudo journalctl -u recorder -f"
+  echo -e "${YELLOW}[NOTE]${NC} A reboot may be required for camera changes."
+}
+
 main() {
-    check_root
-    
-    print_status "Starting EZREC Backend deployment on Raspberry Pi"
-    
-    cleanup_old_installation
-    update_system
-    install_system_packages
-    setup_project_directory
-    copy_project_files
-    setup_camera_permissions
-    install_python_deps
-    fix_venv_and_install_requirements
-    ensure_dotenv_absolute_path
-    create_service_files
-    install_systemd_services
-    test_camera
-    print_versions
-    print_warning "If you are using ezrec_backend.py, disable recorder.py in systemd to avoid parallel recorders."
-    display_final_instructions
+  check_root
+  cleanup_old_installation
+  update_system
+  install_system_packages
+  setup_project_directory
+  copy_project_files
+  setup_camera_permissions
+  install_python_deps
+  fix_venv_ownership
+  ensure_dotenv_absolute_path
+  setup_systemd_services
+  enable_services
+  start_and_verify_services
+  test_camera
+  print_versions
+  # Automated log rotation for journald
+  print_status "Configuring journald log rotation..."
+  sudo tee /etc/systemd/journald.conf.d/ezrec.conf > /dev/null <<EOF
+[Journal]
+SystemMaxUse=100M
+SystemKeepFree=20M
+MaxRetentionSec=3d
+EOF
+  sudo systemctl restart systemd-journald
+  print_success "Journald log rotation configured"
+  display_final_instructions
+  # ---
+  # Health Endpoint & Sentry/Slack Notifier (suggestion):
+  # Consider writing system_status.json from system_status.py and serving it via Flask/FastAPI for a health dashboard.
+  # For error notifications, integrate Sentry or Slack webhook in log_collector.py or other services.
 }
 
-# Run main function
-main "$@" 
+main "$@"
