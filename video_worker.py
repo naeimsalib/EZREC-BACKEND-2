@@ -95,6 +95,8 @@ def _process_video(raw_file: Path, user_id: str) -> Path:
     intro_url, logo_url = _fetch_intro_logo(user_id)
     intro_path = None
     logo_path = None
+    concat_list = None
+    concat_output = None
     try:
         # Download intro and logo if needed
         if intro_url:
@@ -114,8 +116,14 @@ def _process_video(raw_file: Path, user_id: str) -> Path:
             ffmpeg_concat = [
                 "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_list), "-c", "copy", str(concat_output)
             ]
-            subprocess.run(ffmpeg_concat, check=True)
-            concat_list.unlink()
+            try:
+                subprocess.run(ffmpeg_concat, check=True)
+            except subprocess.CalledProcessError as e:
+                _log(f"⚠️ FFmpeg concat failed: {e}. Trying with -an (no audio fallback)...")
+                ffmpeg_concat_fallback = [
+                    "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_list), "-c", "copy", "-an", str(concat_output)
+                ]
+                subprocess.run(ffmpeg_concat_fallback, check=True)
             input_for_logo = concat_output
         else:
             input_for_logo = raw_file
@@ -126,17 +134,34 @@ def _process_video(raw_file: Path, user_id: str) -> Path:
                 "-filter_complex", "overlay=W-w-10:H-h-10", "-c:v", "libx264", "-preset", "fast", "-crf", "23",
                 str(output_file)
             ]
-            subprocess.run(ffmpeg_logo, check=True)
+            try:
+                subprocess.run(ffmpeg_logo, check=True)
+            except subprocess.CalledProcessError as e:
+                _log(f"⚠️ FFmpeg logo overlay failed: {e}. Trying with -an (no audio fallback)...")
+                ffmpeg_logo_fallback = [
+                    "ffmpeg", "-y", "-i", str(input_for_logo), "-i", str(logo_path),
+                    "-filter_complex", "overlay=W-w-10:H-h-10", "-c:v", "libx264", "-preset", "fast", "-crf", "23", "-an",
+                    str(output_file)
+                ]
+                subprocess.run(ffmpeg_logo_fallback, check=True)
             if input_for_logo != raw_file and input_for_logo.exists():
                 input_for_logo.unlink()  # cleanup temp concat file
         else:
             # No logo, just re-encode (or copy if already processed)
             if input_for_logo != output_file:
-                subprocess.run([
-                    "ffmpeg", "-y", "-i", str(input_for_logo),
-                    "-c:v", "libx264", "-preset", "fast", "-crf", "23",
-                    str(output_file)
-                ], check=True)
+                try:
+                    subprocess.run([
+                        "ffmpeg", "-y", "-i", str(input_for_logo),
+                        "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                        str(output_file)
+                    ], check=True)
+                except subprocess.CalledProcessError as e:
+                    _log(f"⚠️ FFmpeg re-encode failed: {e}. Trying with -an (no audio fallback)...")
+                    subprocess.run([
+                        "ffmpeg", "-y", "-i", str(input_for_logo),
+                        "-c:v", "libx264", "-preset", "fast", "-crf", "23", "-an",
+                        str(output_file)
+                    ], check=True)
                 if input_for_logo != raw_file and input_for_logo.exists():
                     input_for_logo.unlink()
         _log(f"✅ FFmpeg processed: {output_file.name}")
@@ -146,6 +171,15 @@ def _process_video(raw_file: Path, user_id: str) -> Path:
     except Exception as e:
         _log(f"🔥 Video processing error: {e}")
         shutil.copy(raw_file, output_file)
+    finally:
+        # Clean up temp concat file if it exists
+        if concat_list and concat_list.exists():
+            concat_list.unlink()
+        if concat_output and concat_output.exists() and concat_output != output_file:
+            try:
+                concat_output.unlink()
+            except Exception:
+                pass
     return output_file
 
 
@@ -175,8 +209,12 @@ def main():
                     lock_file.touch()
                     metadata_path = video_file.with_suffix(".json")
                     if metadata_path.exists():
-                        with open(metadata_path) as f:
-                            meta = json.load(f)
+                        try:
+                            with open(metadata_path) as f:
+                                meta = json.load(f)
+                        except Exception as e:
+                            _log(f"⚠️ Failed to load metadata JSON for {video_file.name}: {e}")
+                            continue
                     else:
                         _log(f"⚠️ No metadata found for {video_file.name}")
                         continue
@@ -185,6 +223,10 @@ def main():
                     duration = _get_video_duration(video_file)
 
                     processed = _process_video(video_file, user_id)
+                    # Add check: skip upload if processed file doesn't exist
+                    if not processed.exists():
+                        _log(f"❌ Processed video not found, skipping upload: {processed}")
+                        continue
                     # After processing, update booking status to 'video_processed'
                     try:
                         booking_id = meta.get("booking_id")

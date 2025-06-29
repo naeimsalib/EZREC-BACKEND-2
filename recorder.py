@@ -53,7 +53,7 @@ LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exi
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID', '0')
 BOOKING_CACHE_FILE = Path(os.getenv('BOOKING_CACHE_FILE', '/opt/ezrec-backend/bookings_cache.json'))
-RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/raw_recordings/'))
+RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/recordings/'))
 LOG_FILE = Path(os.getenv('RECORDER_LOG', '/opt/ezrec-backend/logs/recorder.log'))
 CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
 SUPABASE_URL = os.getenv('SUPABASE_URL')
@@ -116,6 +116,19 @@ class RecordingSession:
 
     def stop(self):
         if self.active and self.picam2:
+            # Write .json metadata file BEFORE stopping camera
+            try:
+                metadata = {
+                    "booking_id": self.booking["id"],
+                    "user_id": USER_ID,
+                    "camera_id": CAMERA_ID,
+                    "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d'),
+                }
+                with open(self.filepath.with_suffix(".json"), "w") as f:
+                    json.dump(metadata, f)
+                logger.info(f"Metadata file written: {self.filepath.with_suffix('.json')}")
+            except Exception as e:
+                logger.error(f"Failed to write metadata file: {e}")
             try:
                 self.picam2.stop_recording()
                 self.picam2.close()
@@ -123,19 +136,6 @@ class RecordingSession:
                 # Write .completed marker
                 self.completed_marker.touch()
                 logger.info(f"Completed marker written: {self.completed_marker}")
-                # Write .json metadata file
-                try:
-                    metadata = {
-                        "booking_id": self.booking["id"],
-                        "user_id": USER_ID,
-                        "camera_id": CAMERA_ID,
-                        "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d'),
-                    }
-                    with open(self.filepath.with_suffix(".json"), "w") as f:
-                        json.dump(metadata, f)
-                    logger.info(f"Metadata file written: {self.filepath.with_suffix('.json')}")
-                except Exception as e:
-                    logger.error(f"Failed to write metadata file: {e}")
                 # Update booking status to 'completed' in Supabase
                 try:
                     supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()
