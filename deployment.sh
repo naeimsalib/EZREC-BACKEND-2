@@ -121,7 +121,7 @@ ensure_dotenv_absolute_path() {
 
 setup_systemd_services() {
   print_status "Copying systemd service files..."
-  sudo cp "$PROJECT_DIR/systemd"/*.service /etc/systemd/system/
+  sudo cp "$PWD/systemd"/*.service /etc/systemd/system/
   sudo systemctl daemon-reload
   print_success "Systemd service files copied and systemd reloaded"
 }
