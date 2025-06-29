@@ -123,6 +123,19 @@ class RecordingSession:
                 # Write .completed marker
                 self.completed_marker.touch()
                 logger.info(f"Completed marker written: {self.completed_marker}")
+                # Write .json metadata file
+                try:
+                    metadata = {
+                        "booking_id": self.booking["id"],
+                        "user_id": USER_ID,
+                        "camera_id": CAMERA_ID,
+                        "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d'),
+                    }
+                    with open(self.filepath.with_suffix(".json"), "w") as f:
+                        json.dump(metadata, f)
+                    logger.info(f"Metadata file written: {self.filepath.with_suffix('.json')}")
+                except Exception as e:
+                    logger.error(f"Failed to write metadata file: {e}")
                 # Update booking status to 'completed' in Supabase
                 try:
                     supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()

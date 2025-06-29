@@ -10,6 +10,7 @@ from dotenv import load_dotenv
 import shutil
 import uuid
 import json
+import requests
 
 # Load .env for manual runs, but do not override systemd env vars
 load_dotenv("/opt/ezrec-backend/.env", override=False)
@@ -56,17 +57,94 @@ def _upload_video(user_id: str, file_path: Path):
     return supabase.storage.from_(BUCKET_NAME).get_public_url(remote_path)
 
 
+def _download_if_needed(url: str, dest: Path) -> Path:
+    """Download a file from a URL if it doesn't exist or is outdated."""
+    if not url:
+        return None
+    try:
+        if dest.exists():
+            return dest
+        r = requests.get(url, stream=True)
+        if r.status_code == 200:
+            with open(dest, 'wb') as f:
+                for chunk in r.iter_content(1024):
+                    f.write(chunk)
+            _log(f"Downloaded: {dest}")
+            return dest
+        else:
+            _log(f"Failed to download {url}: {r.status_code}")
+            return None
+    except Exception as e:
+        _log(f"Error downloading {url}: {e}")
+        return None
+
+
+def _fetch_intro_logo(user_id: str):
+    """Fetch intro and logo URLs from Supabase user_settings."""
+    try:
+        res = supabase.table("user_settings").select("intro_video_url,logo_url").eq("user_id", user_id).single().execute()
+        if res.data:
+            return res.data.get("intro_video_url"), res.data.get("logo_url")
+    except Exception as e:
+        _log(f"Failed to fetch intro/logo: {e}")
+    return None, None
+
+
 def _process_video(raw_file: Path, user_id: str) -> Path:
     output_file = PROCESSED_DIR / raw_file.name
+    intro_url, logo_url = _fetch_intro_logo(user_id)
+    intro_path = None
+    logo_path = None
     try:
-        subprocess.run([
-            "ffmpeg", "-y", "-i", str(raw_file),
-            "-c:v", "libx264", "-preset", "fast", "-crf", "23",
-            str(output_file)
-        ], check=True)
+        # Download intro and logo if needed
+        if intro_url:
+            intro_path = Path(f"/opt/ezrec-backend/media_cache/intro_{user_id}.mp4")
+            _download_if_needed(intro_url, intro_path)
+        if logo_url:
+            logo_path = Path(f"/opt/ezrec-backend/media_cache/logo_{user_id}.png")
+            _download_if_needed(logo_url, logo_path)
+        # Build FFmpeg command
+        if intro_path and intro_path.exists():
+            # Concatenate intro + main
+            concat_list = Path(f"/tmp/concat_{uuid.uuid4().hex}.txt")
+            with open(concat_list, "w") as f:
+                f.write(f"file '{intro_path}'\n")
+                f.write(f"file '{raw_file}'\n")
+            concat_output = output_file.with_suffix(".concat.mp4")
+            ffmpeg_concat = [
+                "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_list), "-c", "copy", str(concat_output)
+            ]
+            subprocess.run(ffmpeg_concat, check=True)
+            concat_list.unlink()
+            input_for_logo = concat_output
+        else:
+            input_for_logo = raw_file
+        # Overlay logo if present
+        if logo_path and logo_path.exists():
+            ffmpeg_logo = [
+                "ffmpeg", "-y", "-i", str(input_for_logo), "-i", str(logo_path),
+                "-filter_complex", "overlay=W-w-10:H-h-10", "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                str(output_file)
+            ]
+            subprocess.run(ffmpeg_logo, check=True)
+            if input_for_logo != raw_file and input_for_logo.exists():
+                input_for_logo.unlink()  # cleanup temp concat file
+        else:
+            # No logo, just re-encode (or copy if already processed)
+            if input_for_logo != output_file:
+                subprocess.run([
+                    "ffmpeg", "-y", "-i", str(input_for_logo),
+                    "-c:v", "libx264", "-preset", "fast", "-crf", "23",
+                    str(output_file)
+                ], check=True)
+                if input_for_logo != raw_file and input_for_logo.exists():
+                    input_for_logo.unlink()
         _log(f"✅ FFmpeg processed: {output_file.name}")
-    except subprocess.CalledProcessError:
-        _log(f"⚠️ FFmpeg failed, copying raw file")
+    except subprocess.CalledProcessError as e:
+        _log(f"⚠️ FFmpeg failed: {e}")
+        shutil.copy(raw_file, output_file)
+    except Exception as e:
+        _log(f"🔥 Video processing error: {e}")
         shutil.copy(raw_file, output_file)
     return output_file
 
@@ -107,7 +185,23 @@ def main():
                     duration = _get_video_duration(video_file)
 
                     processed = _process_video(video_file, user_id)
+                    # After processing, update booking status to 'video_processed'
+                    try:
+                        booking_id = meta.get("booking_id")
+                        if booking_id:
+                            supabase.table("bookings").update({"status": "video_processed"}).eq("id", booking_id).execute()
+                            _log(f"Booking {booking_id} status set to 'video_processed'")
+                    except Exception as e:
+                        _log(f"Failed to update booking status to video_processed: {e}")
                     public_url = _upload_video(user_id, processed)
+                    # After upload, update booking status to 'video_uploaded'
+                    try:
+                        booking_id = meta.get("booking_id")
+                        if booking_id:
+                            supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
+                            _log(f"Booking {booking_id} status set to 'video_uploaded'")
+                    except Exception as e:
+                        _log(f"Failed to update booking status to video_uploaded: {e}")
 
                     supabase.table("videos").insert({
                         "user_id": user_id,
