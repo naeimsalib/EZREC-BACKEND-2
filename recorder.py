@@ -76,10 +76,12 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 class RecordingSession:
     def __init__(self, booking):
         self.booking = booking
+        self.date_folder = RAW_DIR / datetime.now().strftime("%Y-%m-%d")
+        self.date_folder.mkdir(parents=True, exist_ok=True)
         self.filename = f"raw_{booking['id']}_{datetime.now().strftime('%Y%m%d_%H%M%S')}"  # no .mp4 yet
-        self.filepath = RAW_DIR / (self.filename + ".mp4")
-        self.lockfile = RAW_DIR / (self.filename + ".lock")
-        self.completed_marker = RAW_DIR / (self.filename + ".completed")
+        self.filepath = self.date_folder / (self.filename + ".mp4")
+        self.lockfile = self.filepath.with_suffix(".lock")
+        self.completed_marker = self.filepath.with_suffix(".completed")
         self.picam2 = None
         self.encoder = None
         self.output = None
