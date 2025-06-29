@@ -73,16 +73,16 @@ setup_project_directory() {
   print_status "Setting up project directory..."
   sudo mkdir -p "$PROJECT_DIR"
   sudo chown -R "$USER:$USER" "$PROJECT_DIR"
-  mkdir -p "$PROJECT_DIR"/{temp,logs,raw_recordings,processed_recordings,media_cache}
+  mkdir -p "$PROJECT_DIR"/{temp,logs,raw_recordings,processed_recordings,media_cache,backend}
   print_success "Project directory ready"
 }
 
 copy_project_files() {
   print_status "Copying project files..."
-  cp ./*.py "$PROJECT_DIR"/ 2>/dev/null || true
+  cp ./*.py "$PROJECT_DIR/backend/" 2>/dev/null || true
   cp requirements.txt "$PROJECT_DIR"/ 2>/dev/null || true
   cp env.example "$PROJECT_DIR"/ 2>/dev/null || true
-  chmod +x "$PROJECT_DIR"/*.py
+  chmod +x "$PROJECT_DIR/backend"/*.py
   print_success "Project files copied"
 }
 
