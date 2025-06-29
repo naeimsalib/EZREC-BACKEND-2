@@ -113,7 +113,7 @@ fix_venv_ownership() {
 
 ensure_dotenv_absolute_path() {
   print_status "Ensuring absolute path to .env..."
-  for script in "$PROJECT_DIR"/*.py; do
+  for script in "$PROJECT_DIR"/backend/*.py; do
     sed -i 's/load_dotenv()/load_dotenv("\/opt\/ezrec-backend\/.env")/g' "$script"
   done
   print_success ".env paths updated"
