@@ -76,6 +76,13 @@ def main():
             else:
                 update_data['id'] = str(uuid.uuid4())
                 supabase.table('system_status').insert(update_data).execute()
+            # Write health report JSON for web dashboard
+            try:
+                with open('/opt/ezrec-backend/health_report.json', 'w') as f:
+                    import json
+                    json.dump(update_data, f, indent=2)
+            except Exception as e:
+                logger.error(f"Failed to write health_report.json: {e}")
         except Exception as e:
             logger.error(f"Failed to update system status: {e}")
         time.sleep(UPDATE_INTERVAL)
