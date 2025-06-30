@@ -111,14 +111,6 @@ fix_venv_ownership() {
   sudo chown -R "$USER:$USER" "$PROJECT_DIR"
 }
 
-ensure_dotenv_absolute_path() {
-  print_status "Ensuring absolute path to .env..."
-  for script in "$PROJECT_DIR"/backend/*.py; do
-    sed -i 's/load_dotenv()/load_dotenv("\/opt\/ezrec-backend\/.env")/g' "$script"
-  done
-  print_success ".env paths updated"
-}
-
 setup_systemd_services() {
   print_status "Copying systemd service files..."
   sudo cp "$PWD/systemd"/*.service /etc/systemd/system/
@@ -186,7 +178,6 @@ main() {
   setup_camera_permissions
   install_python_deps
   fix_venv_ownership
-  ensure_dotenv_absolute_path
   setup_systemd_services
   enable_services
   start_and_verify_services
