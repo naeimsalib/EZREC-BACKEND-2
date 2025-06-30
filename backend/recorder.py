@@ -26,6 +26,17 @@ try:
     from picamera2 import Picamera2
     from picamera2.encoders import H264Encoder
     from picamera2.outputs import FileOutput
+    def safe_init_camera(retries=3, delay=3):
+        for i in range(retries):
+            try:
+                return Picamera2()
+            except RuntimeError as e:
+                if "Camera __init__ sequence did not complete" in str(e):
+                    print(f"⚠️ Camera busy (try {i+1}/{retries})... retrying in {delay}s")
+                    time.sleep(delay)
+                else:
+                    raise
+        raise RuntimeError("❌ Camera failed to initialize after multiple attempts")
 except ImportError:
     Picamera2 = None
 
@@ -94,7 +105,7 @@ class RecordingSession:
         try:
             # Create lock file
             self.lockfile.touch()
-            self.picam2 = Picamera2()
+            self.picam2 = safe_init_camera()
             # Check for camera detection (imx477, etc.)
             try:
                 # For picamera2 >= 0.3.0, use global_camera_info
