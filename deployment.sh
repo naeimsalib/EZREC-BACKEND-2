@@ -43,17 +43,19 @@ check_root() {
 
 backup_env_file() {
   if [ -f "$PROJECT_DIR/.env" ]; then
-    cp "$PROJECT_DIR/.env" "$PROJECT_DIR/.env.bak"
-    print_status "Existing .env file backed up"
+    cp "$PROJECT_DIR/.env" "./env.bak"
+    print_status "Existing .env file backed up to local directory"
   fi
 }
 
+
 restore_env_file() {
-  if [ -f "$PROJECT_DIR/.env.bak" ]; then
-    cp "$PROJECT_DIR/.env.bak" "$PROJECT_DIR/.env"
+  if [ -f "./env.bak" ]; then
+    cp "./env.bak" "$PROJECT_DIR/.env"
     print_status ".env file restored after deployment"
   fi
 }
+
 
 cleanup_old_installation() {
   print_status "Cleaning up old installations..."
