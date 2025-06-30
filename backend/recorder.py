@@ -177,7 +177,7 @@ def get_active_booking(bookings):
             end_time = datetime.strptime(booking['end_time'], "%H:%M").time()
         except Exception:
             continue
-        if booking['date'] == today and start_time <= now <= end_time:
+        if booking.get('user_id') == USER_ID and booking['date'] == today and start_time <= now <= end_time:
             return booking
     return None
 

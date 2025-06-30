@@ -51,7 +51,7 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 def fetch_bookings():
     try:
-        response = supabase.table('bookings').select('*').eq('user_id', USER_ID).eq('camera_id', CAMERA_ID).eq('status', 'confirmed').execute()
+        response = supabase.table('bookings').select('*').eq('user_id', USER_ID).eq('status', 'confirmed').execute()
         if response.data is None:
             logger.error(f"Supabase response has no data: {response}")
         return response.data if response.data else []
