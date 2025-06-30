@@ -66,7 +66,11 @@ cleanup_old_installation() {
     sudo rm -f /etc/systemd/system/$svc.service
   done
   sudo pkill -f "ezrec|picamera|camera" 2>/dev/null || true
-  [ -d "$PROJECT_DIR" ] && sudo mv "$PROJECT_DIR" "${PROJECT_DIR}.backup" || true
+  if [ -d "$PROJECT_DIR" ]; then
+    sudo rm -rf "${PROJECT_DIR}.backup"
+    sudo rsync -a "$PROJECT_DIR/" "${PROJECT_DIR}.backup/"
+    sudo rm -rf "$PROJECT_DIR"
+  fi
   sudo systemctl daemon-reload
   print_success "Cleanup complete"
 }
