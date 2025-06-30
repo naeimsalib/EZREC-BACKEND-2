@@ -136,7 +136,16 @@ fix_venv_ownership() {
 setup_systemd_services() {
   print_status "Copying systemd service files..."
   sudo cp "$PWD/systemd"/*.service /etc/systemd/system/
+  # Patch recorder.service for Pi 5/Bookworm camera compatibility
+  print_status "Patching recorder.service for Pi 5/Bookworm camera compatibility..."
+  sudo sed -i '/^DevicePolicy=/d' /etc/systemd/system/recorder.service
+  sudo sed -i '/^DeviceAllow=/d' /etc/systemd/system/recorder.service
+  sudo sed -i '/^CapabilityBoundingSet=/d' /etc/systemd/system/recorder.service
+  if ! grep -q '^PrivateDevices=no' /etc/systemd/system/recorder.service; then
+    sudo sed -i '/^RestartSec=/a PrivateDevices=no' /etc/systemd/system/recorder.service
+  fi
   sudo systemctl daemon-reload
+  print_success "recorder.service patched for camera access"
   print_success "Systemd service files copied and systemd reloaded"
 }
 
