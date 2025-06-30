@@ -95,7 +95,25 @@ class RecordingSession:
             # Create lock file
             self.lockfile.touch()
             self.picam2 = Picamera2()
-            config = self.picam2.create_video_configuration(main={"size": (1920, 1080)}, controls={"FrameRate": 30})
+            # Check for camera detection (imx477, etc.)
+            try:
+                # For picamera2 >= 0.3.0, use global_camera_info
+                camera_info = getattr(self.picam2, 'global_camera_info', None)
+                if camera_info is not None and not camera_info:
+                    logger.error("No cameras detected by picamera2! Aborting recording.")
+                    if self.lockfile.exists():
+                        self.lockfile.unlink()
+                    return False
+            except Exception:
+                pass  # fallback for older versions
+            # Try to create video configuration
+            try:
+                config = self.picam2.create_video_configuration(main={"size": (1920, 1080)}, controls={"FrameRate": 30})
+            except Exception as e:
+                logger.error(f"Failed to create video configuration: {e}")
+                if self.lockfile.exists():
+                    self.lockfile.unlink()
+                return False
             self.picam2.configure(config)
             self.encoder = H264Encoder(bitrate=10000000)
             self.output = FileOutput(str(self.filepath))
