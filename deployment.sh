@@ -111,11 +111,12 @@ setup_camera_permissions() {
   print_status "Setting camera permissions..."
   sudo usermod -a -G video "$USER"
   sudo chmod 666 /dev/video* 2>/dev/null || true
+  sudo chmod 666 /dev/v4l-subdev* 2>/dev/null || true
   sudo sed -i '/^camera_auto_detect=/d' /boot/config.txt
   sudo sed -i '/^dtoverlay=vc4-kms-v3d/d' /boot/config.txt
   echo "camera_auto_detect=1" | sudo tee -a /boot/config.txt
   echo "dtoverlay=vc4-kms-v3d" | sudo tee -a /boot/config.txt
-  print_success "Camera permissions set"
+  print_success "Camera permissions set (including /dev/v4l-subdev*). If using systemd, ensure DeviceAllow=/dev/v4l-subdev* rwm is set."
 }
 
 install_python_deps() {

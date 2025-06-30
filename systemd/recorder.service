@@ -38,6 +38,7 @@ DeviceAllow=/dev/media8 rwm
 DeviceAllow=/dev/media9 rwm
 DeviceAllow=/dev/media* rwm
 DeviceAllow=/dev/video* rwm
+DeviceAllow=/dev/v4l-subdev* rwm
 CapabilityBoundingSet=CAP_SYS_RAWIO CAP_NET_BIND_SERVICE
 
 [Install]
