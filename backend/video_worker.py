@@ -235,7 +235,13 @@ def main():
                             _log(f"Booking {booking_id} status set to 'video_processed'")
                     except Exception as e:
                         _log(f"Failed to update booking status to video_processed: {e}")
-                    public_url = _upload_video(user_id, processed)
+                    # Robust upload with logging
+                    try:
+                        public_url = _upload_video(user_id, processed)
+                        _log(f"✅ Uploaded: {public_url}")
+                    except Exception as e:
+                        _log(f"🔥 Upload failed: {e}")
+                        continue
                     # After upload, update booking status to 'video_uploaded'
                     try:
                         booking_id = meta.get("booking_id")
@@ -244,17 +250,26 @@ def main():
                             _log(f"Booking {booking_id} status set to 'video_uploaded'")
                     except Exception as e:
                         _log(f"Failed to update booking status to video_uploaded: {e}")
-
-                    supabase.table("videos").insert({
-                        "user_id": user_id,
-                        "video_url": public_url,
-                        "date": date_folder.name,
-                        "recording_id": video_file.stem,
-                        "duration_seconds": duration
-                    }).execute()
-
+                    # Insert video metadata
+                    try:
+                        supabase.table("videos").insert({
+                            "user_id": user_id,
+                            "video_url": public_url,
+                            "date": date_folder.name,
+                            "recording_id": video_file.stem,
+                            "duration_seconds": duration
+                        }).execute()
+                    except Exception as e:
+                        _log(f"Failed to insert video metadata: {e}")
+                    # Delete booking after upload
+                    booking_id = meta.get("booking_id")
+                    if booking_id:
+                        try:
+                            supabase.table("bookings").delete().eq("id", booking_id).execute()
+                            _log(f"Deleted booking {booking_id} after upload")
+                        except Exception as e:
+                            _log(f"Failed to delete booking {booking_id}: {e}")
                     done_file.touch()
-                    _log(f"✅ Uploaded: {public_url}")
                 except Exception as e:
                     _log(f"🔥 Error: {e}")
                 finally:
