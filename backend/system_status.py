@@ -68,6 +68,8 @@ def main():
                 'disk_total_gb': disk.total / (1024**3),
                 'disk_free_gb': disk.free / (1024**3),
                 'updated_at': now.isoformat(),
+                'status': 'running',
+                'camera_status': 'online',
             }
             # Upsert system_status
             existing = supabase.table('system_status').select('id').eq('camera_id', CAMERA_ID).execute()
