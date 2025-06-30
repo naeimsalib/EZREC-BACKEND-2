@@ -84,9 +84,9 @@ update_system() {
 
 install_system_packages() {
   print_status "Installing required packages..."
-  sudo apt-get install -y python3 python3-pip python3-venv git ffmpeg v4l-utils \
-    python3-dev libffi-dev libssl-dev build-essential \
-    python3-picamera2 python3-libcamera libcamera-apps libcamera-dev
+  sudo apt-get install -y python3 python3-picamera2 python3-libcamera libcamera-apps libcamera-dev \
+    python3-pip python3-venv git ffmpeg v4l-utils \
+    python3-dev libffi-dev libssl-dev build-essential
   print_success "System packages installed"
 }
 
@@ -120,7 +120,7 @@ setup_camera_permissions() {
 
 install_python_deps() {
   print_status "Installing Python dependencies..."
-  python3 -m venv "$PROJECT_DIR/venv"
+  python3 -m venv --system-site-packages "$PROJECT_DIR/venv"
   source "$PROJECT_DIR/venv/bin/activate"
   pip install --upgrade pip
   pip install -r "$PROJECT_DIR/requirements.txt"
