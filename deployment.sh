@@ -225,3 +225,4 @@ EOF
 }
 
 main "$@"
+exit 0
