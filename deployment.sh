@@ -135,7 +135,9 @@ start_and_verify_services() {
             print_success "$svc started successfully"
         else
             print_error "$svc failed to start"
-            sudo journalctl -u "$svc" --no-pager | tail -n 10
+            echo "[INFO] Last 10 log lines for $svc:"
+            sudo timeout 5s journalctl -u "$svc" --no-pager | tail -n 10
+            echo "[INFO] Continuing with deployment..."
         fi
     done
 }
