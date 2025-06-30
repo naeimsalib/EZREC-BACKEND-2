@@ -41,8 +41,23 @@ check_root() {
   fi
 }
 
+backup_env_file() {
+  if [ -f "$PROJECT_DIR/.env" ]; then
+    cp "$PROJECT_DIR/.env" "$PROJECT_DIR/.env.bak"
+    print_status "Existing .env file backed up"
+  fi
+}
+
+restore_env_file() {
+  if [ -f "$PROJECT_DIR/.env.bak" ]; then
+    cp "$PROJECT_DIR/.env.bak" "$PROJECT_DIR/.env"
+    print_status ".env file restored after deployment"
+  fi
+}
+
 cleanup_old_installation() {
   print_status "Cleaning up old installations..."
+  backup_env_file
   for svc in booking_sync recorder video_worker system_status log_collector; do
     sudo systemctl stop $svc 2>/dev/null || true
     sudo systemctl disable $svc 2>/dev/null || true
@@ -74,6 +89,7 @@ setup_project_directory() {
   sudo mkdir -p "$PROJECT_DIR"
   sudo chown -R "$USER:$USER" "$PROJECT_DIR"
   mkdir -p "$PROJECT_DIR"/{temp,logs,raw_recordings,processed_recordings,media_cache,backend}
+  restore_env_file
   print_success "Project directory ready"
 }
 
