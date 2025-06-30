@@ -81,7 +81,6 @@ copy_project_files() {
   print_status "Copying project files..."
   rsync -av --delete backend/ "$PROJECT_DIR/backend/"
   cp requirements.txt "$PROJECT_DIR"/ 2>/dev/null || true
-  cp env.example "$PROJECT_DIR"/ 2>/dev/null || true
   chmod +x "$PROJECT_DIR/backend"/*.py
   print_success "Project files copied"
 }
