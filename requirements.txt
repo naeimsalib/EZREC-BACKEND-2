@@ -13,3 +13,4 @@ ffmpeg-python
 Flask
 Pillow
 numpy
+requests

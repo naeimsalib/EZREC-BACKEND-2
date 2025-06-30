@@ -204,6 +204,7 @@ main() {
   print_versions
   # Automated log rotation for journald
   print_status "Configuring journald log rotation..."
+  sudo mkdir -p /etc/systemd/journald.conf.d
   sudo tee /etc/systemd/journald.conf.d/ezrec.conf > /dev/null <<EOF
 [Journal]
 SystemMaxUse=100M
