@@ -6,6 +6,9 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=michomanoly14892
+Group=video
+SupplementaryGroups=video
+PermissionsStartOnly=true
 WorkingDirectory=/opt/ezrec-backend
 EnvironmentFile=/opt/ezrec-backend/.env
 ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
@@ -16,12 +19,26 @@ StandardError=journal
 SyslogIdentifier=recorder
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=strict
+ProtectSystem=full
+ProtectHome=no
 ReadWritePaths=/opt/ezrec-backend
-Group=video
 Environment="PATH=/opt/ezrec-backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 Environment="PYTHONPATH=/opt/ezrec-backend/venv/lib/python3.11/site-packages"
-DeviceAllow=/dev/video0
+DeviceAllow=/dev/video0 rwm
+DeviceAllow=/dev/video1 rwm
+DeviceAllow=/dev/media0 rwm
+DeviceAllow=/dev/media1 rwm
+DeviceAllow=/dev/media2 rwm
+DeviceAllow=/dev/media3 rwm
+DeviceAllow=/dev/media4 rwm
+DeviceAllow=/dev/media5 rwm
+DeviceAllow=/dev/media6 rwm
+DeviceAllow=/dev/media7 rwm
+DeviceAllow=/dev/media8 rwm
+DeviceAllow=/dev/media9 rwm
+DeviceAllow=/dev/media* rwm
+DeviceAllow=/dev/video* rwm
+CapabilityBoundingSet=CAP_SYS_RAWIO CAP_NET_BIND_SERVICE
 
 [Install]
 WantedBy=multi-user.target 
