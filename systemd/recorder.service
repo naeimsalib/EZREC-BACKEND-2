@@ -1,6 +1,6 @@
 [Unit]
 Description=EZREC Recorder
-After=network-online.target
+After=network-online.target dev-video0.device
 Wants=network-online.target
 
 [Service]
@@ -18,6 +18,10 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ReadWritePaths=/opt/ezrec-backend
+Group=video
+Environment="PATH=/opt/ezrec-backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PYTHONPATH=/opt/ezrec-backend/venv/lib/python3.11/site-packages"
+DeviceAllow=/dev/video0
 
 [Install]
 WantedBy=multi-user.target 
