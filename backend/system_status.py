@@ -72,12 +72,8 @@ def main():
                 'camera_status': 'online',
             }
             # Upsert system_status
-            existing = supabase.table('system_status').select('id').eq('camera_id', CAMERA_ID).execute()
-            if existing.data:
-                supabase.table('system_status').update(update_data).eq('camera_id', CAMERA_ID).execute()
-            else:
-                update_data['id'] = str(uuid.uuid4())
-                supabase.table('system_status').insert(update_data).execute()
+            update_data['id'] = str(uuid.uuid4())  # Always set an id
+            supabase.table('system_status').upsert(update_data, on_conflict=['camera_id']).execute()
             # Write health report JSON for web dashboard
             try:
                 with open('/opt/ezrec-backend/health_report.json', 'w') as f:
