@@ -62,12 +62,104 @@ sudo chown -R "$USER:$USER" "$VENV_DIR"
 #------------------------------#
 echo "📝 Writing FastAPI app..."
 cat > "$API_DIR/api_server.py" <<EOF
-# ... [Omitted for brevity — same as previous message]
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List, Optional
+import os
+import json
+from datetime import datetime
+
+app = FastAPI()
+
+BOOKINGS_FILE = "/opt/ezrec-backend/api/local_data/bookings.json"
+SETTINGS_FILE = "/opt/ezrec-backend/api/local_data/settings.json"
+
+class Booking(BaseModel):
+    id: str
+    user_id: str
+    camera_id: str
+    start_time: str
+    end_time: str
+    title: Optional[str] = None
+
+class SystemSettings(BaseModel):
+    logo_paths: Optional[List[str]] = None
+    intro_video_path: Optional[str] = None
+
+@app.get("/status")
+def get_status():
+    return {
+        "status": "ok",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/bookings")
+def get_bookings():
+    if not os.path.exists(BOOKINGS_FILE):
+        return []
+    with open(BOOKINGS_FILE, "r") as f:
+        return json.load(f)
+
+@app.post("/bookings")
+def post_bookings(bookings: List[Booking]):
+    with open(BOOKINGS_FILE, "w") as f:
+        json.dump([b.dict() for b in bookings], f)
+    return {"message": "Bookings saved", "count": len(bookings)}
+
+@app.delete("/bookings")
+def delete_bookings():
+    if os.path.exists(BOOKINGS_FILE):
+        os.remove(BOOKINGS_FILE)
+    return {"message": "Bookings deleted"}
+
+@app.get("/recordings")
+def get_recordings():
+    recordings_dir = "/opt/ezrec-backend/recordings"
+    results = []
+    if not os.path.exists(recordings_dir):
+        return results
+    for date_dir in os.listdir(recordings_dir):
+        full_dir = os.path.join(recordings_dir, date_dir)
+        if os.path.isdir(full_dir):
+            for file in os.listdir(full_dir):
+                if file.endswith(".mp4"):
+                    results.append({
+                        "date": date_dir,
+                        "filename": file
+                    })
+    return results
+
+@app.post("/system")
+def post_system_settings(settings: SystemSettings):
+    with open(SETTINGS_FILE, "w") as f:
+        json.dump(settings.dict(), f)
+    return {"message": "System settings saved"}
 EOF
 
 echo "📡 Writing system monitor..."
 cat > "$API_DIR/monitor.py" <<EOF
-# ... [Omitted for brevity — same as previous message]
+import time
+import psutil
+import json
+import os
+from datetime import datetime
+
+MONITOR_OUTPUT = "/opt/ezrec-backend/api/local_data/monitor.json"
+
+def get_metrics():
+    return {
+        "timestamp": datetime.utcnow().isoformat(),
+        "cpu_percent": psutil.cpu_percent(interval=1),
+        "memory": psutil.virtual_memory()._asdict(),
+        "disk": psutil.disk_usage("/")._asdict(),
+        "uptime_sec": int(time.time() - psutil.boot_time())
+    }
+
+while True:
+    metrics = get_metrics()
+    with open(MONITOR_OUTPUT, "w") as f:
+        json.dump(metrics, f)
+    time.sleep(10)
 EOF
 
 #------------------------------#
