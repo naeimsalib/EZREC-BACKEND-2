@@ -14,3 +14,4 @@ Flask
 Pillow
 numpy
 requests
+boto3

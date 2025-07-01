@@ -12,6 +12,7 @@ import uuid
 import json
 import requests
 import boto3
+from boto3.s3.transfer import TransferConfig
 
 # Load .env for manual runs, but do not override systemd env vars
 load_dotenv("/opt/ezrec-backend/.env", override=False)
@@ -58,24 +59,22 @@ def _get_video_duration(path: Path) -> float:
         return 0.0
 
 
-def _upload_video(user_id: str, file_path: Path) -> str:
-    """
-    Uploads the processed video to S3 and returns the public URL.
-    """
-    object_key = f"{user_id}/{file_path.name}"
+def upload_large_file_to_s3(file_path, bucket_name, s3_key):
+    config = TransferConfig(
+        multipart_threshold=50 * 1024 * 1024,  # 50MB
+        multipart_chunksize=10 * 1024 * 1024,  # 10MB per chunk
+        use_threads=True
+    )
     try:
-        s3.upload_file(
-            Filename=str(file_path),
-            Bucket=S3_BUCKET,
-            Key=object_key,
-            ExtraArgs={"ContentType": "video/mp4", "ACL": "public-read"}
-        )
-        public_url = f"https://{S3_BUCKET}.s3.{os.getenv('AWS_REGION')}.amazonaws.com/{object_key}"
-        _log(f"✅ Uploaded to S3: {public_url}")
+        print(f"Uploading {file_path} to s3://{bucket_name}/{s3_key}...")
+        s3 = boto3.client('s3')
+        s3.upload_file(str(file_path), bucket_name, s3_key, Config=config, ExtraArgs={"ContentType": "video/mp4", "ACL": "public-read"})
+        print("✅ S3 Upload completed.")
+        public_url = f"https://{bucket_name}.s3.{os.getenv('AWS_REGION')}.amazonaws.com/{s3_key}"
         return public_url
     except Exception as e:
-        _log(f"🔥 S3 upload failed: {e}")
-        raise
+        print(f"❌ Upload failed: {e}")
+        return None
 
 
 def _download_if_needed(url: str, dest: Path) -> Path:
@@ -258,8 +257,19 @@ def main():
                         _log(f"Failed to update booking status to video_processed: {e}")
                     # Robust upload with logging
                     try:
-                        public_url = _upload_video(user_id, processed)
-                        _log(f"✅ Uploaded: {public_url}")
+                        s3_key = f"{user_id}/{processed.name}"
+                        public_url = upload_large_file_to_s3(processed, S3_BUCKET, s3_key)
+                        if public_url:
+                            _log(f"✅ Uploaded: {public_url}")
+                            # Remove local file if needed
+                            try:
+                                os.remove(processed)
+                                _log(f"Removed local file: {processed}")
+                            except Exception as e:
+                                _log(f"Failed to remove local file: {e}")
+                        else:
+                            _log(f"🔥 Upload failed for {processed}")
+                            continue
                     except Exception as e:
                         _log(f"🔥 Upload failed: {e}")
                         continue
