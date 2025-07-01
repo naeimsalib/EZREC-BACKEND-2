@@ -11,6 +11,7 @@ import shutil
 import uuid
 import json
 import requests
+import boto3
 
 # Load .env for manual runs, but do not override systemd env vars
 load_dotenv("/opt/ezrec-backend/.env", override=False)
@@ -20,6 +21,15 @@ SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 USER_ID = os.getenv("USER_ID")
 CAMERA_ID = os.getenv("CAMERA_ID")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# S3 configuration
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name=os.getenv("AWS_REGION")
+)
+S3_BUCKET = os.getenv("AWS_S3_BUCKET")
 
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
 PROCESSED_DIR = Path("/opt/ezrec-backend/processed")
@@ -48,13 +58,24 @@ def _get_video_duration(path: Path) -> float:
         return 0.0
 
 
-def _upload_video(user_id: str, file_path: Path):
-    remote_path = f"{user_id}/{file_path.name}"
-    with open(file_path, 'rb') as f:
-        res = supabase.storage.from_(BUCKET_NAME).upload(remote_path, f, file_options={"content-type": "video/mp4"})
-    if res.get("error"):
-        raise RuntimeError(f"Upload failed: {res['error']}")
-    return supabase.storage.from_(BUCKET_NAME).get_public_url(remote_path)
+def _upload_video(user_id: str, file_path: Path) -> str:
+    """
+    Uploads the processed video to S3 and returns the public URL.
+    """
+    object_key = f"{user_id}/{file_path.name}"
+    try:
+        s3.upload_file(
+            Filename=str(file_path),
+            Bucket=S3_BUCKET,
+            Key=object_key,
+            ExtraArgs={"ContentType": "video/mp4", "ACL": "public-read"}
+        )
+        public_url = f"https://{S3_BUCKET}.s3.{os.getenv('AWS_REGION')}.amazonaws.com/{object_key}"
+        _log(f"✅ Uploaded to S3: {public_url}")
+        return public_url
+    except Exception as e:
+        _log(f"🔥 S3 upload failed: {e}")
+        raise
 
 
 def _download_if_needed(url: str, dest: Path) -> Path:
