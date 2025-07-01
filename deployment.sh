@@ -225,6 +225,18 @@ else
 fi
 
 #------------------------------#
+# 7.5 INCREASE UDP BUFFER FOR CLOUDFLARED (RECOMMENDED FOR VIDEO/LIVE)
+#------------------------------#
+echo "🛠️  Increasing UDP buffer size for cloudflared (for video upload/live)..."
+if ! grep -q "net.core.rmem_max = 7168000" /etc/sysctl.conf; then
+  echo "net.core.rmem_max = 7168000" | sudo tee -a /etc/sysctl.conf
+  sudo sysctl -p
+else
+  echo "✅ UDP buffer already configured"
+fi
+
+
+#------------------------------#
 # 8. ENABLE + START SERVICES
 #------------------------------#
 echo "🔁 Enabling and starting services..."
