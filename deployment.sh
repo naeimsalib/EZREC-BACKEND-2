@@ -54,7 +54,7 @@ echo "🐍 Setting up virtual environment..."
 rm -rf "$VENV_DIR"
 python3 -m venv "$VENV_DIR"
 "$VENV_DIR/bin/pip" install --upgrade pip
-"$VENV_DIR/bin/pip" install fastapi uvicorn psutil speedtest-cli requests boto3
+"$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3
 sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
@@ -234,7 +234,6 @@ if ! grep -q "net.core.rmem_max = 7168000" /etc/sysctl.conf; then
 else
   echo "✅ UDP buffer already configured"
 fi
-
 
 #------------------------------#
 # 8. ENABLE + START SERVICES
