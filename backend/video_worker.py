@@ -1,5 +1,12 @@
 #!/usr/bin/env python3
-# EZREC - Video Worker Script (Updated for S3 folder structure and test scenarios)
+"""
+EZREC - Video Worker Script
+- Processes raw recordings from /recordings
+- Adds intro and logo (if provided in Supabase)
+- Uploads to AWS S3
+- Logs and updates Supabase metadata
+- Respects local timezone set in .env (TIMEZONE)
+"""
 
 import os
 import time
@@ -15,23 +22,26 @@ import requests
 import boto3
 from boto3.s3.transfer import TransferConfig
 import logging
+import pytz
 
 # Load environment variables
-load_dotenv("/opt/ezrec-backend/.env", override=False)
+load_dotenv("/opt/ezrec-backend/.env", override=True)
 
-# Verify required environment variables
+# Local timezone
+TIMEZONE_NAME = os.getenv("TIMEZONE", "UTC")
+LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
+
+# Required env vars
 required_env_vars = [
     "SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID",
     "AWS_REGION", "AWS_S3_BUCKET", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"
 ]
 missing = [var for var in required_env_vars if not os.getenv(var)]
 if missing:
-    raise RuntimeError(f"Missing environment variables: {missing}")
+    raise RuntimeError(f"Missing env variables: {missing}")
 
-# Supabase client
+# Supabase and AWS
 supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
-
-# AWS S3 client
 s3 = boto3.client("s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
@@ -44,31 +54,25 @@ AWS_REGION = os.getenv("AWS_REGION")
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
 PROCESSED_DIR = Path("/opt/ezrec-backend/processed")
 MEDIA_CACHE_DIR = Path("/opt/ezrec-backend/media_cache")
-PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
-MEDIA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
-
-# Constants
-LOCK_EXT = ".lock"
-DONE_EXT = ".done"
 LOG_FILE = "/opt/ezrec-backend/logs/video_worker.log"
 CHECK_INTERVAL = int(os.getenv("VIDEO_WORKER_CHECK_INTERVAL", "15"))
+
+PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+MEDIA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 # Logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
-    handlers=[
-        logging.FileHandler(LOG_FILE),
-        logging.StreamHandler()
-    ]
+    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()]
 )
 log = logging.getLogger("video_worker")
 
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
-            "ffprobe", "-v", "error", "-show_entries",
-            "format=duration", "-of", "default=noprint_wrappers=1:nokey=1", str(file)
+            "ffprobe", "-v", "error", "-show_entries", "format=duration",
+            "-of", "default=noprint_wrappers=1:nokey=1", str(file)
         ], capture_output=True, text=True)
         return float(result.stdout.strip())
     except:
@@ -150,27 +154,27 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
 def cleanup_old_locks():
     for date_dir in RECORDINGS_DIR.glob("*/"):
-        for lock in date_dir.glob(f"*{LOCK_EXT}"):
+        for lock in date_dir.glob("*.lock"):
             if time.time() - lock.stat().st_mtime > 3600:
                 log.info(f"Removing old lock: {lock}")
                 lock.unlink()
 
 def main():
-    log.info("🎞️  Video worker started")
+    log.info(f"🎞️ Video worker started (Timezone: {TIMEZONE_NAME})")
     cleanup_old_locks()
 
     while True:
         for date_dir in RECORDINGS_DIR.glob("*/"):
             for raw_file in date_dir.glob("*.mp4"):
-                lock = raw_file.with_suffix(LOCK_EXT)
-                done = raw_file.with_suffix(DONE_EXT)
+                lock = raw_file.with_suffix(".lock")
+                done = raw_file.with_suffix(".done")
                 if lock.exists() or done.exists():
                     continue
 
                 lock.touch()
                 meta_path = raw_file.with_suffix(".json")
                 if not meta_path.exists():
-                    log.warning(f"No metadata found for: {raw_file}")
+                    log.warning(f"No metadata for: {raw_file}")
                     continue
 
                 try:
@@ -190,7 +194,8 @@ def main():
                                 "video_url": s3_url,
                                 "date": date_dir.name,
                                 "recording_id": raw_file.stem,
-                                "duration_seconds": duration
+                                "duration_seconds": duration,
+                                "uploaded_at": datetime.now(LOCAL_TZ).isoformat()
                             }).execute()
                             supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
                             done.touch()
@@ -201,7 +206,8 @@ def main():
                 except Exception as e:
                     log.error(f"Processing error: {e}")
                 finally:
-                    if lock.exists(): lock.unlink()
+                    if lock.exists():
+                        lock.unlink()
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":

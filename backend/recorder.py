@@ -2,11 +2,10 @@
 """
 Main Recording Service
 - Reads bookings from bookings_cache.json
-- Starts/stops recordings at scheduled times
-- Saves raw recordings to /opt/ezrec-backend/raw_recordings/
-- Does NOT process or upload videos
-- Designed to run as a standalone process (systemd service)
+- Starts/stops recordings at scheduled times (local timezone)
+- Saves raw recordings to /opt/ezrec-backend/recordings/
 """
+
 import os
 import time
 import json
@@ -19,13 +18,12 @@ from uuid import UUID
 import sys
 import pytz
 import psutil
-from zoneinfo import ZoneInfo
-import uuid
 
 try:
     from picamera2 import Picamera2
     from picamera2.encoders import H264Encoder
     from picamera2.outputs import FileOutput
+
     def safe_init_camera(retries=3, delay=3):
         for i in range(retries):
             try:
@@ -40,26 +38,19 @@ try:
 except ImportError:
     Picamera2 = None
 
+# Load environment variables
 load_dotenv("/opt/ezrec-backend/.env")
 
-# Validate required environment variables
+# Get local timezone from .env
+TIMEZONE_NAME = os.getenv("TIMEZONE", "UTC")
+LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
+
+# Required keys
 REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
 missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
 if missing:
     print(f"Missing required environment variables: {missing}")
     sys.exit(1)
-
-# Prevent running if ezrec_backend.py is active
-for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-    try:
-        if 'ezrec_backend.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
-            print("ERROR: ezrec_backend.py is running. recorder.py should not run in parallel. Exiting.")
-            sys.exit(1)
-    except Exception:
-        continue
-
-# Use timezone-aware datetime
-LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exists('/etc/timezone') else None
 
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID', '0')
@@ -70,6 +61,16 @@ CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
 
+# Prevent running if ezrec_backend.py is active
+for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+    try:
+        if 'ezrec_backend.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
+            print("ERROR: ezrec_backend.py is running. recorder.py should not run in parallel. Exiting.")
+            sys.exit(1)
+    except Exception:
+        continue
+
+# Logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -79,17 +80,15 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
-
 RAW_DIR.mkdir(parents=True, exist_ok=True)
-
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 class RecordingSession:
     def __init__(self, booking):
         self.booking = booking
-        self.date_folder = RAW_DIR / datetime.now().strftime("%Y-%m-%d")
+        self.date_folder = RAW_DIR / datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
         self.date_folder.mkdir(parents=True, exist_ok=True)
-        self.filename = f"raw_{booking['id']}_{datetime.now().strftime('%H%M%S')}"
+        self.filename = f"raw_{booking['id']}_{datetime.now(LOCAL_TZ).strftime('%H%M%S')}"
         self.filepath = self.date_folder / (self.filename + ".mp4")
         self.lockfile = self.filepath.with_suffix(".lock")
         self.completed_marker = self.filepath.with_suffix(".completed")
@@ -103,90 +102,86 @@ class RecordingSession:
             logger.error("picamera2 not available; cannot record.")
             return False
         try:
-            # Create lock file
             self.lockfile.touch()
             self.picam2 = safe_init_camera()
-            # Check for camera detection (imx477, etc.)
+
             try:
-                # For picamera2 >= 0.3.0, use global_camera_info
-                camera_info = getattr(self.picam2, 'global_camera_info', None)
-                if camera_info is not None and not camera_info:
-                    logger.error("No cameras detected by picamera2! Aborting recording.")
-                    if self.lockfile.exists():
-                        self.lockfile.unlink()
-                    return False
-            except Exception:
-                pass  # fallback for older versions
-            # Try to create video configuration
-            try:
-                config = self.picam2.create_video_configuration(main={"size": (1920, 1080)}, controls={"FrameRate": 30})
+                config = self.picam2.create_video_configuration(
+                    main={"size": (1920, 1080)}, controls={"FrameRate": 30}
+                )
             except Exception as e:
                 logger.error(f"Failed to create video configuration: {e}")
                 if self.lockfile.exists():
                     self.lockfile.unlink()
                 return False
+
             self.picam2.configure(config)
             self.encoder = H264Encoder(bitrate=10000000)
             self.output = FileOutput(str(self.filepath))
             self.picam2.start_recording(self.encoder, self.output)
             self.active = True
             logger.info(f"Started recording: {self.filepath}")
-            # Set is_recording True in cameras table
+
+            # Supabase update
             try:
-                supabase.table('cameras').update({'is_recording': True, 'last_seen': datetime.now(LOCAL_TZ).isoformat(), 'status': 'online'}).eq('id', CAMERA_ID).execute()
-                logger.info(f"Camera {CAMERA_ID} is_recording set to True, last_seen updated, status set to online in Supabase.")
+                supabase.table('cameras').update({
+                    'is_recording': True,
+                    'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                    'status': 'online'
+                }).eq('id', CAMERA_ID).execute()
             except Exception as e:
-                logger.error(f"Failed to update camera is_recording=True in Supabase: {e}")
+                logger.error(f"Failed to update camera in Supabase: {e}")
             return True
+
         except Exception as e:
             logger.error(f"Failed to start recording: {e}")
-            # Remove lock file if failed
             if self.lockfile.exists():
                 self.lockfile.unlink()
             return False
 
     def stop(self):
         if self.active and self.picam2:
-            # Write .json metadata file BEFORE stopping camera
             try:
                 metadata = {
                     "booking_id": self.booking["id"],
                     "user_id": USER_ID,
                     "camera_id": CAMERA_ID,
-                    "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d'),
+                    "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
                 }
                 with open(self.filepath.with_suffix(".json"), "w") as f:
                     json.dump(metadata, f)
-                logger.info(f"Metadata file written: {self.filepath.with_suffix('.json')}")
             except Exception as e:
-                logger.error(f"Failed to write metadata file: {e}")
+                logger.error(f"Failed to write metadata: {e}")
+
             try:
                 self.picam2.stop_recording()
                 self.picam2.close()
                 logger.info(f"Stopped recording: {self.filepath}")
-                # Write .completed marker
                 self.completed_marker.touch()
-                logger.info(f"Completed marker written: {self.completed_marker}")
-                # Update booking status to 'completed' in Supabase
+
+                # Update booking to completed
                 try:
                     supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()
-                    logger.info(f"Booking {self.booking['id']} status set to 'completed' in Supabase.")
                 except Exception as e:
-                    logger.error(f"Failed to update booking status in Supabase: {e}")
-                # Set is_recording False in cameras table
+                    logger.error(f"Failed to update booking status: {e}")
+
+                # Mark camera idle
                 try:
-                    supabase.table('cameras').update({'is_recording': False, 'last_seen': datetime.now(LOCAL_TZ).isoformat(), 'status': 'idle'}).eq('id', CAMERA_ID).execute()
-                    logger.info(f"Camera {CAMERA_ID} is_recording set to False, last_seen updated, status set to idle in Supabase.")
+                    supabase.table('cameras').update({
+                        'is_recording': False,
+                        'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                        'status': 'idle'
+                    }).eq('id', CAMERA_ID).execute()
                 except Exception as e:
-                    logger.error(f"Failed to update camera is_recording=False in Supabase: {e}")
+                    logger.error(f"Failed to update camera status: {e}")
+
             except Exception as e:
-                logger.error(f"Failed to stop recording: {e}")
+                logger.error(f"Error stopping recording: {e}")
+
             finally:
-                # Remove lock file
                 if self.lockfile.exists():
                     self.lockfile.unlink()
-            self.active = False
-
+                self.active = False
 
 def load_bookings():
     if BOOKING_CACHE_FILE.exists():
@@ -198,27 +193,30 @@ def load_bookings():
     return []
 
 def get_active_booking(bookings):
-    now = datetime.now(LOCAL_TZ).time()
-    today = datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
+    now = datetime.now(LOCAL_TZ)
+    today = now.strftime('%Y-%m-%d')
+    current_time = now.time()
     for booking in bookings:
+        if booking.get('user_id') != USER_ID or booking['date'] != today:
+            continue
         try:
             start_time = datetime.strptime(booking['start_time'], "%H:%M").time()
             end_time = datetime.strptime(booking['end_time'], "%H:%M").time()
-        except Exception:
+            if start_time <= current_time <= end_time:
+                return booking
+        except:
             continue
-        if booking.get('user_id') == USER_ID and booking['date'] == today and start_time <= now <= end_time:
-            return booking
     return None
 
 def is_valid_uuid(val):
     try:
         UUID(str(val))
         return True
-    except Exception:
+    except:
         return False
 
 def main():
-    logger.info("Recorder Service started")
+    logger.info(f"Recorder Service started (Timezone: {TIMEZONE_NAME})")
     current_session = None
     while True:
         bookings = load_bookings()
@@ -232,15 +230,8 @@ def main():
         else:
             if current_session:
                 current_session.stop()
-                # After stopping, check for another active booking
-                bookings = load_bookings()
-                next_booking = get_active_booking(bookings)
-                if next_booking:
-                    current_session = RecordingSession(next_booking)
-                    current_session.start()
-                else:
-                    current_session = None
+                current_session = None
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
-    main() 
+    main()
