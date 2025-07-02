@@ -198,13 +198,15 @@ def main():
                                 "video_url": s3_url,
                                 "date": date_dir.name,
                                 "recording_id": raw_file.stem,
-                                "duration_seconds": duration,
+                                "duration_seconds": round(duration) if duration else 0,
                                 "uploaded_at": datetime.now(LOCAL_TZ).isoformat()
                             }).execute()
                             supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
                             done.touch()
                             os.remove(final_file)
+                            os.remove(raw_file)
                             log.info(f"✅ Uploaded: {s3_key}")
+                            log.info(f"🧹 Removed raw recording: {raw_file}")
                         else:
                             log.error(f"Failed to upload {final_file}")
                 except Exception as e:
