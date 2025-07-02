@@ -60,17 +60,9 @@ python3 -m venv "$VENV_DIR"
 sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
-# 5. WRITE FastAPI + MONITOR
+# 5. SKIP Writing FastAPI + MONITOR (Handled via rsync)
 #------------------------------#
-echo "📜 Writing FastAPI app..."
-cat > "$API_DIR/api_server.py" <<EOF
-<Insert FastAPI app code from previous step here>
-EOF
-
-echo "📁 Writing system monitor..."
-cat > "$API_DIR/monitor.py" <<EOF
-<Insert system monitor code from previous step here>
-EOF
+echo "📜 Skipping FastAPI and Monitor overwrite... (rsync will update from dev dir)"
 
 #------------------------------#
 # 5.5 SYNC PROJECT FILES
