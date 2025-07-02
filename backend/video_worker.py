@@ -81,9 +81,13 @@ def get_duration(file: Path) -> float:
 def upload_file_chunked(local_path: Path, s3_key: str) -> str:
     try:
         config = TransferConfig(multipart_threshold=20*1024*1024, multipart_chunksize=10*1024*1024)
-        s3.upload_file(str(local_path), S3_BUCKET, s3_key, ExtraArgs={
-            "ContentType": "video/mp4", "ACL": "public-read"
-        }, Config=config)
+        s3.upload_file(
+            str(local_path),
+            S3_BUCKET,
+            s3_key,
+            ExtraArgs={"ContentType": "video/mp4"},  # 🔥 REMOVE ACL line here
+            Config=config
+        )
         s3_url = f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
         log.info(f"📤 Uploaded to S3: {s3_url}")
         return s3_url
