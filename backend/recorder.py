@@ -11,10 +11,9 @@ import time
 import json
 import logging
 from pathlib import Path
-from datetime import datetime, time as dt_time
+from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
-from uuid import UUID
 import sys
 import pytz
 import psutil
@@ -38,7 +37,7 @@ try:
 except ImportError:
     Picamera2 = None
 
-# Load .env
+# Load environment
 dotenv_path = "/opt/ezrec-backend/.env"
 if os.path.exists(dotenv_path):
     load_dotenv(dotenv_path)
@@ -46,29 +45,28 @@ else:
     print(f"❌ .env file not found at {dotenv_path}")
     sys.exit(1)
 
-# Timezone setup
-TIMEZONE_NAME = os.getenv("TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "UTC"
+# Timezone
+TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "UTC"
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
-# Required keys
+# Validate required ENV vars
 REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
 missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
 if missing:
     print(f"❌ Missing required environment variables: {missing}")
     sys.exit(1)
 
+# Configs
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
 SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-
-# Path configurations
 BOOKING_CACHE_FILE = Path(os.getenv('BOOKING_CACHE_FILE', '/opt/ezrec-backend/api/local_data/bookings.json'))
 RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/recordings/'))
 LOG_FILE = Path(os.getenv('RECORDER_LOG', '/opt/ezrec-backend/logs/recorder.log'))
 CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
 
-# Block if older backend is running
+# Prevent conflicting process
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     try:
         if 'ezrec_backend.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
@@ -77,7 +75,7 @@ for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     except Exception:
         continue
 
-# Logging setup
+# Logging
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -91,8 +89,8 @@ logger = logging.getLogger(__name__)
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-logger.info(f"📡 Recorder Service started (Timezone: {TIMEZONE_NAME})")
-logger.info(f"📄 Watching bookings file: {BOOKING_CACHE_FILE}")
+logger.info(f"📡 Recorder started [Timezone: {TIMEZONE_NAME}]")
+logger.info(f"📄 Watching bookings cache: {BOOKING_CACHE_FILE}")
 
 class RecordingSession:
     def __init__(self, booking):
@@ -116,42 +114,37 @@ class RecordingSession:
             self.lockfile.touch()
             self.picam2 = safe_init_camera()
 
-            try:
-                config = self.picam2.create_video_configuration(
-                    main={"size": (1920, 1080)}, controls={"FrameRate": 30}
-                )
-            except Exception as e:
-                logger.error(f"Failed to create video configuration: {e}")
-                if self.lockfile.exists():
-                    self.lockfile.unlink()
-                return False
-
+            config = self.picam2.create_video_configuration(
+                main={"size": (1920, 1080)}, controls={"FrameRate": 30}
+            )
             self.picam2.configure(config)
+
             self.encoder = H264Encoder(bitrate=10000000)
             self.output = FileOutput(str(self.filepath))
             self.picam2.start_recording(self.encoder, self.output)
             self.active = True
-            logger.info(f"▶️ Started recording: {self.filepath}")
 
-            try:
-                supabase.table('cameras').update({
-                    'is_recording': True,
-                    'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                    'status': 'online'
-                }).eq('id', CAMERA_ID).execute()
-            except Exception as e:
-                logger.error(f"Supabase update failed: {e}")
+            logger.info(f"▶️ Started recording: {self.filepath}")
+            supabase.table('cameras').update({
+                'is_recording': True,
+                'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                'status': 'online'
+            }).eq('id', CAMERA_ID).execute()
             return True
 
         except Exception as e:
             logger.error(f"Failed to start recording: {e}")
-            if self.lockfile.exists():
-                self.lockfile.unlink()
+            self.lockfile.unlink(missing_ok=True)
             return False
 
     def stop(self):
         if self.active and self.picam2:
             try:
+                self.picam2.stop_recording()
+                self.picam2.close()
+                logger.info(f"⏹️ Stopped recording: {self.filepath}")
+                self.completed_marker.touch()
+
                 metadata = {
                     "booking_id": self.booking["id"],
                     "user_id": USER_ID,
@@ -160,35 +153,19 @@ class RecordingSession:
                 }
                 with open(self.filepath.with_suffix(".json"), "w") as f:
                     json.dump(metadata, f)
-            except Exception as e:
-                logger.error(f"Failed to write metadata: {e}")
 
-            try:
-                self.picam2.stop_recording()
-                self.picam2.close()
-                logger.info(f"⏹️ Stopped recording: {self.filepath}")
-                self.completed_marker.touch()
-
-                try:
-                    supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()
-                except Exception as e:
-                    logger.error(f"Failed to update booking status: {e}")
-
-                try:
-                    supabase.table('cameras').update({
-                        'is_recording': False,
-                        'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                        'status': 'idle'
-                    }).eq('id', CAMERA_ID).execute()
-                except Exception as e:
-                    logger.error(f"Failed to update camera status: {e}")
+                supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()
+                supabase.table('cameras').update({
+                    'is_recording': False,
+                    'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                    'status': 'idle'
+                }).eq('id', CAMERA_ID).execute()
 
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
 
             finally:
-                if self.lockfile.exists():
-                    self.lockfile.unlink()
+                self.lockfile.unlink(missing_ok=True)
                 self.active = False
 
 def load_bookings():
@@ -204,24 +181,23 @@ def load_bookings():
 
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
-    logger.info(f"🕒 Current time: {now.isoformat()}")
+    logger.info(f"🕒 Checking time: {now.isoformat()}")
     for booking in bookings:
         try:
             start = datetime.fromisoformat(booking["start_time"]).astimezone(LOCAL_TZ)
             end = datetime.fromisoformat(booking["end_time"]).astimezone(LOCAL_TZ)
-            logger.info(f"🔍 Checking booking {booking['id']}: {start} – {end}")
+            logger.info(f"🔍 Booking {booking['id']}: {start} → {end}")
         except Exception as e:
-            logger.warning(f"Invalid datetime format in booking: {e}")
+            logger.warning(f"Invalid booking time format: {e}")
             continue
         if (
             booking.get("user_id") == USER_ID and
             booking.get("camera_id") == CAMERA_ID and
             start <= now <= end
         ):
-            logger.info(f"✅ Active booking found: {booking['id']}")
+            logger.info(f"✅ Active booking matched: {booking['id']}")
             return booking
     return None
-
 
 def main():
     current_session = None
