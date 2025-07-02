@@ -106,36 +106,41 @@ class RecordingSession:
         self.output = None
         self.active = False
 
-    def start(self):
-        if not Picamera2:
-            logger.error("picamera2 not available; cannot record.")
-            return False
-        try:
-            self.lockfile.touch()
-            self.picam2 = safe_init_camera()
+def start(self):
+    if not Picamera2:
+        logger.error("❌ picamera2 not available; cannot record.")
+        return False
+    try:
+        self.lockfile.touch()
+        logger.info("🔧 Initializing camera...")
+        self.picam2 = safe_init_camera()
 
-            config = self.picam2.create_video_configuration(
-                main={"size": (1920, 1080)}, controls={"FrameRate": 30}
-            )
-            self.picam2.configure(config)
+        logger.info("🎥 Creating video configuration...")
+        config = self.picam2.create_video_configuration(
+            main={"size": (1920, 1080)}, controls={"FrameRate": 30}
+        )
+        self.picam2.configure(config)
 
-            self.encoder = H264Encoder(bitrate=10000000)
-            self.output = FileOutput(str(self.filepath))
-            self.picam2.start_recording(self.encoder, self.output)
-            self.active = True
+        self.encoder = H264Encoder(bitrate=10000000)
+        self.output = FileOutput(str(self.filepath))
 
-            logger.info(f"▶️ Started recording: {self.filepath}")
-            supabase.table('cameras').update({
-                'is_recording': True,
-                'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                'status': 'online'
-            }).eq('id', CAMERA_ID).execute()
-            return True
+        logger.info("▶️ Starting video recording...")
+        self.picam2.start_recording(self.encoder, self.output)
+        self.active = True
 
-        except Exception as e:
-            logger.error(f"Failed to start recording: {e}")
-            self.lockfile.unlink(missing_ok=True)
-            return False
+        logger.info(f"✅ Started recording: {self.filepath}")
+        supabase.table('cameras').update({
+            'is_recording': True,
+            'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+            'status': 'online'
+        }).eq('id', CAMERA_ID).execute()
+        return True
+
+    except Exception as e:
+        logger.error(f"❌ Failed to start recording: {e}")
+        self.lockfile.unlink(missing_ok=True)
+        return False
+
 
     def stop(self):
         if self.active and self.picam2:
