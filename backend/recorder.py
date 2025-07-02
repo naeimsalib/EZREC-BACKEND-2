@@ -204,10 +204,12 @@ def load_bookings():
 
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
+    logger.info(f"🕒 Current time: {now.isoformat()}")
     for booking in bookings:
         try:
             start = datetime.fromisoformat(booking["start_time"]).astimezone(LOCAL_TZ)
             end = datetime.fromisoformat(booking["end_time"]).astimezone(LOCAL_TZ)
+            logger.info(f"🔍 Checking booking {booking['id']}: {start} – {end}")
         except Exception as e:
             logger.warning(f"Invalid datetime format in booking: {e}")
             continue
@@ -216,6 +218,7 @@ def get_active_booking(bookings):
             booking.get("camera_id") == CAMERA_ID and
             start <= now <= end
         ):
+            logger.info(f"✅ Active booking found: {booking['id']}")
             return booking
     return None
 
