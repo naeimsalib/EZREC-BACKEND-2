@@ -80,7 +80,9 @@ def upload_file_chunked(local_path: Path, s3_key: str) -> str:
         s3.upload_file(str(local_path), S3_BUCKET, s3_key, ExtraArgs={
             "ContentType": "video/mp4", "ACL": "public-read"
         }, Config=config)
-        return f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+        s3_url = f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+        log.info(f"📤 Uploaded to S3: {s3_url}")
+        return s3_url
     except Exception as e:
         log.error(f"❌ Upload failed: {e}")
         return None
@@ -113,7 +115,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     intro_path = MEDIA_CACHE_DIR / f"intro_{user_id}.mp4"
     logo_path = MEDIA_CACHE_DIR / f"logo_{user_id}.png"
 
-    # Download media if needed
     if intro_url:
         download_file(intro_url, intro_path)
     if logo_url:
