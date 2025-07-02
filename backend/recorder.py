@@ -204,19 +204,21 @@ def load_bookings():
 
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
-    today = now.strftime('%Y-%m-%d')
-    current_time = now.time()
     for booking in bookings:
-        if booking.get('user_id') != USER_ID or booking['date'] != today:
-            continue
         try:
-            start_time = datetime.strptime(booking['start_time'], "%H:%M").time()
-            end_time = datetime.strptime(booking['end_time'], "%H:%M").time()
-            if start_time <= current_time <= end_time:
-                return booking
-        except:
+            start = datetime.fromisoformat(booking["start_time"]).astimezone(LOCAL_TZ)
+            end = datetime.fromisoformat(booking["end_time"]).astimezone(LOCAL_TZ)
+        except Exception as e:
+            logger.warning(f"Invalid datetime format in booking: {e}")
             continue
+        if (
+            booking.get("user_id") == USER_ID and
+            booking.get("camera_id") == CAMERA_ID and
+            start <= now <= end
+        ):
+            return booking
     return None
+
 
 def main():
     current_session = None
