@@ -198,7 +198,7 @@ def main():
                                 "video_url": s3_url,
                                 "date": date_dir.name,
                                 "recording_id": raw_file.stem,
-                                "duration_seconds": round(duration) if duration else 0,
+                                "duration_seconds": int(duration),
                                 "uploaded_at": datetime.now(LOCAL_TZ).isoformat()
                             }).execute()
                             supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
