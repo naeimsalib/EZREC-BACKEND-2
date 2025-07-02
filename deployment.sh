@@ -162,6 +162,18 @@ while True:
     time.sleep(10)
 EOF
 
+
+#------------------------------#
+# 5.5 SYNC PROJECT FILES
+#------------------------------#
+echo "📦 Syncing updated project files..."
+DEV_DIR="/home/$USER/EZREC-BACKEND-2"
+if [ -d "$DEV_DIR" ]; then
+  rsync -av --exclude='venv' --exclude='.git' --exclude='__pycache__' "$DEV_DIR/" "$PROJECT_DIR/"
+else
+  echo "⚠️ Development directory not found: $DEV_DIR"
+fi
+
 #------------------------------#
 # 6. SYSTEMD SERVICES
 #------------------------------#
