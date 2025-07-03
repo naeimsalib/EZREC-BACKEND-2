@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 """
 EZREC - Video Worker Script
-- Processes raw recordings from /recordings
-- Adds intro and logo (if provided in Supabase)
-- Uploads to AWS S3
-- Logs and updates Supabase metadata
-- Respects local timezone set in .env (TIMEZONE)
 """
 
 import os
@@ -41,8 +36,13 @@ missing = [var for var in required_env_vars if not os.getenv(var)]
 if missing:
     raise RuntimeError(f"Missing env variables: {missing}")
 
-# Supabase and AWS
-supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+# Supabase and AWS setup
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+SUPABASE_REST_URL = f"{SUPABASE_URL}/rest/v1"
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
 s3 = boto3.client("s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
@@ -131,7 +131,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
     try:
         intermediate = raw_file
-        # Add intro
         if intro_path.exists():
             concat_txt = MEDIA_CACHE_DIR / f"concat_{uuid.uuid4().hex}.txt"
             concat_txt.write_text(f"file '{intro_path}'\nfile '{raw_file}'\n")
@@ -141,7 +140,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 "-c", "copy", str(intermediate)
             ], check=True)
 
-        # Add logo
         if logo_path.exists():
             subprocess.run([
                 "ffmpeg", "-y", "-i", str(intermediate), "-i", str(logo_path),
@@ -152,7 +150,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             shutil.copy(intermediate, output_file)
 
         return output_file
-
     except Exception as e:
         log.error(f"FFmpeg error: {e}")
         return None
@@ -163,6 +160,27 @@ def cleanup_old_locks():
             if time.time() - lock.stat().st_mtime > 3600:
                 log.info(f"Removing old lock: {lock}")
                 lock.unlink()
+
+def insert_video_metadata(payload: dict):
+    headers = {
+        "apikey": SUPABASE_SERVICE_ROLE_KEY,
+        "Authorization": f"Bearer {SUPABASE_SERVICE_ROLE_KEY}",
+        "Content-Type": "application/json",
+        "Prefer": "return=representation"
+    }
+
+    response = requests.post(
+        f"{SUPABASE_REST_URL}/videos",
+        headers=headers,
+        json=payload
+    )
+
+    if response.status_code not in (200, 201):
+        log.error(f"❌ Supabase insert failed: {response.status_code} - {response.text}")
+        return False
+    else:
+        log.info(f"✅ Supabase insert succeeded: {response.json()}")
+        return True
 
 def main():
     log.info(f"🎞️ Video worker started (Timezone: {TIMEZONE_NAME})")
@@ -194,20 +212,24 @@ def main():
                         s3_key = f"{user_id}/{date_dir.name}/{final_file.name}"
                         s3_url = upload_file_chunked(final_file, s3_key)
                         if s3_url:
-                            supabase.table("videos").insert({
+                            payload = {
                                 "user_id": user_id,
                                 "video_url": s3_url,
                                 "date": date_dir.name,
                                 "recording_id": raw_file.stem,
                                 "duration_seconds": int(duration),
                                 "uploaded_at": datetime.now(LOCAL_TZ).isoformat()
-                            }).execute()
-                            supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
-                            done.touch()
-                            os.remove(final_file)
-                            os.remove(raw_file)
-                            log.info(f"✅ Uploaded: {s3_key}")
-                            log.info(f"🧹 Removed raw recording: {raw_file}")
+                            }
+
+                            if insert_video_metadata(payload):
+                                supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
+                                done.touch()
+                                os.remove(final_file)
+                                os.remove(raw_file)
+                                log.info(f"✅ Uploaded: {s3_key}")
+                                log.info(f"🧹 Removed raw recording: {raw_file}")
+                            else:
+                                log.error(f"Supabase insert failed for: {final_file}")
                         else:
                             log.error(f"Failed to upload {final_file}")
                 except Exception as e:
