@@ -33,7 +33,7 @@ LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
 # Required env vars
 required_env_vars = [
-    "SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID",
+    "SUPABASE_URL","SUPABASE_SERVICE_ROLE_KEY", "SUPABASE_KEY", "USER_ID", "CAMERA_ID",
     "AWS_REGION", "AWS_S3_BUCKET", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"
 ]
 missing = [var for var in required_env_vars if not os.getenv(var)]
@@ -41,7 +41,7 @@ if missing:
     raise RuntimeError(f"Missing env variables: {missing}")
 
 # Supabase and AWS
-supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_KEY"))
+supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
 s3 = boto3.client("s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
