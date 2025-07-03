@@ -5,9 +5,20 @@ from typing import List
 from pathlib import Path
 from datetime import datetime
 import json
+import logging
 
+# --------------------------
+# LOGGING SETUP
+# --------------------------
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("EZREC")
+
+# --------------------------
+# FASTAPI INIT
+# --------------------------
 app = FastAPI()
 
+# Allow all origins for development — restrict in production!
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -15,10 +26,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# --------------------------
+# FILE PATHS
+# --------------------------
 BOOKINGS_FILE = Path("/opt/ezrec-backend/api/local_data/bookings.json")
 SYSTEM_FILE = Path("/opt/ezrec-backend/api/local_data/system.json")
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
-
 
 # --------------------------
 # MODELS
@@ -32,17 +45,14 @@ class Booking(BaseModel):
     date: str
     recording_id: str
 
-
 class SystemSettings(BaseModel):
     main_logo_path: str
     sponsor_logo_paths: List[str]
     intro_video_path: str
 
-
 # --------------------------
 # ENDPOINTS
 # --------------------------
-
 @app.get("/")
 def root():
     return {"message": "EZREC FastAPI is running"}
@@ -54,15 +64,21 @@ def status():
 @app.get("/bookings")
 def get_bookings():
     if BOOKINGS_FILE.exists():
-        return json.loads(BOOKINGS_FILE.read_text())
+        try:
+            return json.loads(BOOKINGS_FILE.read_text())
+        except Exception as e:
+            logger.error(f"Error reading bookings: {e}")
+            raise HTTPException(status_code=500, detail="Failed to read bookings file")
     return []
 
 @app.post("/bookings")
 def post_bookings(bookings: List[Booking]):
     try:
         BOOKINGS_FILE.write_text(json.dumps([b.dict() for b in bookings], indent=2))
+        logger.info(f"Saved {len(bookings)} bookings")
         return {"status": "success", "saved": len(bookings)}
     except Exception as e:
+        logger.error(f"Error saving bookings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/bookings/{booking_id}")
@@ -76,10 +92,13 @@ def update_booking(booking_id: str, updated_booking: Booking):
                 updated = True
                 break
         if not updated:
+            logger.warning(f"Booking not found for update: {booking_id}")
             raise HTTPException(status_code=404, detail="Booking not found")
         BOOKINGS_FILE.write_text(json.dumps(bookings, indent=2))
+        logger.info(f"Updated booking {booking_id}")
         return {"status": "updated", "booking": updated_booking}
     except Exception as e:
+        logger.error(f"Error updating booking {booking_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.delete("/bookings/{booking_id}")
@@ -88,10 +107,13 @@ def delete_booking(booking_id: str):
         bookings = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
         filtered = [b for b in bookings if b["id"] != booking_id]
         if len(filtered) == len(bookings):
+            logger.warning(f"Booking not found for deletion: {booking_id}")
             raise HTTPException(status_code=404, detail="Booking not found")
         BOOKINGS_FILE.write_text(json.dumps(filtered, indent=2))
+        logger.info(f"Deleted booking {booking_id}")
         return {"status": "deleted", "booking_id": booking_id}
     except Exception as e:
+        logger.error(f"Error deleting booking {booking_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/recordings")
@@ -106,16 +128,23 @@ def get_recordings():
         for f in date_dir.glob("*.mp4"):
             metadata_path = f.with_suffix(".json")
             if metadata_path.exists():
-                metadata = json.loads(metadata_path.read_text())
-                recordings.append(metadata)
+                try:
+                    metadata = json.loads(metadata_path.read_text())
+                    recordings.append(metadata)
+                except Exception as e:
+                    logger.warning(f"Failed to read metadata for {f.name}: {e}")
+                    recordings.append({"filename": f.name, "path": str(f)})
             else:
                 recordings.append({"filename": f.name, "path": str(f)})
+    logger.info(f"Returned {len(recordings)} recordings")
     return recordings
 
 @app.post("/system")
 def update_system_settings(settings: SystemSettings):
     try:
         SYSTEM_FILE.write_text(json.dumps(settings.dict(), indent=2))
+        logger.info("Updated system settings")
         return {"status": "success", "settings": settings}
     except Exception as e:
+        logger.error(f"Error updating system settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
