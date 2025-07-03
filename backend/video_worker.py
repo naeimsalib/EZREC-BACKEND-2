@@ -219,7 +219,8 @@ def main():
                                 "date": date_dir.name,
                                 "recording_id": raw_file.stem,
                                 "duration_seconds": int(duration),
-                                "uploaded_at": datetime.now(LOCAL_TZ).isoformat()
+                                "uploaded_at": datetime.now(LOCAL_TZ).isoformat(),
+                                "filename": final_file.name
                             }
 
                             if insert_video_metadata(payload):
