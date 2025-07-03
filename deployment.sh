@@ -8,13 +8,14 @@ set -euo pipefail
 # 0. ENV & ARG SETUP
 #------------------------------#
 USER="${1:-$(whoami)}"
-TUNNEL_NAME="${2:-ezrec}"
+TUNNEL_NAME="${2:-ezrec-tunnel}"
 PROJECT_DIR="/opt/ezrec-backend"
 API_DIR="$PROJECT_DIR/api"
 VENV_DIR="$API_DIR/venv"
 SYSTEMD_DIR="/etc/systemd/system"
 LOCK_FILE="/tmp/ezrec_deploy.lock"
 LOG_DIR="$PROJECT_DIR/logs"
+CLOUDFLARED_BIN="/usr/local/bin/cloudflared"
 
 #------------------------------#
 # 1. CHECK COMMANDS
@@ -118,15 +119,19 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-sudo tee "$SYSTEMD_DIR/ezrec-tunnel.service" > /dev/null <<EOF
+# Cloudflared systemd
+sudo tee "$SYSTEMD_DIR/cloudflared.service" > /dev/null <<EOF
 [Unit]
-Description=Cloudflare Tunnel for EZREC
+Description=Cloudflare Tunnel
 After=network-online.target
+Wants=network-online.target
 
 [Service]
-ExecStart=/usr/bin/cloudflared tunnel run $TUNNEL_NAME
-WorkingDirectory=$API_DIR
-Restart=always
+TimeoutStartSec=0
+Type=simple
+ExecStart=$CLOUDFLARED_BIN tunnel run $TUNNEL_NAME
+Restart=on-failure
+RestartSec=5s
 User=$USER
 
 [Install]
@@ -148,7 +153,7 @@ fi
 #------------------------------#
 # 9. UDP BUFFER CONFIG
 #------------------------------#
-echo "🛠️ Increasing UDP buffer size for cloudflared (for video upload/live)..."
+echo "🛠️ Increasing UDP buffer size for cloudflared..."
 if ! grep -q "net.core.rmem_max = 7168000" /etc/sysctl.conf; then
   echo "net.core.rmem_max = 7168000" | sudo tee -a /etc/sysctl.conf
   sudo sysctl -p
@@ -161,7 +166,7 @@ fi
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
-for svc in ezrec-api ezrec-monitor ezrec-tunnel; do
+for svc in ezrec-api ezrec-monitor cloudflared; do
   sudo systemctl enable "$svc"
   sudo systemctl restart "$svc"
 done
@@ -171,9 +176,9 @@ done
 #------------------------------#
 echo ""
 echo "🎉 EZREC deployed successfully!"
-echo "📡 API running:    http://<Pi-IP>:8000 or via Cloudflare Tunnel: $TUNNEL_NAME"
-echo "🩺 Monitor logs:  sudo journalctl -u ezrec-monitor -f"
-echo "🌐 Tunnel status: sudo journalctl -u ezrec-tunnel -f"
-echo "📍 API file:      $API_DIR/api_server.py"
-echo "📁 Protected data: $API_DIR/local_data (chmod 700)"
-echo "📃 Logs dir:       $LOG_DIR (auto chmod 755)"
+echo "📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org"
+echo "🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f"
+echo "🌐 Tunnel logs:    sudo journalctl -u cloudflared -f"
+echo "📁 Project files:  $PROJECT_DIR"
+echo "📁 API entry:      $API_DIR/api_server.py"
+echo "📃 Logs dir:       $LOG_DIR"
