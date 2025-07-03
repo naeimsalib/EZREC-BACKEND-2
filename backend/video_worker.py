@@ -224,6 +224,7 @@ def main():
                                 "storage_path": s3_key
                             }
 
+
                             if insert_video_metadata(payload):
                                 supabase.table("bookings").update({"status": "video_uploaded"}).eq("id", booking_id).execute()
                                 done.touch()
