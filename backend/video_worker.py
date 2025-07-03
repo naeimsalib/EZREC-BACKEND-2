@@ -41,7 +41,8 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 SUPABASE_REST_URL = f"{SUPABASE_URL}/rest/v1"
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+
 
 s3 = boto3.client("s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
