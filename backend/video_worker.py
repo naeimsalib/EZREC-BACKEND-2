@@ -220,7 +220,8 @@ def main():
                                 "recording_id": raw_file.stem,
                                 "duration_seconds": int(duration),
                                 "uploaded_at": datetime.now(LOCAL_TZ).isoformat(),
-                                "filename": final_file.name
+                                "filename": final_file.name,
+                                "storage_path": s3_key
                             }
 
                             if insert_video_metadata(payload):
