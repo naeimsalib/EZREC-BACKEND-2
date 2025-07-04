@@ -77,12 +77,23 @@ def post_bookings(bookings: List[Booking]):
         logger.info(f"📥 Received {len(bookings)} bookings via POST")
         for b in bookings:
             logger.info(f"➡️ Booking: {b.dict()}")
-        BOOKINGS_FILE.write_text(json.dumps([b.dict() for b in bookings], indent=2))
+        existing = []
+        if BOOKINGS_FILE.exists():
+            try:
+                existing = json.loads(BOOKINGS_FILE.read_text())
+            except Exception as e:
+                logger.warning(f"Could not read existing bookings: {e}")
+
+        # Add new bookings
+        # Remove duplicates by ID
+        unique = {b["id"]: b for b in existing}.values()
+        BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
+
+
         return {"message": "Bookings saved", "count": len(bookings)}
     except Exception as e:
         logger.error(f"❌ Error saving bookings: {e}")
         raise HTTPException(status_code=500, detail="Failed to save bookings")
-
 
 @app.put("/bookings/{booking_id}")
 def update_booking(booking_id: str, updated_booking: Booking):
