@@ -8,17 +8,12 @@ Type=simple
 User=michomanoly14892
 WorkingDirectory=/opt/ezrec-backend/backend
 EnvironmentFile=/opt/ezrec-backend/.env
-
 ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
-
 Restart=on-failure
 RestartSec=10
-
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=video_worker
-
-# Security options
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
