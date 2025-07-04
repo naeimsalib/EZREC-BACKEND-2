@@ -12,6 +12,7 @@ import json
 import logging
 from pathlib import Path
 from datetime import datetime
+from dateutil.parser import isoparse
 from dotenv import load_dotenv
 from supabase import create_client
 import sys
@@ -192,8 +193,8 @@ def get_active_booking(bookings):
     logger.info(f"🕒 Checking time: {now.isoformat()}")
     for booking in bookings:
         try:
-            start = datetime.fromisoformat(booking["start_time"]).astimezone(LOCAL_TZ)
-            end = datetime.fromisoformat(booking["end_time"]).astimezone(LOCAL_TZ)
+            start = isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
+            end = isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
             logger.info(f"🔍 Booking {booking['id']}: {start} → {end}")
         except Exception as e:
             logger.warning(f"Invalid booking time format: {e}")
