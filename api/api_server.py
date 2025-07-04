@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -6,6 +6,14 @@ from pathlib import Path
 from datetime import datetime
 import json
 import logging
+import boto3
+import os
+from dotenv import load_dotenv
+
+# --------------------------
+# LOAD .env FILE
+# --------------------------
+load_dotenv()
 
 # --------------------------
 # LOGGING SETUP
@@ -34,6 +42,21 @@ SYSTEM_FILE = Path("/opt/ezrec-backend/api/local_data/system.json")
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
 
 # --------------------------
+# S3 CONFIGURATION
+# --------------------------
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+S3_BUCKET = os.getenv("S3_BUCKET", "ezrec-videos")
+
+s3 = boto3.client(
+    "s3",
+    region_name=AWS_REGION,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+)
+
+# --------------------------
 # MODELS
 # --------------------------
 class Booking(BaseModel):
@@ -49,6 +72,9 @@ class SystemSettings(BaseModel):
     main_logo_path: str
     sponsor_logo_paths: List[str]
     intro_video_path: str
+
+class DeletePayload(BaseModel):
+    key: str
 
 # --------------------------
 # ENDPOINTS
@@ -78,7 +104,6 @@ def post_bookings(bookings: List[Booking]):
         for b in bookings:
             logger.info(f"➡️ Booking: {b.dict()}")
 
-        # Load existing bookings
         existing = []
         if BOOKINGS_FILE.exists():
             try:
@@ -86,13 +111,8 @@ def post_bookings(bookings: List[Booking]):
             except Exception as e:
                 logger.warning(f"Could not read existing bookings: {e}")
 
-        # Add new bookings to existing list
         combined = existing + [b.dict() for b in bookings]
-
-        # Deduplicate by booking ID
         unique = {b["id"]: b for b in combined}.values()
-
-        # Write to file
         BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
 
         return {"message": "Bookings saved", "count": len(bookings)}
@@ -111,10 +131,8 @@ def update_booking(booking_id: str, updated_booking: Booking):
                 updated = True
                 break
         if not updated:
-            logger.warning(f"Booking not found for update: {booking_id}")
             raise HTTPException(status_code=404, detail="Booking not found")
         BOOKINGS_FILE.write_text(json.dumps(bookings, indent=2))
-        logger.info(f"Updated booking {booking_id}")
         return {"status": "updated", "booking": updated_booking}
     except Exception as e:
         logger.error(f"Error updating booking {booking_id}: {e}")
@@ -126,10 +144,8 @@ def delete_booking(booking_id: str):
         bookings = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
         filtered = [b for b in bookings if b["id"] != booking_id]
         if len(filtered) == len(bookings):
-            logger.warning(f"Booking not found for deletion: {booking_id}")
             raise HTTPException(status_code=404, detail="Booking not found")
         BOOKINGS_FILE.write_text(json.dumps(filtered, indent=2))
-        logger.info(f"Deleted booking {booking_id}")
         return {"status": "deleted", "booking_id": booking_id}
     except Exception as e:
         logger.error(f"Error deleting booking {booking_id}: {e}")
@@ -155,15 +171,42 @@ def get_recordings():
                     recordings.append({"filename": f.name, "path": str(f)})
             else:
                 recordings.append({"filename": f.name, "path": str(f)})
-    logger.info(f"Returned {len(recordings)} recordings")
     return recordings
 
 @app.post("/system")
 def update_system_settings(settings: SystemSettings):
     try:
         SYSTEM_FILE.write_text(json.dumps(settings.dict(), indent=2))
-        logger.info("Updated system settings")
         return {"status": "success", "settings": settings}
     except Exception as e:
         logger.error(f"Error updating system settings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --------------------------
+# NEW: SIGNED URL ENDPOINT
+# --------------------------
+@app.get("/signed-url")
+def get_signed_url(key: str = Query(..., description="S3 object key")):
+    try:
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": S3_BUCKET, "Key": key},
+            ExpiresIn=3600
+        )
+        return {"url": url}
+    except Exception as e:
+        logger.error(f"Failed to generate signed URL: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --------------------------
+# NEW: DELETE S3 OBJECT
+# --------------------------
+@app.delete("/delete-video")
+def delete_video(data: DeletePayload):
+    try:
+        s3.delete_object(Bucket=S3_BUCKET, Key=data.key)
+        logger.info(f"✅ Deleted {data.key} from S3")
+        return {"status": "success", "message": f"Deleted {data.key}"}
+    except Exception as e:
+        logger.error(f"Failed to delete video: {e}")
         raise HTTPException(status_code=500, detail=str(e))
