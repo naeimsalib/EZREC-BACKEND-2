@@ -179,6 +179,8 @@ def load_bookings():
     if BOOKING_CACHE_FILE.exists():
         try:
             with open(BOOKING_CACHE_FILE, 'r') as f:
+                logger.info(f"🔎 Raw bookings file content: {f.read()}")
+                f.seek(0)
                 data = json.load(f)
                 logger.info(f"✅ Loaded {len(data)} bookings")
                 return data

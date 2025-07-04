@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Final Combined EZREC Deployment Script (Backend + FastAPI + Monitor + Cloudflared)
+# Final Combined EZREC Deployment Script (Backend + FastAPI + Monitor + Cloudflared + Recorder + Video Worker)
 
 set -euo pipefail
 
@@ -89,6 +89,7 @@ chmod 755 "$LOG_DIR"
 #------------------------------#
 echo "⚙️ Setting up systemd services..."
 
+# FastAPI service
 sudo tee "$SYSTEMD_DIR/ezrec-api.service" > /dev/null <<EOF
 [Unit]
 Description=EZREC FastAPI Backend
@@ -104,6 +105,7 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
+# Monitor service
 sudo tee "$SYSTEMD_DIR/ezrec-monitor.service" > /dev/null <<EOF
 [Unit]
 Description=EZREC System Monitor
@@ -119,7 +121,39 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Cloudflared systemd
+# Recorder service
+sudo tee "$SYSTEMD_DIR/recorder.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC Recorder
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/recorder.py
+WorkingDirectory=$PROJECT_DIR/backend
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Video worker service
+sudo tee "$SYSTEMD_DIR/video_worker.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC Video Processor
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/video_worker.py
+WorkingDirectory=$PROJECT_DIR/backend
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Cloudflared service
 sudo tee "$SYSTEMD_DIR/cloudflared.service" > /dev/null <<EOF
 [Unit]
 Description=Cloudflare Tunnel
@@ -166,7 +200,7 @@ fi
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
-for svc in ezrec-api ezrec-monitor cloudflared; do
+for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
   sudo systemctl enable "$svc"
   sudo systemctl restart "$svc"
 done
@@ -178,6 +212,8 @@ echo ""
 echo "🎉 EZREC deployed successfully!"
 echo "📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org"
 echo "🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f"
+echo "📹 Recorder logs:  sudo journalctl -u recorder.service -f"
+echo "🎞️ Video logs:     sudo journalctl -u video_worker.service -f"
 echo "🌐 Tunnel logs:    sudo journalctl -u cloudflared -f"
 echo "📁 Project files:  $PROJECT_DIR"
 echo "📁 API entry:      $API_DIR/api_server.py"
