@@ -166,15 +166,35 @@ class RecordingSession:
                     "camera_id": CAMERA_ID,
                     "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
                 }
-                with open(self.filepath.with_suffix(".json"), "w") as f:
+                meta_path = self.filepath.with_suffix(".json")
+                with open(meta_path, "w") as f:
                     json.dump(metadata, f)
 
+                # Update booking status in Supabase
                 supabase.table('bookings').update({'status': 'completed'}).eq('id', self.booking['id']).execute()
                 supabase.table('cameras').update({
                     'is_recording': False,
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                     'status': 'idle'
                 }).eq('id', CAMERA_ID).execute()
+
+                # Check that both .mp4 and .json exist before removing booking from cache
+                if self.filepath.exists() and meta_path.exists():
+                    try:
+                        if BOOKING_CACHE_FILE.exists():
+                            with open(BOOKING_CACHE_FILE, 'r') as f:
+                                bookings = json.load(f)
+                            # Remove only the booking with the matching id
+                            updated_bookings = [b for b in bookings if b.get('id') != self.booking['id']]
+                            with open(BOOKING_CACHE_FILE, 'w') as f:
+                                json.dump(updated_bookings, f, indent=2)
+                            logger.info(f"🗑️ Removed completed booking {self.booking['id']} from cache file.")
+                        else:
+                            logger.warning(f"Booking cache file {BOOKING_CACHE_FILE} does not exist when trying to remove completed booking.")
+                    except Exception as e:
+                        logger.error(f"Error removing completed booking from cache: {e}")
+                else:
+                    logger.warning(f"Not removing booking {self.booking['id']} from cache: .mp4 or .json file missing.")
 
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
