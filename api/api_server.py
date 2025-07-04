@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List
+from typing import List, Optional
 from pathlib import Path
 from datetime import datetime
 import json
@@ -41,9 +41,9 @@ class Booking(BaseModel):
     user_id: str
     start_time: str
     end_time: str
-    camera_id: str
     date: str
-    recording_id: str
+    camera_id: Optional[str] = None
+    recording_id: Optional[str] = None
 
 class SystemSettings(BaseModel):
     main_logo_path: str
@@ -74,12 +74,15 @@ def get_bookings():
 @app.post("/bookings")
 def post_bookings(bookings: List[Booking]):
     try:
+        logger.info(f"📥 Received {len(bookings)} bookings via POST")
+        for b in bookings:
+            logger.info(f"➡️ Booking: {b.dict()}")
         BOOKINGS_FILE.write_text(json.dumps([b.dict() for b in bookings], indent=2))
-        logger.info(f"Saved {len(bookings)} bookings")
-        return {"status": "success", "saved": len(bookings)}
+        return {"message": "Bookings saved", "count": len(bookings)}
     except Exception as e:
-        logger.error(f"Error saving bookings: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"❌ Error saving bookings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save bookings")
+
 
 @app.put("/bookings/{booking_id}")
 def update_booking(booking_id: str, updated_booking: Booking):
