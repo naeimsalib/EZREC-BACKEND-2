@@ -77,6 +77,8 @@ def post_bookings(bookings: List[Booking]):
         logger.info(f"📥 Received {len(bookings)} bookings via POST")
         for b in bookings:
             logger.info(f"➡️ Booking: {b.dict()}")
+
+        # Load existing bookings
         existing = []
         if BOOKINGS_FILE.exists():
             try:
@@ -84,11 +86,14 @@ def post_bookings(bookings: List[Booking]):
             except Exception as e:
                 logger.warning(f"Could not read existing bookings: {e}")
 
-        # Add new bookings
-        # Remove duplicates by ID
-        unique = {b["id"]: b for b in existing}.values()
-        BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
+        # Add new bookings to existing list
+        combined = existing + [b.dict() for b in bookings]
 
+        # Deduplicate by booking ID
+        unique = {b["id"]: b for b in combined}.values()
+
+        # Write to file
+        BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
 
         return {"message": "Bookings saved", "count": len(bookings)}
     except Exception as e:
