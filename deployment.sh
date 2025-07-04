@@ -75,13 +75,13 @@ fi
 # 6. INSTALL BACKEND DEPENDENCIES
 #------------------------------#
 echo "📦 Installing backend requirements.txt dependencies..."
-if [ -f "$PROJECT_DIR/backend/requirements.txt" ]; then
-  source "$VENV_DIR/bin/activate"
-  pip install -r "$PROJECT_DIR/backend/requirements.txt"
-  deactivate
+REQS_FILE="/home/$USER/EZREC-BACKEND-2/requirements.txt"
+if [ -f "$REQS_FILE" ]; then
+  "$VENV_DIR/bin/pip" install -r "$REQS_FILE"
 else
-  echo "⚠️ Warning: requirements.txt not found in backend folder."
+  echo "⚠️ Warning: requirements.txt not found at $REQS_FILE"
 fi
+
 
 #------------------------------#
 # 7. FIX LOG FILE PERMISSIONS
@@ -148,7 +148,6 @@ PrivateDevices=no
 [Install]
 WantedBy=multi-user.target
 EOF
-
 
 # Video Worker
 sudo tee "$SYSTEMD_DIR/video_worker.service" > /dev/null <<EOF
