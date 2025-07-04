@@ -8,9 +8,9 @@ User=michomanoly14892
 Group=video
 WorkingDirectory=/opt/ezrec-backend
 [Service]
-Environment="PYTHONPATH=/opt/ezrec-backend/venv/lib/python3.11/site-packages:/usr/lib/python3/dist-packages"
+Environment="PYTHONPATH=/usr/lib/python3/dist-packages"
 ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" || true; done'
-ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/recorder.py
 
 Restart=on-failure
 RestartSec=5
