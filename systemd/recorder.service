@@ -7,9 +7,10 @@ Type=simple
 User=michomanoly14892
 Group=video
 WorkingDirectory=/opt/ezrec-backend
+EnvironmentFile=/opt/ezrec-backend/.env
 
 ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" || true; done'
-ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
 
 Restart=on-failure
 RestartSec=5
@@ -17,4 +18,4 @@ RestartSec=5
 PrivateDevices=no
 
 [Install]
-WantedBy=multi-user.target 
+WantedBy=multi-user.target
