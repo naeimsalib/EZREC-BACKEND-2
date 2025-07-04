@@ -10,14 +10,15 @@ import os
 import time
 import json
 import logging
-from pathlib import Path
-from datetime import datetime
-from dateutil.parser import isoparse
-from dotenv import load_dotenv
-from supabase import create_client
+import signal
 import sys
 import pytz
 import psutil
+from pathlib import Path
+from dateutil import parser, tz
+from datetime import datetime
+from dotenv import load_dotenv
+from supabase import create_client
 
 try:
     from picamera2 import Picamera2
@@ -70,8 +71,8 @@ CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
 # Prevent conflicting process
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     try:
-        if 'ezrec_backend.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
-            print("❌ ezrec_backend.py is already running. recorder.py must not run in parallel.")
+        if 'recorder.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():
+            print("❌ recorder.py is already running.")
             sys.exit(1)
     except Exception:
         continue
@@ -92,6 +93,14 @@ supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 logger.info(f"📡 Recorder started [Timezone: {TIMEZONE_NAME}]")
 logger.info(f"📄 Watching bookings cache: {BOOKING_CACHE_FILE}")
+
+# Graceful shutdown
+def handle_exit(sig, frame):
+    logger.info("🛑 Received termination signal. Exiting gracefully.")
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, handle_exit)
+signal.signal(signal.SIGTERM, handle_exit)
 
 class RecordingSession:
     def __init__(self, booking):
@@ -139,9 +148,9 @@ class RecordingSession:
 
         except Exception as e:
             logger.error(f"❌ Failed to start recording: {e}")
-            self.lockfile.unlink(missing_ok=True)
+            if self.lockfile.exists():
+                self.lockfile.unlink()
             return False
-
 
     def stop(self):
         if self.active and self.picam2:
@@ -171,24 +180,9 @@ class RecordingSession:
                 logger.error(f"Error stopping recording: {e}")
 
             finally:
-                self.lockfile.unlink(missing_ok=True)
+                if self.lockfile.exists():
+                    self.lockfile.unlink()
                 self.active = False
-
-def load_bookings():
-    logger.info("📂 Loading bookings from file")
-    if BOOKING_CACHE_FILE.exists():
-        try:
-            with open(BOOKING_CACHE_FILE, 'r') as f:
-                logger.info(f"🔎 Raw bookings file content: {f.read()}")
-                f.seek(0)
-                data = json.load(f)
-                logger.info(f"✅ Loaded {len(data)} bookings")
-                return data
-        except Exception as e:
-            logger.warning(f"⚠️ Failed to load bookings: {e}")
-    else:
-        logger.warning(f"⚠️ Booking file does not exist: {BOOKING_CACHE_FILE}")
-    return []
 
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
@@ -196,9 +190,9 @@ def get_active_booking(bookings):
     logger.info(f"USER_ID: {USER_ID}, CAMERA_ID: {CAMERA_ID}")
     for booking in bookings:
         try:
-            start = isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
-            end = isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
-            logger.info(f"🔍 Booking {booking['id']}: {start} → {end}")
+            start_time = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
+            end_time = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
+            logger.info(f"🔍 Booking {booking['id']}: {start_time} → {end_time}")
         except Exception as e:
             logger.warning(f"Invalid booking time format: {e}")
             continue
@@ -206,11 +200,33 @@ def get_active_booking(bookings):
         if (
             booking.get("user_id") == USER_ID and
             booking.get("camera_id") == CAMERA_ID and
-            start <= now <= end
+            start_time <= now <= end_time
         ):
             logger.info(f"✅ Active booking matched: {booking['id']}")
             return booking
     return None
+
+def load_bookings():
+    logger.info("📂 Loading bookings from file")
+    if not BOOKING_CACHE_FILE.exists():
+        logger.warning(f"⚠️ Booking file does not exist: {BOOKING_CACHE_FILE}")
+        return []
+
+    try:
+        with open(BOOKING_CACHE_FILE, 'r') as f:
+            data = json.load(f)
+            if isinstance(data, list):
+                logger.info(f"✅ Loaded {len(data)} bookings from cache")
+                return data
+            else:
+                logger.warning("⚠️ Bookings file does not contain a list")
+                return []
+    except json.JSONDecodeError as e:
+        logger.error(f"❌ JSON parsing error in booking cache: {e}")
+    except Exception as e:
+        logger.error(f"❌ Unexpected error reading booking file: {e}")
+
+    return []
 
 def main():
     current_session = None
