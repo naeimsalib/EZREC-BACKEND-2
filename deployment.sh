@@ -135,14 +135,20 @@ Description=EZREC Recorder
 After=network.target
 
 [Service]
-ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/recorder.py
-WorkingDirectory=$PROJECT_DIR/backend
-Restart=always
+Type=simple
 User=$USER
+Group=video
+WorkingDirectory=$PROJECT_DIR
+ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "\$dev" || true; done'
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/recorder.py
+Restart=on-failure
+RestartSec=5
+PrivateDevices=no
 
 [Install]
 WantedBy=multi-user.target
 EOF
+
 
 # Video Worker
 sudo tee "$SYSTEMD_DIR/video_worker.service" > /dev/null <<EOF
