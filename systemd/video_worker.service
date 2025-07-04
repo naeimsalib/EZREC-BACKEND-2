@@ -6,9 +6,11 @@ Wants=network-online.target
 [Service]
 Type=simple
 User=michomanoly14892
-WorkingDirectory=/opt/ezrec-backend/backend
+WorkingDirectory=/opt/ezrec-backend
 EnvironmentFile=/opt/ezrec-backend/.env
+
 ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

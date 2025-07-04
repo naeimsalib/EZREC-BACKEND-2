@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 User=michomanoly14892
 Group=video
-WorkingDirectory=/opt/ezrec-backend/backend
+WorkingDirectory=/opt/ezrec-backend
 EnvironmentFile=/opt/ezrec-backend/.env
 
 ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" || true; done'
@@ -14,12 +14,7 @@ ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/recorde
 
 Restart=on-failure
 RestartSec=5
-
 PrivateDevices=no
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ReadWritePaths=/opt/ezrec-backend
 
 [Install]
 WantedBy=multi-user.target
