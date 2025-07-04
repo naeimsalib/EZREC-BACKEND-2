@@ -61,12 +61,7 @@ python3 -m venv "$VENV_DIR"
 sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
-# 5. SKIP Writing FastAPI + MONITOR (Handled via rsync)
-#------------------------------#
-echo "📜 Skipping FastAPI and Monitor overwrite... (rsync will update from dev dir)"
-
-#------------------------------#
-# 5.5 SYNC PROJECT FILES
+# 5. SYNC PROJECT FILES
 #------------------------------#
 echo "📦 Syncing updated project files..."
 DEV_DIR="/home/$USER/EZREC-BACKEND-2"
@@ -77,19 +72,31 @@ else
 fi
 
 #------------------------------#
-# 6. FIX LOG FILE PERMISSIONS
+# 6. INSTALL BACKEND DEPENDENCIES
+#------------------------------#
+echo "📦 Installing backend requirements.txt dependencies..."
+if [ -f "$PROJECT_DIR/backend/requirements.txt" ]; then
+  source "$VENV_DIR/bin/activate"
+  pip install -r "$PROJECT_DIR/backend/requirements.txt"
+  deactivate
+else
+  echo "⚠️ Warning: requirements.txt not found in backend folder."
+fi
+
+#------------------------------#
+# 7. FIX LOG FILE PERMISSIONS
 #------------------------------#
 echo "⚖️ Fixing log permissions..."
 sudo mkdir -p "$LOG_DIR"
-sudo chown "$USER":"$USER" "$LOG_DIR"
+sudo chown "$USER:$USER" "$LOG_DIR"
 chmod 755 "$LOG_DIR"
 
 #------------------------------#
-# 7. SYSTEMD SERVICES
+# 8. SYSTEMD SERVICES
 #------------------------------#
 echo "⚙️ Setting up systemd services..."
 
-# FastAPI service
+# FastAPI
 sudo tee "$SYSTEMD_DIR/ezrec-api.service" > /dev/null <<EOF
 [Unit]
 Description=EZREC FastAPI Backend
@@ -105,7 +112,7 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Monitor service
+# Monitor
 sudo tee "$SYSTEMD_DIR/ezrec-monitor.service" > /dev/null <<EOF
 [Unit]
 Description=EZREC System Monitor
@@ -121,7 +128,7 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Recorder service
+# Recorder
 sudo tee "$SYSTEMD_DIR/recorder.service" > /dev/null <<EOF
 [Unit]
 Description=EZREC Recorder
@@ -137,7 +144,7 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Video worker service
+# Video Worker
 sudo tee "$SYSTEMD_DIR/video_worker.service" > /dev/null <<EOF
 [Unit]
 Description=EZREC Video Processor
@@ -153,7 +160,7 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Cloudflared service
+# Cloudflared
 sudo tee "$SYSTEMD_DIR/cloudflared.service" > /dev/null <<EOF
 [Unit]
 Description=Cloudflare Tunnel
@@ -173,7 +180,7 @@ WantedBy=multi-user.target
 EOF
 
 #------------------------------#
-# 8. CLOUDFLARED INSTALL
+# 9. CLOUDFLARED INSTALL
 #------------------------------#
 if ! command -v cloudflared &>/dev/null; then
   echo "📦 Installing cloudflared..."
@@ -185,7 +192,7 @@ else
 fi
 
 #------------------------------#
-# 9. UDP BUFFER CONFIG
+# 10. UDP BUFFER CONFIG
 #------------------------------#
 echo "🛠️ Increasing UDP buffer size for cloudflared..."
 if ! grep -q "net.core.rmem_max = 7168000" /etc/sysctl.conf; then
@@ -196,7 +203,7 @@ else
 fi
 
 #------------------------------#
-# 10. ENABLE + START SERVICES
+# 11. ENABLE + START SERVICES
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
@@ -206,7 +213,7 @@ for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
 done
 
 #------------------------------#
-# 11. DONE!
+# 12. DONE!
 #------------------------------#
 echo ""
 echo "🎉 EZREC deployed successfully!"
