@@ -191,6 +191,7 @@ def load_bookings():
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
     logger.info(f"🕒 Checking time: {now.isoformat()}")
+    logger.info(f"USER_ID: {USER_ID}, CAMERA_ID: {CAMERA_ID}")
     for booking in bookings:
         try:
             start = isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
@@ -199,6 +200,7 @@ def get_active_booking(bookings):
         except Exception as e:
             logger.warning(f"Invalid booking time format: {e}")
             continue
+        logger.info(f"🔍 Comparing booking.user_id: {booking.get('user_id')}, booking.camera_id: {booking.get('camera_id')}")
         if (
             booking.get("user_id") == USER_ID and
             booking.get("camera_id") == CAMERA_ID and
