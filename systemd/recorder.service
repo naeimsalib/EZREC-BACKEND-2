@@ -6,16 +6,26 @@ After=network.target
 Type=simple
 User=michomanoly14892
 Group=video
-WorkingDirectory=/opt/ezrec-backend
+WorkingDirectory=/opt/ezrec-backend/backend
 EnvironmentFile=/opt/ezrec-backend/.env
 
+# Kill any process using the camera before starting
 ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" || true; done'
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+
+# Start recorder with correct venv Python
+ExecStart=/opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
 
 Restart=on-failure
 RestartSec=5
 
+# Allow access to video devices
 PrivateDevices=no
+
+# Security options
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/ezrec-backend
 
 [Install]
 WantedBy=multi-user.target
