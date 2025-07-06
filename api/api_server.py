@@ -14,7 +14,7 @@ from urllib.parse import unquote
 # --------------------------
 # LOAD .env FILE
 # --------------------------
-load_dotenv()
+load_dotenv(dotenv_path="/opt/ezrec-backend/.env")
 
 # --------------------------
 # LOGGING SETUP
