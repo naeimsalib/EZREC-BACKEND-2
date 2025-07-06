@@ -166,6 +166,7 @@ def main():
     log.info("Video worker started and entering main loop")
     while True:
         for date_dir in RECORDINGS_DIR.glob("*/"):
+            log.info(f"Scanning directory: {date_dir}")
             for raw_file in date_dir.glob("*.mp4"):
                 done = raw_file.with_suffix(".done")
                 completed = raw_file.with_suffix(".completed")
