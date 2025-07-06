@@ -188,12 +188,12 @@ def update_system_settings(settings: SystemSettings):
 # --------------------------
 @app.get("/signed-url")
 def get_signed_url(key: str = Query(..., description="S3 object key")):
-    print(f"Raw key received: {key}")
+    logger.info(f"Raw key received: {key}")
     decoded_key = unquote(key)
-    print(f"Decoded key: {decoded_key}")
-    print(f"Using bucket: {S3_BUCKET}, region: {AWS_REGION}")
-    print(f"DEBUG: ENV AWS_ACCESS_KEY_ID = {os.environ.get('AWS_ACCESS_KEY_ID')}")
-    print(f"DEBUG: ENV S3_BUCKET = {os.environ.get('AWS_S3_BUCKET')}")
+    logger.info(f"Decoded key: {decoded_key}")
+    logger.info(f"Using bucket: {S3_BUCKET}, region: {AWS_REGION}")
+    logger.info(f"DEBUG: ENV AWS_ACCESS_KEY_ID = {os.environ.get('AWS_ACCESS_KEY_ID')}")
+    logger.info(f"DEBUG: ENV S3_BUCKET = {os.environ.get('AWS_S3_BUCKET')}")
     try:
         s3.head_object(Bucket=S3_BUCKET, Key=decoded_key)
         url = s3.generate_presigned_url(
@@ -203,7 +203,7 @@ def get_signed_url(key: str = Query(..., description="S3 object key")):
         )
         return {"url": url}
     except Exception as e:
-        print(f"Error from S3: {e}")
+        logger.error(f"Error from S3: {e}")
         raise HTTPException(status_code=404, detail=f"S3 error: {e}")
 
 # --------------------------
