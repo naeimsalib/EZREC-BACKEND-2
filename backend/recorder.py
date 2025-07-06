@@ -7,11 +7,11 @@ Main Recording Service
 """
 
 import os
+import sys
 import time
 import json
 import logging
 import signal
-import sys
 import pytz
 import psutil
 from pathlib import Path
@@ -19,10 +19,13 @@ from dateutil import parser
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
-sys.path.append(str(Path(__file__).resolve().parent.parent / 'api'))
 
+# 🔧 Ensure API utils can be imported
+API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
+if API_DIR not in sys.path:
+    sys.path.append(API_DIR)
 
-from api.booking_utils import update_booking_status
+from booking_utils import update_booking_status
 
 try:
     from picamera2 import Picamera2
@@ -68,6 +71,7 @@ RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/recordings/')
 LOG_FILE = Path(os.getenv('RECORDER_LOG', '/opt/ezrec-backend/logs/recorder.log'))
 CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
 
+# Avoid double processes
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     try:
         if 'recorder.py' in ' '.join(proc.info['cmdline']) and proc.info['pid'] != os.getpid():

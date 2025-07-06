@@ -4,29 +4,30 @@ EZREC - Video Worker Script
 """
 
 import os
-import time
 import sys
+import time
 import subprocess
-from pathlib import Path
-from datetime import datetime
 import shutil
 import uuid
 import json
 import requests
 import boto3
 from boto3.s3.transfer import TransferConfig
+from pathlib import Path
+from datetime import datetime
 import logging
 import pytz
 from dotenv import load_dotenv
 from supabase import create_client
 
+# ✅ Fix the import path for booking_utils.py
+API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
+if API_DIR not in sys.path:
+    sys.path.append(API_DIR)
 
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+from booking_utils import update_booking_status
 
-from api.booking_utils import update_booking_status
-
-
-# Load env
+# Load environment variables
 load_dotenv("/opt/ezrec-backend/.env", override=True)
 
 TIMEZONE_NAME = os.getenv("TIMEZONE", "UTC")
@@ -40,9 +41,13 @@ for var in required_env_vars:
     if not os.getenv(var):
         raise RuntimeError(f"Missing env: {var}")
 
-supabase = create_client(os.getenv("SUPABASE_URL"), os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+supabase = create_client(
+    os.getenv("SUPABASE_URL"),
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+)
 
-s3 = boto3.client("s3",
+s3 = boto3.client(
+    "s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
     region_name=os.getenv("AWS_REGION")
@@ -59,8 +64,11 @@ CHECK_INTERVAL = int(os.getenv("VIDEO_WORKER_CHECK_INTERVAL", "15"))
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 MEDIA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s',
-                    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()])
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()]
+)
 log = logging.getLogger("video_worker")
 
 def get_duration(file: Path) -> float:
@@ -70,13 +78,19 @@ def get_duration(file: Path) -> float:
             "-of", "default=noprint_wrappers=1:nokey=1", str(file)
         ], capture_output=True, text=True)
         return float(result.stdout.strip())
-    except:
+    except Exception:
         return 0.0
 
 def upload_file_chunked(local_path: Path, s3_key: str) -> str:
     try:
-        config = TransferConfig(multipart_threshold=20*1024*1024, multipart_chunksize=10*1024*1024)
-        s3.upload_file(str(local_path), S3_BUCKET, s3_key, ExtraArgs={"ContentType": "video/mp4"}, Config=config)
+        config = TransferConfig(
+            multipart_threshold=20 * 1024 * 1024,
+            multipart_chunksize=10 * 1024 * 1024
+        )
+        s3.upload_file(
+            str(local_path), S3_BUCKET, s3_key,
+            ExtraArgs={"ContentType": "video/mp4"}, Config=config
+        )
         return f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
     except Exception as e:
         log.error(f"❌ Upload failed: {e}")
@@ -93,7 +107,7 @@ def fetch_user_media(user_id: str):
     try:
         res = supabase.table("user_settings").select("*").eq("user_id", user_id).single().execute()
         return res.data.get("intro_video_url"), res.data.get("logo_url") if res.data else (None, None)
-    except:
+    except Exception:
         return None, None
 
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
@@ -104,8 +118,10 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     intro_path = MEDIA_CACHE_DIR / f"intro_{user_id}.mp4"
     logo_path = MEDIA_CACHE_DIR / f"logo_{user_id}.png"
 
-    if intro_url: download_file(intro_url, intro_path)
-    if logo_url: download_file(logo_url, logo_path)
+    if intro_url:
+        download_file(intro_url, intro_path)
+    if logo_url:
+        download_file(logo_url, logo_path)
 
     try:
         intermediate = raw_file
@@ -113,12 +129,17 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             concat_txt = MEDIA_CACHE_DIR / f"concat_{uuid.uuid4().hex}.txt"
             concat_txt.write_text(f"file '{intro_path}'\nfile '{raw_file}'\n")
             intermediate = output_file.with_name("with_intro.mp4")
-            subprocess.run(["ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt), "-c", "copy", str(intermediate)], check=True)
+            subprocess.run([
+                "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt),
+                "-c", "copy", str(intermediate)
+            ], check=True)
 
         if logo_path.exists():
             subprocess.run([
                 "ffmpeg", "-y", "-i", str(intermediate), "-i", str(logo_path),
-                "-filter_complex", "overlay=W-w-10:H-h-10", "-c:v", "libx264", "-crf", "23", "-preset", "fast", str(output_file)
+                "-filter_complex", "overlay=W-w-10:H-h-10",
+                "-c:v", "libx264", "-crf", "23", "-preset", "fast",
+                str(output_file)
             ], check=True)
         else:
             shutil.copy(intermediate, output_file)
@@ -135,7 +156,10 @@ def insert_video_metadata(payload: dict) -> bool:
         "Content-Type": "application/json",
         "Prefer": "return=representation"
     }
-    r = requests.post(f"{os.getenv('SUPABASE_URL')}/rest/v1/videos", headers=headers, json=payload)
+    r = requests.post(
+        f"{os.getenv('SUPABASE_URL')}/rest/v1/videos",
+        headers=headers, json=payload
+    )
     return r.status_code in (200, 201)
 
 def main():
@@ -155,10 +179,12 @@ def main():
                 try:
                     with open(meta_path) as f:
                         meta = json.load(f)
+
                     user_id = meta["user_id"]
                     booking_id = meta["booking_id"]
 
                     update_booking_status(booking_id, "Processing")
+
                     final_file = process_video(raw_file, user_id, date_dir)
 
                     if final_file:
@@ -186,6 +212,7 @@ def main():
                 finally:
                     if lock.exists():
                         lock.unlink()
+
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
