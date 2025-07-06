@@ -38,6 +38,10 @@ async def push_bookings(request: Request, x_api_key: str = Header(...)):
         bookings = await request.json()
         if not isinstance(bookings, list):
             raise HTTPException(status_code=400, detail="Payload must be a list of bookings")
+        # Check for edits to non-existent bookings
+        existing = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
+        existing_ids = {b["id"] for b in existing}
+        unavailable = [b["id"] for b in bookings if b["id"] not in existing_ids]
         BOOKINGS_FILE.write_text(json.dumps(bookings, indent=2))
         # Supabase upsert
         if supabase:
@@ -46,6 +50,8 @@ async def push_bookings(request: Request, x_api_key: str = Header(...)):
                     supabase.table("bookings").upsert(booking).execute()
                 except Exception as e:
                     print(f"[Supabase] Upsert error: {e}")
+        if unavailable:
+            return {"status": "partial", "message": f"Some bookings unavailable: {unavailable}", "count": len(bookings)}
         return {"status": "success", "count": len(bookings)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save bookings: {e}")
@@ -61,6 +67,8 @@ async def delete_booking(request: Request, x_api_key: str = Header(...)):
             raise HTTPException(status_code=400, detail="Missing booking id")
         bookings = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
         filtered = [b for b in bookings if b.get("id") != booking_id]
+        if len(filtered) == len(bookings):
+            return {"status": "unavailable", "message": f"Booking {booking_id} not found"}
         BOOKINGS_FILE.write_text(json.dumps(filtered, indent=2))
         # Supabase delete
         if supabase:

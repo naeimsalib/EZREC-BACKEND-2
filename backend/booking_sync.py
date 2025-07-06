@@ -84,7 +84,7 @@ def update_booking(booking_id: str, booking: Booking):
                 updated = True
                 break
         if not updated:
-            raise HTTPException(status_code=404, detail="Booking not found")
+            return {"status": "unavailable", "message": f"Booking {booking_id} not found"}
         BOOKING_CACHE_FILE.write_text(json.dumps(bookings, indent=2))
         return {"status": "updated", "booking": booking.dict()}
     except Exception as e:
@@ -95,8 +95,10 @@ def update_booking(booking_id: str, booking: Booking):
 def delete_booking(booking_id: str):
     try:
         bookings = json.loads(BOOKING_CACHE_FILE.read_text()) if BOOKING_CACHE_FILE.exists() else []
-        bookings = [b for b in bookings if b["id"] != booking_id]
-        BOOKING_CACHE_FILE.write_text(json.dumps(bookings, indent=2))
+        filtered = [b for b in bookings if b["id"] != booking_id]
+        if len(filtered) == len(bookings):
+            return {"status": "unavailable", "message": f"Booking {booking_id} not found"}
+        BOOKING_CACHE_FILE.write_text(json.dumps(filtered, indent=2))
         return {"status": "deleted", "booking_id": booking_id}
     except Exception as e:
         logger.error(f"Error deleting booking: {e}")
