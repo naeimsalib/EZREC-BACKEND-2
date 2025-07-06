@@ -10,6 +10,7 @@ import boto3
 import os
 from dotenv import load_dotenv
 from urllib.parse import unquote
+import sys
 
 # --------------------------
 # LOAD .env FILE
@@ -19,7 +20,13 @@ load_dotenv(dotenv_path="/opt/ezrec-backend/.env")
 # --------------------------
 # LOGGING SETUP
 # --------------------------
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.StreamHandler(sys.stdout)
+    ]
+)
 logger = logging.getLogger("EZREC")
 
 # --------------------------
