@@ -4,11 +4,16 @@ from pathlib import Path
 import json
 import os
 from dotenv import load_dotenv
+from supabase import create_client
 
 load_dotenv("/opt/ezrec-backend/.env")
 
 API_KEY = os.getenv("BOOKING_SYNC_API_KEY", "ezrec_prod_4b2e7e7c-8e2a-4c1b-9f2e-1a7b2e8c9d3f")
 BOOKINGS_FILE = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 app = FastAPI()
 
@@ -25,6 +30,13 @@ async def push_bookings(request: Request, x_api_key: str = Header(...)):
         if not isinstance(bookings, list):
             raise HTTPException(status_code=400, detail="Payload must be a list of bookings")
         BOOKINGS_FILE.write_text(json.dumps(bookings, indent=2))
+        # Supabase upsert
+        if supabase:
+            for booking in bookings:
+                try:
+                    supabase.table("bookings").upsert(booking).execute()
+                except Exception as e:
+                    print(f"[Supabase] Upsert error: {e}")
         return {"status": "success", "count": len(bookings)}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to save bookings: {e}")
@@ -41,6 +53,12 @@ async def delete_booking(request: Request, x_api_key: str = Header(...)):
         bookings = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
         filtered = [b for b in bookings if b.get("id") != booking_id]
         BOOKINGS_FILE.write_text(json.dumps(filtered, indent=2))
+        # Supabase delete
+        if supabase:
+            try:
+                supabase.table("bookings").delete().eq("id", booking_id).execute()
+            except Exception as e:
+                print(f"[Supabase] Delete error: {e}")
         return {"status": "deleted", "booking_id": booking_id}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to delete booking: {e}") 
