@@ -108,7 +108,7 @@ class RecordingSession:
         self.filename = f"raw_{booking['id']}_{datetime.now(LOCAL_TZ).strftime('%H%M%S')}"
         self.filepath = self.date_folder / (self.filename + ".mp4")
         self.lockfile = self.filepath.with_suffix(".lock")
-        self.completed_marker = self.filepath.with_suffix(".completed")
+        self.completed_marker = self.filepath.with_suffix(".done")
         self.picam2 = None
         self.encoder = None
         self.output = None
