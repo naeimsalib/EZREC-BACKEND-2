@@ -57,7 +57,7 @@ echo "🐍 Setting up virtual environment..."
 rm -rf "$VENV_DIR"
 python3 -m venv --system-site-packages "$VENV_DIR"
 "$VENV_DIR/bin/pip" install --upgrade pip
-"$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3 python-dotenv pytz python-dateutil
+"$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3 python-dotenv pytz python-dateutil supabase
 sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
