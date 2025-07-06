@@ -5,6 +5,7 @@ EZREC - Video Worker Script
 
 import os
 import time
+import sys
 import subprocess
 from pathlib import Path
 from datetime import datetime
@@ -18,7 +19,12 @@ import logging
 import pytz
 from dotenv import load_dotenv
 from supabase import create_client
+
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+
 from api.booking_utils import update_booking_status
+
 
 # Load env
 load_dotenv("/opt/ezrec-backend/.env", override=True)
