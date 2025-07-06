@@ -48,7 +48,7 @@ RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-S3_BUCKET = os.getenv("S3_BUCKET", "ezrec-videos")
+S3_BUCKET = os.getenv("AWS_S3_BUCKET", "ezrec-videos")
 
 s3 = boto3.client(
     "s3",
