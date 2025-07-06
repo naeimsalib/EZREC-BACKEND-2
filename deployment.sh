@@ -183,6 +183,24 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
+# Booking Sync FastAPI
+sudo tee "$SYSTEMD_DIR/booking_sync_fastapi.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC FastAPI Booking Sync Service
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/uvicorn booking_sync_fastapi:app --host 0.0.0.0 --port 8081
+WorkingDirectory=$API_DIR
+Environment="PYTHONUNBUFFERED=1"
+Restart=always
+User=$USER
+Group=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 #------------------------------#
 # 9. CLOUDFLARED INSTALL
 #------------------------------#
@@ -217,6 +235,16 @@ for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
   sleep 1
 done
 
+# Ensure API key is in .env
+if ! grep -q "BOOKING_SYNC_API_KEY=" "$PROJECT_DIR/.env"; then
+  echo "BOOKING_SYNC_API_KEY=ezrec_prod_4b2e7e7c-8e2a-4c1b-9f2e-1a7b2e8c9d3f" | sudo tee -a "$PROJECT_DIR/.env"
+fi
+
+# Enable and start the booking_sync_fastapi service
+sudo systemctl daemon-reload
+sudo systemctl enable booking_sync_fastapi.service
+sudo systemctl restart booking_sync_fastapi.service
+
 #------------------------------#
 # 12. DONE!
 #------------------------------#
@@ -230,3 +258,22 @@ echo "🌐 Tunnel logs:    sudo journalctl -u cloudflared -f"
 echo "📁 Project files:  $PROJECT_DIR"
 echo "📁 API entry:      $API_DIR/api_server.py"
 echo "📃 Logs dir:       $LOG_DIR"
+
+#------------------------------#
+# 13. CLOUDFLARED CONFIG
+#------------------------------#
+TUNNEL_ID=$(cloudflared tunnel list | grep "$TUNNEL_NAME" | awk '{print $1}' | head -n1)
+CLOUDFLARED_CREDS="/etc/cloudflared/${TUNNEL_ID}.json"
+CLOUDFLARED_CONFIG="/etc/cloudflared/config.yml"
+
+sudo tee "$CLOUDFLARED_CONFIG" > /dev/null <<EOF
+tunnel: $TUNNEL_NAME
+credentials-file: $CLOUDFLARED_CREDS
+
+ingress:
+  - hostname: api.ezrec.org
+    service: http://localhost:8081
+  - service: http_status:404
+EOF
+
+sudo systemctl restart cloudflared

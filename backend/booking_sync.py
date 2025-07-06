@@ -1,41 +1,20 @@
-#!/usr/bin/env python3
-"""
-Booking Sync Service
-- Fetches bookings from Supabase every 3 seconds
-- Updates bookings_cache.json with new, edited, or deleted bookings
-- Designed to run as a standalone process (systemd service)
-"""
-import os
-import time
+# booking_sync_api.py (replaces old booking_sync.py)
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+from typing import List
+from pathlib import Path
 import json
 import logging
-import sys
-import pytz
-from pathlib import Path
-from datetime import datetime
+import os
+from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-from supabase import create_client
-from zoneinfo import ZoneInfo
 
+# Load environment
 load_dotenv("/opt/ezrec-backend/.env")
 
-# Validate required environment variables
-REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
-missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
-if missing:
-    print(f"Missing required environment variables: {missing}")
-    sys.exit(1)
-
-from zoneinfo import ZoneInfo
-LOCAL_TZ = ZoneInfo(os.popen('cat /etc/timezone').read().strip()) if os.path.exists('/etc/timezone') else None
-
-SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
-USER_ID = os.getenv('USER_ID')
-CAMERA_ID = os.getenv('CAMERA_ID', '0')
-BOOKING_CACHE_FILE = Path(os.getenv('BOOKING_CACHE_FILE', '/opt/ezrec-backend/bookings_cache.json'))
-LOG_FILE = Path(os.getenv('BOOKING_SYNC_LOG', '/opt/ezrec-backend/logs/booking_sync.log'))
-FETCH_INTERVAL = int(os.getenv('BOOKING_FETCH_INTERVAL', '3'))
+BOOKING_CACHE_FILE = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+LOG_FILE = Path("/opt/ezrec-backend/logs/booking_sync_api.log")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -47,49 +26,78 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+app = FastAPI()
 
-def fetch_bookings():
-    try:
-        response = supabase.table('bookings').select('*').eq('user_id', USER_ID).eq('status', 'confirmed').execute()
-        if response.data is None:
-            logger.error(f"Supabase response has no data: {response}")
-        return response.data if response.data else []
-    except Exception as e:
-        logger.error(f"Failed to fetch bookings: {e}")
-        return None
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-def load_local_cache():
+class Booking(BaseModel):
+    id: str
+    user_id: str
+    start_time: str
+    end_time: str
+    date: str
+    camera_id: str
+    recording_id: str = ""
+    status: str = "Pending"
+
+@app.get("/")
+def root():
+    return {"status": "booking_sync_api online"}
+
+@app.get("/bookings")
+def get_bookings():
     if BOOKING_CACHE_FILE.exists():
         try:
-            with open(BOOKING_CACHE_FILE, 'r') as f:
-                return json.load(f)
+            return json.loads(BOOKING_CACHE_FILE.read_text())
         except Exception as e:
-            logger.warning(f"Failed to load local cache: {e}")
+            logger.error(f"Error reading bookings: {e}")
+            raise HTTPException(status_code=500, detail="Failed to read bookings file")
     return []
 
-def save_local_cache(bookings):
+@app.post("/bookings")
+def post_bookings(bookings: List[Booking]):
     try:
-        with open(BOOKING_CACHE_FILE, 'w') as f:
-            json.dump(bookings, f)
+        logger.info(f"Received {len(bookings)} bookings via POST")
+        existing = json.loads(BOOKING_CACHE_FILE.read_text()) if BOOKING_CACHE_FILE.exists() else []
+        combined = existing + [b.dict() for b in bookings]
+        unique = {b["id"]: b for b in combined}.values()
+        BOOKING_CACHE_FILE.write_text(json.dumps(list(unique), indent=2))
+        return {"message": "Bookings saved", "count": len(bookings)}
     except Exception as e:
-        logger.warning(f"Failed to save local cache: {e}")
+        logger.error(f"Error saving bookings: {e}")
+        raise HTTPException(status_code=500, detail="Failed to save bookings")
 
-def bookings_changed(old, new):
-    return json.dumps(old, sort_keys=True) != json.dumps(new, sort_keys=True)
+@app.put("/bookings/{booking_id}")
+def update_booking(booking_id: str, booking: Booking):
+    try:
+        bookings = json.loads(BOOKING_CACHE_FILE.read_text()) if BOOKING_CACHE_FILE.exists() else []
+        updated = False
+        for i, b in enumerate(bookings):
+            if b["id"] == booking_id:
+                bookings[i] = booking.dict()
+                updated = True
+                break
+        if not updated:
+            raise HTTPException(status_code=404, detail="Booking not found")
+        BOOKING_CACHE_FILE.write_text(json.dumps(bookings, indent=2))
+        return {"status": "updated", "booking": booking.dict()}
+    except Exception as e:
+        logger.error(f"Error updating booking: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-def main():
-    logger.info("Booking Sync Service started")
-    last_bookings = load_local_cache()
-    while True:
-        bookings = fetch_bookings()
-        logger.info(f"Fetched bookings: {bookings}")
-        logger.info(f"Last bookings: {last_bookings}")
-        if bookings is not None and bookings_changed(last_bookings, bookings):
-            logger.info("Bookings updated; saving to cache.")
-            save_local_cache(bookings)
-            last_bookings = bookings
-        time.sleep(FETCH_INTERVAL)
-
-if __name__ == "__main__":
-    main() 
+@app.delete("/bookings/{booking_id}")
+def delete_booking(booking_id: str):
+    try:
+        bookings = json.loads(BOOKING_CACHE_FILE.read_text()) if BOOKING_CACHE_FILE.exists() else []
+        bookings = [b for b in bookings if b["id"] != booking_id]
+        BOOKING_CACHE_FILE.write_text(json.dumps(bookings, indent=2))
+        return {"status": "deleted", "booking_id": booking_id}
+    except Exception as e:
+        logger.error(f"Error deleting booking: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
