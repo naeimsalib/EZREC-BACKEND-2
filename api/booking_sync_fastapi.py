@@ -5,6 +5,7 @@ import json
 import os
 from dotenv import load_dotenv
 from supabase import create_client
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv("/opt/ezrec-backend/.env")
 
@@ -16,6 +17,14 @@ SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 def health():
@@ -61,4 +70,8 @@ async def delete_booking(request: Request, x_api_key: str = Header(...)):
                 print(f"[Supabase] Delete error: {e}")
         return {"status": "deleted", "booking_id": booking_id}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to delete booking: {e}") 
+        raise HTTPException(status_code=500, detail=f"Failed to delete booking: {e}")
+
+@app.get("/status")
+def status():
+    return {"status": "ok"} 
