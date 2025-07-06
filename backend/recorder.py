@@ -167,8 +167,6 @@ class RecordingSession:
                 with open(self.filepath.with_suffix(".json"), "w") as f:
                     json.dump(metadata, f)
 
-                update_booking_status(self.booking["id"], "RecordingFinished")
-
                 supabase.table('cameras').update({
                     'is_recording': False,
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
@@ -182,6 +180,9 @@ class RecordingSession:
                     with open(BOOKING_CACHE_FILE, 'w') as f:
                         json.dump(bookings, f, indent=2)
                     logger.info(f"🗑️ Removed completed booking {self.booking['id']} from cache")
+
+                # Now update status to RecordingFinished
+                update_booking_status(self.booking["id"], "RecordingFinished")
 
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
