@@ -106,6 +106,10 @@ ExecStart=$VENV_DIR/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
 WorkingDirectory=$API_DIR
 Restart=always
 User=$USER
+Environment="AWS_ACCESS_KEY_ID=$(grep '^AWS_ACCESS_KEY_ID=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
+Environment="AWS_SECRET_ACCESS_KEY=$(grep '^AWS_SECRET_ACCESS_KEY=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
+Environment="AWS_REGION=$(grep '^AWS_REGION=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
+Environment="AWS_S3_BUCKET=$(grep '^AWS_S3_BUCKET=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
 
 [Install]
 WantedBy=multi-user.target
