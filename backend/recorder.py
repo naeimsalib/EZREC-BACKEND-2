@@ -158,28 +158,21 @@ class RecordingSession:
                 logger.info(f"⏹️ Stopped recording: {self.filepath}")
                 self.completed_marker.touch()
 
-                metadata = {
-                    "booking_id": self.booking["id"],
-                    "user_id": USER_ID,
-                    "camera_id": CAMERA_ID,
-                    "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
-                }
-                with open(self.filepath.with_suffix(".json"), "w") as f:
-                    json.dump(metadata, f)
+                if self.filepath.exists():
+                    metadata = {
+                        "booking_id": self.booking["id"],
+                        "user_id": USER_ID,
+                        "camera_id": CAMERA_ID,
+                        "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
+                    }
+                    with open(self.filepath.with_suffix(".json"), "w") as f:
+                        json.dump(metadata, f)
 
                 supabase.table('cameras').update({
                     'is_recording': False,
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                     'status': 'idle'
                 }).eq('id', CAMERA_ID).execute()
-
-                if self.filepath.exists():
-                    with open(BOOKING_CACHE_FILE, 'r') as f:
-                        bookings = json.load(f)
-                    bookings = [b for b in bookings if b.get('id') != self.booking['id']]
-                    with open(BOOKING_CACHE_FILE, 'w') as f:
-                        json.dump(bookings, f, indent=2)
-                    logger.info(f"🗑️ Removed completed booking {self.booking['id']} from cache")
 
                 # Now update status to RecordingFinished
                 update_booking_status(self.booking["id"], "RecordingFinished")

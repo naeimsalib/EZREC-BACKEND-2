@@ -207,6 +207,19 @@ def main():
                                 done.touch()
                                 os.remove(raw_file)
                                 os.remove(final_file)
+                                # Remove booking from local cache and update status to Completed
+                                try:
+                                    cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+                                    if cache_file.exists():
+                                        with open(cache_file, 'r') as f:
+                                            bookings = json.load(f)
+                                        bookings = [b for b in bookings if b.get('id') != booking_id]
+                                        with open(cache_file, 'w') as f:
+                                            json.dump(bookings, f, indent=2)
+                                        log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
+                                    update_booking_status(booking_id, "Completed")
+                                except Exception as e:
+                                    log.error(f"Error removing booking from cache in video_worker: {e}")
                 except Exception as e:
                     log.error(f"Processing error: {e}")
                 finally:
