@@ -19,8 +19,10 @@ from dateutil import parser
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
+sys.path.append(str(Path(__file__).resolve().parent.parent / 'api'))
 
-from booking_utils import update_booking_status
+
+from api.booking_utils import update_booking_status
 
 try:
     from picamera2 import Picamera2

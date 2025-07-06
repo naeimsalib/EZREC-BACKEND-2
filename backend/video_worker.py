@@ -18,8 +18,7 @@ import logging
 import pytz
 from dotenv import load_dotenv
 from supabase import create_client
-
-from booking_utils import update_booking_status
+from api.booking_utils import update_booking_status
 
 # Load env
 load_dotenv("/opt/ezrec-backend/.env", override=True)
