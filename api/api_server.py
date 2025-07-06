@@ -192,6 +192,8 @@ def get_signed_url(key: str = Query(..., description="S3 object key")):
     decoded_key = unquote(key)
     print(f"Decoded key: {decoded_key}")
     print(f"Using bucket: {S3_BUCKET}, region: {AWS_REGION}")
+    print(f"DEBUG: ENV AWS_ACCESS_KEY_ID = {AWS_ACCESS_KEY_ID}")
+    print(f"DEBUG: ENV S3_BUCKET = {S3_BUCKET}")
     try:
         s3.head_object(Bucket=S3_BUCKET, Key=decoded_key)
         url = s3.generate_presigned_url(
