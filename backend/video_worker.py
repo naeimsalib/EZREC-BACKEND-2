@@ -166,14 +166,17 @@ def main():
     while True:
         for date_dir in RECORDINGS_DIR.glob("*/"):
             for raw_file in date_dir.glob("*.mp4"):
-                lock = raw_file.with_suffix(".lock")
                 done = raw_file.with_suffix(".done")
-                if lock.exists() or done.exists():
-                    continue
-
-                lock.touch()
+                completed = raw_file.with_suffix(".completed")
+                lock = raw_file.with_suffix(".lock")
                 meta_path = raw_file.with_suffix(".json")
+                # Only process if .done exists, .completed does not, and .lock does not exist
+                if not done.exists() or completed.exists() or lock.exists():
+                    continue
+                # ... rest of the processing logic ...
+                lock.touch()
                 if not meta_path.exists():
+                    lock.unlink()  # Clean up lock if meta missing
                     continue
 
                 try:
@@ -204,9 +207,25 @@ def main():
                             }
                             if insert_video_metadata(payload):
                                 update_booking_status(booking_id, "Uploaded")
-                                done.touch()
-                                os.remove(raw_file)
-                                os.remove(final_file)
+                                completed.touch()  # Mark as completed
+                                # Remove files
+                                try:
+                                    os.remove(raw_file)
+                                except Exception:
+                                    pass
+                                try:
+                                    os.remove(final_file)
+                                except Exception:
+                                    pass
+                                try:
+                                    os.remove(done)
+                                except Exception:
+                                    pass
+                                # Optionally remove .json
+                                try:
+                                    os.remove(meta_path)
+                                except Exception:
+                                    pass
                                 # Remove booking from local cache and update status to Completed
                                 try:
                                     cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
