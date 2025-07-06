@@ -188,14 +188,21 @@ def update_system_settings(settings: SystemSettings):
 @app.get("/signed-url")
 def get_signed_url(key: str = Query(..., description="S3 object key")):
     try:
+        # Check if object exists before generating URL
+        s3.head_object(Bucket=S3_BUCKET, Key=key)
         url = s3.generate_presigned_url(
             ClientMethod="get_object",
             Params={"Bucket": S3_BUCKET, "Key": key},
             ExpiresIn=3600
         )
         return {"url": url}
+    except s3.exceptions.NoSuchKey:
+        logger.error(f"S3 object not found: {key}")
+        raise HTTPException(status_code=404, detail=f"Video not found: {key}")
     except Exception as e:
-        logger.error(f"Failed to generate signed URL: {e}")
+        logger.error(f"Failed to generate signed URL for {key}: {e}")
+        if hasattr(e, 'response') and e.response.get('Error', {}).get('Code') == '404':
+            raise HTTPException(status_code=404, detail=f"Video not found: {key}")
         raise HTTPException(status_code=500, detail=str(e))
 
 # --------------------------
