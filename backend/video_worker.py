@@ -163,6 +163,7 @@ def insert_video_metadata(payload: dict) -> bool:
     return r.status_code in (200, 201)
 
 def main():
+    log.info("Video worker started and entering main loop")
     while True:
         for date_dir in RECORDINGS_DIR.glob("*/"):
             for raw_file in date_dir.glob("*.mp4"):
@@ -170,7 +171,7 @@ def main():
                 completed = raw_file.with_suffix(".completed")
                 lock = raw_file.with_suffix(".lock")
                 meta_path = raw_file.with_suffix(".json")
-                # Only process if .done exists, .completed does not, and .lock does not exist
+                log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, meta={meta_path.exists()}")
                 if not done.exists() or completed.exists() or lock.exists():
                     continue
                 # ... rest of the processing logic ...
