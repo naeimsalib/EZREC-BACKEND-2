@@ -57,7 +57,7 @@ echo "🐍 Setting up virtual environment..."
 rm -rf "$VENV_DIR"
 python3 -m venv --system-site-packages "$VENV_DIR"
 "$VENV_DIR/bin/pip" install --upgrade pip
-"$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3
+"$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3 python-dotenv pytz python-dateutil
 sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
@@ -81,7 +81,6 @@ if [ -f "$REQS_FILE" ]; then
 else
   echo "⚠️ Warning: requirements.txt not found at $REQS_FILE"
 fi
-
 
 #------------------------------#
 # 7. FIX LOG FILE PERMISSIONS
@@ -215,6 +214,7 @@ sudo systemctl daemon-reload
 for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
   sudo systemctl enable "$svc"
   sudo systemctl restart "$svc"
+  sleep 1
 done
 
 #------------------------------#
