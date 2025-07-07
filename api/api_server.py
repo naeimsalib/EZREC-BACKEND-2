@@ -37,6 +37,10 @@ logger = logging.getLogger("EZREC")
 # --------------------------
 app = FastAPI()
 
+@app.get("/test-alive")
+def test_alive():
+    return {"status": "alive"}
+
 # Allow all origins for development — restrict in production!
 app.add_middleware(
     CORSMiddleware,
