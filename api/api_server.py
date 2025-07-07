@@ -195,9 +195,15 @@ def update_system_settings(settings: SystemSettings):
 # --------------------------
 @app.get("/signed-url")
 def get_signed_url(key: str = Query(..., description="S3 object key")):
+    raw_key = key
     decoded_key = unquote(key)
-    print(f"🔎 Requested key: {decoded_key}")
-    print(f"🔐 Bucket: {S3_BUCKET}")
+
+    print(f"\n--- SIGNED URL DEBUG ---")
+    print(f"🔑 Raw key:     {raw_key}")
+    print(f"🧩 Decoded key: {decoded_key}")
+    print(f"🪣 Bucket:      {S3_BUCKET}")
+    print(f"🧪 Checking key in S3...")
+
     try:
         s3.head_object(Bucket=S3_BUCKET, Key=decoded_key)
         url = s3.generate_presigned_url(
@@ -205,17 +211,14 @@ def get_signed_url(key: str = Query(..., description="S3 object key")):
             Params={"Bucket": S3_BUCKET, "Key": decoded_key},
             ExpiresIn=3600
         )
+        print(f"✅ Signed URL generated")
         return {"url": url}
     except s3.exceptions.ClientError as e:
-        if e.response['Error']['Code'] == '404':
-            print(f"❌ head_object failed: {e}")
-            raise HTTPException(status_code=404, detail="Object not found")
-        else:
-            print(f"❌ head_object failed: {e}")
-            raise HTTPException(status_code=500, detail=str(e))
+        print(f"❌ S3 head_object failed: {e}")
+        raise HTTPException(status_code=404, detail="Object not found in S3")
     except Exception as e:
-        print(f"❌ head_object failed: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"🔥 Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal error")
 
 # --------------------------
 # NEW: DELETE S3 OBJECT
