@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -11,6 +11,8 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import unquote
 import sys
+from fastapi.responses import JSONResponse
+import urllib.parse
 
 # --------------------------
 # LOAD .env FILE
@@ -194,31 +196,38 @@ def update_system_settings(settings: SystemSettings):
 # NEW: SIGNED URL ENDPOINT
 # --------------------------
 @app.get("/signed-url")
-def get_signed_url(key: str = Query(..., description="S3 object key")):
-    raw_key = key
-    decoded_key = unquote(key)
-
-    print(f"\n--- SIGNED URL DEBUG ---")
-    print(f"🔑 Raw key:     {raw_key}")
-    print(f"🧩 Decoded key: {decoded_key}")
-    print(f"🪣 Bucket:      {S3_BUCKET}")
-    print(f"🧪 Checking key in S3...")
-
+async def get_signed_url(request: Request, key: str):
     try:
-        s3.head_object(Bucket=S3_BUCKET, Key=decoded_key)
+        decoded_key = urllib.parse.unquote(key)
+        bucket = os.getenv("AWS_S3_BUCKET")
+        region = os.getenv("AWS_REGION")
+        access_key = os.getenv("AWS_ACCESS_KEY_ID")
+        secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+        if not all([bucket, region, access_key, secret_key]):
+            raise Exception("Missing AWS credentials")
+
+        s3 = boto3.client("s3",
+            region_name=region,
+            aws_access_key_id=access_key,
+            aws_secret_access_key=secret_key
+        )
+
+        # Check if object exists
+        s3.head_object(Bucket=bucket, Key=decoded_key)
+
         url = s3.generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": S3_BUCKET, "Key": decoded_key},
+            "get_object",
+            Params={"Bucket": bucket, "Key": decoded_key},
             ExpiresIn=3600
         )
-        print(f"✅ Signed URL generated")
         return {"url": url}
-    except s3.exceptions.ClientError as e:
-        print(f"❌ S3 head_object failed: {e}")
-        raise HTTPException(status_code=404, detail="Object not found in S3")
+
+    except s3.exceptions.NoSuchKey:
+        return JSONResponse(status_code=404, content={"detail": "File not found in S3"})
     except Exception as e:
-        print(f"🔥 Unexpected error: {e}")
-        raise HTTPException(status_code=500, detail="Internal error")
+        logging.exception("Failed to generate signed URL")
+        return JSONResponse(status_code=404, content={"detail": str(e)})
 
 # --------------------------
 # NEW: DELETE S3 OBJECT
