@@ -11,8 +11,9 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import unquote
 import sys
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import urllib.parse
+import requests
 
 # --------------------------
 # LOAD .env FILE
@@ -242,3 +243,59 @@ def delete_video(data: DeletePayload):
     except Exception as e:
         logger.error(f"Failed to delete video: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/stream")
+def stream_video(request: Request, key: str):
+    decoded_key = urllib.parse.unquote(key)
+    bucket = os.getenv("AWS_S3_BUCKET")
+    region = os.getenv("AWS_REGION")
+    access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+    if not all([bucket, region, access_key, secret_key]):
+        return JSONResponse(status_code=500, content={"detail": "Missing AWS credentials"})
+
+    s3 = boto3.client("s3",
+        region_name=region,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key
+    )
+
+    # Check if object exists
+    try:
+        s3.head_object(Bucket=bucket, Key=decoded_key)
+    except s3.exceptions.NoSuchKey:
+        return JSONResponse(status_code=404, content={"detail": "File not found in S3"})
+    except Exception as e:
+        return JSONResponse(status_code=404, content={"detail": str(e)})
+
+    # Generate signed URL
+    url = s3.generate_presigned_url(
+        "get_object",
+        Params={"Bucket": bucket, "Key": decoded_key},
+        ExpiresIn=3600
+    )
+
+    # Forward Range header if present
+    range_header = request.headers.get("range")
+    headers = {"Range": range_header} if range_header else {}
+    s3_response = requests.get(url, stream=True, headers=headers)
+
+    # Prepare response headers
+    response_headers = {
+        "Content-Type": s3_response.headers.get("Content-Type", "video/mp4"),
+        "Content-Length": s3_response.headers.get("Content-Length"),
+        "Accept-Ranges": s3_response.headers.get("Accept-Ranges", "bytes"),
+        "Content-Range": s3_response.headers.get("Content-Range"),
+        "Access-Control-Allow-Origin": "*",
+    }
+    # Remove None values
+    response_headers = {k: v for k, v in response_headers.items() if v}
+
+    status_code = s3_response.status_code if s3_response.status_code in (200, 206) else 200
+
+    return StreamingResponse(
+        s3_response.raw,
+        status_code=status_code,
+        headers=response_headers
+    )
