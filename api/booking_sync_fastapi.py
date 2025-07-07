@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request, HTTPException, Header
+from fastapi import FastAPI, Request, HTTPException, Header, Query
 from typing import List, Optional
 from pathlib import Path
 import json
@@ -6,6 +6,9 @@ import os
 from dotenv import load_dotenv
 from supabase import create_client
 from fastapi.middleware.cors import CORSMiddleware
+import boto3
+from urllib.parse import unquote
+from pydantic import BaseModel
 
 load_dotenv("/opt/ezrec-backend/.env")
 
@@ -16,6 +19,21 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
+# Load .env for AWS credentials
+load_dotenv("/opt/ezrec-backend/.env")
+
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+S3_BUCKET = os.getenv("AWS_S3_BUCKET", "ezrec-videos")
+
+s3 = boto3.client(
+    "s3",
+    region_name=AWS_REGION,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY
+)
+
 app = FastAPI()
 
 app.add_middleware(
@@ -25,6 +43,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+class DeletePayload(BaseModel):
+    key: str
 
 @app.get("/health")
 def health():
@@ -82,4 +103,41 @@ async def delete_booking(request: Request, x_api_key: str = Header(...)):
 
 @app.get("/status")
 def status():
-    return {"status": "ok"} 
+    return {"status": "ok"}
+
+@app.get("/signed-url")
+def get_signed_url(key: str = Query(..., description="S3 object key")):
+    raw_key = key
+    decoded_key = unquote(key)
+
+    print(f"\n--- SIGNED URL DEBUG ---")
+    print(f"🔑 Raw key:     {raw_key}")
+    print(f"🧩 Decoded key: {decoded_key}")
+    print(f"🪣 Bucket:      {S3_BUCKET}")
+    print(f"🧪 Checking key in S3...")
+
+    try:
+        s3.head_object(Bucket=S3_BUCKET, Key=decoded_key)
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": S3_BUCKET, "Key": decoded_key},
+            ExpiresIn=3600
+        )
+        print(f"✅ Signed URL generated")
+        return {"url": url}
+    except s3.exceptions.ClientError as e:
+        print(f"❌ S3 head_object failed: {e}")
+        raise HTTPException(status_code=404, detail="Object not found in S3")
+    except Exception as e:
+        print(f"🔥 Unexpected error: {e}")
+        raise HTTPException(status_code=500, detail="Internal error")
+
+@app.delete("/delete-video")
+def delete_video(data: DeletePayload):
+    try:
+        s3.delete_object(Bucket=S3_BUCKET, Key=data.key)
+        print(f"✅ Deleted {data.key} from S3")
+        return {"status": "success", "message": f"Deleted {data.key}"}
+    except Exception as e:
+        print(f"Failed to delete video: {e}")
+        raise HTTPException(status_code=500, detail=str(e)) 
