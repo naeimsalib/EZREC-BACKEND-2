@@ -197,6 +197,7 @@ def update_system_settings(settings: SystemSettings):
 # --------------------------
 @app.get("/signed-url")
 async def get_signed_url(request: Request, key: str):
+    print(f"⚡ Request received for key: {key}")
     try:
         decoded_key = urllib.parse.unquote(key)
         bucket = os.getenv("AWS_S3_BUCKET")
