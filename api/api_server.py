@@ -195,12 +195,9 @@ def update_system_settings(settings: SystemSettings):
 # --------------------------
 @app.get("/signed-url")
 def get_signed_url(key: str = Query(..., description="S3 object key")):
-    logger.info(f"Raw key received: {key}")
     decoded_key = unquote(key)
-    logger.info(f"Decoded key: {decoded_key}")
-    logger.info(f"Using bucket: {S3_BUCKET}, region: {AWS_REGION}")
-    logger.info(f"DEBUG: ENV AWS_ACCESS_KEY_ID = {os.environ.get('AWS_ACCESS_KEY_ID')}")
-    logger.info(f"DEBUG: ENV S3_BUCKET = {os.environ.get('AWS_S3_BUCKET')}")
+    print(f"🔎 Requested key: {decoded_key}")
+    print(f"🔐 Bucket: {S3_BUCKET}")
     try:
         s3.head_object(Bucket=S3_BUCKET, Key=decoded_key)
         url = s3.generate_presigned_url(
@@ -209,9 +206,16 @@ def get_signed_url(key: str = Query(..., description="S3 object key")):
             ExpiresIn=3600
         )
         return {"url": url}
+    except s3.exceptions.ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            print(f"❌ head_object failed: {e}")
+            raise HTTPException(status_code=404, detail="Object not found")
+        else:
+            print(f"❌ head_object failed: {e}")
+            raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
-        logger.error(f"Error from S3: {e}")
-        raise HTTPException(status_code=404, detail=f"S3 error: {e}")
+        print(f"❌ head_object failed: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 # --------------------------
 # NEW: DELETE S3 OBJECT
