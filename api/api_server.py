@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Request, Body
+from fastapi import FastAPI, HTTPException, Query, Request, Body, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -308,11 +308,12 @@ def stream_video(request: Request, key: str):
 @app.get("/media/presign")
 def media_presign(
     key: str = Query(..., description="S3 object key"),
-    operation: str = Query("get", description="Operation: put, get, or delete")
+    operation: str = Query("get", description="Operation: put, get, or delete"),
+    content_type: str = Query(None, description="Content-Type for upload (optional, required if frontend sets Content-Type)")
 ):
     """
     Generate a presigned S3 URL for upload (PUT), download (GET), or delete (DELETE).
-    For PUT: always generate the URL (do not check if file exists).
+    For PUT: always generate the URL (do not check if file exists). If content_type is provided, include it in the presign Params and require the frontend to use the same Content-Type header.
     For GET/DELETE: optionally check if file exists.
     Uses AWS_USER_MEDIA_BUCKET if set, otherwise AWS_S3_BUCKET.
     """
@@ -332,23 +333,21 @@ def media_presign(
         aws_secret_access_key=secret_key
     )
 
-    method = None
     if operation == "put":
-        method = "put_object"
-        # Do NOT check if file exists
+        params = {"Bucket": bucket, "Key": decoded_key}
+        if content_type:
+            params["ContentType"] = content_type
         try:
             url = s3.generate_presigned_url(
                 ClientMethod="put_object",
-                Params={"Bucket": bucket, "Key": decoded_key},
+                Params=params,
                 ExpiresIn=3600
             )
-            return {"url": url, "method": "PUT"}
+            return {"url": url, "method": "PUT", "content_type": content_type}
         except Exception as e:
             logger.error(f"Failed to generate presigned PUT URL: {e}")
             return JSONResponse(status_code=500, content={"detail": str(e)})
     elif operation == "get":
-        method = "get_object"
-        # Optionally check if file exists
         try:
             s3.head_object(Bucket=bucket, Key=decoded_key)
         except s3.exceptions.ClientError:
@@ -364,8 +363,6 @@ def media_presign(
             logger.error(f"Failed to generate presigned GET URL: {e}")
             return JSONResponse(status_code=500, content={"detail": str(e)})
     elif operation == "delete":
-        method = "delete_object"
-        # Optionally check if file exists
         try:
             s3.head_object(Bucket=bucket, Key=decoded_key)
         except s3.exceptions.ClientError:
