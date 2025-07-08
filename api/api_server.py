@@ -14,6 +14,7 @@ import sys
 from fastapi.responses import JSONResponse, StreamingResponse
 import urllib.parse
 import requests
+import shutil
 
 # --------------------------
 # LOAD .env FILE
@@ -91,6 +92,13 @@ class SystemSettings(BaseModel):
 
 class DeletePayload(BaseModel):
     key: str
+
+class MediaNotifyRequest(BaseModel):
+    user_id: str
+    action: str  # "upload" or "delete"
+    s3_key: str
+    filename: str
+    media_type: str
 
 # --------------------------
 # ENDPOINTS
@@ -379,3 +387,37 @@ def media_presign(
             return JSONResponse(status_code=500, content={"detail": str(e)})
     else:
         return JSONResponse(status_code=400, content={"detail": "Invalid operation. Use put, get, or delete."})
+
+@app.post("/media/notify")
+async def media_notify(payload: MediaNotifyRequest):
+    logger.info(f"Media notify: {payload}")
+    user_id = payload.user_id
+    # Directory for this user's media
+    user_media_dir = Path(f"/opt/ezrec-backend/media_cache/{user_id}")
+    user_media_dir.mkdir(parents=True, exist_ok=True)
+
+    # Remove all old files for this user
+    for f in user_media_dir.glob("*"):
+        try:
+            f.unlink()
+        except Exception as e:
+            logger.warning(f"Failed to remove old media file {f}: {e}")
+
+    # Download all user media from S3 (logo, intro, sponsor logos)
+    # Assume keys are predictable: logo/logo.png, intro-video/intro.mp4, sponsor_logo_0.png, etc.
+    s3_keys = [
+        f"{user_id}/logo/logo.png",
+        f"{user_id}/intro-video/intro.mp4",
+        f"{user_id}/sponsor_logo_0.png",
+        f"{user_id}/sponsor_logo_1.png",
+        f"{user_id}/sponsor_logo_2.png",
+    ]
+    for key in s3_keys:
+        local_path = user_media_dir / Path(key).name
+        try:
+            s3.download_file(USER_MEDIA_BUCKET, key, str(local_path))
+            logger.info(f"Downloaded {key} to {local_path}")
+        except Exception as e:
+            logger.info(f"Media file {key} not found or not downloaded: {e}")
+
+    return {"status": "ok"}
