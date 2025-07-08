@@ -236,12 +236,20 @@ def main():
     while True:
         bookings = load_bookings()
         active_booking = get_active_booking(bookings)
+        now = datetime.now(LOCAL_TZ)
         if active_booking:
+            # If not already recording this booking, start
             if not current_session or current_session.booking['id'] != active_booking['id']:
                 if current_session:
                     current_session.stop()
                 current_session = RecordingSession(active_booking)
                 current_session.start()
+            else:
+                # If already recording, only stop if end time has passed
+                end_time = parser.isoparse(active_booking["end_time"]).astimezone(LOCAL_TZ)
+                if now > end_time:
+                    current_session.stop()
+                    current_session = None
         else:
             if current_session:
                 current_session.stop()
