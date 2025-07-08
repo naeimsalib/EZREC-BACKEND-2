@@ -79,6 +79,22 @@ user_media_s3 = boto3.client(
     region_name=os.getenv("AWS_REGION")
 )
 
+# Overlay position mapping
+POSITION_MAP = {
+    "top_left": "10:10",
+    "top_right": "main_w-overlay_w-10:10",
+    "top_center": "(main_w-overlay_w)/2:10",
+    "bottom_left": "10:main_h-overlay_h-10",
+    "bottom_right": "main_w-overlay_w-10:main_h-overlay_h-10",
+    "bottom_center": "(main_w-overlay_w)/2:main_h-overlay_h-10",
+}
+
+LOGO_POSITION = os.getenv("LOGO_POSITION", "top_right")
+SPONSOR_0_POSITION = os.getenv("SPONSOR_0_POSITION", "bottom_left")
+SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_right")
+SPONSOR_2_POSITION = os.getenv("SPONSOR_2_POSITION", "bottom_center")
+INTRO_POSITION = os.getenv("INTRO_POSITION", "top_left")  # Not used for overlay, but for future
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -160,50 +176,11 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     output_file = PROCESSED_DIR / date_dir.name / raw_file.name
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Fetch all user media
-    intro_url, logo_url, sponsor_logo_urls = fetch_user_media(user_id)
-    intro_path = MEDIA_CACHE_DIR / f"intro_{user_id}.mp4"
-    logo_path = MEDIA_CACHE_DIR / f"logo_{user_id}.png"
-    sponsor_paths = [MEDIA_CACHE_DIR / f"sponsor_{i}_{user_id}.png" for i in range(3)]
-    main_logo_path = MEDIA_CACHE_DIR / "main_logo.png"
-
-    # Download all media
-    def parse_s3_url(url):
-        if url and url.startswith("s3://"):
-            parts = url[5:].split("/", 1)
-            if len(parts) == 2:
-                return parts[0], parts[1]
-        return None, None
-
-    if intro_url:
-        b, k = parse_s3_url(intro_url)
-        if b and k:
-            download_file(intro_url, intro_path, bucket=b, key=k)
-        else:
-            download_file(intro_url, intro_path, bucket=USER_MEDIA_BUCKET, key=intro_url)
-    if logo_url:
-        b, k = parse_s3_url(logo_url)
-        if b and k:
-            download_file(logo_url, logo_path, bucket=b, key=k)
-        else:
-            download_file(logo_url, logo_path, bucket=USER_MEDIA_BUCKET, key=logo_url)
-    for i, url in enumerate(sponsor_logo_urls[:3]):
-        if url:
-            b, k = parse_s3_url(url)
-            if b and k:
-                download_file(url, sponsor_paths[i], bucket=b, key=k)
-            else:
-                download_file(url, sponsor_paths[i], bucket=USER_MEDIA_BUCKET, key=url)
-    # Main logo: download if URL, else copy from local path
-    if MAIN_LOGO_URL:
-        b, k = parse_s3_url(MAIN_LOGO_URL)
-        if b and k:
-            download_file(MAIN_LOGO_URL, main_logo_path, bucket=b, key=k)
-        else:
-            download_file(MAIN_LOGO_URL, main_logo_path, bucket=USER_MEDIA_BUCKET, key=MAIN_LOGO_URL)
-    elif os.path.exists(MAIN_LOGO_PATH):
-        if not main_logo_path.exists():
-            shutil.copy(MAIN_LOGO_PATH, main_logo_path)
+    # Use local cache for user media
+    user_media_dir = MEDIA_CACHE_DIR / user_id
+    intro_path = user_media_dir / "intro.mp4"
+    logo_path = user_media_dir / "logo.png"
+    sponsor_paths = [user_media_dir / f"sponsor_logo_{i}.png" for i in range(3)]
 
     # 1. Concatenate intro + recording if intro exists
     intermediate = raw_file
@@ -221,25 +198,21 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     overlay_cmds = []
     idx = 1
     last = "[0:v]"
-    # User logo (top-right)
+    scale_expr = "scale=iw*0.15:ih*0.15"  # 15% of video size
+    # User logo
     if logo_path.exists():
         input_args += ["-i", str(logo_path)]
-        overlay_cmds.append(f"{last}[{idx}:v] overlay=W-w-10:10 [tmp{idx}]")
+        overlay_cmds.append(f"[{idx}:v] {scale_expr} [logo_scaled]")
+        overlay_cmds.append(f"{last}[logo_scaled] overlay={POSITION_MAP.get(LOGO_POSITION, 'top_right')}:format=auto [tmp{idx}]")
         last = f"[tmp{idx}]"
         idx += 1
-    # Main logo (bottom-center)
-    if main_logo_path.exists():
-        input_args += ["-i", str(main_logo_path)]
-        overlay_cmds.append(f"{last}[{idx}:v] overlay=x=(main_w-overlay_w)/2:y=main_h-overlay_h-10 [tmp{idx}]")
-        last = f"[tmp{idx}]"
-        idx += 1
-    # Sponsor logos (bottom left, bottom right, bottom center-left)
-    sponsor_positions = ["10:main_h-overlay_h-10", "main_w-overlay_w-10:main_h-overlay_h-10", "main_w/2-overlay_w-60:main_h-overlay_h-10"]
+    # Sponsor logos
+    sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
         if sponsor_path.exists():
             input_args += ["-i", str(sponsor_path)]
-            pos = sponsor_positions[i] if i < len(sponsor_positions) else "10:10"
-            overlay_cmds.append(f"{last}[{idx}:v] overlay={pos} [tmp{idx}]")
+            overlay_cmds.append(f"[{idx}:v] {scale_expr} [sponsor{i}_scaled]")
+            overlay_cmds.append(f"{last}[sponsor{i}_scaled] overlay={POSITION_MAP.get(sponsor_positions[i], 'bottom_left')}:format=auto [tmp{idx}]")
             last = f"[tmp{idx}]"
             idx += 1
     # Compose the filter_complex string
