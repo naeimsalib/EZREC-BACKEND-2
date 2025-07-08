@@ -201,13 +201,22 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     # 1. Concatenate intro + recording if intro exists
     intermediate = raw_file
     if intro_path.exists():
-        concat_txt = MEDIA_CACHE_DIR / f"concat_{uuid.uuid4().hex}.txt"
-        concat_txt.write_text(f"file '{intro_path}'\nfile '{raw_file}'\n")
         intermediate = output_file.with_name("with_intro.mp4")
-        subprocess.run([
-            "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt),
-            "-c", "copy", str(intermediate)
-        ], check=True)
+        ffmpeg_cmd = [
+            "ffmpeg", "-y",
+            "-i", str(intro_path),
+            "-i", str(raw_file),
+            "-filter_complex", "[0:v][1:v]concat=n=2:v=1:a=0[v]",
+            "-map", "[v]",
+            "-c:v", "libx264", "-preset", "fast", "-pix_fmt", "yuv420p",
+            str(intermediate)
+        ]
+        subprocess.run(ffmpeg_cmd, check=True)
+        # Sanity check
+        concat_duration = get_duration(intermediate)
+        if concat_duration > 600:  # 10 minutes
+            log.error(f"Concatenated video duration too long: {concat_duration:.2f}s. Aborting.")
+            return None
 
     # 2. Build ffmpeg overlay filter for all logos
     input_args = ["-i", str(intermediate)]
