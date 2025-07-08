@@ -166,7 +166,7 @@ class RecordingSession:
                 import subprocess
                 ffmpeg_cmd = [
                     "ffmpeg", "-y", "-framerate", "30", "-i", str(self.raw_filepath),
-                    "-c:v", "copy", "-movflags", "+faststart", str(self.final_filepath)
+                    "-c:v", "libx264", "-preset", "fast", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(self.final_filepath)
                 ]
                 logger.info(f"🎬 Running ffmpeg: {' '.join(ffmpeg_cmd)}")
                 try:

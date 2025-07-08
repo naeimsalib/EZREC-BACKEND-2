@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import boto3
@@ -15,6 +15,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 import urllib.parse
 import requests
 import shutil
+from uuid import uuid4
 
 # --------------------------
 # LOAD .env FILE
@@ -99,6 +100,12 @@ class MediaNotifyRequest(BaseModel):
     s3_key: str
     filename: str
     media_type: str
+
+class ShareRequest(BaseModel):
+    key: str
+
+class ShareResponse(BaseModel):
+    url: str
 
 # --------------------------
 # ENDPOINTS
@@ -421,3 +428,47 @@ async def media_notify(payload: MediaNotifyRequest):
             logger.info(f"Media file {key} not found or not downloaded: {e}")
 
     return {"status": "ok"}
+
+@app.post("/share", response_model=ShareResponse)
+def create_share_link(req: ShareRequest):
+    token = uuid4().hex
+    expires_at = (datetime.utcnow() + timedelta(days=7)).isoformat()
+    created_at = datetime.utcnow().isoformat()
+    data = {
+        "token": token,
+        "video_key": req.key,
+        "created_at": created_at,
+        "expires_at": expires_at
+    }
+    try:
+        supabase.table("shared_links").insert(data).execute()
+    except Exception as e:
+        logger.error(f"Failed to create share link: {e}")
+        raise HTTPException(status_code=500, detail="Failed to create share link")
+    base_url = os.getenv("SHARE_BASE_URL", "https://yourdomain.com")
+    return {"url": f"{base_url}/share/{token}"}
+
+@app.get("/share/{token}")
+def get_shared_video(token: str):
+    try:
+        res = supabase.table("shared_links").select("*").eq("token", token).single().execute()
+        row = res.data
+    except Exception as e:
+        logger.error(f"Share token lookup failed: {e}")
+        raise HTTPException(status_code=404, detail="Invalid or expired link")
+    if not row:
+        raise HTTPException(status_code=404, detail="Invalid or expired link")
+    expires_at = row.get("expires_at")
+    if expires_at and datetime.fromisoformat(expires_at) < datetime.utcnow():
+        raise HTTPException(status_code=404, detail="Link expired")
+    try:
+        url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": S3_BUCKET, "Key": row["video_key"]},
+            ExpiresIn=3600
+        )
+    except Exception as e:
+        logger.error(f"Failed to generate presigned URL: {e}")
+        raise HTTPException(status_code=500, detail="Failed to generate video link")
+    filename = row["video_key"].split("/")[-1]
+    return {"video_url": url, "filename": filename}
