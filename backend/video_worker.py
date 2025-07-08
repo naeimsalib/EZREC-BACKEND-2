@@ -182,6 +182,22 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     logo_path = user_media_dir / "logo.png"
     sponsor_paths = [user_media_dir / f"sponsor_logo_{i}.png" for i in range(3)]
 
+    # Sanity check durations
+    max_duration = 600  # 10 minutes in seconds
+    raw_duration = get_duration(raw_file)
+    if raw_duration > max_duration:
+        log.warning(f"Main recording duration too long: {raw_duration:.2f}s. Skipping processing.")
+        return None
+    if intro_path.exists():
+        intro_duration = get_duration(intro_path)
+        if intro_duration > max_duration:
+            log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to {max_duration}s.")
+            trimmed_intro = intro_path.with_name("intro_trimmed.mp4")
+            subprocess.run([
+                "ffmpeg", "-y", "-i", str(intro_path), "-t", str(max_duration), "-c", "copy", str(trimmed_intro)
+            ], check=True)
+            intro_path = trimmed_intro
+
     # 1. Concatenate intro + recording if intro exists
     intermediate = raw_file
     if intro_path.exists():
