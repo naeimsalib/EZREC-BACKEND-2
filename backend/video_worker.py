@@ -55,6 +55,7 @@ s3 = boto3.client(
 
 S3_BUCKET = os.getenv("AWS_S3_BUCKET")
 AWS_REGION = os.getenv("AWS_REGION")
+USER_MEDIA_BUCKET = os.getenv("AWS_USER_MEDIA_BUCKET", S3_BUCKET)
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
 PROCESSED_DIR = Path("/opt/ezrec-backend/processed")
 MEDIA_CACHE_DIR = Path("/opt/ezrec-backend/media_cache")
@@ -70,6 +71,13 @@ logging.basicConfig(
     handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()]
 )
 log = logging.getLogger("video_worker")
+
+user_media_s3 = boto3.client(
+    "s3",
+    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+    region_name=os.getenv("AWS_REGION")
+)
 
 def get_duration(file: Path) -> float:
     try:
@@ -96,55 +104,158 @@ def upload_file_chunked(local_path: Path, s3_key: str) -> str:
         log.error(f"❌ Upload failed: {e}")
         return None
 
-def download_file(url: str, path: Path):
-    if not path.exists():
-        r = requests.get(url, stream=True)
-        with open(path, 'wb') as f:
-            for chunk in r.iter_content(chunk_size=8192):
-                f.write(chunk)
+def download_file(url: str, path: Path, bucket=None, key=None):
+    if path.exists():
+        return
+    if url and url.startswith("s3://") and bucket and key:
+        # Download from S3 directly
+        try:
+            user_media_s3.download_file(bucket, key, str(path))
+        except Exception as e:
+            log.error(f"Failed to download s3://{bucket}/{key}: {e}")
+    elif url:
+        try:
+            r = requests.get(url, stream=True)
+            with open(path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        except Exception as e:
+            log.error(f"Failed to download {url}: {e}")
 
 def fetch_user_media(user_id: str):
+    """
+    Fetch intro video, logo, and sponsor logos for the user from user_settings table.
+    Returns: (intro_url, logo_url, sponsor_logo_urls)
+    """
     try:
         res = supabase.table("user_settings").select("*").eq("user_id", user_id).single().execute()
-        return res.data.get("intro_video_url"), res.data.get("logo_url") if res.data else (None, None)
+        if res.data:
+            intro = res.data.get("intro_video_url")
+            logo = res.data.get("logo_url")
+            sponsors = res.data.get("sponsor_logo_urls") or []
+            if isinstance(sponsors, str):
+                # In case it's stored as a comma-separated string
+                sponsors = [s.strip() for s in sponsors.split(",") if s.strip()]
+            return intro, logo, sponsors[:3]
+        return None, None, []
     except Exception:
-        return None, None
+        return None, None, []
+
+# Main logo config (can be a URL or local path)
+MAIN_LOGO_URL = os.getenv("MAIN_LOGO_URL")  # e.g. S3 URL
+MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/main_logo.png")
+
+def download_if_needed(url, path: Path):
+    if url and not path.exists():
+        try:
+            r = requests.get(url, stream=True)
+            with open(path, 'wb') as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    f.write(chunk)
+        except Exception as e:
+            log.error(f"Failed to download {url}: {e}")
+    return path if path.exists() else None
 
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     output_file = PROCESSED_DIR / date_dir.name / raw_file.name
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    intro_url, logo_url = fetch_user_media(user_id)
+    # Fetch all user media
+    intro_url, logo_url, sponsor_logo_urls = fetch_user_media(user_id)
     intro_path = MEDIA_CACHE_DIR / f"intro_{user_id}.mp4"
     logo_path = MEDIA_CACHE_DIR / f"logo_{user_id}.png"
+    sponsor_paths = [MEDIA_CACHE_DIR / f"sponsor_{i}_{user_id}.png" for i in range(3)]
+    main_logo_path = MEDIA_CACHE_DIR / "main_logo.png"
+
+    # Download all media
+    def parse_s3_url(url):
+        if url and url.startswith("s3://"):
+            parts = url[5:].split("/", 1)
+            if len(parts) == 2:
+                return parts[0], parts[1]
+        return None, None
 
     if intro_url:
-        download_file(intro_url, intro_path)
-    if logo_url:
-        download_file(logo_url, logo_path)
-
-    try:
-        intermediate = raw_file
-        if intro_path.exists():
-            concat_txt = MEDIA_CACHE_DIR / f"concat_{uuid.uuid4().hex}.txt"
-            concat_txt.write_text(f"file '{intro_path}'\nfile '{raw_file}'\n")
-            intermediate = output_file.with_name("with_intro.mp4")
-            subprocess.run([
-                "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt),
-                "-c", "copy", str(intermediate)
-            ], check=True)
-
-        if logo_path.exists():
-            subprocess.run([
-                "ffmpeg", "-y", "-i", str(intermediate), "-i", str(logo_path),
-                "-filter_complex", "overlay=W-w-10:H-h-10",
-                "-c:v", "libx264", "-crf", "23", "-preset", "fast",
-                str(output_file)
-            ], check=True)
+        b, k = parse_s3_url(intro_url)
+        if b and k:
+            download_file(intro_url, intro_path, bucket=b, key=k)
         else:
-            shutil.copy(intermediate, output_file)
+            download_file(intro_url, intro_path, bucket=USER_MEDIA_BUCKET, key=intro_url)
+    if logo_url:
+        b, k = parse_s3_url(logo_url)
+        if b and k:
+            download_file(logo_url, logo_path, bucket=b, key=k)
+        else:
+            download_file(logo_url, logo_path, bucket=USER_MEDIA_BUCKET, key=logo_url)
+    for i, url in enumerate(sponsor_logo_urls[:3]):
+        if url:
+            b, k = parse_s3_url(url)
+            if b and k:
+                download_file(url, sponsor_paths[i], bucket=b, key=k)
+            else:
+                download_file(url, sponsor_paths[i], bucket=USER_MEDIA_BUCKET, key=url)
+    # Main logo: download if URL, else copy from local path
+    if MAIN_LOGO_URL:
+        b, k = parse_s3_url(MAIN_LOGO_URL)
+        if b and k:
+            download_file(MAIN_LOGO_URL, main_logo_path, bucket=b, key=k)
+        else:
+            download_file(MAIN_LOGO_URL, main_logo_path, bucket=USER_MEDIA_BUCKET, key=MAIN_LOGO_URL)
+    elif os.path.exists(MAIN_LOGO_PATH):
+        if not main_logo_path.exists():
+            shutil.copy(MAIN_LOGO_PATH, main_logo_path)
 
-        return output_file
+    # 1. Concatenate intro + recording if intro exists
+    intermediate = raw_file
+    if intro_path.exists():
+        concat_txt = MEDIA_CACHE_DIR / f"concat_{uuid.uuid4().hex}.txt"
+        concat_txt.write_text(f"file '{intro_path}'\nfile '{raw_file}'\n")
+        intermediate = output_file.with_name("with_intro.mp4")
+        subprocess.run([
+            "ffmpeg", "-y", "-f", "concat", "-safe", "0", "-i", str(concat_txt),
+            "-c", "copy", str(intermediate)
+        ], check=True)
+
+    # 2. Build ffmpeg overlay filter for all logos
+    input_args = ["-i", str(intermediate)]
+    overlay_cmds = []
+    idx = 1
+    last = "[0:v]"
+    # User logo (top-right)
+    if logo_path.exists():
+        input_args += ["-i", str(logo_path)]
+        overlay_cmds.append(f"{last}[{idx}:v] overlay=W-w-10:10 [tmp{idx}]")
+        last = f"[tmp{idx}]"
+        idx += 1
+    # Main logo (bottom-center)
+    if main_logo_path.exists():
+        input_args += ["-i", str(main_logo_path)]
+        overlay_cmds.append(f"{last}[{idx}:v] overlay=x=(main_w-overlay_w)/2:y=main_h-overlay_h-10 [tmp{idx}]")
+        last = f"[tmp{idx}]"
+        idx += 1
+    # Sponsor logos (bottom left, bottom right, bottom center-left)
+    sponsor_positions = ["10:main_h-overlay_h-10", "main_w-overlay_w-10:main_h-overlay_h-10", "main_w/2-overlay_w-60:main_h-overlay_h-10"]
+    for i, sponsor_path in enumerate(sponsor_paths):
+        if sponsor_path.exists():
+            input_args += ["-i", str(sponsor_path)]
+            pos = sponsor_positions[i] if i < len(sponsor_positions) else "10:10"
+            overlay_cmds.append(f"{last}[{idx}:v] overlay={pos} [tmp{idx}]")
+            last = f"[tmp{idx}]"
+            idx += 1
+    # Compose the filter_complex string
+    filter_complex = []
+    map_arg = []
+    if overlay_cmds:
+        filter_complex = ["-filter_complex", "; ".join(overlay_cmds)]
+        map_arg = ["-map", last]
+    # 3. Run ffmpeg with overlays
+    final_output = output_file
+    ffmpeg_cmd = ["ffmpeg", "-y"] + input_args + filter_complex + map_arg + [
+        "-c:v", "libx264", "-crf", "23", "-preset", "fast", str(final_output)
+    ]
+    try:
+        subprocess.run(ffmpeg_cmd, check=True)
+        return final_output
     except Exception as e:
         log.error(f"FFmpeg error: {e}")
         return None
