@@ -270,13 +270,15 @@ TUNNEL_ID=$(cloudflared tunnel list | grep "$TUNNEL_NAME" | awk '{print $1}' | h
 CLOUDFLARED_CREDS="/etc/cloudflared/${TUNNEL_ID}.json"
 CLOUDFLARED_CONFIG="/etc/cloudflared/config.yml"
 
+# Always write the correct config for main API on port 8000
+# WARNING: This will overwrite /etc/cloudflared/config.yml
 sudo tee "$CLOUDFLARED_CONFIG" > /dev/null <<EOF
 tunnel: $TUNNEL_NAME
 credentials-file: $CLOUDFLARED_CREDS
 
 ingress:
   - hostname: api.ezrec.org
-    service: http://localhost:8081
+    service: http://localhost:8000
   - service: http_status:404
 EOF
 
