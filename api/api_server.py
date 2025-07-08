@@ -63,6 +63,7 @@ AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 S3_BUCKET = os.getenv("AWS_S3_BUCKET", "ezrec-videos")
+USER_MEDIA_BUCKET = os.getenv("AWS_USER_MEDIA_BUCKET", S3_BUCKET)
 
 s3 = boto3.client(
     "s3",
@@ -313,9 +314,10 @@ def media_presign(
     Generate a presigned S3 URL for upload (PUT), download (GET), or delete (DELETE).
     For PUT: always generate the URL (do not check if file exists).
     For GET/DELETE: optionally check if file exists.
+    Uses AWS_USER_MEDIA_BUCKET if set, otherwise AWS_S3_BUCKET.
     """
     decoded_key = urllib.parse.unquote(key)
-    bucket = os.getenv("AWS_S3_BUCKET")
+    bucket = USER_MEDIA_BUCKET
     region = os.getenv("AWS_REGION")
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
     secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
