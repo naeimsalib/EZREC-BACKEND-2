@@ -238,9 +238,13 @@ def main():
         now = datetime.now(LOCAL_TZ)
         active_booking = get_active_booking(bookings)
         if current_session:
-            # Only stop if the end time of the current session's booking has passed
             end_time = parser.isoparse(current_session.booking["end_time"]).astimezone(LOCAL_TZ)
-            if now > end_time:
+            logger.info(f"Now: {now.isoformat()}, Booking end: {end_time.isoformat()}, Should stop: {now > end_time}, Session started: {current_session.recording_start_time.isoformat() if current_session.recording_start_time else 'N/A'}")
+            # Only stop if end time has passed and at least 10 seconds have elapsed
+            min_duration = 10  # seconds
+            elapsed = (now - current_session.recording_start_time).total_seconds() if current_session.recording_start_time else 0
+            if now > end_time and elapsed > min_duration:
+                logger.info(f"Stopping session: now={now}, end_time={end_time}, elapsed={elapsed}s")
                 current_session.stop()
                 current_session = None
         if not current_session and active_booking:
