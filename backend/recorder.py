@@ -105,14 +105,19 @@ class RecordingSession:
         self.booking = booking
         self.date_folder = RAW_DIR / datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
         self.date_folder.mkdir(parents=True, exist_ok=True)
-        self.filename = f"raw_{booking['id']}_{datetime.now(LOCAL_TZ).strftime('%H%M%S')}"
-        self.filepath = self.date_folder / (self.filename + ".mp4")
-        self.lockfile = self.filepath.with_suffix(".lock")
-        self.completed_marker = self.filepath.with_suffix(".done")
+        # Use start and end time for filename
+        start_dt = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
+        end_dt = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
+        self.filename_base = f"{start_dt.strftime('%H%M%S')}-{end_dt.strftime('%H%M%S')}"
+        self.raw_filepath = self.date_folder / (self.filename_base + ".h264")
+        self.final_filepath = self.date_folder / (self.filename_base + ".mp4")
+        self.lockfile = self.final_filepath.with_suffix(".lock")
+        self.completed_marker = self.final_filepath.with_suffix(".done")
         self.picam2 = None
         self.encoder = None
         self.output = None
         self.active = False
+        self.recording_start_time = None
 
     def start(self):
         if not Picamera2:
@@ -129,12 +134,13 @@ class RecordingSession:
             self.picam2.configure(config)
 
             self.encoder = H264Encoder(bitrate=10000000)
-            self.output = FileOutput(str(self.filepath))
+            self.output = FileOutput(str(self.raw_filepath))
 
             self.picam2.start_recording(self.encoder, self.output)
             self.active = True
+            self.recording_start_time = datetime.now(LOCAL_TZ)
 
-            logger.info(f"✅ Started recording: {self.filepath}")
+            logger.info(f"✅ Started recording: {self.raw_filepath}")
             update_booking_status(self.booking["id"], "Recording")
 
             supabase.table('cameras').update({
@@ -155,17 +161,36 @@ class RecordingSession:
             try:
                 self.picam2.stop_recording()
                 self.picam2.close()
-                logger.info(f"⏹️ Stopped recording: {self.filepath}")
+                logger.info(f"⏹️ Stopped recording: {self.raw_filepath}")
+                # Convert raw H264 to MP4 using ffmpeg
+                import subprocess
+                ffmpeg_cmd = [
+                    "ffmpeg", "-y", "-framerate", "30", "-i", str(self.raw_filepath),
+                    "-c:v", "copy", "-movflags", "+faststart", str(self.final_filepath)
+                ]
+                logger.info(f"🎬 Running ffmpeg: {' '.join(ffmpeg_cmd)}")
+                try:
+                    subprocess.run(ffmpeg_cmd, check=True)
+                    logger.info(f"✅ Converted to MP4: {self.final_filepath}")
+                    # Clean up raw file
+                    if self.raw_filepath.exists():
+                        os.remove(self.raw_filepath)
+                except Exception as e:
+                    logger.error(f"❌ ffmpeg conversion failed: {e}")
                 self.completed_marker.touch()
 
-                if self.filepath.exists():
+                # Write metadata
+                if self.final_filepath.exists():
                     metadata = {
                         "booking_id": self.booking["id"],
                         "user_id": USER_ID,
                         "camera_id": CAMERA_ID,
-                        "date": datetime.now(LOCAL_TZ).strftime('%Y-%m-%d')
+                        "date": self.date_folder.name,
+                        "start_time": self.booking["start_time"],
+                        "end_time": self.booking["end_time"],
+                        "filename": self.final_filepath.name
                     }
-                    with open(self.filepath.with_suffix(".json"), "w") as f:
+                    with open(self.final_filepath.with_suffix(".json"), "w") as f:
                         json.dump(metadata, f)
 
                 supabase.table('cameras').update({
