@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Query, Request
+from fastapi import FastAPI, HTTPException, Query, Request, Body
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
@@ -303,3 +303,80 @@ def stream_video(request: Request, key: str):
         status_code=status_code,
         headers=response_headers
     )
+
+@app.get("/media/presign")
+def media_presign(
+    key: str = Query(..., description="S3 object key"),
+    operation: str = Query("get", description="Operation: put, get, or delete")
+):
+    """
+    Generate a presigned S3 URL for upload (PUT), download (GET), or delete (DELETE).
+    For PUT: always generate the URL (do not check if file exists).
+    For GET/DELETE: optionally check if file exists.
+    """
+    decoded_key = urllib.parse.unquote(key)
+    bucket = os.getenv("AWS_S3_BUCKET")
+    region = os.getenv("AWS_REGION")
+    access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    secret_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+
+    if not all([bucket, region, access_key, secret_key]):
+        return JSONResponse(status_code=500, content={"detail": "Missing AWS credentials"})
+
+    s3 = boto3.client(
+        "s3",
+        region_name=region,
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key
+    )
+
+    method = None
+    if operation == "put":
+        method = "put_object"
+        # Do NOT check if file exists
+        try:
+            url = s3.generate_presigned_url(
+                ClientMethod="put_object",
+                Params={"Bucket": bucket, "Key": decoded_key},
+                ExpiresIn=3600
+            )
+            return {"url": url, "method": "PUT"}
+        except Exception as e:
+            logger.error(f"Failed to generate presigned PUT URL: {e}")
+            return JSONResponse(status_code=500, content={"detail": str(e)})
+    elif operation == "get":
+        method = "get_object"
+        # Optionally check if file exists
+        try:
+            s3.head_object(Bucket=bucket, Key=decoded_key)
+        except s3.exceptions.ClientError:
+            return JSONResponse(status_code=404, content={"detail": "File not found in S3"})
+        try:
+            url = s3.generate_presigned_url(
+                ClientMethod="get_object",
+                Params={"Bucket": bucket, "Key": decoded_key},
+                ExpiresIn=3600
+            )
+            return {"url": url, "method": "GET"}
+        except Exception as e:
+            logger.error(f"Failed to generate presigned GET URL: {e}")
+            return JSONResponse(status_code=500, content={"detail": str(e)})
+    elif operation == "delete":
+        method = "delete_object"
+        # Optionally check if file exists
+        try:
+            s3.head_object(Bucket=bucket, Key=decoded_key)
+        except s3.exceptions.ClientError:
+            return JSONResponse(status_code=404, content={"detail": "File not found in S3"})
+        try:
+            url = s3.generate_presigned_url(
+                ClientMethod="delete_object",
+                Params={"Bucket": bucket, "Key": decoded_key},
+                ExpiresIn=3600
+            )
+            return {"url": url, "method": "DELETE"}
+        except Exception as e:
+            logger.error(f"Failed to generate presigned DELETE URL: {e}")
+            return JSONResponse(status_code=500, content={"detail": str(e)})
+    else:
+        return JSONResponse(status_code=400, content={"detail": "Invalid operation. Use put, get, or delete."})
