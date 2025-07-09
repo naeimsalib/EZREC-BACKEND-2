@@ -19,6 +19,7 @@ import logging
 import pytz
 from dotenv import load_dotenv
 from supabase import create_client
+import socket
 
 # ✅ Fix the import path for booking_utils.py
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
@@ -178,6 +179,15 @@ def download_if_needed(url, path: Path):
             log.error(f"Failed to download {url}: {e}")
     return path if path.exists() else None
 
+def is_internet_available(host="8.8.8.8", port=53, timeout=3):
+    """Check if the internet is available by trying to connect to a DNS server."""
+    try:
+        socket.setdefaulttimeout(timeout)
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        return True
+    except Exception:
+        return False
+
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     """
     Optimized video processing with hardware acceleration and single-pass operation.
@@ -302,9 +312,64 @@ def insert_video_metadata(payload: dict) -> bool:
     )
     return r.status_code in (200, 201)
 
+PENDING_UPLOADS_FILE = Path("/opt/ezrec-backend/pending_uploads.json")
+
+def add_pending_upload(final_file, s3_key, meta):
+    """Add a video to the pending uploads queue."""
+    queue = []
+    if PENDING_UPLOADS_FILE.exists():
+        try:
+            with open(PENDING_UPLOADS_FILE, 'r') as f:
+                queue = json.load(f)
+        except Exception:
+            queue = []
+    queue.append({
+        "final_file": str(final_file),
+        "s3_key": s3_key,
+        "meta": meta
+    })
+    with open(PENDING_UPLOADS_FILE, 'w') as f:
+        json.dump(queue, f, indent=2)
+
+def retry_pending_uploads():
+    if not is_internet_available():
+        log.info("No internet connection. Skipping pending uploads.")
+        return
+    if not PENDING_UPLOADS_FILE.exists():
+        return
+    try:
+        with open(PENDING_UPLOADS_FILE, 'r') as f:
+            queue = json.load(f)
+    except Exception:
+        queue = []
+    new_queue = []
+    for item in queue:
+        final_file = Path(item["final_file"])
+        s3_key = item["s3_key"]
+        meta = item["meta"]
+        if final_file.exists():
+            s3_url = upload_file_chunked(final_file, s3_key)
+            if s3_url:
+                payload = meta
+                payload["video_url"] = s3_url
+                payload["uploaded_at"] = datetime.now(LOCAL_TZ).isoformat()
+                if insert_video_metadata(payload):
+                    log.info(f"✅ Retried upload succeeded: {final_file}")
+                    try:
+                        os.remove(final_file)
+                    except Exception:
+                        pass
+                    continue  # Don't add to new_queue
+        new_queue.append(item)
+    with open(PENDING_UPLOADS_FILE, 'w') as f:
+        json.dump(new_queue, f, indent=2)
+    if not new_queue:
+        PENDING_UPLOADS_FILE.unlink()
+
 def main():
     log.info("Video worker started and entering main loop")
     while True:
+        retry_pending_uploads()
         for date_dir in RECORDINGS_DIR.glob("*/"):
             log.info(f"Scanning directory: {date_dir}")
             for raw_file in date_dir.glob("*.mp4"):
@@ -315,78 +380,75 @@ def main():
                 log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, meta={meta_path.exists()}")
                 if not done.exists() or completed.exists() or lock.exists():
                     continue
-                # ... rest of the processing logic ...
                 lock.touch()
                 if not meta_path.exists():
-                    lock.unlink()  # Clean up lock if meta missing
+                    lock.unlink()
                     continue
-
                 try:
                     with open(meta_path) as f:
                         meta = json.load(f)
-
                     user_id = meta["user_id"]
                     booking_id = meta["booking_id"]
-
                     update_booking_status(booking_id, "Processing")
-
                     final_file = process_video(raw_file, user_id, date_dir)
-
                     if final_file:
                         update_booking_status(booking_id, "Uploading")
                         s3_key = f"{user_id}/{date_dir.name}/{final_file.name}"
-                        s3_url = upload_file_chunked(final_file, s3_key)
-                        if s3_url:
-                            payload = {
-                                "user_id": user_id,
-                                "video_url": s3_url,
-                                "date": date_dir.name,
-                                "recording_id": raw_file.stem,
-                                "duration_seconds": int(get_duration(raw_file)),
-                                "uploaded_at": datetime.now(LOCAL_TZ).isoformat(),
-                                "filename": final_file.name,
-                                "storage_path": s3_key
-                            }
-                            if insert_video_metadata(payload):
-                                update_booking_status(booking_id, "Uploaded")
-                                completed.touch()  # Mark as completed
-                                # Remove files
-                                try:
-                                    os.remove(raw_file)
-                                except Exception:
-                                    pass
-                                try:
-                                    os.remove(final_file)
-                                except Exception:
-                                    pass
-                                try:
-                                    os.remove(done)
-                                except Exception:
-                                    pass
-                                # Optionally remove .json
-                                try:
-                                    os.remove(meta_path)
-                                except Exception:
-                                    pass
-                                # Remove booking from local cache and update status to Completed
-                                try:
-                                    update_booking_status(booking_id, "Completed")
-                                    cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
-                                    if cache_file.exists():
-                                        with open(cache_file, 'r') as f:
-                                            bookings = json.load(f)
-                                        bookings = [b for b in bookings if b.get('id') != booking_id]
-                                        with open(cache_file, 'w') as f:
-                                            json.dump(bookings, f, indent=2)
-                                        log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
-                                except Exception as e:
-                                    log.error(f"Error removing booking from cache in video_worker: {e}")
+                        payload = {
+                            "user_id": user_id,
+                            "video_url": None,  # Will be set after upload
+                            "date": date_dir.name,
+                            "recording_id": raw_file.stem,
+                            "duration_seconds": int(get_duration(raw_file)),
+                            "uploaded_at": None,
+                            "filename": final_file.name,
+                            "storage_path": s3_key
+                        }
+                        if is_internet_available():
+                            s3_url = upload_file_chunked(final_file, s3_key)
+                            if s3_url:
+                                payload["video_url"] = s3_url
+                                payload["uploaded_at"] = datetime.now(LOCAL_TZ).isoformat()
+                                if insert_video_metadata(payload):
+                                    update_booking_status(booking_id, "Uploaded")
+                                    completed.touch()
+                                    try:
+                                        os.remove(raw_file)
+                                    except Exception:
+                                        pass
+                                    try:
+                                        os.remove(final_file)
+                                    except Exception:
+                                        pass
+                                    try:
+                                        os.remove(done)
+                                    except Exception:
+                                        pass
+                                    try:
+                                        os.remove(meta_path)
+                                    except Exception:
+                                        pass
+                                    try:
+                                        update_booking_status(booking_id, "Completed")
+                                        cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+                                        if cache_file.exists():
+                                            with open(cache_file, 'r') as f:
+                                                bookings = json.load(f)
+                                            bookings = [b for b in bookings if b.get('id') != booking_id]
+                                            with open(cache_file, 'w') as f:
+                                                json.dump(bookings, f, indent=2)
+                                            log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
+                                    except Exception as e:
+                                        log.error(f"Error removing booking from cache in video_worker: {e}")
+                                continue
+                        # If no internet, add to pending uploads
+                        add_pending_upload(final_file, s3_key, payload)
+                        log.info(f"No internet. Added {final_file} to pending uploads queue.")
                 except Exception as e:
                     log.error(f"Processing error: {e}")
                 finally:
                     if lock.exists():
                         lock.unlink()
-
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
