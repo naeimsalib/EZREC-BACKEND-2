@@ -15,3 +15,5 @@ Pillow
 numpy
 requests
 boto3
+fastapi
+uvicorn

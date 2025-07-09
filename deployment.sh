@@ -1,6 +1,11 @@
 #!/bin/bash
 
 # Final Combined EZREC Deployment Script (Backend + FastAPI + Monitor + Cloudflared + Recorder + Video Worker)
+# 
+# This script is designed to deploy EZREC Backend to a Raspberry Pi
+# It does NOT modify the .env file - you must create and configure it manually using env.example as a template
+# 
+# Usage: ./deployment.sh [username] [tunnel_name]
 
 set -euo pipefail
 
@@ -106,10 +111,6 @@ ExecStart=$VENV_DIR/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
 WorkingDirectory=$API_DIR
 Restart=always
 User=$USER
-Environment="AWS_ACCESS_KEY_ID=$(grep '^AWS_ACCESS_KEY_ID=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
-Environment="AWS_SECRET_ACCESS_KEY=$(grep '^AWS_SECRET_ACCESS_KEY=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
-Environment="AWS_REGION=$(grep '^AWS_REGION=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
-Environment="AWS_S3_BUCKET=$(grep '^AWS_S3_BUCKET=' $PROJECT_DIR/.env | cut -d'=' -f2-)"
 
 [Install]
 WantedBy=multi-user.target
@@ -229,7 +230,16 @@ else
 fi
 
 #------------------------------#
-# 11. ENABLE + START SERVICES
+# 11. CHECK FOR .ENV FILE
+#------------------------------#
+if [ ! -f "$PROJECT_DIR/.env" ]; then
+  echo "⚠️  WARNING: .env file not found at $PROJECT_DIR/.env"
+  echo "    Please create it using env.example as a template before starting services"
+  echo "    Services will be enabled but may fail to start without proper configuration"
+fi
+
+#------------------------------#
+# 12. ENABLE + START SERVICES
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
@@ -239,21 +249,17 @@ for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
   sleep 1
 done
 
-# Ensure API key is in .env
-if ! grep -q "BOOKING_SYNC_API_KEY=" "$PROJECT_DIR/.env"; then
-  echo "BOOKING_SYNC_API_KEY=ezrec_prod_4b2e7e7c-8e2a-4c1b-9f2e-1a7b2e8c9d3f" | sudo tee -a "$PROJECT_DIR/.env"
-fi
-
 # Enable and start the booking_sync_fastapi service
 sudo systemctl daemon-reload
 sudo systemctl enable booking_sync_fastapi.service
 sudo systemctl restart booking_sync_fastapi.service
 
 #------------------------------#
-# 12. DONE!
+# 13. DONE!
 #------------------------------#
 echo ""
 echo "🎉 EZREC deployed successfully!"
+echo ""
 echo "📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org"
 echo "🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f"
 echo "📹 Recorder logs:  sudo journalctl -u recorder.service -f"
@@ -262,9 +268,12 @@ echo "🌐 Tunnel logs:    sudo journalctl -u cloudflared -f"
 echo "📁 Project files:  $PROJECT_DIR"
 echo "📁 API entry:      $API_DIR/api_server.py"
 echo "📃 Logs dir:       $LOG_DIR"
+echo ""
+echo "⚠️  IMPORTANT: Make sure to create and configure $PROJECT_DIR/.env file"
+echo "    Use env.example as a template and add your credentials"
 
 #------------------------------#
-# 13. CLOUDFLARED CONFIG
+# 14. CLOUDFLARED CONFIG
 #------------------------------#
 TUNNEL_ID=$(cloudflared tunnel list | grep "$TUNNEL_NAME" | awk '{print $1}' | head -n1)
 CLOUDFLARED_CREDS="/etc/cloudflared/${TUNNEL_ID}.json"
