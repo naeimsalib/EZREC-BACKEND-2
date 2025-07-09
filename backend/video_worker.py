@@ -175,7 +175,8 @@ def download_if_needed(url, path: Path):
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     """
     Optimized video processing with hardware acceleration and single-pass operation.
-    Combines intro concatenation and logo overlays in one FFmpeg command.
+    Tries multiple encoders in order: h264_v4l2m2m, h264_omx, libx264.
+    Logs full FFmpeg error output for each attempt.
     """
     output_file = PROCESSED_DIR / date_dir.name / raw_file.name
     output_file.parent.mkdir(parents=True, exist_ok=True)
@@ -251,76 +252,46 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
     
-    # Determine encoder (try hardware first, fallback to software)
+    # Encoder options: (name, [extra ffmpeg args])
     encoders_to_try = [
-        # Hardware encoders (much faster on Pi)
-        ("h264_v4l2m2m", ["-pix_fmt", "yuv420p"]),  # V4L2 hardware encoder
-        ("h264_omx", ["-pix_fmt", "yuv420p"]),      # OpenMAX hardware encoder
-        # Software encoder (fallback)
-        ("libx264", ["-preset", "ultrafast", "-crf", "28"])  # Much faster preset
+        ("h264_v4l2m2m", ["-pix_fmt", "yuv420p"]),
+        ("h264_omx", ["-pix_fmt", "yuv420p"]),
+        ("libx264", ["-preset", "ultrafast", "-crf", "28"])
     ]
     
-    encoder = None
-    encoder_opts = []
-    
-    for enc_name, enc_opts in encoders_to_try:
-        # Test if encoder is available
-        test_cmd = ["ffmpeg", "-hide_banner", "-encoders"]
-        try:
-            result = subprocess.run(test_cmd, capture_output=True, text=True, timeout=5)
-            if enc_name in result.stdout:
-                encoder = enc_name
-                encoder_opts = enc_opts
-                log.info(f"Using encoder: {encoder}")
-                break
-        except Exception:
-            continue
-    
-    if not encoder:
-        log.error("No suitable video encoder found")
-        return None
-    
-    # Build final FFmpeg command
-    ffmpeg_cmd = ["ffmpeg", "-y"] + input_args
-    
+    # Build base FFmpeg command (before encoder)
+    ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
-        ffmpeg_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
+        ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
     else:
-        # No processing needed, just copy/re-encode
-        ffmpeg_cmd.extend(["-map", f"{main_video_idx}:v"])
+        ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
     
-    # Add encoder and options
-    ffmpeg_cmd.extend(["-c:v", encoder] + encoder_opts + [str(output_file)])
-    
-    # Log the command for debugging
-    log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
-    
-    try:
-        # Run with timeout to prevent hanging
-        start_time = time.time()
-        result = subprocess.run(ffmpeg_cmd, check=True, timeout=1800)  # 30 min timeout
-        end_time = time.time()
-        
-        processing_time = end_time - start_time
-        log.info(f"✅ Video processing completed in {processing_time:.1f}s using {encoder}")
-        
-        # Verify output file was created and has reasonable size
-        if output_file.exists() and output_file.stat().st_size > 1024:  # At least 1KB
-            return output_file
-        else:
-            log.error("Output file missing or too small")
-            return None
-            
-    except subprocess.TimeoutExpired:
-        log.error("FFmpeg processing timed out after 30 minutes")
-        return None
-    except subprocess.CalledProcessError as e:
-        log.error(f"FFmpeg failed with return code {e.returncode}")
-        return None
-    except Exception as e:
-        log.error(f"FFmpeg error: {e}")
-        return None
+    # Try each encoder in order
+    for encoder, encoder_opts in encoders_to_try:
+        cmd = ffmpeg_base_cmd + ["-c:v", encoder] + encoder_opts + [str(output_file)]
+        log.info(f"Trying encoder: {encoder}")
+        log.info(f"FFmpeg command: {' '.join(cmd)}")
+        try:
+            start_time = time.time()
+            result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=1800)
+            end_time = time.time()
+            processing_time = end_time - start_time
+            log.info(f"✅ Video processing completed in {processing_time:.1f}s using {encoder}")
+            if output_file.exists() and output_file.stat().st_size > 1024:
+                return output_file
+            else:
+                log.error("Output file missing or too small")
+                return None
+        except subprocess.CalledProcessError as e:
+            log.error(f"FFmpeg failed with {encoder}: {e.stderr}")
+        except subprocess.TimeoutExpired:
+            log.error(f"FFmpeg processing timed out after 30 minutes with {encoder}")
+        except Exception as e:
+            log.error(f"FFmpeg error with {encoder}: {e}")
+    # If all encoders fail
+    log.error("All FFmpeg encoder attempts failed. Video not processed.")
+    return None
 
 def insert_video_metadata(payload: dict) -> bool:
     headers = {
