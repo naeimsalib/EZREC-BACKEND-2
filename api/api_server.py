@@ -51,10 +51,10 @@ app = FastAPI()
 def test_alive():
     return {"status": "alive"}
 
-# Allow all origins for development — restrict in production!
+# Allow only the production frontend domain for CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://d3p0722z34ceid.cloudfront.net"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
