@@ -242,7 +242,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     
     # Build filter chain
     if intro_path.exists():
-        # Concatenate intro + main video
         filter_parts.append(f"[0:v][{main_video_idx}:v]concat=n=2:v=1:a=0[concat]")
         last_output = "[concat]"
     else:
@@ -252,21 +251,22 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     for name, idx, position in logo_inputs:
         scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
         filter_parts.append(scale_filter)
-        
         overlay_position = POSITION_MAP.get(position, "top_right")
         overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
     
-    # Build optimized FFmpeg command for libx264 only
+    # Add scaling to output resolution as the last filter
+    filter_parts.append(f"{last_output}scale={width}:{height}[final]")
+    last_output = "[final]"
+    
+    # Build FFmpeg command
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
         ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
     else:
         ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
-    # Add scaling to output resolution
-    ffmpeg_base_cmd.extend(["-vf", f"scale={width}:{height}"])
     ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
     log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
     try:
