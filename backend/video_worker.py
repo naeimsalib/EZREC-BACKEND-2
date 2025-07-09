@@ -190,6 +190,33 @@ def is_internet_available(host="8.8.8.8", port=53, timeout=3):
     except Exception:
         return False
 
+def get_video_info(file: Path):
+    """Return (codec, width, height, fps, pix_fmt) for a video file using ffprobe."""
+    import json as _json
+    try:
+        result = subprocess.run([
+            "ffprobe", "-v", "error", "-select_streams", "v:0",
+            "-show_entries", "stream=codec_name,width,height,avg_frame_rate,pix_fmt",
+            "-of", "json", str(file)
+        ], capture_output=True, text=True)
+        info = _json.loads(result.stdout)
+        stream = info['streams'][0]
+        codec = stream.get('codec_name')
+        width = int(stream.get('width'))
+        height = int(stream.get('height'))
+        pix_fmt = stream.get('pix_fmt')
+        # avg_frame_rate is like '30/1'
+        fr = stream.get('avg_frame_rate', '30/1')
+        if '/' in fr:
+            num, den = fr.split('/')
+            fps = float(num) / float(den) if float(den) != 0 else 30.0
+        else:
+            fps = float(fr)
+        return codec, width, height, fps, pix_fmt
+    except Exception as e:
+        log.error(f"Could not get video info for {file}: {e}")
+        return None, None, None, None, None
+
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     """
     Optimized video processing with hardware acceleration and single-pass operation.
@@ -222,13 +249,38 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 "ffmpeg", "-y", "-i", str(intro_path), "-t", str(max_duration), "-c", "copy", str(trimmed_intro)
             ], check=True)
             intro_path = trimmed_intro
+        # --- NEW: Check intro format and re-encode if needed ---
+        codec, w, h, fps, pix_fmt = get_video_info(intro_path)
+        needs_reencode = False
+        if codec != 'h264':
+            needs_reencode = True
+        if w != width or h != height:
+            needs_reencode = True
+        if abs(fps - 30) > 0.5:
+            needs_reencode = True
+        if pix_fmt != 'yuv420p':
+            needs_reencode = True
+        if needs_reencode:
+            log.info(f"Re-encoding intro video to H.264 1280x720 30fps yuv420p for fast concat...")
+            reencoded_intro = intro_path.with_name("intro_reencoded.mp4")
+            reencode_cmd = [
+                "ffmpeg", "-y", "-threads", "2", "-i", str(intro_path),
+                "-vf", f"scale={width}:{height},fps=30",
+                "-c:v", "libx264", "-preset", "veryfast", "-crf", "28",
+                "-pix_fmt", "yuv420p", str(reencoded_intro)
+            ]
+            result = subprocess.run(reencode_cmd, capture_output=True)
+            if result.returncode != 0:
+                log.error(f"Intro re-encode failed: {result.stderr.decode()}")
+                return None
+            intro_path = reencoded_intro
 
     # --- Two-pass logic if intro video is present ---
     if intro_path.exists():
         concat_output = raw_file.parent / f"concat_{raw_file.name}"
         # Pass 1: Concat and scale intro + main
         concat_cmd = [
-            "ffmpeg", "-y",
+            "ffmpeg", "-y", "-threads", "2",
             "-i", str(intro_path), "-i", str(raw_file),
             "-filter_complex",
             f"[0:v]scale={width}:{height},format=yuv420p[intro];"
@@ -238,9 +290,18 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             "-c:v", "libx264", "-crf", "23", "-preset", "ultrafast", str(concat_output)
         ]
         log.info(f"[Two-pass] Pass 1: Concatenating intro and main video to {concat_output}")
-        result = subprocess.run(concat_cmd, capture_output=True)
-        if result.returncode != 0:
-            log.error(f"Concat pass failed: {result.stderr.decode()}")
+        try:
+            start = time.time()
+            result = subprocess.run(concat_cmd, capture_output=True, timeout=120)
+            if result.returncode != 0:
+                log.error(f"Concat pass failed: {result.stderr.decode()}")
+                return None
+            log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
+        except subprocess.TimeoutExpired:
+            log.error("❌ FFmpeg concat step timed out.")
+            return None
+        except Exception as e:
+            log.error(f"❌ FFmpeg concat error: {e}")
             return None
         # Pass 2: Overlays and encode (hardware if available)
         input_args = ["-i", str(concat_output)]
