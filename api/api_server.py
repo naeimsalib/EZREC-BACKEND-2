@@ -16,6 +16,7 @@ import urllib.parse
 import requests
 import shutil
 from uuid import uuid4
+from supabase import create_client
 
 # --------------------------
 # LOAD .env FILE
@@ -33,6 +34,13 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger("EZREC")
+
+# --------------------------
+# SUPABASE CONFIGURATION
+# --------------------------
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
 
 # --------------------------
 # FASTAPI INIT
