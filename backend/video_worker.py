@@ -95,6 +95,12 @@ SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_right")
 SPONSOR_2_POSITION = os.getenv("SPONSOR_2_POSITION", "bottom_center")
 INTRO_POSITION = os.getenv("INTRO_POSITION", "top_left")  # Not used for overlay, but for future
 
+RESOLUTION = os.getenv('RESOLUTION', '1280x720')
+try:
+    width, height = map(int, RESOLUTION.lower().split('x'))
+except Exception:
+    width, height = 1280, 720
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -252,45 +258,35 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
     
-    # Encoder options: (name, [extra ffmpeg args])
-    encoders_to_try = [
-        ("h264_v4l2m2m", ["-pix_fmt", "yuv420p"]),
-        ("h264_omx", ["-pix_fmt", "yuv420p"]),
-        ("libx264", ["-preset", "ultrafast", "-crf", "28"])
-    ]
-    
-    # Build base FFmpeg command (before encoder)
+    # Build optimized FFmpeg command for libx264 only
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
         ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
     else:
         ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
-    
-    # Try each encoder in order
-    for encoder, encoder_opts in encoders_to_try:
-        cmd = ffmpeg_base_cmd + ["-c:v", encoder] + encoder_opts + [str(output_file)]
-        log.info(f"Trying encoder: {encoder}")
-        log.info(f"FFmpeg command: {' '.join(cmd)}")
-        try:
-            start_time = time.time()
-            result = subprocess.run(cmd, check=True, capture_output=True, text=True, timeout=1800)
-            end_time = time.time()
-            processing_time = end_time - start_time
-            log.info(f"✅ Video processing completed in {processing_time:.1f}s using {encoder}")
-            if output_file.exists() and output_file.stat().st_size > 1024:
-                return output_file
-            else:
-                log.error("Output file missing or too small")
-                return None
-        except subprocess.CalledProcessError as e:
-            log.error(f"FFmpeg failed with {encoder}: {e.stderr}")
-        except subprocess.TimeoutExpired:
-            log.error(f"FFmpeg processing timed out after 30 minutes with {encoder}")
-        except Exception as e:
-            log.error(f"FFmpeg error with {encoder}: {e}")
-    # If all encoders fail
-    log.error("All FFmpeg encoder attempts failed. Video not processed.")
+    # Add scaling to output resolution
+    ffmpeg_base_cmd.extend(["-vf", f"scale={width}:{height}"])
+    ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
+    log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
+    try:
+        start_time = time.time()
+        result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
+        end_time = time.time()
+        processing_time = end_time - start_time
+        log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using libx264")
+        if output_file.exists() and output_file.stat().st_size > 1024:
+            return output_file
+        else:
+            log.error("Output file missing or too small")
+            return None
+    except subprocess.CalledProcessError as e:
+        log.error(f"FFmpeg failed: {e.stderr}")
+    except subprocess.TimeoutExpired:
+        log.error(f"FFmpeg processing timed out after 30 minutes")
+    except Exception as e:
+        log.error(f"FFmpeg error: {e}")
+    log.error("FFmpeg processing failed. Video not processed.")
     return None
 
 def insert_video_metadata(payload: dict) -> bool:

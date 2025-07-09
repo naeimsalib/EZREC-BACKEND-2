@@ -70,6 +70,11 @@ BOOKING_CACHE_FILE = Path('/opt/ezrec-backend/api/local_data/bookings.json')
 RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/recordings/'))
 LOG_FILE = Path(os.getenv('RECORDER_LOG', '/opt/ezrec-backend/logs/recorder.log'))
 CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
+RESOLUTION = os.getenv('RESOLUTION', '1280x720')
+try:
+    width, height = map(int, RESOLUTION.lower().split('x'))
+except Exception:
+    width, height = 1280, 720
 
 # Avoid double processes
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
@@ -129,7 +134,7 @@ class RecordingSession:
             self.picam2 = safe_init_camera()
 
             config = self.picam2.create_video_configuration(
-                main={"size": (1920, 1080)}, controls={"FrameRate": 30}
+                main={"size": (width, height)}, controls={"FrameRate": 30}
             )
             self.picam2.configure(config)
 

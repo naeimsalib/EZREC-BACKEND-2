@@ -292,3 +292,5 @@ ingress:
 EOF
 
 sudo systemctl restart cloudflared
+
+# To change video/camera resolution, set RESOLUTION in your .env file (e.g. RESOLUTION=1280x720)
