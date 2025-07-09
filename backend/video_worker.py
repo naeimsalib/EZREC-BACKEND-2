@@ -102,6 +102,8 @@ try:
 except Exception:
     width, height = 1280, 720
 
+VIDEO_ENCODER = os.getenv('VIDEO_ENCODER', 'h264_v4l2m2m')
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -252,14 +254,16 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     
     # Build filter chain
     if intro_path.exists():
-        # Scale intro to match main video resolution before concat
-        filter_parts.append(f"[0:v]scale={width}:{height}[intro_scaled]")
-        filter_parts.append(f"[intro_scaled][{main_video_idx}:v]concat=n=2:v=1:a=0[concat]")
+        # Scale and format both intro and main video before concat
+        filter_parts.append(f"[0:v]scale={width}:{height},format=yuv420p[intro_scaled]")
+        filter_parts.append(f"[{main_video_idx}:v]scale={width}:{height},format=yuv420p[main_scaled]")
+        filter_parts.append(f"[intro_scaled][main_scaled]concat=n=2:v=1:a=0[concat]")
         last_output = "[concat]"
     else:
-        last_output = f"[{main_video_idx}:v]"
+        filter_parts.append(f"[{main_video_idx}:v]scale={width}:{height},format=yuv420p[main_scaled]")
+        last_output = "[main_scaled]"
     
-    # Add logo overlays
+    # Add logo overlays (if any)
     for name, idx, position in logo_inputs:
         scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
         filter_parts.append(scale_filter)
@@ -276,21 +280,40 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     else:
         ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
         ffmpeg_base_cmd.extend(["-vf", f"scale={width}:{height}"])
-    ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
+    ffmpeg_base_cmd += ["-c:v", VIDEO_ENCODER, "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
+    log.info(f"Using video encoder: {VIDEO_ENCODER}")
     log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
     try:
         start_time = time.time()
         result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
         end_time = time.time()
         processing_time = end_time - start_time
-        log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using libx264")
+        log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using {VIDEO_ENCODER}")
         if output_file.exists() and output_file.stat().st_size > 1024:
             return output_file
         else:
             log.error("Output file missing or too small")
             return None
     except subprocess.CalledProcessError as e:
-        log.error(f"FFmpeg failed: {e.stderr}")
+        log.error(f"FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
+        if VIDEO_ENCODER != 'libx264':
+            log.info("Retrying with software encoder libx264...")
+            ffmpeg_base_cmd = [arg if arg != VIDEO_ENCODER else 'libx264' for arg in ffmpeg_base_cmd]
+            try:
+                start_time = time.time()
+                result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
+                end_time = time.time()
+                processing_time = end_time - start_time
+                log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using libx264 (fallback)")
+                if output_file.exists() and output_file.stat().st_size > 1024:
+                    return output_file
+                else:
+                    log.error("Output file missing or too small (fallback)")
+                    return None
+            except Exception as e2:
+                log.error(f"FFmpeg fallback to libx264 failed: {e2}")
+        else:
+            log.error(f"FFmpeg failed: {e.stderr}")
     except subprocess.TimeoutExpired:
         log.error(f"FFmpeg processing timed out after 30 minutes")
     except Exception as e:
