@@ -266,17 +266,13 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
     
-    # Add scaling to output resolution as the last filter
-    filter_parts.append(f"{last_output}scale={width}:{height}[final]")
-    last_output = "[final]"
-    
     # Build FFmpeg command
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
         ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
     else:
-        ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
+        ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v", "-vf", f"scale={width}:{height}"])
     ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
     log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
     try:
