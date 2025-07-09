@@ -173,6 +173,10 @@ def download_if_needed(url, path: Path):
     return path if path.exists() else None
 
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
+    """
+    Optimized video processing with hardware acceleration and single-pass operation.
+    Combines intro concatenation and logo overlays in one FFmpeg command.
+    """
     output_file = PROCESSED_DIR / date_dir.name / raw_file.name
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -188,6 +192,8 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     if raw_duration > max_duration:
         log.warning(f"Main recording duration too long: {raw_duration:.2f}s. Skipping processing.")
         return None
+    
+    # Check intro duration and trim if needed
     if intro_path.exists():
         intro_duration = get_duration(intro_path)
         if intro_duration > max_duration:
@@ -198,62 +204,120 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             ], check=True)
             intro_path = trimmed_intro
 
-    # 1. Concatenate intro + recording if intro exists
-    intermediate = raw_file
+    # Build optimized single-pass FFmpeg command
+    input_args = []
+    filter_parts = []
+    
+    # Add inputs
+    video_inputs = 0
     if intro_path.exists():
-        intermediate = output_file.with_name("with_intro.mp4")
-        ffmpeg_cmd = [
-            "ffmpeg", "-y",
-            "-i", str(intro_path),
-            "-i", str(raw_file),
-            "-filter_complex", "[0:v][1:v]concat=n=2:v=1:a=0[v]",
-            "-map", "[v]",
-            "-c:v", "libx264", "-preset", "fast", "-pix_fmt", "yuv420p",
-            str(intermediate)
-        ]
-        subprocess.run(ffmpeg_cmd, check=True)
-        # Sanity check
-        concat_duration = get_duration(intermediate)
-        if concat_duration > 600:  # 10 minutes
-            log.error(f"Concatenated video duration too long: {concat_duration:.2f}s. Aborting.")
-            return None
-
-    # 2. Build ffmpeg overlay filter for all logos
-    input_args = ["-i", str(intermediate)]
-    overlay_cmds = []
-    idx = 1
-    last = "[0:v]"
-    scale_expr = "scale=iw*0.15:ih*0.15"  # 15% of video size
-    # User logo
+        input_args.extend(["-i", str(intro_path)])
+        video_inputs += 1
+    
+    input_args.extend(["-i", str(raw_file)])
+    main_video_idx = video_inputs
+    video_inputs += 1
+    
+    # Add logo inputs
+    logo_inputs = []
     if logo_path.exists():
-        input_args += ["-i", str(logo_path)]
-        overlay_cmds.append(f"[{idx}:v] {scale_expr} [logo_scaled]")
-        overlay_cmds.append(f"{last}[logo_scaled] overlay={POSITION_MAP.get(LOGO_POSITION, 'top_right')}:format=auto [tmp{idx}]")
-        last = f"[tmp{idx}]"
-        idx += 1
-    # Sponsor logos
+        input_args.extend(["-i", str(logo_path)])
+        logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
+        video_inputs += 1
+    
+    # Add sponsor logo inputs
     sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
         if sponsor_path.exists():
-            input_args += ["-i", str(sponsor_path)]
-            overlay_cmds.append(f"[{idx}:v] {scale_expr} [sponsor{i}_scaled]")
-            overlay_cmds.append(f"{last}[sponsor{i}_scaled] overlay={POSITION_MAP.get(sponsor_positions[i], 'bottom_left')}:format=auto [tmp{idx}]")
-            last = f"[tmp{idx}]"
-            idx += 1
-    # Compose the filter_complex string
-    filter_complex = []
-    map_arg = []
-    if overlay_cmds:
-        filter_complex = ["-filter_complex", "; ".join(overlay_cmds)]
-        map_arg = ["-map", last]
-    # 3. Run ffmpeg with overlays
-    final_output = output_file
-    ffmpeg_cmd = ["ffmpeg", "-y"] + input_args + filter_complex + map_arg + [
-        "-c:v", "libx264", "-crf", "23", "-preset", "fast", str(final_output)
+            input_args.extend(["-i", str(sponsor_path)])
+            logo_inputs.append((f"sponsor{i}", video_inputs, sponsor_positions[i]))
+            video_inputs += 1
+    
+    # Build filter chain
+    if intro_path.exists():
+        # Concatenate intro + main video
+        filter_parts.append(f"[0:v][{main_video_idx}:v]concat=n=2:v=1:a=0[concat]")
+        last_output = "[concat]"
+    else:
+        last_output = f"[{main_video_idx}:v]"
+    
+    # Add logo overlays
+    for name, idx, position in logo_inputs:
+        scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
+        filter_parts.append(scale_filter)
+        
+        overlay_position = POSITION_MAP.get(position, "top_right")
+        overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
+        filter_parts.append(overlay_filter)
+        last_output = f"[{name}_out]"
+    
+    # Determine encoder (try hardware first, fallback to software)
+    encoders_to_try = [
+        # Hardware encoders (much faster on Pi)
+        ("h264_v4l2m2m", ["-pix_fmt", "yuv420p"]),  # V4L2 hardware encoder
+        ("h264_omx", ["-pix_fmt", "yuv420p"]),      # OpenMAX hardware encoder
+        # Software encoder (fallback)
+        ("libx264", ["-preset", "ultrafast", "-crf", "28"])  # Much faster preset
     ]
+    
+    encoder = None
+    encoder_opts = []
+    
+    for enc_name, enc_opts in encoders_to_try:
+        # Test if encoder is available
+        test_cmd = ["ffmpeg", "-hide_banner", "-encoders"]
+        try:
+            result = subprocess.run(test_cmd, capture_output=True, text=True, timeout=5)
+            if enc_name in result.stdout:
+                encoder = enc_name
+                encoder_opts = enc_opts
+                log.info(f"Using encoder: {encoder}")
+                break
+        except Exception:
+            continue
+    
+    if not encoder:
+        log.error("No suitable video encoder found")
+        return None
+    
+    # Build final FFmpeg command
+    ffmpeg_cmd = ["ffmpeg", "-y"] + input_args
+    
+    if filter_parts:
+        filter_complex = ";".join(filter_parts)
+        ffmpeg_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
+    else:
+        # No processing needed, just copy/re-encode
+        ffmpeg_cmd.extend(["-map", f"{main_video_idx}:v"])
+    
+    # Add encoder and options
+    ffmpeg_cmd.extend(["-c:v", encoder] + encoder_opts + [str(output_file)])
+    
+    # Log the command for debugging
+    log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
+    
     try:
-        subprocess.run(ffmpeg_cmd, check=True)
-        return final_output
+        # Run with timeout to prevent hanging
+        start_time = time.time()
+        result = subprocess.run(ffmpeg_cmd, check=True, timeout=1800)  # 30 min timeout
+        end_time = time.time()
+        
+        processing_time = end_time - start_time
+        log.info(f"✅ Video processing completed in {processing_time:.1f}s using {encoder}")
+        
+        # Verify output file was created and has reasonable size
+        if output_file.exists() and output_file.stat().st_size > 1024:  # At least 1KB
+            return output_file
+        else:
+            log.error("Output file missing or too small")
+            return None
+            
+    except subprocess.TimeoutExpired:
+        log.error("FFmpeg processing timed out after 30 minutes")
+        return None
+    except subprocess.CalledProcessError as e:
+        log.error(f"FFmpeg failed with return code {e.returncode}")
+        return None
     except Exception as e:
         log.error(f"FFmpeg error: {e}")
         return None
