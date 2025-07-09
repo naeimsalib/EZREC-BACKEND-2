@@ -167,6 +167,8 @@ class RecordingSession:
                 self.picam2.stop_recording()
                 self.picam2.close()
                 logger.info(f"⏹️ Stopped recording: {self.raw_filepath}")
+                # Update status to RecordingFinished immediately after stopping
+                update_booking_status(self.booking["id"], "RecordingFinished")
                 # Convert raw H264 to MP4 using ffmpeg
                 import subprocess
                 ffmpeg_cmd = [
@@ -180,6 +182,8 @@ class RecordingSession:
                     # Clean up raw file
                     if self.raw_filepath.exists():
                         os.remove(self.raw_filepath)
+                    # Update status to Processing after successful conversion
+                    update_booking_status(self.booking["id"], "Processing")
                 except Exception as e:
                     logger.error(f"❌ ffmpeg conversion failed: {e}")
                 self.completed_marker.touch()
@@ -203,9 +207,6 @@ class RecordingSession:
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                     'status': 'idle'
                 }).eq('id', CAMERA_ID).execute()
-
-                # Now update status to RecordingFinished
-                update_booking_status(self.booking["id"], "RecordingFinished")
 
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
