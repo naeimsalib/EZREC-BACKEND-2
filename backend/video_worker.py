@@ -252,7 +252,9 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     
     # Build filter chain
     if intro_path.exists():
-        filter_parts.append(f"[0:v][{main_video_idx}:v]concat=n=2:v=1:a=0[concat]")
+        # Scale intro to match main video resolution before concat
+        filter_parts.append(f"[0:v]scale={width}:{height}[intro_scaled]")
+        filter_parts.append(f"[intro_scaled][{main_video_idx}:v]concat=n=2:v=1:a=0[concat]")
         last_output = "[concat]"
     else:
         last_output = f"[{main_video_idx}:v]"
