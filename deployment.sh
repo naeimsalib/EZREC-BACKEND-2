@@ -46,6 +46,15 @@ touch "$LOCK_FILE"
 echo "🚀 Starting EZREC Deployment as user '$USER' with tunnel name '$TUNNEL_NAME'..."
 
 #------------------------------#
+# 2.5 CLEANUP SYSTEM BEFORE DEPLOY
+#------------------------------#
+echo "🧹 Cleaning up old recordings, uploads, and logs..."
+sudo rm -rf "$PROJECT_DIR/raw_recordings"/*
+sudo rm -rf "$PROJECT_DIR/processed_recordings"/*
+sudo rm -f "$PROJECT_DIR/pending_uploads.json"
+sudo rm -f "$LOG_DIR/ezrec.log"
+
+#------------------------------#
 # 3. CREATE FOLDERS + PERMISSIONS
 #------------------------------#
 echo "📁 Setting up directories..."
