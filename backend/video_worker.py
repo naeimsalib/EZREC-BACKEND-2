@@ -272,7 +272,8 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_complex = ";".join(filter_parts)
         ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
     else:
-        ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v", "-vf", f"scale={width}:{height}"])
+        ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
+        ffmpeg_base_cmd.extend(["-vf", f"scale={width}:{height}"])
     ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
     log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
     try:
