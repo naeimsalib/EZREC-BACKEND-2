@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Video - EZREC</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; text-align: center; }
+        .container { margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; max-width: 600px; padding: 32px; }
+        h2 { color: #2a2a2a; }
+        video { width: 100%; max-width: 540px; border-radius: 8px; margin-bottom: 16px; }
+        .download-btn { display: inline-block; margin-top: 16px; padding: 12px 24px; background: #0077ff; color: #fff; border: none; border-radius: 4px; text-decoration: none; font-size: 1.1em; transition: background 0.2s; }
+        .download-btn:hover { background: #005fcc; }
+        .error { color: #c00; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Shared Video</h2>
+        {% if error %}
+            <div class="error">{{ error }}</div>
+        {% else %}
+            <video controls src="{{ video_url }}"></video>
+            <br>
+            <a class="download-btn" href="{{ video_url }}" download>Download Video</a>
+        {% endif %}
+    </div>
+</body>
+</html> 

@@ -16,7 +16,6 @@ import urllib.parse
 import requests
 import shutil
 from uuid import uuid4
-from supabase import create_client
 
 # --------------------------
 # LOAD .env FILE
@@ -111,6 +110,7 @@ class MediaNotifyRequest(BaseModel):
 
 class ShareRequest(BaseModel):
     key: str
+    user_id: str  # Now required
 
 class ShareResponse(BaseModel):
     url: str
@@ -437,6 +437,8 @@ async def media_notify(payload: MediaNotifyRequest):
 
     return {"status": "ok"}
 
+templates = Jinja2Templates(directory="api/templates")
+
 @app.post("/share", response_model=ShareResponse)
 def create_share_link(req: ShareRequest):
     token = uuid4().hex
@@ -445,8 +447,12 @@ def create_share_link(req: ShareRequest):
     data = {
         "token": token,
         "video_key": req.key,
+        "user_id": req.user_id,
         "created_at": created_at,
-        "expires_at": expires_at
+        "expires_at": expires_at,
+        "access_count": 0,
+        "last_accessed": None,
+        "revoked": False
     }
     try:
         supabase.table("shared_links").insert(data).execute()
@@ -456,27 +462,42 @@ def create_share_link(req: ShareRequest):
     base_url = os.getenv("SHARE_BASE_URL", "https://yourdomain.com")
     return {"url": f"{base_url}/share/{token}"}
 
-@app.get("/share/{token}")
-def get_shared_video(token: str):
+@app.get("/share/{token}", response_class=HTMLResponse)
+def get_shared_video(request: Request, token: str):
+    error = None
+    video_url = None
     try:
         res = supabase.table("shared_links").select("*").eq("token", token).single().execute()
         row = res.data
     except Exception as e:
         logger.error(f"Share token lookup failed: {e}")
-        raise HTTPException(status_code=404, detail="Invalid or expired link")
+        row = None
+        error = "Invalid or expired link."
     if not row:
-        raise HTTPException(status_code=404, detail="Invalid or expired link")
-    expires_at = row.get("expires_at")
-    if expires_at and datetime.fromisoformat(expires_at) < datetime.utcnow():
-        raise HTTPException(status_code=404, detail="Link expired")
-    try:
-        url = s3.generate_presigned_url(
-            ClientMethod="get_object",
-            Params={"Bucket": S3_BUCKET, "Key": row["video_key"]},
-            ExpiresIn=3600
-        )
-    except Exception as e:
-        logger.error(f"Failed to generate presigned URL: {e}")
-        raise HTTPException(status_code=500, detail="Failed to generate video link")
-    filename = row["video_key"].split("/")[-1]
-    return {"video_url": url, "filename": filename}
+        error = "Invalid or expired link."
+    else:
+        expires_at = row.get("expires_at")
+        revoked = row.get("revoked", False)
+        if revoked:
+            error = "This share link has been revoked."
+        elif expires_at and datetime.fromisoformat(expires_at) < datetime.utcnow():
+            error = "This share link has expired."
+        else:
+            try:
+                video_url = s3.generate_presigned_url(
+                    ClientMethod="get_object",
+                    Params={"Bucket": S3_BUCKET, "Key": row["video_key"]},
+                    ExpiresIn=600  # 10 minutes
+                )
+                # Analytics: increment access_count and update last_accessed
+                supabase.table("shared_links").update({
+                    "access_count": (row.get("access_count") or 0) + 1,
+                    "last_accessed": datetime.utcnow().isoformat()
+                }).eq("token", token).execute()
+            except Exception as e:
+                logger.error(f"Failed to generate presigned URL: {e}")
+                error = "Failed to generate video link."
+    return templates.TemplateResponse(
+        "share_video.html",
+        {"request": request, "video_url": video_url, "error": error}
+    )
