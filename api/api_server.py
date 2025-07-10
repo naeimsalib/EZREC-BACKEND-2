@@ -12,7 +12,8 @@ import os
 from dotenv import load_dotenv
 from urllib.parse import unquote
 import sys
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse
 import urllib.parse
 import requests
 import shutil
