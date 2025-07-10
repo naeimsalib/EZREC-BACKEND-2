@@ -1,3 +1,4 @@
+from supabase import create_client
 from fastapi import FastAPI, HTTPException, Query, Request, Body, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
