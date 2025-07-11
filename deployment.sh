@@ -87,6 +87,12 @@ else
 fi
 
 #------------------------------#
+# 5.5. DOWNLOAD MAIN EZREC LOGO #
+#------------------------------#
+echo "🖼️ Downloading main EZREC logo from S3..."
+aws s3 cp s3://ezrec-user-media/main_ezrec_logo.png /opt/ezrec-backend/main_ezrec_logo.png || { echo "❌ Failed to download main EZREC logo from S3"; exit 1; }
+
+#------------------------------#
 # 6. INSTALL BACKEND DEPENDENCIES
 #------------------------------#
 echo "📦 Installing backend requirements.txt dependencies..."
