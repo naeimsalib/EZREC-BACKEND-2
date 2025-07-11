@@ -669,7 +669,11 @@ def get_download_url(token: str):
             return JSONResponse(status_code=403, content={"detail": "Link expired or revoked."})
         video_url = s3.generate_presigned_url(
             ClientMethod="get_object",
-            Params={"Bucket": S3_BUCKET, "Key": row["video_key"]},
+            Params={
+                "Bucket": S3_BUCKET,
+                "Key": row["video_key"],
+                "ResponseContentDisposition": "attachment; filename=\"shared_video.mp4\""
+            },
             ExpiresIn=3600  # 1 hour
         )
         return {"url": video_url}
