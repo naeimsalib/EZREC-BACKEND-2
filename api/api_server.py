@@ -1,7 +1,7 @@
 from supabase import create_client
 from fastapi import FastAPI, HTTPException, Query, Request, Body, Header
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
@@ -18,6 +18,8 @@ import urllib.parse
 import requests
 import shutil
 from uuid import uuid4
+import smtplib
+from email.message import EmailMessage
 
 # --------------------------
 # LOAD .env FILE
@@ -121,6 +123,11 @@ class ShareRequest(BaseModel):
 
 class ShareResponse(BaseModel):
     url: str
+
+class SendShareEmailRequest(BaseModel):
+    email: EmailStr
+    link: str
+    videoId: str
 
 # --------------------------
 # ENDPOINTS
@@ -680,3 +687,77 @@ def get_download_url(token: str):
     except Exception as e:
         logger.error(f"Failed to generate download URL: {e}")
         return JSONResponse(status_code=500, content={"detail": "Failed to generate download URL."})
+
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+EMAIL_FROM = os.getenv("EMAIL_FROM", EMAIL_HOST_USER)
+
+@app.post("/send-share-email")
+def send_share_email(req: SendShareEmailRequest):
+    # Security: Validate the user is allowed to send this link (TODO: implement real check)
+    # For now, just check the video exists
+    try:
+        res = supabase.table("videos").select("*").eq("recording_id", req.videoId).single().execute()
+        if not res.data:
+            return JSONResponse(status_code=404, content={"detail": "Video not found."})
+    except Exception as e:
+        logger.error(f"Error validating video: {e}")
+        return JSONResponse(status_code=500, content={"detail": "Internal error."})
+
+    # Compose HTML email (dark theme, EZREC logo, styled like share page)
+    html = f"""
+    <html>
+    <head>
+    <style>
+        body {{ background: #101014; color: #fff; font-family: 'Montserrat', Arial, sans-serif; margin: 0; padding: 0; }}
+        .container {{ background: #18181c; border-radius: 16px; max-width: 480px; margin: 32px auto; padding: 32px; box-shadow: 0 4px 24px #0004; }}
+        .logo {{ font-size: 2rem; font-weight: 700; letter-spacing: 2px; color: #fff; display: flex; align-items: center; }}
+        .logo .red-dot {{ color: #ff2d2d; font-size: 2.2rem; margin-left: 2px; }}
+        .btn {{ display: inline-block; margin-top: 24px; padding: 14px 32px; background: linear-gradient(90deg, #0077ff 60%, #0056cc 100%); color: #fff; border: none; border-radius: 6px; font-size: 1.1em; font-weight: 600; letter-spacing: 1px; text-decoration: none; }}
+        .btn:hover {{ background: linear-gradient(90deg, #0056cc 60%, #0077ff 100%); }}
+        .info {{ margin-top: 18px; padding: 14px; background: #15151a; border-radius: 6px; font-size: 1em; color: #b0b0b0; text-align: center; }}
+    </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="logo">EZREC<span class="red-dot">&bull;</span></div>
+            <h2 style="color:#fff;">You've received a shared video!</h2>
+            <div class="info">
+                <p>Someone has shared a video with you via EZREC. Click the button below to view and download the video.</p>
+            </div>
+            <a href="{req.link}" class="btn">View Shared Video</a>
+            <div class="info" style="margin-top:32px;">
+                <p>If the button doesn't work, copy and paste this link into your browser:</p>
+                <p style="word-break:break-all;"><a href="{req.link}" style="color:#0077ff;">{req.link}</a></p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    # Send email
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = "You've received a shared video from EZREC"
+        msg["From"] = EMAIL_FROM
+        msg["To"] = req.email
+        msg.set_content("You have received a shared video. Please view it in an HTML-capable email client.")
+        msg.add_alternative(html, subtype="html")
+        with smtplib.SMTP(EMAIL_HOST, EMAIL_PORT) as server:
+            if EMAIL_USE_TLS:
+                server.starttls()
+            server.login(EMAIL_HOST_USER, EMAIL_HOST_PASSWORD)
+            server.send_message(msg)
+    except Exception as e:
+        logger.error(f"Failed to send share email: {e}")
+        return JSONResponse(status_code=500, content={"detail": "Failed to send email."})
+
+    # Optionally, update the booking record with the email (if videoId is provided)
+    try:
+        supabase.table("videos").update({"shared_email": req.email}).eq("recording_id", req.videoId).execute()
+    except Exception as e:
+        logger.warning(f"Failed to update video with shared email: {e}")
+
+    return {"status": "ok"}
