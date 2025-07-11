@@ -144,7 +144,7 @@ def download_file(url: str, path: Path, bucket=None, key=None):
             with open(path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
-    except Exception as e:
+        except Exception as e:
             log.error(f"Failed to download {url}: {e}")
 
 def fetch_user_media(user_id: str):
@@ -240,7 +240,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         return None
     
     # Check intro duration and trim if needed
-        if intro_path.exists():
+    if intro_path.exists():
         intro_duration = get_duration(intro_path)
         if intro_duration > max_duration:
             log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to {max_duration}s.")
@@ -471,7 +471,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     except Exception as e:
         log.error(f"FFmpeg error: {e}")
     log.error("FFmpeg processing failed. Video not processed.")
-        return None
+    return None
 
 def insert_video_metadata(payload: dict) -> bool:
     headers = {
