@@ -473,6 +473,31 @@ def create_share_link(req: ShareRequest):
     base_url = os.getenv("SHARE_BASE_URL", "https://yourdomain.com")
     return {"url": f"{base_url}/share/{token}"}
 
+@app.post("/share/{token}/revoke")
+def revoke_share_link(token: str, user_id: str):
+    """
+    Revoke a share link. Only the user who created the link can revoke it.
+    """
+    try:
+        # First check if the link exists and belongs to the user
+        res = supabase.table("shared_links").select("*").eq("token", token).eq("user_id", user_id).single().execute()
+        
+        if not res.data:
+            raise HTTPException(status_code=404, detail="Share link not found or access denied")
+        
+        # Update the database to mark as revoked
+        supabase.table("shared_links").update({
+            "revoked": True,
+            "revoked_at": datetime.utcnow().isoformat()
+        }).eq("token", token).eq("user_id", user_id).execute()
+        
+        logger.info(f"Share link {token} revoked by user {user_id}")
+        return {"status": "revoked", "message": "Share link revoked successfully"}
+        
+    except Exception as e:
+        logger.error(f"Failed to revoke share link: {e}")
+        raise HTTPException(status_code=500, detail="Failed to revoke share link")
+
 @app.get("/share/{token}", response_class=HTMLResponse)
 def get_shared_video(request: Request, token: str):
     error = None
