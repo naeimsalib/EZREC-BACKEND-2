@@ -144,7 +144,7 @@ def download_file(url: str, path: Path, bucket=None, key=None):
             with open(path, 'wb') as f:
                 for chunk in r.iter_content(chunk_size=8192):
                     f.write(chunk)
-        except Exception as e:
+    except Exception as e:
             log.error(f"Failed to download {url}: {e}")
 
 def fetch_user_media(user_id: str):
@@ -240,7 +240,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         return None
     
     # Check intro duration and trim if needed
-    if intro_path.exists():
+        if intro_path.exists():
         intro_duration = get_duration(intro_path)
         if intro_duration > max_duration:
             log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to {max_duration}s.")
@@ -471,7 +471,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     except Exception as e:
         log.error(f"FFmpeg error: {e}")
     log.error("FFmpeg processing failed. Video not processed.")
-    return None
+        return None
 
 def insert_video_metadata(payload: dict) -> bool:
     headers = {
@@ -572,7 +572,7 @@ def main():
                             "user_id": user_id,
                             "video_url": None,  # Will be set after upload
                             "date": date_dir.name,
-                            "recording_id": raw_file.stem,
+                            "recording_id": raw_file.stem,  # Ensure this is always set
                             "duration_seconds": int(get_duration(raw_file)),
                             "uploaded_at": None,
                             "filename": final_file.name,
@@ -583,37 +583,37 @@ def main():
                             if s3_url:
                                 payload["video_url"] = s3_url
                                 payload["uploaded_at"] = datetime.now(LOCAL_TZ).isoformat()
-                                if insert_video_metadata(payload):
-                                    update_booking_status(booking_id, "Uploaded")
-                                    completed.touch()
-                                    try:
-                                        os.remove(raw_file)
-                                    except Exception:
-                                        pass
-                                    try:
-                                        os.remove(final_file)
-                                    except Exception:
-                                        pass
-                                    try:
-                                        os.remove(done)
-                                    except Exception:
-                                        pass
-                                    try:
-                                        os.remove(meta_path)
-                                    except Exception:
-                                        pass
-                                    try:
-                                        update_booking_status(booking_id, "Completed")
-                                        cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
-                                        if cache_file.exists():
-                                            with open(cache_file, 'r') as f:
-                                                bookings = json.load(f)
-                                            bookings = [b for b in bookings if b.get('id') != booking_id]
-                                            with open(cache_file, 'w') as f:
-                                                json.dump(bookings, f, indent=2)
-                                            log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
-                                    except Exception as e:
-                                        log.error(f"Error removing booking from cache in video_worker: {e}")
+                            if insert_video_metadata(payload):
+                                update_booking_status(booking_id, "Uploaded")
+                                completed.touch()
+                                try:
+                                    os.remove(raw_file)
+                                except Exception:
+                                    pass
+                                try:
+                                    os.remove(final_file)
+                                except Exception:
+                                    pass
+                                try:
+                                    os.remove(done)
+                                except Exception:
+                                    pass
+                                try:
+                                    os.remove(meta_path)
+                                except Exception:
+                                    pass
+                                try:
+                                    update_booking_status(booking_id, "Completed")
+                                    cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+                                    if cache_file.exists():
+                                        with open(cache_file, 'r') as f:
+                                            bookings = json.load(f)
+                                        bookings = [b for b in bookings if b.get('id') != booking_id]
+                                        with open(cache_file, 'w') as f:
+                                            json.dump(bookings, f, indent=2)
+                                        log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
+                                except Exception as e:
+                                    log.error(f"Error removing booking from cache in video_worker: {e}")
                                 continue
                         # If no internet, add to pending uploads
                         add_pending_upload(final_file, s3_key, payload)
