@@ -628,7 +628,7 @@ def get_shared_video(request: Request, token: str):
                 video_url = s3.generate_presigned_url(
                     ClientMethod="get_object",
                     Params={"Bucket": S3_BUCKET, "Key": row["video_key"]},
-                    ExpiresIn=600  # 10 minutes
+                    ExpiresIn=3600  # 1 hour
                 )
                 # Analytics: increment access_count and update last_accessed
                 new_access_count = (row.get("access_count") or 0) + 1
@@ -647,7 +647,32 @@ def get_shared_video(request: Request, token: str):
         "error": error,
         "token": token,
         "access_count": row.get("access_count", 0) if row else 0,
-        "last_accessed": row.get("last_accessed") if row else None
+        "last_accessed": row.get("last_accessed") if row else None,
+        "expires_at": row.get("expires_at") if row else None
     }
     
     return templates.TemplateResponse("share_video.html", template_context)
+
+@app.get("/share/{token}/download_url")
+def get_download_url(token: str):
+    """
+    Return a fresh presigned S3 URL for downloading the shared video.
+    """
+    try:
+        res = supabase.table("shared_links").select("*").eq("token", token).single().execute()
+        row = res.data
+        if not row:
+            return JSONResponse(status_code=404, content={"detail": "Invalid or expired link."})
+        expires_at = row.get("expires_at")
+        revoked = row.get("revoked", False)
+        if revoked or (expires_at and datetime.fromisoformat(expires_at) < datetime.now(timezone.utc)):
+            return JSONResponse(status_code=403, content={"detail": "Link expired or revoked."})
+        video_url = s3.generate_presigned_url(
+            ClientMethod="get_object",
+            Params={"Bucket": S3_BUCKET, "Key": row["video_key"]},
+            ExpiresIn=3600  # 1 hour
+        )
+        return {"url": video_url}
+    except Exception as e:
+        logger.error(f"Failed to generate download URL: {e}")
+        return JSONResponse(status_code=500, content={"detail": "Failed to generate download URL."})
