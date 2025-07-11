@@ -498,6 +498,111 @@ def revoke_share_link(token: str, user_id: str):
         logger.error(f"Failed to revoke share link: {e}")
         raise HTTPException(status_code=500, detail="Failed to revoke share link")
 
+@app.post("/share/{token}/download")
+def track_download(token: str, request: Request):
+    """
+    Track when someone downloads a video from a share link.
+    """
+    try:
+        # Get client IP for basic tracking
+        client_ip = request.client.host
+        user_agent = request.headers.get("user-agent", "")
+        
+        # Update download count
+        res = supabase.table("shared_links").select("total_downloads").eq("token", token).single().execute()
+        current_downloads = res.data.get("total_downloads", 0) if res.data else 0
+        
+        supabase.table("shared_links").update({
+            "total_downloads": current_downloads + 1,
+            "last_downloaded": datetime.utcnow().isoformat(),
+            "last_download_ip": client_ip,
+            "last_download_user_agent": user_agent
+        }).eq("token", token).execute()
+        
+        logger.info(f"Download tracked for token {token} from IP {client_ip}")
+        return {"status": "download_tracked", "download_count": current_downloads + 1}
+        
+    except Exception as e:
+        logger.error(f"Failed to track download: {e}")
+        raise HTTPException(status_code=500, detail="Failed to track download")
+
+@app.get("/share/analytics/{user_id}")
+def get_share_analytics(user_id: str):
+    """
+    Get analytics for all share links created by a user.
+    """
+    try:
+        # Get all share links for the user
+        res = supabase.table("shared_links").select("*").eq("user_id", user_id).execute()
+        
+        if not res.data:
+            return {
+                "total_links": 0,
+                "active_links": 0,
+                "total_views": 0,
+                "total_downloads": 0,
+                "links": []
+            }
+        
+        links = res.data
+        total_links = len(links)
+        active_links = len([l for l in links if not l.get("revoked", False) and 
+                          (not l.get("expires_at") or datetime.fromisoformat(l.get("expires_at")) > datetime.utcnow())])
+        total_views = sum(l.get("access_count", 0) for l in links)
+        total_downloads = sum(l.get("total_downloads", 0) for l in links)
+        
+        return {
+            "total_links": total_links,
+            "active_links": active_links,
+            "total_views": total_views,
+            "total_downloads": total_downloads,
+            "links": links
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get share analytics: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get share analytics")
+
+@app.get("/share/analytics/popular")
+def get_popular_videos():
+    """
+    Get most popular shared videos across all users.
+    """
+    try:
+        # This would require a more complex query, but for now we'll get recent links
+        res = supabase.table("shared_links").select("*").order("created_at", desc=True).limit(50).execute()
+        
+        # Group by video_key and calculate stats
+        video_stats = {}
+        for link in res.data:
+            video_key = link.get("video_key")
+            if video_key not in video_stats:
+                video_stats[video_key] = {
+                    "video_key": video_key,
+                    "share_count": 0,
+                    "total_views": 0,
+                    "total_downloads": 0,
+                    "last_shared": None
+                }
+            
+            video_stats[video_key]["share_count"] += 1
+            video_stats[video_key]["total_views"] += link.get("access_count", 0)
+            video_stats[video_key]["total_downloads"] += link.get("total_downloads", 0)
+            
+            if not video_stats[video_key]["last_shared"] or link.get("created_at") > video_stats[video_key]["last_shared"]:
+                video_stats[video_key]["last_shared"] = link.get("created_at")
+        
+        # Sort by total views
+        popular_videos = sorted(video_stats.values(), key=lambda x: x["total_views"], reverse=True)
+        
+        return {
+            "popular_videos": popular_videos[:10]  # Top 10
+        }
+        
+    except Exception as e:
+        logger.error(f"Failed to get popular videos: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get popular videos")
+
 @app.get("/share/{token}", response_class=HTMLResponse)
 def get_shared_video(request: Request, token: str):
     error = None
@@ -526,14 +631,23 @@ def get_shared_video(request: Request, token: str):
                     ExpiresIn=600  # 10 minutes
                 )
                 # Analytics: increment access_count and update last_accessed
+                new_access_count = (row.get("access_count") or 0) + 1
                 supabase.table("shared_links").update({
-                    "access_count": (row.get("access_count") or 0) + 1,
+                    "access_count": new_access_count,
                     "last_accessed": datetime.utcnow().isoformat()
                 }).eq("token", token).execute()
             except Exception as e:
                 logger.error(f"Failed to generate presigned URL: {e}")
                 error = "Failed to generate video link."
-    return templates.TemplateResponse(
-        "share_video.html",
-        {"request": request, "video_url": video_url, "error": error}
-    )
+    
+    # Prepare template context with analytics
+    template_context = {
+        "request": request, 
+        "video_url": video_url, 
+        "error": error,
+        "token": token,
+        "access_count": row.get("access_count", 0) if row else 0,
+        "last_accessed": row.get("last_accessed") if row else None
+    }
+    
+    return templates.TemplateResponse("share_video.html", template_context)
