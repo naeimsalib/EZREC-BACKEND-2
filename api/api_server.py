@@ -444,7 +444,7 @@ async def media_notify(payload: MediaNotifyRequest):
 
     return {"status": "ok"}
 
-templates = Jinja2Templates(directory="api/templates")
+templates = Jinja2Templates(directory=os.path.join(os.path.dirname(__file__), "templates"))
 
 @app.options("/share")
 async def options_share():
