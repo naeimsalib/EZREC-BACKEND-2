@@ -90,7 +90,7 @@ POSITION_MAP = {
     "bottom_center": "(main_w-overlay_w)/2:main_h-overlay_h-10",
 }
 
-LOGO_POSITION = os.getenv("LOGO_POSITION", "top_right")
+LOGO_POSITION = os.getenv("LOGO_POSITION", "bottom_right")
 SPONSOR_0_POSITION = os.getenv("SPONSOR_0_POSITION", "bottom_left")
 SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_right")
 SPONSOR_2_POSITION = os.getenv("SPONSOR_2_POSITION", "bottom_center")
@@ -168,7 +168,9 @@ def fetch_user_media(user_id: str):
 
 # Main logo config (can be a URL or local path)
 MAIN_LOGO_URL = os.getenv("MAIN_LOGO_URL")  # e.g. S3 URL
-MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/main_logo.png")
+# Always add the main EZREC logo overlay to all videos
+MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/main_ezrec_logo.png")
+MAIN_LOGO_POSITION = os.getenv("LOGO_POSITION", "bottom_right")
 
 def download_if_needed(url, path: Path):
     if url and not path.exists():
@@ -309,6 +311,10 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         last_output = "[0:v]"
         video_inputs = 1
         logo_inputs = []
+        # Add main logo input (always required)
+        input_args.extend(["-i", str(MAIN_LOGO_PATH)])
+        logo_inputs.append(("main_logo", video_inputs, MAIN_LOGO_POSITION))
+        video_inputs += 1
         if logo_path.exists():
             input_args.extend(["-i", str(logo_path)])
             logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
@@ -389,8 +395,12 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     main_video_idx = video_inputs
     video_inputs += 1
     
-    # Add logo inputs
-    logo_inputs = []
+    # Add main logo input (always required)
+    input_args.extend(["-i", str(MAIN_LOGO_PATH)])
+    logo_inputs = [("main_logo", video_inputs, MAIN_LOGO_POSITION)]
+    video_inputs += 1
+    
+    # Add user logo inputs (optional, as before)
     if logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
         logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
