@@ -446,6 +446,10 @@ async def media_notify(payload: MediaNotifyRequest):
 
 templates = Jinja2Templates(directory="api/templates")
 
+@app.options("/share")
+async def options_share():
+    return {"message": "OK"}
+
 @app.post("/share", response_model=ShareResponse)
 def create_share_link(req: ShareRequest):
     token = uuid4().hex
