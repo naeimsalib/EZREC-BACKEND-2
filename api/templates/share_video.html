@@ -96,10 +96,7 @@
                 <button class="download-btn" onclick="downloadVideo()">
                     Download Video
                 </button>
-                
-                <div class="share-info">
-                    <strong>Share Link:</strong> {{ request.url }}
-                </div>
+                <div id="expiry-info" class="share-info"></div>
                 
                 <div class="analytics">
                     <p>📊 This link has been accessed {{ access_count }} times</p>
@@ -116,14 +113,36 @@
     </div>
 
     <script>
+        // Expiry timer logic
+        (function() {
+            const expiresAt = "{{ expires_at }}";
+            if (expiresAt) {
+                const expiryDiv = document.getElementById('expiry-info');
+                const expiryDate = new Date(expiresAt);
+                function updateCountdown() {
+                    const now = new Date();
+                    const diff = expiryDate - now;
+                    if (diff <= 0) {
+                        expiryDiv.innerHTML = '<span style="color:#dc3545">This link has expired.</span>';
+                        return;
+                    }
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                    const seconds = Math.floor((diff / 1000) % 60);
+                    expiryDiv.innerHTML = `<strong>Expires:</strong> ${expiryDate.toLocaleString()}<br><strong>Time left:</strong> ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                }
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            }
+        })();
+
         function downloadVideo() {
             const downloadBtn = document.querySelector('.download-btn');
             const originalText = downloadBtn.textContent;
-            
             // Show loading state
             downloadBtn.innerHTML = '<span class="loading"></span> Downloading...';
             downloadBtn.disabled = true;
-            
             // Track download
             fetch('/share/{{ token }}/download', {
                 method: 'POST',
@@ -131,16 +150,18 @@
                     'Content-Type': 'application/json'
                 }
             }).then(response => {
-                if (response.ok) {
+                // Always try to get a fresh download URL
+                return fetch(`/share/{{ token }}/download_url`);
+            }).then(res => res.json())
+            .then(data => {
+                if (data.url) {
                     // Trigger download
-                    const videoUrl = '{{ video_url }}';
                     const link = document.createElement('a');
-                    link.href = videoUrl;
+                    link.href = data.url;
                     link.download = 'shared_video.mp4';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
-                    
                     // Update button
                     downloadBtn.textContent = '✓ Downloaded!';
                     setTimeout(() => {
@@ -148,19 +169,10 @@
                         downloadBtn.disabled = false;
                     }, 2000);
                 } else {
-                    throw new Error('Failed to track download');
+                    throw new Error('Failed to get download URL');
                 }
             }).catch(error => {
-                console.error('Error tracking download:', error);
-                // Still allow download even if tracking fails
-                const videoUrl = '{{ video_url }}';
-                const link = document.createElement('a');
-                link.href = videoUrl;
-                link.download = 'shared_video.mp4';
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
+                console.error('Error downloading video:', error);
                 downloadBtn.textContent = originalText;
                 downloadBtn.disabled = false;
             });
