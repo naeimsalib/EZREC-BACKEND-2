@@ -5,25 +5,166 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shared Video - EZREC</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f7f7f7; margin: 0; padding: 0; text-align: center; }
-        .container { margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px #0001; max-width: 600px; padding: 32px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #f7f7f7; 
+            margin: 0; 
+            padding: 0; 
+            text-align: center; 
+        }
+        .container { 
+            margin: 40px auto; 
+            background: #fff; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px #0001; 
+            max-width: 600px; 
+            padding: 32px; 
+        }
         h2 { color: #2a2a2a; }
-        video { width: 100%; max-width: 540px; border-radius: 8px; margin-bottom: 16px; }
-        .download-btn { display: inline-block; margin-top: 16px; padding: 12px 24px; background: #0077ff; color: #fff; border: none; border-radius: 4px; text-decoration: none; font-size: 1.1em; transition: background 0.2s; }
-        .download-btn:hover { background: #005fcc; }
-        .error { color: #c00; font-weight: bold; }
+        video { 
+            width: 100%; 
+            max-width: 540px; 
+            border-radius: 8px; 
+            margin-bottom: 16px; 
+        }
+        .download-btn { 
+            display: inline-block; 
+            margin-top: 16px; 
+            padding: 12px 24px; 
+            background: #0077ff; 
+            color: #fff; 
+            border: none; 
+            border-radius: 4px; 
+            text-decoration: none; 
+            font-size: 1.1em; 
+            transition: background 0.2s; 
+            cursor: pointer;
+        }
+        .download-btn:hover { background: #0056cc; }
+        .error { 
+            color: #dc3545; 
+            background: #f8d7da; 
+            padding: 16px; 
+            border-radius: 4px; 
+            margin: 16px 0; 
+        }
+        .analytics {
+            margin-top: 20px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .share-info {
+            margin-top: 16px;
+            padding: 12px;
+            background: #e3f2fd;
+            border-radius: 4px;
+            font-size: 0.9em;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #0077ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Shared Video</h2>
+        
         {% if error %}
-            <div class="error">{{ error }}</div>
+            <div class="error">
+                {{ error }}
+            </div>
         {% else %}
-            <video controls src="{{ video_url }}"></video>
-            <br>
-            <a class="download-btn" href="{{ video_url }}" download>Download Video</a>
+            {% if video_url %}
+                <video controls>
+                    <source src="{{ video_url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <button class="download-btn" onclick="downloadVideo()">
+                    Download Video
+                </button>
+                
+                <div class="share-info">
+                    <strong>Share Link:</strong> {{ request.url }}
+                </div>
+                
+                <div class="analytics">
+                    <p>📊 This link has been accessed {{ access_count }} times</p>
+                    {% if last_accessed %}
+                    <p>🕒 Last accessed: {{ last_accessed }}</p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="error">
+                    Video not available.
+                </div>
+            {% endif %}
         {% endif %}
     </div>
+
+    <script>
+        function downloadVideo() {
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.textContent;
+            
+            // Show loading state
+            downloadBtn.innerHTML = '<span class="loading"></span> Downloading...';
+            downloadBtn.disabled = true;
+            
+            // Track download
+            fetch('/share/{{ token }}/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    // Trigger download
+                    const videoUrl = '{{ video_url }}';
+                    const link = document.createElement('a');
+                    link.href = videoUrl;
+                    link.download = 'shared_video.mp4';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    // Update button
+                    downloadBtn.textContent = '✓ Downloaded!';
+                    setTimeout(() => {
+                        downloadBtn.textContent = originalText;
+                        downloadBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to track download');
+                }
+            }).catch(error => {
+                console.error('Error tracking download:', error);
+                // Still allow download even if tracking fails
+                const videoUrl = '{{ video_url }}';
+                const link = document.createElement('a');
+                link.href = videoUrl;
+                link.download = 'shared_video.mp4';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                downloadBtn.textContent = originalText;
+                downloadBtn.disabled = false;
+            });
+        }
+    </script>
 </body>
 </html> 
