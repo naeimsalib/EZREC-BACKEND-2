@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 from pathlib import Path
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import json
 import logging
 import boto3
@@ -621,7 +621,7 @@ def get_shared_video(request: Request, token: str):
         revoked = row.get("revoked", False)
         if revoked:
             error = "This share link has been revoked."
-        elif expires_at and datetime.fromisoformat(expires_at) < datetime.utcnow():
+        elif expires_at and datetime.fromisoformat(expires_at) < datetime.now(timezone.utc):
             error = "This share link has expired."
         else:
             try:
