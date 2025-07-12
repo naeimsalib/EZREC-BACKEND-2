@@ -56,12 +56,19 @@ def get_recent_recordings(recordings_dir='/opt/ezrec-backend/recordings', n=5):
     recs.sort(key=lambda x: x['mtime'], reverse=True)
     return [r['file'] for r in recs[:n]]
 
-def is_recording(lock_dir='/opt/ezrec-backend/recordings'):
-    # If any .lock file exists, assume recording
-    for root, dirs, files in os.walk(lock_dir):
-        for file in files:
-            if file.endswith('.lock'):
-                return True
+def is_recording():
+    """
+    Returns True if the recorder.py process is running, indicating an active recording session.
+    This is more robust than checking for .lock files or a static flag.
+    """
+    for proc in psutil.process_iter(['name', 'cmdline']):
+        try:
+            # Check if the process is Python and running recorder.py
+            if proc.info['name'] and 'python' in proc.info['name'].lower():
+                if proc.info['cmdline'] and any('recorder.py' in arg for arg in proc.info['cmdline']):
+                    return True
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
     return False
 
 def get_network_status(_cycle=[0]):

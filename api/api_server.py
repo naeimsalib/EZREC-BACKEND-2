@@ -20,6 +20,7 @@ import shutil
 from uuid import uuid4
 import smtplib
 from email.message import EmailMessage
+import psutil
 try:
     from picamera2 import Picamera2
     PICAMERA2_AVAILABLE = True
@@ -835,7 +836,18 @@ def get_recent_recordings():
 
 @app.get("/status/is_recording")
 def get_is_recording():
-    return {"is_recording": read_status().get("is_recording")}
+    """
+    Returns {"is_recording": true/false} based on whether the recorder.py process is running.
+    Frontend: Poll this endpoint to get real-time recording status. True = recording in progress, False = idle.
+    """
+    for proc in psutil.process_iter(['name', 'cmdline']):
+        try:
+            if proc.info['name'] and 'python' in proc.info['name'].lower():
+                if proc.info['cmdline'] and any('recorder.py' in arg for arg in proc.info['cmdline']):
+                    return {"is_recording": True}
+        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+            continue
+    return {"is_recording": False}
 
 @app.get("/status/network")
 def get_network():
