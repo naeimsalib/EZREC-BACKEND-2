@@ -838,16 +838,17 @@ def get_recent_recordings():
 @app.get("/status/is_recording")
 def get_is_recording():
     """
-    Returns {"is_recording": true/false} based on whether the recorder.py process is running.
-    Frontend: Poll this endpoint to get real-time recording status. True = recording in progress, False = idle.
+    Returns {"is_recording": true/false} based on the value in /opt/ezrec-backend/status.json.
+    This reflects the actual recording state as set by recorder.py.
     """
-    for proc in psutil.process_iter(['name', 'cmdline']):
+    status_path = Path("/opt/ezrec-backend/status.json")
+    if status_path.exists():
         try:
-            if proc.info['name'] and 'python' in proc.info['name'].lower():
-                if proc.info['cmdline'] and any('recorder.py' in arg for arg in proc.info['cmdline']):
-                    return {"is_recording": True}
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            continue
+            with open(status_path) as f:
+                status = json.load(f)
+            return {"is_recording": bool(status.get("is_recording", False))}
+        except Exception:
+            return {"is_recording": False}
     return {"is_recording": False}
 
 @app.get("/status/network")
