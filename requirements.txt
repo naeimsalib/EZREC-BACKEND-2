@@ -18,3 +18,4 @@ boto3
 fastapi
 uvicorn
 opencv-python
+speedtest-cli
