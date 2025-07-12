@@ -56,19 +56,15 @@ def get_recent_recordings(recordings_dir='/opt/ezrec-backend/recordings', n=5):
     recs.sort(key=lambda x: x['mtime'], reverse=True)
     return [r['file'] for r in recs[:n]]
 
-def is_recording():
-    """
-    Returns True if the recorder.py process is running, indicating an active recording session.
-    This is more robust than checking for .lock files or a static flag.
-    """
-    for proc in psutil.process_iter(['name', 'cmdline']):
+def read_is_recording():
+    status_path = '/opt/ezrec-backend/status.json'
+    if os.path.exists(status_path):
         try:
-            # Check if the process is Python and running recorder.py
-            if proc.info['name'] and 'python' in proc.info['name'].lower():
-                if proc.info['cmdline'] and any('recorder.py' in arg for arg in proc.info['cmdline']):
-                    return True
-        except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-            continue
+            with open(status_path) as f:
+                status = json.load(f)
+            return status.get('is_recording', False)
+        except Exception:
+            return False
     return False
 
 last_upload_speed = None
@@ -126,7 +122,7 @@ def main():
                 'uptime': get_uptime(),
                 'errors': get_errors(),
                 'recent_recordings': get_recent_recordings(),
-                'is_recording': is_recording(),
+                'is_recording': read_is_recording(),
                 'network': get_network_status(),
                 'timestamp': datetime.now().isoformat()
             }
