@@ -71,7 +71,11 @@ def is_recording():
             continue
     return False
 
+last_upload_speed = None
+last_download_speed = None
+
 def get_network_status(_cycle=[0]):
+    global last_upload_speed, last_download_speed
     # Check wifi connection and signal strength
     try:
         out = subprocess.check_output(['iwgetid'], stderr=subprocess.DEVNULL).decode()
@@ -90,26 +94,24 @@ def get_network_status(_cycle=[0]):
     except Exception:
         signal = None
     # Upload/download speed (run speedtest-cli every 12th cycle ~1min)
-    upload_speed = None
-    download_speed = None
     _cycle[0] += 1
     if _cycle[0] >= 12:
         try:
             import speedtest
             st = speedtest.Speedtest()
             st.get_best_server()
-            download_speed = round(st.download() / 1_000_000, 2)  # Mbps
-            upload_speed = round(st.upload() / 1_000_000, 2)      # Mbps
+            last_download_speed = round(st.download() / 1_000_000, 2)  # Mbps
+            last_upload_speed = round(st.upload() / 1_000_000, 2)      # Mbps
         except Exception as e:
             log.error(f"Speedtest failed: {e}")
-            upload_speed = None
-            download_speed = None
+            last_upload_speed = None
+            last_download_speed = None
         _cycle[0] = 0
     return {
         'wifi_connected': wifi_connected,
         'signal_strength': signal,
-        'upload_speed': upload_speed,
-        'download_speed': download_speed
+        'upload_speed': last_upload_speed,
+        'download_speed': last_download_speed
     }
 
 def main():
