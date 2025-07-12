@@ -442,9 +442,9 @@ async def media_notify(payload: MediaNotifyRequest):
     media_map = {
         "main_logo_path": (f"{user_id}/logo/logo.png", "logo.png"),
         "intro_video_path": (f"{user_id}/intro-video/intro.mp4", "intro.mp4"),
-        "sponsor_logo1_path": (f"{user_id}/sponsor_logo_0.png", "sponsor_logo_0.png"),
-        "sponsor_logo2_path": (f"{user_id}/sponsor_logo_1.png", "sponsor_logo_1.png"),
-        "sponsor_logo3_path": (f"{user_id}/sponsor_logo_2.png", "sponsor_logo_2.png"),
+        "sponsor_logo1_path": (f"{user_id}/sponsor-logo1/logo1.png", "sponsor_logo1.png"),
+        "sponsor_logo2_path": (f"{user_id}/sponsor-logo2/logo2.png", "sponsor_logo2.png"),
+        "sponsor_logo3_path": (f"{user_id}/sponsor-logo3/logo3.png", "sponsor_logo3.png"),
     }
     s3_key, local_name = media_map.get(payload.media_type, (None, None))
     if s3_key is not None:
