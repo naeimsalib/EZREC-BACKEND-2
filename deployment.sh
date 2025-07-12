@@ -25,13 +25,18 @@ CLOUDFLARED_BIN="/usr/local/bin/cloudflared"
 #------------------------------#
 # 1. CHECK COMMANDS
 #------------------------------#
-required_cmds=("python3" "pip" "sudo" "systemctl" "curl")
+required_cmds=("python3" "pip" "sudo" "systemctl" "curl" "aws")
 for cmd in "${required_cmds[@]}"; do
   if ! command -v "$cmd" &>/dev/null; then
     echo "❌ Missing required command: $cmd"
     exit 1
   fi
 done
+
+# After checking required_cmds, add:
+if ! ffmpeg -encoders | grep -q h264_v4l2m2m; then
+  echo "⚠️  WARNING: ffmpeg does not support h264_v4l2m2m hardware encoding. Install a version with hardware encoder support for best performance on Raspberry Pi."
+fi
 
 #------------------------------#
 # 2. LOCK FOR SAFETY
@@ -310,3 +315,22 @@ EOF
 sudo systemctl restart cloudflared
 
 # To change video/camera resolution, set RESOLUTION in your .env file (e.g. RESOLUTION=1280x720)
+
+# After deployment, print the encoder being used:
+if [ -f "$PROJECT_DIR/.env" ]; then
+  ENCODER=$(grep '^VIDEO_ENCODER=' "$PROJECT_DIR/.env" | cut -d'=' -f2)
+  echo "\n🎥 Video encoder set to: ${ENCODER:-h264_v4l2m2m} (see .env)"
+fi
+
+# Ensure main_ezrec_logo.png is always present
+MAIN_LOGO_PATH="$PROJECT_DIR/media_cache/main_ezrec_logo.png"
+if [ ! -f "$MAIN_LOGO_PATH" ]; then
+  echo "⬇️ Downloading main_ezrec_logo.png from S3..."
+  aws s3 cp "s3://ezrec-user-media/main_ezrec_logo.png" "$MAIN_LOGO_PATH"
+  if [ $? -ne 0 ]; then
+    echo "❌ Failed to download main_ezrec_logo.png from S3. Please check your AWS credentials and bucket."
+    exit 1
+  fi
+else
+  echo "✅ main_ezrec_logo.png already present."
+fi

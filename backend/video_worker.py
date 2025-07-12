@@ -104,6 +104,9 @@ except Exception:
 
 VIDEO_ENCODER = os.getenv('VIDEO_ENCODER', 'h264_v4l2m2m')
 
+MAIN_LOGO_PATH = "/opt/ezrec-backend/media_cache/main_ezrec_logo.png"
+MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -168,9 +171,7 @@ def fetch_user_media(user_id: str):
 
 # Main logo config (can be a URL or local path)
 MAIN_LOGO_URL = os.getenv("MAIN_LOGO_URL")  # e.g. S3 URL
-# Always add the main EZREC logo overlay to all videos
-MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/main_ezrec_logo.png")
-MAIN_LOGO_POSITION = os.getenv("LOGO_POSITION", "bottom_right")
+MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/main_logo.png")
 
 def download_if_needed(url, path: Path):
     if url and not path.exists():
@@ -233,6 +234,12 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     intro_path = user_media_dir / "intro.mp4"
     logo_path = user_media_dir / "logo.png"
     sponsor_paths = [user_media_dir / f"sponsor_logo_{i}.png" for i in range(3)]
+
+    # --- Always add main_ezrec_logo.png as overlay input ---
+    main_logo_path = Path(MAIN_LOGO_PATH)
+    if not main_logo_path.exists():
+        log.error(f"Main logo not found at {MAIN_LOGO_PATH}. Skipping processing.")
+        return None
 
     # Sanity check durations
     max_duration = 600  # 10 minutes in seconds
@@ -306,15 +313,11 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.error(f"❌ FFmpeg concat error: {e}")
             return None
         # Pass 2: Overlays and encode (hardware if available)
-        input_args = ["-i", str(concat_output)]
+        input_args = ["-i", str(concat_output), "-i", str(main_logo_path)]
         filter_parts = []
         last_output = "[0:v]"
         video_inputs = 1
         logo_inputs = []
-        # Add main logo input (always required)
-        input_args.extend(["-i", str(MAIN_LOGO_PATH)])
-        logo_inputs.append(("main_logo", video_inputs, MAIN_LOGO_POSITION))
-        video_inputs += 1
         if logo_path.exists():
             input_args.extend(["-i", str(logo_path)])
             logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
@@ -381,51 +384,26 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         log.error("FFmpeg processing failed. Video not processed.")
         return None
     # --- Single-pass logic if no intro video ---
-    # Build optimized single-pass FFmpeg command
-    input_args = []
-    filter_parts = []
-    
-    # Add inputs
-    video_inputs = 0
-    if intro_path.exists():
-        input_args.extend(["-i", str(intro_path)])
-        video_inputs += 1
-    
-    input_args.extend(["-i", str(raw_file)])
-    main_video_idx = video_inputs
+    input_args = ["-i", str(raw_file), "-i", str(main_logo_path)]
+    main_video_idx = 0
+    video_inputs = 1
+    logo_inputs = [("mainlogo", video_inputs, MAIN_LOGO_POSITION)]
     video_inputs += 1
     
-    # Add main logo input (always required)
-    input_args.extend(["-i", str(MAIN_LOGO_PATH)])
-    logo_inputs = [("main_logo", video_inputs, MAIN_LOGO_POSITION)]
-    video_inputs += 1
-    
-    # Add user logo inputs (optional, as before)
+    # Add logo inputs
+    logo_inputs = []
     if logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
         logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
         video_inputs += 1
-    
-    # Add sponsor logo inputs
     sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
         if sponsor_path.exists():
             input_args.extend(["-i", str(sponsor_path)])
             logo_inputs.append((f"sponsor{i}", video_inputs, sponsor_positions[i]))
             video_inputs += 1
-    
-    # Build filter chain
-    if intro_path.exists():
-        # Scale and format both intro and main video before concat
-        filter_parts.append(f"[0:v]scale={width}:{height},format=yuv420p[intro_scaled]")
-        filter_parts.append(f"[{main_video_idx}:v]scale={width}:{height},format=yuv420p[main_scaled]")
-        filter_parts.append(f"[intro_scaled][main_scaled]concat=n=2:v=1:a=0[concat]")
-        last_output = "[concat]"
-    else:
-        filter_parts.append(f"[{main_video_idx}:v]scale={width}:{height},format=yuv420p[main_scaled]")
-        last_output = "[main_scaled]"
-    
-    # Add logo overlays (if any)
+    filter_parts = [f"[{main_video_idx}:v]scale={width}:{height},format=yuv420p[main_scaled]"]
+    last_output = "[main_scaled]"
     for name, idx, position in logo_inputs:
         scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
         filter_parts.append(scale_filter)
@@ -433,8 +411,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
-    
-    # Build FFmpeg command
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
