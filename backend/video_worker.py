@@ -314,8 +314,10 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_parts = []
         last_output = "[0:v]"
         video_inputs = 1
+        # Scale main logo
+        filter_parts.append(f"[1:v]scale=iw*0.15:ih*0.15[mainlogo_scaled]")
         # Overlay main logo first (bottom right)
-        filter_parts.append(f"[0:v][1:v]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]")
+        filter_parts.append(f"[0:v][mainlogo_scaled]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]")
         last_output = "[mainlogo_out]"
         # Add user logo and sponsors
         logo_inputs = []
@@ -369,8 +371,8 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     input_args = ["-i", str(raw_file), "-i", str(main_logo_path)]
     main_video_idx = 0
     video_inputs = 1
-    # Overlay main logo first (bottom right)
-    filter_parts = [f"[{main_video_idx}:v][1:v]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]"]
+    # Scale main logo
+    filter_parts = [f"[1:v]scale=iw*0.15:ih*0.15[mainlogo_scaled]", f"[{main_video_idx}:v][mainlogo_scaled]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]"]
     last_output = "[mainlogo_out]"
     logo_inputs = []
     if logo_path.exists():
