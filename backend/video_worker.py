@@ -108,6 +108,16 @@ VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software enc
 MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
 MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
+# Static logo config
+STATIC_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
+STATIC_LOGO_POSITION = os.getenv("STATIC_LOGO_POSITION", "bottom_right")
+STATIC_SPONSOR_0_PATH = "/opt/ezrec-backend/static/sponsor_logo_1.png"
+STATIC_SPONSOR_1_PATH = "/opt/ezrec-backend/static/sponsor_logo_2.png"
+STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/static/sponsor_logo_3.png"
+STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
+STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
+STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -232,6 +242,14 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     logo_path = user_media_dir / "logo.png"
     sponsor_paths = [user_media_dir / f"sponsor_logo_{i}.png" for i in range(3)]
 
+    # --- Always add static main logo as overlay input ---
+    static_logo_path = Path(STATIC_LOGO_PATH)
+    if not static_logo_path.exists():
+        log.error(f"Static main logo not found at {STATIC_LOGO_PATH}. Skipping processing.")
+        return None
+    static_sponsor_paths = [Path(STATIC_SPONSOR_0_PATH), Path(STATIC_SPONSOR_1_PATH), Path(STATIC_SPONSOR_2_PATH)]
+    static_sponsor_positions = [STATIC_SPONSOR_0_POSITION, STATIC_SPONSOR_1_POSITION, STATIC_SPONSOR_2_POSITION]
+
     # --- Always add main_ezrec_logo.png as overlay input ---
     main_logo_path = Path(MAIN_LOGO_PATH)
     if not main_logo_path.exists():
@@ -310,32 +328,50 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.error(f"❌ FFmpeg concat error: {e}")
             return None
         # Pass 2: Overlays and encode (hardware if available)
-        input_args = ["-i", str(concat_output), "-i", str(main_logo_path)]
+        input_args = ["-i", str(concat_output), "-i", str(static_logo_path)]
         filter_parts = []
         last_output = "[0:v]"
         video_inputs = 1
-        # Scale main logo
-        filter_parts.append(f"[1:v]scale=iw*0.15:ih*0.15[mainlogo_scaled]")
-        # Overlay main logo first (bottom right)
-        filter_parts.append(f"[0:v][mainlogo_scaled]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]")
-        last_output = "[mainlogo_out]"
-        # Add user logo and sponsors
-        logo_inputs = []
-        if logo_path.exists():
-            input_args.extend(["-i", str(logo_path)])
-            logo_inputs.append(("logo", video_inputs + 1, LOGO_POSITION))
-        sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-        for i, sponsor_path in enumerate(sponsor_paths):
-            if sponsor_path.exists():
-                input_args.extend(["-i", str(sponsor_path)])
-                logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 2, sponsor_positions[i]))
-        for name, idx, position in logo_inputs:
+        # Scale static main logo
+        filter_parts.append(f"[1:v]scale=iw*0.15:ih*0.15[staticlogo_scaled]")
+        # Overlay static main logo first
+        filter_parts.append(f"[0:v][staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]")
+        last_output = "[staticlogo_out]"
+        # Add static sponsor logos
+        static_logo_inputs = []
+        for i, static_sponsor_path in enumerate(static_sponsor_paths):
+            if static_sponsor_path.exists():
+                input_args.extend(["-i", str(static_sponsor_path)])
+                static_logo_inputs.append((f"staticsponsor{i}", video_inputs + len(static_logo_inputs) + 1, static_sponsor_positions[i]))
+        for name, idx, position in static_logo_inputs:
             scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
             filter_parts.append(scale_filter)
             overlay_position = POSITION_MAP.get(position, "top_right")
             overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
             filter_parts.append(overlay_filter)
             last_output = f"[{name}_out]"
+        # Add user logo and sponsors
+        logo_inputs = []
+        if logo_path.exists():
+            input_args.extend(["-i", str(logo_path)])
+            logo_inputs.append(("logo", video_inputs + len(static_logo_inputs) + 1, LOGO_POSITION))
+        sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
+        for i, sponsor_path in enumerate(sponsor_paths):
+            if sponsor_path.exists():
+                input_args.extend(["-i", str(sponsor_path)])
+                logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
+        # LOGGING: Print overlays and positions
+        log.info("--- Overlay Chain (Two-pass) ---")
+        log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
+        for i, static_sponsor_path in enumerate(static_sponsor_paths):
+            if static_sponsor_path.exists():
+                log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
+        if logo_path.exists():
+            log.info(f"User logo: {logo_path} at {LOGO_POSITION}")
+        for i, sponsor_path in enumerate(sponsor_paths):
+            if sponsor_path.exists():
+                log.info(f"User sponsor {i}: {sponsor_path} at {sponsor_positions[i]}")
+        log.info("------------------------------")
         ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
         if filter_parts:
             filter_complex = ";".join(filter_parts)
@@ -368,28 +404,44 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         log.error("FFmpeg processing failed. Video not processed.")
         return None
     # --- Single-pass logic if no intro video ---
-    input_args = ["-i", str(raw_file), "-i", str(main_logo_path)]
+    input_args = ["-i", str(raw_file), "-i", str(static_logo_path)]
     main_video_idx = 0
     video_inputs = 1
-    # Scale main logo
-    filter_parts = [f"[1:v]scale=iw*0.15:ih*0.15[mainlogo_scaled]", f"[{main_video_idx}:v][mainlogo_scaled]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]"]
-    last_output = "[mainlogo_out]"
-    logo_inputs = []
-    if logo_path.exists():
-        input_args.extend(["-i", str(logo_path)])
-        logo_inputs.append(("logo", video_inputs + 1, LOGO_POSITION))
-    sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-    for i, sponsor_path in enumerate(sponsor_paths):
-        if sponsor_path.exists():
-            input_args.extend(["-i", str(sponsor_path)])
-            logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 2, sponsor_positions[i]))
-    for name, idx, position in logo_inputs:
+    filter_parts = [f"[1:v]scale=iw*0.15:ih*0.15[staticlogo_scaled]", f"[{main_video_idx}:v][staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]"]
+    last_output = "[staticlogo_out]"
+    static_logo_inputs = []
+    for i, static_sponsor_path in enumerate(static_sponsor_paths):
+        if static_sponsor_path.exists():
+            input_args.extend(["-i", str(static_sponsor_path)])
+            static_logo_inputs.append((f"staticsponsor{i}", video_inputs + len(static_logo_inputs) + 1, static_sponsor_positions[i]))
+    for name, idx, position in static_logo_inputs:
         scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
         filter_parts.append(scale_filter)
         overlay_position = POSITION_MAP.get(position, "top_right")
         overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
+    logo_inputs = []
+    if logo_path.exists():
+        input_args.extend(["-i", str(logo_path)])
+        logo_inputs.append(("logo", video_inputs + len(static_logo_inputs) + 1, LOGO_POSITION))
+    sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
+    for i, sponsor_path in enumerate(sponsor_paths):
+        if sponsor_path.exists():
+            input_args.extend(["-i", str(sponsor_path)])
+            logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
+    # LOGGING: Print overlays and positions
+    log.info("--- Overlay Chain (Single-pass) ---")
+    log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
+    for i, static_sponsor_path in enumerate(static_sponsor_paths):
+        if static_sponsor_path.exists():
+            log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
+    if logo_path.exists():
+        log.info(f"User logo: {logo_path} at {LOGO_POSITION}")
+    for i, sponsor_path in enumerate(sponsor_paths):
+        if sponsor_path.exists():
+            log.info(f"User sponsor {i}: {sponsor_path} at {sponsor_positions[i]}")
+    log.info("------------------------------")
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
