@@ -6,7 +6,7 @@
 
 set -e
 
-SERVICES=(booking_sync recorder video_worker system_status log_collector health_api)
+SERVICES=(recorder video_worker system_status log_collector health_api)
 PROJECT_DIR="/opt/ezrec-backend"
 VENV_DIR="$PROJECT_DIR/venv"
 JOURNALD_CONF="/etc/systemd/journald.conf.d/ezrec.conf"

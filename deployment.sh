@@ -217,24 +217,6 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Booking Sync FastAPI
-sudo tee "$SYSTEMD_DIR/booking_sync_fastapi.service" > /dev/null <<EOF
-[Unit]
-Description=EZREC FastAPI Booking Sync Service
-After=network.target
-
-[Service]
-ExecStart=$VENV_DIR/bin/uvicorn booking_sync_fastapi:app --host 0.0.0.0 --port 8081
-WorkingDirectory=$API_DIR
-Environment="PYTHONUNBUFFERED=1"
-Restart=always
-User=$USER
-Group=$USER
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
 # Status Updater
 "$VENV_DIR/bin/pip" install psutil
 # Ensure status_updater.py is present
@@ -307,16 +289,6 @@ for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
   sudo systemctl restart "$svc"
   sleep 1
 done
-
-# Enable and start the booking_sync_fastapi service
-sudo systemctl daemon-reload
-sudo systemctl enable booking_sync_fastapi.service
-sudo systemctl restart booking_sync_fastapi.service
-
-# Enable and start the status updater service
-sudo systemctl daemon-reload
-sudo systemctl enable status_updater.service
-sudo systemctl restart status_updater.service
 
 #------------------------------#
 # 13. DONE!
