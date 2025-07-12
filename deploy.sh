@@ -1,2 +1,0 @@
-# Download the main EZREC logo from S3 before starting the backend
-aws s3 cp s3://ezrec-user-media/main_ezrec_logo.png /opt/ezrec-backend/main_ezrec_logo.png || { echo "Failed to download main EZREC logo"; exit 1; } 
