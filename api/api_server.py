@@ -20,6 +20,14 @@ import shutil
 from uuid import uuid4
 import smtplib
 from email.message import EmailMessage
+try:
+    from picamera2 import Picamera2
+    PICAMERA2_AVAILABLE = True
+except ImportError:
+    import cv2
+    PICAMERA2_AVAILABLE = False
+import io
+import threading
 
 # --------------------------
 # LOAD .env FILE
@@ -101,6 +109,7 @@ class Booking(BaseModel):
     date: str
     camera_id: Optional[str] = None
     recording_id: Optional[str] = None
+    booking_id: str
 
 class SystemSettings(BaseModel):
     main_logo_path: str
@@ -761,3 +770,73 @@ def send_share_email(req: SendShareEmailRequest):
         logger.warning(f"Failed to update video with shared email: {e}")
 
     return {"status": "ok"}
+
+@app.get("/live-preview")
+def live_preview():
+    if PICAMERA2_AVAILABLE:
+        picam = Picamera2()
+        picam.start()
+        def gen():
+            while True:
+                frame = picam.capture_array()
+                import cv2
+                _, jpeg = cv2.imencode('.jpg', frame)
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+        return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
+    else:
+        cap = cv2.VideoCapture(0)
+        def gen():
+            while True:
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                _, jpeg = cv2.imencode('.jpg', frame)
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+            cap.release()
+        return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
+
+status_path = Path("/opt/ezrec-backend/status.json")
+
+def read_status():
+    if status_path.exists():
+        with open(status_path) as f:
+            return json.load(f)
+    return {}
+
+@app.get("/status/cpu")
+def get_cpu():
+    return {"cpu_usage": read_status().get("cpu_usage")}
+
+@app.get("/status/memory")
+def get_memory():
+    return {"memory_usage": read_status().get("memory_usage")}
+
+@app.get("/status/storage")
+def get_storage():
+    return {"storage": read_status().get("storage")}
+
+@app.get("/status/temperature")
+def get_temperature():
+    return {"temperature": read_status().get("temperature")}
+
+@app.get("/status/uptime")
+def get_uptime():
+    return {"uptime": read_status().get("uptime")}
+
+@app.get("/status/errors")
+def get_errors():
+    return {"errors": read_status().get("errors")}
+
+@app.get("/status/recent_recordings")
+def get_recent_recordings():
+    return {"recent_recordings": read_status().get("recent_recordings")}
+
+@app.get("/status/is_recording")
+def get_is_recording():
+    return {"is_recording": read_status().get("is_recording")}
+
+@app.get("/status/network")
+def get_network():
+    return {"network": read_status().get("network")}

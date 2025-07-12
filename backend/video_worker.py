@@ -524,7 +524,8 @@ def main():
                             "duration_seconds": int(get_duration(raw_file)),
                             "uploaded_at": None,
                             "filename": final_file.name,
-                            "storage_path": s3_key
+                            "storage_path": s3_key,
+                            "booking_id": booking_id  # Include booking_id
                         }
                         if is_internet_available():
                             s3_url = upload_file_chunked(final_file, s3_key)
