@@ -182,8 +182,8 @@ class RecordingSession:
                 self.picam2.stop_recording()
                 self.picam2.close()
                 logger.info(f"⏹️ Stopped recording: {self.raw_filepath}")
-                # Update status to RecordingFinished immediately after stopping
-                update_booking_status(self.booking["id"], "RecordingFinished")
+                # Update status to 'Recording Finished' immediately after stopping
+                update_booking_status(self.booking["id"], "Recording Finished")
                 # Convert raw H264 to MP4 using ffmpeg
                 import subprocess
                 ffmpeg_cmd = [
