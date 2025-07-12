@@ -105,6 +105,19 @@ def handle_exit(sig, frame):
 signal.signal(signal.SIGINT, handle_exit)
 signal.signal(signal.SIGTERM, handle_exit)
 
+def set_is_recording(value: bool):
+    status_path = Path("/opt/ezrec-backend/status.json")
+    status = {}
+    if status_path.exists():
+        try:
+            with open(status_path) as f:
+                status = json.load(f)
+        except Exception:
+            status = {}
+    status["is_recording"] = value
+    with open(status_path, "w") as f:
+        json.dump(status, f, indent=2)
+
 class RecordingSession:
     def __init__(self, booking):
         self.booking = booking
@@ -153,6 +166,8 @@ class RecordingSession:
                 'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                 'status': 'online'
             }).eq('id', CAMERA_ID).execute()
+
+            set_is_recording(True)
             return True
 
         except Exception as e:
@@ -207,6 +222,8 @@ class RecordingSession:
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                     'status': 'idle'
                 }).eq('id', CAMERA_ID).execute()
+
+                set_is_recording(False)
 
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
