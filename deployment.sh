@@ -73,6 +73,7 @@ python3 -m venv --system-site-packages "$VENV_DIR"
 "$VENV_DIR/bin/pip" install --upgrade pip
 "$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3 python-dotenv pytz python-dateutil supabase
 "$VENV_DIR/bin/pip" install 'pydantic[email]'
+"$VENV_DIR/bin/pip" install opencv-python picamera2
 sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
@@ -234,6 +235,36 @@ Group=$USER
 WantedBy=multi-user.target
 EOF
 
+# Status Updater
+"$VENV_DIR/bin/pip" install psutil
+# Ensure status_updater.py is present
+if [ -f "$DEV_DIR/backend/status_updater.py" ]; then
+  cp "$DEV_DIR/backend/status_updater.py" "$PROJECT_DIR/status_updater.py"
+  echo "✅ Copied status_updater.py to $PROJECT_DIR"
+else
+  echo "❌ status_updater.py not found in $DEV_DIR/backend. Please check your source."
+fi
+# Create systemd service for status updater
+sudo tee "$SYSTEMD_DIR/status_updater.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC System Status Updater
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/status_updater.py
+WorkingDirectory=$PROJECT_DIR
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+# Enable and start the status updater service
+sudo systemctl daemon-reload
+sudo systemctl enable status_updater.service
+sudo systemctl restart status_updater.service
+sudo systemctl status status_updater.service --no-pager
+
 #------------------------------#
 # 9. CLOUDFLARED INSTALL
 #------------------------------#
@@ -281,6 +312,11 @@ done
 sudo systemctl daemon-reload
 sudo systemctl enable booking_sync_fastapi.service
 sudo systemctl restart booking_sync_fastapi.service
+
+# Enable and start the status updater service
+sudo systemctl daemon-reload
+sudo systemctl enable status_updater.service
+sudo systemctl restart status_updater.service
 
 #------------------------------#
 # 13. DONE!
