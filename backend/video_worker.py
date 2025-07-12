@@ -240,7 +240,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     user_media_dir = MEDIA_CACHE_DIR / user_id
     intro_path = user_media_dir / "intro.mp4"
     logo_path = user_media_dir / "logo.png"
-    sponsor_paths = [user_media_dir / f"sponsor_logo_{i}.png" for i in range(3)]
+    sponsor_paths = [user_media_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
 
     # --- Always add static main logo as overlay input ---
     static_logo_path = Path(STATIC_LOGO_PATH)
