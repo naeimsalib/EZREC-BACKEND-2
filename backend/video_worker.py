@@ -104,7 +104,7 @@ except Exception:
 
 VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software encoder
 
-MAIN_LOGO_PATH = "/opt/ezrec-backend/media_cache/main_ezrec_logo.png"
+MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
 MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
 def get_duration(file: Path) -> float:

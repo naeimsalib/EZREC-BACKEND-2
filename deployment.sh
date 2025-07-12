@@ -329,14 +329,24 @@ if [ -f "$PROJECT_DIR/.env" ]; then
   echo "\n🎥 Video encoder set to: ${ENCODER:-h264_v4l2m2m} (see .env)"
 fi
 
-# Ensure main_ezrec_logo.png is always present
-MAIN_LOGO_PATH="$PROJECT_DIR/media_cache/main_ezrec_logo.png"
+# Ensure main_ezrec_logo.png is present and correctly named
+MAIN_LOGO_PATH="$PROJECT_DIR/main_ezrec_logo.png"
+ALT_LOGO_PATH="$PROJECT_DIR/main_logo.png"
 if [ ! -f "$MAIN_LOGO_PATH" ]; then
-  echo "⬇️ Downloading main_ezrec_logo.png from S3..."
-  aws s3 cp "s3://ezrec-user-media/main_ezrec_logo.png" "$MAIN_LOGO_PATH"
-  if [ $? -ne 0 ]; then
-    echo "❌ Failed to download main_ezrec_logo.png from S3. Please check your AWS credentials and bucket."
-    exit 1
+  if [ -f "$ALT_LOGO_PATH" ]; then
+    echo "Renaming $ALT_LOGO_PATH to $MAIN_LOGO_PATH..."
+    mv "$ALT_LOGO_PATH" "$MAIN_LOGO_PATH"
+  else
+    echo "⬇️ Downloading main_ezrec_logo.png from S3..."
+    set -a
+    source "$PROJECT_DIR/.env"
+    set +a
+    aws s3 cp "s3://ezrec-user-media/main_ezrec_logo.png" "$MAIN_LOGO_PATH"
+    unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_SESSION_TOKEN
+    if [ ! -f "$MAIN_LOGO_PATH" ]; then
+      echo "❌ Failed to download main_ezrec_logo.png from S3. Please check your AWS credentials and bucket."
+      exit 1
+    fi
   fi
 else
   echo "✅ main_ezrec_logo.png already present."
