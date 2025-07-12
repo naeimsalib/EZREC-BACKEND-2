@@ -435,33 +435,34 @@ def media_presign(
 async def media_notify(payload: MediaNotifyRequest):
     logger.info(f"Media notify: {payload}")
     user_id = payload.user_id
-    # Directory for this user's media
     user_media_dir = Path(f"/opt/ezrec-backend/media_cache/{user_id}")
     user_media_dir.mkdir(parents=True, exist_ok=True)
 
-    # Remove all old files for this user
-    for f in user_media_dir.glob("*"):
+    # Map media_type to S3 key and local filename
+    media_map = {
+        "main_logo_path": (f"{user_id}/logo/logo.png", "logo.png"),
+        "intro_video_path": (f"{user_id}/intro-video/intro.mp4", "intro.mp4"),
+        "sponsor_logo1_path": (f"{user_id}/sponsor_logo_0.png", "sponsor_logo_0.png"),
+        "sponsor_logo2_path": (f"{user_id}/sponsor_logo_1.png", "sponsor_logo_1.png"),
+        "sponsor_logo3_path": (f"{user_id}/sponsor_logo_2.png", "sponsor_logo_2.png"),
+    }
+    s3_key, local_name = media_map.get(payload.media_type, (None, None))
+    if s3_key is not None:
+        local_path = user_media_dir / local_name
+        # Remove old file if it exists
+        if local_path.exists():
+            try:
+                local_path.unlink()
+            except Exception as e:
+                logger.warning(f"Failed to remove old media file {local_path}: {e}")
+        # Download the updated file from S3
         try:
-            f.unlink()
+            s3.download_file(USER_MEDIA_BUCKET, s3_key, str(local_path))
+            logger.info(f"Downloaded {s3_key} to {local_path}")
         except Exception as e:
-            logger.warning(f"Failed to remove old media file {f}: {e}")
-
-    # Download all user media from S3 (logo, intro, sponsor logos)
-    # Assume keys are predictable: logo/logo.png, intro-video/intro.mp4, sponsor_logo_0.png, etc.
-    s3_keys = [
-        f"{user_id}/logo/logo.png",
-        f"{user_id}/intro-video/intro.mp4",
-        f"{user_id}/sponsor_logo_0.png",
-        f"{user_id}/sponsor_logo_1.png",
-        f"{user_id}/sponsor_logo_2.png",
-    ]
-    for key in s3_keys:
-        local_path = user_media_dir / Path(key).name
-        try:
-            s3.download_file(USER_MEDIA_BUCKET, key, str(local_path))
-            logger.info(f"Downloaded {key} to {local_path}")
-        except Exception as e:
-            logger.info(f"Media file {key} not found or not downloaded: {e}")
+            logger.info(f"Media file {s3_key} not found or not downloaded: {e}")
+    else:
+        logger.warning(f"Unknown media_type for notify: {payload.media_type}")
 
     return {"status": "ok"}
 
