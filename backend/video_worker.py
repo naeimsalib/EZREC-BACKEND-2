@@ -104,8 +104,8 @@ except Exception:
 
 VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software encoder
 
+# Main logo config (always use this path)
 MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
-MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
 def get_duration(file: Path) -> float:
     try:
@@ -168,10 +168,6 @@ def fetch_user_media(user_id: str):
         return None, None, []
     except Exception:
         return None, None, []
-
-# Main logo config (can be a URL or local path)
-MAIN_LOGO_URL = os.getenv("MAIN_LOGO_URL")  # e.g. S3 URL
-MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/main_logo.png")
 
 def download_if_needed(url, path: Path):
     if url and not path.exists():
@@ -370,7 +366,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     input_args = ["-i", str(raw_file), "-i", str(main_logo_path)]
     main_video_idx = 0
     video_inputs = 1
-    logo_inputs = [("mainlogo", video_inputs, MAIN_LOGO_POSITION)]
+    logo_inputs = [("mainlogo", video_inputs, "bottom_right")]
     video_inputs += 1
     
     # Add logo inputs
