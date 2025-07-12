@@ -257,20 +257,20 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         return None
 
     # Sanity check durations
-    max_duration = 600  # 10 minutes in seconds
+    # max_duration = 600  # 10 minutes in seconds
     raw_duration = get_duration(raw_file)
-    if raw_duration > max_duration:
-        log.warning(f"Main recording duration too long: {raw_duration:.2f}s. Skipping processing.")
-        return None
+    # if raw_duration > max_duration:
+    #     log.warning(f"Main recording duration too long: {raw_duration:.2f}s. Skipping processing.")
+    #     return None
     
     # Check intro duration and trim if needed
     if intro_path.exists():
         intro_duration = get_duration(intro_path)
-        if intro_duration > max_duration:
-            log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to {max_duration}s.")
+        if intro_duration > 600:
+            log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to 600s.")
             trimmed_intro = intro_path.with_name("intro_trimmed.mp4")
             subprocess.run([
-                "ffmpeg", "-y", "-i", str(intro_path), "-t", str(max_duration), "-c", "copy", str(trimmed_intro)
+                "ffmpeg", "-y", "-i", str(intro_path), "-t", "600", "-c", "copy", str(trimmed_intro)
             ], check=True)
             intro_path = trimmed_intro
         # --- NEW: Check intro format and re-encode if needed ---
