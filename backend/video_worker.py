@@ -106,6 +106,7 @@ VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software enc
 
 # Main logo config (always use this path)
 MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
+MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
 def get_duration(file: Path) -> float:
     try:
@@ -313,17 +314,19 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_parts = []
         last_output = "[0:v]"
         video_inputs = 1
+        # Overlay main logo first (bottom right)
+        filter_parts.append(f"[0:v][1:v]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]")
+        last_output = "[mainlogo_out]"
+        # Add user logo and sponsors
         logo_inputs = []
         if logo_path.exists():
             input_args.extend(["-i", str(logo_path)])
-            logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
-            video_inputs += 1
+            logo_inputs.append(("logo", video_inputs + 1, LOGO_POSITION))
         sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
         for i, sponsor_path in enumerate(sponsor_paths):
             if sponsor_path.exists():
                 input_args.extend(["-i", str(sponsor_path)])
-                logo_inputs.append((f"sponsor{i}", video_inputs, sponsor_positions[i]))
-                video_inputs += 1
+                logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 2, sponsor_positions[i]))
         for name, idx, position in logo_inputs:
             scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
             filter_parts.append(scale_filter)
@@ -366,23 +369,18 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     input_args = ["-i", str(raw_file), "-i", str(main_logo_path)]
     main_video_idx = 0
     video_inputs = 1
-    logo_inputs = [("mainlogo", video_inputs, "bottom_right")]
-    video_inputs += 1
-    
-    # Add logo inputs
+    # Overlay main logo first (bottom right)
+    filter_parts = [f"[{main_video_idx}:v][1:v]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]"]
+    last_output = "[mainlogo_out]"
     logo_inputs = []
     if logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
-        logo_inputs.append(("logo", video_inputs, LOGO_POSITION))
-        video_inputs += 1
+        logo_inputs.append(("logo", video_inputs + 1, LOGO_POSITION))
     sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
         if sponsor_path.exists():
             input_args.extend(["-i", str(sponsor_path)])
-            logo_inputs.append((f"sponsor{i}", video_inputs, sponsor_positions[i]))
-            video_inputs += 1
-    filter_parts = [f"[{main_video_idx}:v]scale={width}:{height},format=yuv420p[main_scaled]"]
-    last_output = "[main_scaled]"
+            logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 2, sponsor_positions[i]))
     for name, idx, position in logo_inputs:
         scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
         filter_parts.append(scale_filter)
