@@ -67,20 +67,19 @@ def is_recording(lock_dir='/opt/ezrec-backend/recordings'):
 def get_network_status():
     # Check wifi connection and signal strength
     try:
-        out = subprocess.check_output(['iwgetid']).decode()
+        out = subprocess.check_output(['iwgetid'], stderr=subprocess.DEVNULL).decode()
         wifi_connected = 'ESSID' in out
     except Exception:
         wifi_connected = False
+    signal = None
     try:
-        out = subprocess.check_output(['iwconfig']).decode()
+        out = subprocess.check_output(['iwconfig'], stderr=subprocess.DEVNULL).decode()
         for line in out.splitlines():
             if 'Signal level' in line:
                 parts = line.split('Signal level=')
                 if len(parts) > 1:
                     signal = parts[1].split(' ')[0]
                     break
-        else:
-            signal = None
     except Exception:
         signal = None
     # Get upload/download speed (dummy, real test would use speedtest-cli)
