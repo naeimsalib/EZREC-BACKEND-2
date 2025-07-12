@@ -89,8 +89,20 @@ fi
 #------------------------------#
 # 5.5. DOWNLOAD MAIN EZREC LOGO #
 #------------------------------#
+# Temporarily export AWS credentials for S3 download
+set -a
+source "$PROJECT_DIR/.env"
+set +a
+
+# Download main EZREC logo
 echo "🖼️ Downloading main EZREC logo from S3..."
-aws s3 cp s3://ezrec-user-media/main_ezrec_logo.png /opt/ezrec-backend/main_ezrec_logo.png || { echo "❌ Failed to download main EZREC logo from S3"; exit 1; }
+aws s3 cp s3://ezrec-user-media/main_ezrec_logo.png /opt/ezrec-backend/main_ezrec_logo.png || { echo "❌ Failed to download main EZREC logo from S3"; 
+  # Unset AWS credentials for security
+  unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_SESSION_TOKEN
+  exit 1; }
+
+# Unset AWS credentials for security
+unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_REGION AWS_SESSION_TOKEN
 
 #------------------------------#
 # 6. INSTALL BACKEND DEPENDENCIES
