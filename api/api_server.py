@@ -111,6 +111,7 @@ class Booking(BaseModel):
     camera_id: Optional[str] = None
     recording_id: Optional[str] = None
     booking_id: str
+    email: Optional[str] = None
 
 class SystemSettings(BaseModel):
     main_logo_path: str
