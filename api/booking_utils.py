@@ -29,8 +29,11 @@ def update_booking_status(booking_id: str, new_status: str) -> bool:
     try:
         logger.info(f"🔄 Updating Supabase booking {booking_id} to status '{new_status}'")
         response = supabase.table("bookings").update({"status": new_status}).eq("id", booking_id).execute()
-        if response.error:
+        if hasattr(response, "error") and response.error:
             logger.error(f"❌ Supabase update error: {response.error}")
+            success = False
+        elif hasattr(response, "status_code") and response.status_code >= 400:
+            logger.error(f"❌ Supabase update error: {response}")
             success = False
     except Exception as e:
         logger.error(f"❌ Supabase exception: {e}")
