@@ -360,17 +360,14 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             if sponsor_path.exists():
                 input_args.extend(["-i", str(sponsor_path)])
                 logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
-        # LOGGING: Print overlays and positions
-        log.info("--- Overlay Chain (Two-pass) ---")
+        # LOGGING: Print overlays and positions AFTER logo_inputs is built
+        log.info("--- Overlay Chain (Two-pass, actual overlays to be applied) ---")
         log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
         for i, static_sponsor_path in enumerate(static_sponsor_paths):
             if static_sponsor_path.exists():
                 log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
-        if logo_path.exists():
-            log.info(f"User logo: {logo_path} at {LOGO_POSITION}")
-        log.info(f"Checking for user logo: {logo_path} exists={logo_path.exists()}")
-        for i, sponsor_path in enumerate(sponsor_paths):
-            log.info(f"Checking for sponsor logo {i+1}: {sponsor_path} exists={sponsor_path.exists()}")
+        for name, idx, position in logo_inputs:
+            log.info(f"Overlay: {name} (input idx {idx}) at {position}")
         log.info("------------------------------")
         ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
         if filter_parts:
@@ -430,17 +427,14 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         if sponsor_path.exists():
             input_args.extend(["-i", str(sponsor_path)])
             logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
-    # LOGGING: Print overlays and positions
-    log.info("--- Overlay Chain (Single-pass) ---")
+    # LOGGING: Print overlays and positions AFTER logo_inputs is built
+    log.info("--- Overlay Chain (Single-pass, actual overlays to be applied) ---")
     log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
     for i, static_sponsor_path in enumerate(static_sponsor_paths):
         if static_sponsor_path.exists():
             log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
-    if logo_path.exists():
-        log.info(f"User logo: {logo_path} at {LOGO_POSITION}")
-    log.info(f"Checking for user logo: {logo_path} exists={logo_path.exists()}")
-    for i, sponsor_path in enumerate(sponsor_paths):
-        log.info(f"Checking for sponsor logo {i+1}: {sponsor_path} exists={sponsor_path.exists()}")
+    for name, idx, position in logo_inputs:
+        log.info(f"Overlay: {name} (input idx {idx}) at {position}")
     log.info("------------------------------")
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
