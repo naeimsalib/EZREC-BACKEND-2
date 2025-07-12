@@ -33,11 +33,6 @@ for cmd in "${required_cmds[@]}"; do
   fi
 done
 
-# After checking required_cmds, add:
-if ! ffmpeg -encoders | grep -q h264_v4l2m2m; then
-  echo "⚠️  WARNING: ffmpeg does not support h264_v4l2m2m hardware encoding. Install a version with hardware encoder support for best performance on Raspberry Pi."
-fi
-
 #------------------------------#
 # 2. LOCK FOR SAFETY
 #------------------------------#

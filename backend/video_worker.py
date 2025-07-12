@@ -102,7 +102,7 @@ try:
 except Exception:
     width, height = 1280, 720
 
-VIDEO_ENCODER = os.getenv('VIDEO_ENCODER', 'h264_v4l2m2m')
+VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software encoder
 
 MAIN_LOGO_PATH = "/opt/ezrec-backend/media_cache/main_ezrec_logo.png"
 MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
@@ -341,7 +341,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
         else:
             ffmpeg_base_cmd.extend(["-map", "0:v"])
-        ffmpeg_base_cmd += ["-c:v", VIDEO_ENCODER, "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
+        ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
         log.info(f"[Two-pass] Pass 2: Applying overlays and encoding to {output_file}")
         try:
             start_time = time.time()
@@ -356,24 +356,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 return None
         except subprocess.CalledProcessError as e:
             log.error(f"FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
-            if VIDEO_ENCODER != 'libx264':
-                log.info("Retrying with software encoder libx264...")
-                ffmpeg_base_cmd = [arg if arg != VIDEO_ENCODER else 'libx264' for arg in ffmpeg_base_cmd]
-                try:
-                    start_time = time.time()
-                    result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
-                    end_time = time.time()
-                    processing_time = end_time - start_time
-                    log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using libx264 (fallback)")
-                    if output_file.exists() and output_file.stat().st_size > 1024:
-                        return output_file
-                    else:
-                        log.error("Output file missing or too small (fallback)")
-                        return None
-                except Exception as e2:
-                    log.error(f"FFmpeg fallback to libx264 failed: {e2}")
-            else:
-                log.error(f"FFmpeg failed: {e.stderr}")
+            log.error(f"FFmpeg error: {e.stderr}")
         except subprocess.TimeoutExpired:
             log.error(f"FFmpeg processing timed out after 30 minutes")
         except Exception as e:
@@ -418,7 +401,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     else:
         ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
         ffmpeg_base_cmd.extend(["-vf", f"scale={width}:{height}"])
-    ffmpeg_base_cmd += ["-c:v", VIDEO_ENCODER, "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
+    ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
     log.info(f"Using video encoder: {VIDEO_ENCODER}")
     log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
     try:
@@ -434,24 +417,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             return None
     except subprocess.CalledProcessError as e:
         log.error(f"FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
-        if VIDEO_ENCODER != 'libx264':
-            log.info("Retrying with software encoder libx264...")
-            ffmpeg_base_cmd = [arg if arg != VIDEO_ENCODER else 'libx264' for arg in ffmpeg_base_cmd]
-            try:
-                start_time = time.time()
-                result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
-                end_time = time.time()
-                processing_time = end_time - start_time
-                log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using libx264 (fallback)")
-                if output_file.exists() and output_file.stat().st_size > 1024:
-                    return output_file
-                else:
-                    log.error("Output file missing or too small (fallback)")
-                    return None
-            except Exception as e2:
-                log.error(f"FFmpeg fallback to libx264 failed: {e2}")
-        else:
-            log.error(f"FFmpeg failed: {e.stderr}")
+        log.error(f"FFmpeg error: {e.stderr}")
     except subprocess.TimeoutExpired:
         log.error(f"FFmpeg processing timed out after 30 minutes")
     except Exception as e:
