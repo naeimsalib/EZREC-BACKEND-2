@@ -89,19 +89,28 @@ def get_network_status(_cycle=[0]):
                     break
     except Exception:
         signal = None
-    # Upload/download speed (run speedtest-cli every 12th cycle ~1min)
+    # Upload/download speed (run speedtest CLI every 12th cycle ~1min)
     _cycle[0] += 1
     if _cycle[0] >= 12:
         try:
-            import speedtest
-            st = speedtest.Speedtest()
-            st.get_best_server()
-            last_download_speed = round(st.download() / 1_000_000, 2)  # Mbps
-            last_upload_speed = round(st.upload() / 1_000_000, 2)      # Mbps
+            result = subprocess.run(
+                ['speedtest', '--format=json'],
+                capture_output=True, text=True, timeout=60
+            )
+            if result.returncode == 0:
+                import json
+                data = json.loads(result.stdout)
+                # speedtest CLI reports bandwidth in bytes/sec, convert to Mbps
+                last_download_speed = round(data['download']['bandwidth'] * 8 / 1_000_000, 2)  # Mbps
+                last_upload_speed = round(data['upload']['bandwidth'] * 8 / 1_000_000, 2)      # Mbps
+            else:
+                log.error(f"Speedtest CLI failed: {result.stderr}")
+                last_download_speed = None
+                last_upload_speed = None
         except Exception as e:
-            log.error(f"Speedtest failed: {e}")
-            last_upload_speed = None
+            log.error(f"Speedtest CLI exception: {e}")
             last_download_speed = None
+            last_upload_speed = None
         _cycle[0] = 0
     return {
         'wifi_connected': wifi_connected,
