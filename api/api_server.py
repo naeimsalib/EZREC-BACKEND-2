@@ -22,6 +22,7 @@ import smtplib
 from email.message import EmailMessage
 import psutil
 import time
+import numpy as np
 try:
     from picamera2 import Picamera2
     PICAMERA2_AVAILABLE = True
@@ -805,6 +806,48 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
     # Error if camera is busy (recording)
     if is_recording():
         return JSONResponse(status_code=423, content={"detail": "Camera is currently recording. Live preview unavailable."})
+    LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
+    LOGO_SIZE = (120, 120)
+    logo_img = None
+    if os.path.exists(LOGO_PATH):
+        import cv2
+        logo_img = cv2.imread(LOGO_PATH, cv2.IMREAD_UNCHANGED)
+        if logo_img is not None:
+            logo_img = cv2.resize(logo_img, LOGO_SIZE, interpolation=cv2.INTER_AREA)
+    def overlay_logo_and_timer(frame, elapsed):
+        import cv2
+        h, w = frame.shape[:2]
+        # Overlay logo (bottom right)
+        if logo_img is not None:
+            lh, lw = logo_img.shape[:2]
+            # If logo has alpha, blend; else, paste
+            if logo_img.shape[2] == 4:
+                # Split channels
+                logo_rgb = logo_img[:, :, :3]
+                alpha = logo_img[:, :, 3] / 255.0
+                y1 = h - lh - 10
+                x1 = w - lw - 10
+                for c in range(3):
+                    frame[y1:y1+lh, x1:x1+lw, c] = (
+                        alpha * logo_rgb[:, :, c] + (1 - alpha) * frame[y1:y1+lh, x1:x1+lw, c]
+                    ).astype(np.uint8)
+            else:
+                y1 = h - lh - 10
+                x1 = w - lw - 10
+                frame[y1:y1+lh, x1:x1+lw] = logo_img
+        # Overlay timer (top right)
+        timer_text = time.strftime('%H:%M:%S', time.gmtime(elapsed))
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        font_scale = 1.0
+        thickness = 2
+        text_size, _ = cv2.getTextSize(timer_text, font, font_scale, thickness)
+        text_x = w - text_size[0] - 20
+        text_y = 40
+        # Draw black outline
+        cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (0,0,0), thickness+2, cv2.LINE_AA)
+        # Draw white text
+        cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (255,255,255), thickness, cv2.LINE_AA)
+        return frame
     if PICAMERA2_AVAILABLE:
         try:
             picam = Picamera2()
@@ -814,8 +857,11 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
         def gen():
             import cv2
             frame_interval = 1.0 / max(1, min(fps, 30))
+            start_time = time.time()
             while True:
                 frame = picam.capture_array()
+                elapsed = int(time.time() - start_time)
+                frame = overlay_logo_and_timer(frame, elapsed)
                 _, jpeg = cv2.imencode('.jpg', frame)
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
@@ -829,10 +875,13 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
         def gen():
             import cv2
             frame_interval = 1.0 / max(1, min(fps, 30))
+            start_time = time.time()
             while True:
                 ret, frame = cap.read()
                 if not ret:
                     break
+                elapsed = int(time.time() - start_time)
+                frame = overlay_logo_and_timer(frame, elapsed)
                 _, jpeg = cv2.imencode('.jpg', frame)
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
