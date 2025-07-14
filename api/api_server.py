@@ -31,6 +31,7 @@ except ImportError:
     PICAMERA2_AVAILABLE = False
 import io
 import threading
+import pytz
 
 # --------------------------
 # LOAD .env FILE
@@ -814,7 +815,7 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
         logo_img = cv2.imread(LOGO_PATH, cv2.IMREAD_UNCHANGED)
         if logo_img is not None:
             logo_img = cv2.resize(logo_img, LOGO_SIZE, interpolation=cv2.INTER_AREA)
-    def overlay_logo_and_timer(frame, elapsed):
+    def overlay_logo_and_timer(frame):
         import cv2
         h, w = frame.shape[:2]
         # Overlay logo (bottom right)
@@ -835,8 +836,10 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
                 y1 = h - lh - 10
                 x1 = w - lw - 10
                 frame[y1:y1+lh, x1:x1+lw] = logo_img
-        # Overlay timer (top right)
-        timer_text = time.strftime('%H:%M:%S', time.gmtime(elapsed))
+        # Overlay local date and time (top right)
+        tz = pytz.timezone(os.getenv("LOCAL_TIMEZONE", "America/New_York"))
+        now = datetime.now(tz)
+        timer_text = now.strftime('%Y-%m-%d %H:%M:%S')
         font = cv2.FONT_HERSHEY_SIMPLEX
         font_scale = 1.0
         thickness = 2
@@ -857,11 +860,9 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
         def gen():
             import cv2
             frame_interval = 1.0 / max(1, min(fps, 30))
-            start_time = time.time()
             while True:
                 frame = picam.capture_array()
-                elapsed = int(time.time() - start_time)
-                frame = overlay_logo_and_timer(frame, elapsed)
+                frame = overlay_logo_and_timer(frame)
                 _, jpeg = cv2.imencode('.jpg', frame)
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
@@ -875,13 +876,11 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
         def gen():
             import cv2
             frame_interval = 1.0 / max(1, min(fps, 30))
-            start_time = time.time()
             while True:
                 ret, frame = cap.read()
                 if not ret:
                     break
-                elapsed = int(time.time() - start_time)
-                frame = overlay_logo_and_timer(frame, elapsed)
+                frame = overlay_logo_and_timer(frame)
                 _, jpeg = cv2.imencode('.jpg', frame)
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
