@@ -292,7 +292,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             reencoded_intro = intro_path.with_name("intro_reencoded.mp4")
             reencode_cmd = [
                 "ffmpeg", "-y", "-threads", "2", "-i", str(intro_path),
-                "-vf", f"scale={width}:{height},fps=30",
+                "-vf", f"scale={width}:{height},fps=30,setsar=1",
                 "-c:v", "libx264", "-preset", "veryfast", "-crf", "28",
                 "-pix_fmt", "yuv420p", str(reencoded_intro)
             ]
@@ -372,6 +372,9 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 x, y = '10', '10'  # default
             filter_chain += f"{last_out}[{scaled}]overlay={x}:{y}:format=auto[{out}]; "
             last_out = f'[{out}]'
+        # Append setsar=1 to the last output
+        filter_chain += f"{last_out}setsar=1[finalout]"
+        last_out = '[finalout]'
         filter_chain = filter_chain.strip().rstrip(';')
 
         # Output path for logo-overlaid main recording
