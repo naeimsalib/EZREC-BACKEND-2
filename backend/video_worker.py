@@ -331,42 +331,39 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         input_args = ["-i", str(concat_output), "-i", str(static_logo_path)]
         filter_parts = []
         last_output = "[0:v]"
-        video_inputs = 1
-        # Scale static main logo
-        filter_parts.append(f"[1:v]scale=iw*0.15:ih*0.15[staticlogo_scaled]")
-        # Overlay static main logo first
-        filter_parts.append(f"[0:v][staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]")
+        input_idx = 1
+        # Static main logo
+        filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[staticlogo_scaled]")
+        filter_parts.append(f"{last_output}[staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]")
         last_output = "[staticlogo_out]"
-        # Add static sponsor logos
-        static_logo_inputs = []
+        # Static sponsor logos
         for i, static_sponsor_path in enumerate(static_sponsor_paths):
             if static_sponsor_path.exists():
-                input_args.extend(["-i", str(static_sponsor_path)])
-                static_logo_inputs.append((f"staticsponsor{i}", video_inputs + len(static_logo_inputs) + 1, static_sponsor_positions[i]))
-        for name, idx, position in static_logo_inputs:
-            scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
-            filter_parts.append(scale_filter)
-            overlay_position = POSITION_MAP.get(position, "top_right")
-            overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
-            filter_parts.append(overlay_filter)
-            last_output = f"[{name}_out]"
-        # Add user logo and sponsors
-        logo_inputs = []
+                input_idx += 1
+                filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[staticsponsor{i}_scaled]")
+                filter_parts.append(f"{last_output}[staticsponsor{i}_scaled]overlay={POSITION_MAP.get(static_sponsor_positions[i], 'top_right')}:format=auto[staticsponsor{i}_out]")
+                last_output = f"[staticsponsor{i}_out]"
+        # User logo
         if logo_path.exists():
-            input_args.extend(["-i", str(logo_path)])
-            logo_inputs.append(("logo", video_inputs + len(static_logo_inputs) + 1, LOGO_POSITION))
+            input_idx += 1
+            filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[userlogo_scaled]")
+            filter_parts.append(f"{last_output}[userlogo_scaled]overlay={POSITION_MAP[LOGO_POSITION]}:format=auto[userlogo_out]")
+            last_output = "[userlogo_out]"
+        # Sponsor logos
         sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
         for i, sponsor_path in enumerate(sponsor_paths):
             if sponsor_path.exists():
-                input_args.extend(["-i", str(sponsor_path)])
-                logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
-        # LOGGING: Print overlays and positions AFTER logo_inputs is built
+                input_idx += 1
+                filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[sponsor{i}_scaled]")
+                filter_parts.append(f"{last_output}[sponsor{i}_scaled]overlay={POSITION_MAP.get(sponsor_positions[i], 'top_right')}:format=auto[sponsor{i}_out]")
+                last_output = f"[sponsor{i}_out]"
+        # LOGGING: Print overlays and positions AFTER filter_parts is built
         log.info("--- Overlay Chain (Two-pass, actual overlays to be applied) ---")
         log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
         for i, static_sponsor_path in enumerate(static_sponsor_paths):
             if static_sponsor_path.exists():
                 log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
-        for name, idx, position in logo_inputs:
+        for name, idx, position in filter_parts:
             log.info(f"Overlay: {name} (input idx {idx}) at {position}")
         log.info("------------------------------")
         ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
