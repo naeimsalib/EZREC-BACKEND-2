@@ -983,3 +983,34 @@ def delete_user_data(user_id: str = Query(...)):
         except Exception:
             pass
     return {"status": "ok"}
+
+@app.get("/status/next_booking")
+def get_next_booking():
+    now = datetime.now(timezone.utc)
+    bookings_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+    if not bookings_file.exists():
+        return {"start_time": None}
+    try:
+        with open(bookings_file) as f:
+            bookings = json.load(f)
+        # Find the next booking with start_time > now
+        next_b = None
+        for b in bookings:
+            try:
+                st = datetime.fromisoformat(b["start_time"]).astimezone(timezone.utc)
+                if st > now:
+                    if not next_b or st < datetime.fromisoformat(next_b["start_time"]).astimezone(timezone.utc):
+                        next_b = b
+            except Exception:
+                continue
+        if not next_b:
+            return {"start_time": None}
+        return {
+            "start_time": next_b["start_time"],
+            "end_time": next_b.get("end_time"),
+            "user_id": next_b.get("user_id"),
+            "booking_id": next_b.get("id"),
+            "status": next_b.get("status")
+        }
+    except Exception:
+        return {"start_time": None}
