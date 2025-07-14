@@ -328,55 +328,96 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.error(f"❌ FFmpeg concat error: {e}")
             return None
         # Pass 2: Overlays and encode (hardware if available)
-        input_args = ["-i", str(concat_output), "-i", str(static_logo_path)]
-        filter_parts = []
-        last_output = "[0:v]"
-        input_idx = 1
-        # Static main logo
-        filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[staticlogo_scaled]")
-        filter_parts.append(f"{last_output}[staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]")
-        last_output = "[staticlogo_out]"
-        # Static sponsor logos
-        for i, static_sponsor_path in enumerate(static_sponsor_paths):
-            if static_sponsor_path.exists():
-                input_idx += 1
-                filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[staticsponsor{i}_scaled]")
-                filter_parts.append(f"{last_output}[staticsponsor{i}_scaled]overlay={POSITION_MAP.get(static_sponsor_positions[i], 'top_right')}:format=auto[staticsponsor{i}_out]")
-                last_output = f"[staticsponsor{i}_out]"
-        # User logo
-        if logo_path.exists():
-            input_idx += 1
-            filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[userlogo_scaled]")
-            filter_parts.append(f"{last_output}[userlogo_scaled]overlay={POSITION_MAP[LOGO_POSITION]}:format=auto[userlogo_out]")
-            last_output = "[userlogo_out]"
-        # Sponsor logos
-        sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-        for i, sponsor_path in enumerate(sponsor_paths):
-            if sponsor_path.exists():
-                input_idx += 1
-                filter_parts.append(f"[{input_idx}:v]scale=iw*0.15:ih*0.15[sponsor{i}_scaled]")
-                filter_parts.append(f"{last_output}[sponsor{i}_scaled]overlay={POSITION_MAP.get(sponsor_positions[i], 'top_right')}:format=auto[sponsor{i}_out]")
-                last_output = f"[sponsor{i}_out]"
-        # LOGGING: Print overlays and positions AFTER filter_parts is built
+        # Build overlay inputs and filter chain only for existing files
+        overlay_files = []
+        overlay_specs = []
+        overlay_positions = []
+
+        # Always add static main logo if present
+        if os.path.exists(static_logo_path):
+            overlay_files.append(static_logo_path)
+            overlay_specs.append({
+                'name': 'staticlogo',
+                'position': static_logo_position,
+                'type': 'static_main'
+            })
+            overlay_positions.append(static_logo_position)
+
+        # Add user logo if present
+        if logo_path and os.path.exists(logo_path):
+            overlay_files.append(logo_path)
+            overlay_specs.append({
+                'name': 'userlogo',
+                'position': LOGO_POSITION,
+                'type': 'user'
+            })
+            overlay_positions.append(LOGO_POSITION)
+
+        # Add sponsor logos if present
+        for idx, sponsor_logo_path in enumerate(sponsor_paths):
+            if sponsor_logo_path and os.path.exists(sponsor_logo_path):
+                overlay_files.append(sponsor_logo_path)
+                overlay_specs.append({
+                    'name': f'sponsor{idx}',
+                    'position': sponsor_logo_positions[idx],
+                    'type': 'sponsor',
+                    'idx': idx
+                })
+                overlay_positions.append(sponsor_logo_positions[idx])
+
+        # Build ffmpeg input args
+        ffmpeg_inputs = ['-i', concat_output]
+        for file in overlay_files:
+            ffmpeg_inputs += ['-i', file]
+
+        # Build filter chain
+        filter_chain = ''
+        last_out = '[0:v]'
+        for i, spec in enumerate(overlay_specs):
+            scaled = f"{spec['name']}_scaled"
+            out = f"{spec['name']}_out"
+            filter_chain += f"[{i+1}:v]scale=iw*0.15:ih*0.15[{scaled}]; "
+            # Position logic (reuse your existing logic for positions)
+            pos = spec['position']
+            if pos == 'bottom_right':
+                x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
+            elif pos == 'top_right':
+                x, y = 'main_w-overlay_w-10', '10'
+            elif pos == 'top_left':
+                x, y = '10', '10'
+            elif pos == 'bottom_left':
+                x, y = '10', 'main_h-overlay_h-10'
+            elif pos == 'top_center':
+                x, y = '(main_w-overlay_w)/2', '10'
+            elif pos == 'bottom_center':
+                x, y = '(main_w-overlay_w)/2', 'main_h-overlay_h-10'
+            else:
+                x, y = '10', '10'  # default
+            filter_chain += f"{last_out}[{scaled}]overlay={x}:{y}:format=auto[{out}]; "
+            last_out = f'[{out}]'
+        filter_chain = filter_chain.strip().rstrip(';')
+
+        # Logging overlay chain
         log.info("--- Overlay Chain (Two-pass, actual overlays to be applied) ---")
-        log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
-        for i, static_sponsor_path in enumerate(static_sponsor_paths):
-            if static_sponsor_path.exists():
-                log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
-        log.info("Filter chain: " + "; ".join(filter_parts))
+        for i, spec in enumerate(overlay_specs):
+            log.info(f"{spec['type'].capitalize()} logo: {overlay_files[i]} at {spec['position']}")
+        log.info(f"Filter chain: {filter_chain}")
         log.info("------------------------------")
-        ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
-        if filter_parts:
-            filter_complex = ";".join(filter_parts)
-            ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
-        else:
-            ffmpeg_base_cmd.extend(["-map", "0:v"])
-        ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
+
+        # Build final ffmpeg command
+        ffmpeg_cmd = [
+            'ffmpeg', '-y',
+            *ffmpeg_inputs,
+            '-filter_complex', filter_chain,
+            '-map', last_out,
+            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p',
+            output_file
+        ]
         log.info(f"[Two-pass] Pass 2: Applying overlays and encoding to {output_file}")
-        log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
+        log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
         try:
             start_time = time.time()
-            result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
+            result = subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True, timeout=1800)
             end_time = time.time()
             processing_time = end_time - start_time
             log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using {VIDEO_ENCODER}")
