@@ -304,34 +304,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     # --- Two-pass logic if intro video is present ---
     if intro_path.exists():
         sponsor_logo_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-        concat_output = raw_file.parent / f"concat_{raw_file.name}"
-        # Pass 1: Concat and scale intro + main (NO overlays applied here)
-        concat_cmd = [
-            "ffmpeg", "-y", "-threads", "2",
-            "-i", str(intro_path), "-i", str(raw_file),
-            "-filter_complex",
-            f"[0:v]scale={width}:{height},format=yuv420p[intro];"
-            f"[1:v]scale={width}:{height},format=yuv420p[main];"
-            f"[intro][main]concat=n=2:v=1:a=0[concat]",
-            "-map", "[concat]",
-            "-c:v", "libx264", "-crf", "23", "-preset", "ultrafast", str(concat_output)
-        ]
-        log.info(f"[Two-pass] Pass 1: Concatenating intro and main video to {concat_output}")
-        try:
-            start = time.time()
-            result = subprocess.run(concat_cmd, capture_output=True, timeout=120)
-            if result.returncode != 0:
-                log.error(f"Concat pass failed: {result.stderr.decode()}")
-                return None
-            log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
-        except subprocess.TimeoutExpired:
-            log.error("❌ FFmpeg concat step timed out.")
-            return None
-        except Exception as e:
-            log.error(f"❌ FFmpeg concat error: {e}")
-            return None
-        # Pass 2: Overlays and encode (hardware if available)
-        # Build overlay inputs and filter chain only for existing files
+        # Step 1: Overlay logos on main recording only
         overlay_files = []
         overlay_specs = []
         overlay_positions = []
@@ -368,20 +341,19 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 })
                 overlay_positions.append(sponsor_logo_positions[idx])
 
-        # Build ffmpeg input args
-        ffmpeg_inputs = ['-i', str(concat_output)]
+        # Build ffmpeg input args for main recording
+        ffmpeg_inputs = ['-i', str(raw_file)]
         for file in overlay_files:
             ffmpeg_inputs += ['-i', str(file)]
 
-        # Build filter chain
+        # Build filter chain for overlays (with transparent padding)
         filter_chain = ''
         last_out = '[0:v]'
         for i, spec in enumerate(overlay_specs):
             scaled = f"{spec['name']}_scaled"
             out = f"{spec['name']}_out"
-            # Scale and pad to fixed size, preserving aspect ratio
-            filter_chain += f"[{i+1}:v]scale={LOGO_SIZE}:{LOGO_SIZE}:force_original_aspect_ratio=decrease,pad={LOGO_SIZE}:{LOGO_SIZE}:(ow-iw)/2:(oh-ih)/2[{scaled}]; "
-            # Position logic (reuse your existing logic for positions)
+            # Scale and pad to fixed size, preserving aspect ratio, pad with transparent
+            filter_chain += f"[{i+1}:v]scale={LOGO_SIZE}:{LOGO_SIZE}:force_original_aspect_ratio=decrease,pad={LOGO_SIZE}:{LOGO_SIZE}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
             pos = spec['position']
             if pos == 'bottom_right':
                 x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
@@ -401,47 +373,70 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             last_out = f'[{out}]'
         filter_chain = filter_chain.strip().rstrip(';')
 
-        # Logging overlay chain
-        log.info("--- Overlay Chain (Two-pass, actual overlays to be applied) ---")
-        for i, spec in enumerate(overlay_specs):
-            log.info(f"{spec['type'].capitalize()} logo: {overlay_files[i]} at {spec['position']}")
-        log.info(f"Filter chain: {filter_chain}")
-        log.info("------------------------------")
+        # Output path for logo-overlaid main recording
+        main_with_logos = raw_file.parent / f"main_with_logos_{raw_file.name}"
 
-        # Build final ffmpeg command
+        # Run FFmpeg to overlay logos on main recording only
+        log.info("[Two-pass] Pass 1: Overlaying logos on main recording only...")
+        log.info(f"Overlay filter chain: {filter_chain}")
         ffmpeg_cmd = [
             'ffmpeg', '-y',
             *ffmpeg_inputs,
             '-filter_complex', filter_chain,
             '-map', last_out,
             '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p',
-            str(output_file)
+            str(main_with_logos)
         ]
-        log.info(f"[Two-pass] Pass 2: Applying overlays and encoding to {output_file}")
         log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
         try:
-            start_time = time.time()
-            result = subprocess.run(ffmpeg_cmd, check=True, capture_output=True, text=True, timeout=1800)
-            end_time = time.time()
-            processing_time = end_time - start_time
-            log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using {VIDEO_ENCODER}")
-            if output_file.exists() and output_file.stat().st_size > 1024:
-                return output_file
-            else:
-                log.error("Output file missing or too small")
+            start = time.time()
+            result = subprocess.run(ffmpeg_cmd, capture_output=True, timeout=600)
+            if result.returncode != 0:
+                log.error(f"Logo overlay pass failed: {result.stderr.decode()}")
                 return None
-        except subprocess.CalledProcessError as e:
-            log.error(f"FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
-            log.error(f"FFmpeg error: {e.stderr}")
+            log.info(f"✅ Logo overlay completed in {time.time() - start:.2f}s")
         except subprocess.TimeoutExpired:
-            log.error(f"FFmpeg processing timed out after 30 minutes")
+            log.error("❌ FFmpeg logo overlay step timed out.")
+            return None
         except Exception as e:
-            log.error(f"FFmpeg error: {e}")
-        finally:
-            if concat_output.exists():
-                concat_output.unlink()
-        log.error("FFmpeg processing failed. Video not processed.")
-        return None
+            log.error(f"❌ FFmpeg logo overlay error: {e}")
+            return None
+
+        # Step 2: Concat clean intro and logo-overlaid main
+        concat_output = raw_file.parent / f"concat_{raw_file.name}"
+        concat_cmd = [
+            "ffmpeg", "-y", "-threads", "2",
+            "-i", str(intro_path), "-i", str(main_with_logos),
+            "-filter_complex",
+            f"[0:v]scale={width}:{height},format=yuv420p[intro];"
+            f"[1:v]scale={width}:{height},format=yuv420p[main];"
+            f"[intro][main]concat=n=2:v=1:a=0[concat]",
+            "-map", "[concat]",
+            "-c:v", "libx264", "-crf", "23", "-preset", "ultrafast", str(concat_output)
+        ]
+        log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
+        try:
+            start = time.time()
+            result = subprocess.run(concat_cmd, capture_output=True, timeout=120)
+            if result.returncode != 0:
+                log.error(f"Concat pass failed: {result.stderr.decode()}")
+                return None
+            log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
+        except subprocess.TimeoutExpired:
+            log.error("❌ FFmpeg concat step timed out.")
+            return None
+        except Exception as e:
+            log.error(f"❌ FFmpeg concat error: {e}")
+            return None
+
+        # Final output is concat_output
+        output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+        output_file.parent.mkdir(parents=True, exist_ok=True)
+        shutil.move(str(concat_output), str(output_file))
+        # Clean up temp file
+        if main_with_logos.exists():
+            main_with_logos.unlink()
+        return output_file
     # --- Single-pass logic if no intro video ---
     input_args = ["-i", str(raw_file), "-i", str(static_logo_path)]
     main_video_idx = 0
