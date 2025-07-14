@@ -377,6 +377,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             ffmpeg_base_cmd.extend(["-map", "0:v"])
         ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
         log.info(f"[Two-pass] Pass 2: Applying overlays and encoding to {output_file}")
+        log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
         try:
             start_time = time.time()
             result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
