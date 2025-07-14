@@ -20,6 +20,7 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 import subprocess
+import socket
 
 # 🔧 Ensure API utils can be imported
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
@@ -124,94 +125,33 @@ class RecordingSession:
         self.booking = booking
         self.date_folder = RAW_DIR / datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
         self.date_folder.mkdir(parents=True, exist_ok=True)
-        # Use start and end time for filename
         start_dt = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
         end_dt = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
         self.filename_base = f"{start_dt.strftime('%H%M%S')}-{end_dt.strftime('%H%M%S')}"
-        self.raw_filepath = self.date_folder / (self.filename_base + ".h264")
         self.final_filepath = self.date_folder / (self.filename_base + ".mp4")
         self.lockfile = self.final_filepath.with_suffix(".lock")
         self.completed_marker = self.final_filepath.with_suffix(".done")
-        self.picam2 = None
-        self.encoder = None
-        self.output = None
         self.active = False
         self.recording_start_time = None
 
-    def terminate_camera_users(self):
-        """Detect and terminate any process using /dev/video0 (e.g., live preview) before recording."""
-        camera_dev = "/dev/video0"
-        max_wait = 10  # seconds
-        killed_any = False
-        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-            try:
-                if proc.pid == os.getpid():
-                    continue
-                # Check if process is using the camera device
-                for f in proc.open_files():
-                    if f.path == camera_dev:
-                        logger.warning(f"Terminating process {proc.pid} ({proc.name()}) using {camera_dev}")
-                        proc.terminate()
-                        killed_any = True
-            except Exception:
-                continue
-        if killed_any:
-            logger.info(f"Waiting for {camera_dev} to become available...")
-            start = time.time()
-            while time.time() - start < max_wait:
-                # Check if any process is still using the camera
-                busy = False
-                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
-                    try:
-                        if proc.pid == os.getpid():
-                            continue
-                        for f in proc.open_files():
-                            if f.path == camera_dev:
-                                busy = True
-                    except Exception:
-                        continue
-                if not busy:
-                    logger.info(f"{camera_dev} is now available.")
-                    return
-                time.sleep(1)
-            logger.error(f"Timeout: {camera_dev} still busy after {max_wait}s.")
-        else:
-            logger.info(f"No other process using {camera_dev} detected.")
-
     def start(self):
-        if not Picamera2:
-            logger.error("❌ picamera2 not available; cannot record.")
-            return False
         try:
-            self.terminate_camera_users()
             self.lockfile.touch()
-            logger.info("🔧 Initializing camera...")
-            self.picam2 = safe_init_camera()
-
-            config = self.picam2.create_video_configuration(
-                main={"size": (width, height)}, controls={"FrameRate": 30}
-            )
-            self.picam2.configure(config)
-
-            self.encoder = H264Encoder(bitrate=10000000)
-            self.output = FileOutput(str(self.raw_filepath))
-
-            self.picam2.start_recording(self.encoder, self.output)
+            logger.info(f"Sending START_RECORD to camera_streamer for {self.final_filepath}")
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(("localhost", 9999))
+                s.sendall(f"START {self.final_filepath}\n".encode())
+                s.recv(1024)
             self.active = True
             self.recording_start_time = datetime.now(LOCAL_TZ)
-
-            logger.info(f"✅ Started recording: {self.raw_filepath}")
+            logger.info(f"✅ Started recording: {self.final_filepath}")
             update_booking_status(self.booking["id"], "Recording")
-
             supabase.table('cameras').update({
                 'is_recording': True,
                 'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                 'status': 'online'
             }).eq('id', CAMERA_ID).execute()
-
-            set_is_recording(True)
             return True
-
         except Exception as e:
             logger.error(f"❌ Failed to start recording: {e}")
             if self.lockfile.exists():
@@ -219,53 +159,21 @@ class RecordingSession:
             return False
 
     def stop(self):
-        if self.active and self.picam2:
+        if self.active:
             try:
-                self.picam2.stop_recording()
-                self.picam2.close()
-                logger.info(f"⏹️ Stopped recording: {self.raw_filepath}")
-                # Update status to 'Recording Finished' immediately after stopping
-                update_booking_status(self.booking["id"], "Recording Finished")
-                # Convert raw H264 to MP4 using ffmpeg
-                ffmpeg_cmd = [
-                    "ffmpeg", "-y", "-framerate", "30", "-i", str(self.raw_filepath),
-                    "-c:v", "libx264", "-preset", "fast", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(self.final_filepath)
-                ]
-                logger.info(f"🎬 Running ffmpeg: {' '.join(ffmpeg_cmd)}")
-                try:
-                    subprocess.run(ffmpeg_cmd, check=True)
-                    logger.info(f"✅ Converted to MP4: {self.final_filepath}")
-                    # Clean up raw file
-                    if self.raw_filepath.exists():
-                        os.remove(self.raw_filepath)
-                    # Update status to Processing after successful conversion
-                    update_booking_status(self.booking["id"], "Processing")
-                except Exception as e:
-                    logger.error(f"❌ ffmpeg conversion failed: {e}")
+                logger.info(f"Sending STOP_RECORD to camera_streamer for {self.final_filepath}")
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                    s.connect(("localhost", 9999))
+                    s.sendall(b"STOP\n")
+                    s.recv(1024)
+                logger.info(f"⏹️ Stopped recording: {self.final_filepath}")
+                update_booking_status(self.booking["id"], "RecordingFinished")
                 self.completed_marker.touch()
-
-                # Write metadata
-                if self.final_filepath.exists():
-                    metadata = {
-                        "booking_id": self.booking["id"],
-                        "user_id": USER_ID,
-                        "camera_id": CAMERA_ID,
-                        "date": self.date_folder.name,
-                        "start_time": self.booking["start_time"],
-                        "end_time": self.booking["end_time"],
-                        "filename": self.final_filepath.name
-                    }
-                    with open(self.final_filepath.with_suffix(".json"), "w") as f:
-                        json.dump(metadata, f)
-
                 supabase.table('cameras').update({
                     'is_recording': False,
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                     'status': 'idle'
                 }).eq('id', CAMERA_ID).execute()
-
-                set_is_recording(False)
-
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
             finally:
