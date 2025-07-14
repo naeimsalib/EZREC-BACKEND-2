@@ -367,9 +367,9 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 overlay_positions.append(sponsor_logo_positions[idx])
 
         # Build ffmpeg input args
-        ffmpeg_inputs = ['-i', concat_output]
+        ffmpeg_inputs = ['-i', str(concat_output)]
         for file in overlay_files:
-            ffmpeg_inputs += ['-i', file]
+            ffmpeg_inputs += ['-i', str(file)]
 
         # Build filter chain
         filter_chain = ''
@@ -412,7 +412,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             '-filter_complex', filter_chain,
             '-map', last_out,
             '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p',
-            output_file
+            str(output_file)
         ]
         log.info(f"[Two-pass] Pass 2: Applying overlays and encoding to {output_file}")
         log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
