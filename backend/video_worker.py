@@ -118,6 +118,8 @@ STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
 STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
 STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
 
+LOGO_SIZE = int(os.getenv('LOGO_SIZE', '120'))  # Default logo size in pixels
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -303,7 +305,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     if intro_path.exists():
         sponsor_logo_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
         concat_output = raw_file.parent / f"concat_{raw_file.name}"
-        # Pass 1: Concat and scale intro + main
+        # Pass 1: Concat and scale intro + main (NO overlays applied here)
         concat_cmd = [
             "ffmpeg", "-y", "-threads", "2",
             "-i", str(intro_path), "-i", str(raw_file),
@@ -377,7 +379,8 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         for i, spec in enumerate(overlay_specs):
             scaled = f"{spec['name']}_scaled"
             out = f"{spec['name']}_out"
-            filter_chain += f"[{i+1}:v]scale=iw*0.15:ih*0.15[{scaled}]; "
+            # Scale and pad to fixed size, preserving aspect ratio
+            filter_chain += f"[{i+1}:v]scale={LOGO_SIZE}:{LOGO_SIZE}:force_original_aspect_ratio=decrease,pad={LOGO_SIZE}:{LOGO_SIZE}:(ow-iw)/2:(oh-ih)/2[{scaled}]; "
             # Position logic (reuse your existing logic for positions)
             pos = spec['position']
             if pos == 'bottom_right':

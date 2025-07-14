@@ -4,44 +4,19 @@ This document provides a detailed explanation of the algorithms, logic, and work
 
 ---
 
-## 1. Booking Sync Service (`booking_sync.py`)
+## 1. Main Recording Service (`recorder.py`)
 
 ### **Purpose**
-- Fetches bookings from Supabase every 3 seconds.
-- Updates `bookings_cache.json` with new, edited, or deleted bookings.
 
-### **Main Algorithm**
-- On startup, loads the last local cache (if any).
-- Every 3 seconds:
-  - Fetches all bookings for the current user/camera from Supabase.
-  - Compares with the local cache.
-  - If there are changes (new, edited, or deleted bookings), updates `bookings_cache.json`.
-
-### **Key Configuration**
-- `BOOKING_FETCH_INTERVAL` (default: 3 seconds)
-- `BOOKING_CACHE_FILE` (default: `/opt/ezrec-backend/bookings_cache.json`)
-
-### **Error Handling**
-- Logs all fetch and file errors.
-- Continues running even if a fetch or save fails.
-
-### **Interactions**
-- Writes to `bookings_cache.json` (read by `recorder.py`).
-- Reads from Supabase `bookings` table.
-
----
-
-## 2. Main Recording Service (`recorder.py`)
-
-### **Purpose**
-- Reads bookings from `bookings_cache.json`.
+- Reads bookings from the API-managed cache file (`bookings.json`).
 - Starts/stops video recordings at scheduled times.
 - Saves raw recordings to `/opt/ezrec-backend/raw_recordings/`.
 - Sets booking status to `'completed'` in Supabase after recording finishes.
 
 ### **Main Algorithm**
+
 - Every 3 seconds:
-  - Loads bookings from `bookings_cache.json`.
+  - Loads bookings from the API-managed cache file.
   - Checks if there is an active booking for the current time.
   - If a new booking is active, starts a new recording session.
   - If no booking is active, stops any ongoing recording.
@@ -49,23 +24,27 @@ This document provides a detailed explanation of the algorithms, logic, and work
 - When a recording finishes, updates the booking's status in Supabase to `'completed'`.
 
 ### **Key Configuration**
+
 - `BOOKING_CHECK_INTERVAL` (default: 3 seconds)
 - `RAW_RECORDINGS_DIR` (default: `/opt/ezrec-backend/raw_recordings/`)
 
 ### **Error Handling**
+
 - Logs all camera and file errors.
 - Continues running even if a recording fails.
 
 ### **Interactions**
-- Reads from `bookings_cache.json` (written by `booking_sync.py`).
+
+- Reads from the API-managed bookings cache file.
 - Writes raw video files to `raw_recordings/` (read by `video_worker.py`).
 - Updates the `status` field in the `bookings` table to `'completed'` after recording.
 
 ---
 
-## 3. Video Processing & Upload Service (`video_worker.py`)
+## 2. Video Processing & Upload Service (`video_worker.py`)
 
 ### **Purpose**
+
 - Watches `raw_recordings/` for new files.
 - Fetches the latest intro video and logo from Supabase (`user_settings`).
 - Manages local cache for intro/logo (downloads new, deletes old if removed).
@@ -74,6 +53,7 @@ This document provides a detailed explanation of the algorithms, logic, and work
 - Updates booking status to `'video_processed'` after processing and `'video_uploaded'` after upload.
 
 ### **Main Algorithm**
+
 - Every 5 seconds:
   - Scans `raw_recordings/` for new `.mp4` files.
   - For each file:
@@ -90,56 +70,85 @@ This document provides a detailed explanation of the algorithms, logic, and work
     - If upload fails, logs error and retries on next run.
 
 ### **Key Configuration**
+
 - `VIDEO_WORKER_CHECK_INTERVAL` (default: 5 seconds)
 - `MEDIA_CACHE_DIR` (default: `/opt/ezrec-backend/media_cache/`)
 - `PROCESSED_RECORDINGS_DIR` (default: `/opt/ezrec-backend/processed_recordings/`)
 
 ### **Error Handling**
+
 - Logs all processing, upload, and DB errors.
 - Skips failed files and retries later.
 - Cleans up temp files after processing.
 
 ### **Interactions**
+
 - Reads from `raw_recordings/` (written by `recorder.py`).
-- Reads/writes intro/logo in `media_cache/` (from Supabase `user_settings`).
-- Uploads to Supabase Storage and updates the `videos` table.
-- Updates the `status` field in the `bookings` table to `'video_processed'` after processing and `'video_uploaded'` after upload.
+- Uploads processed videos to Supabase Storage.
+- Updates the `videos` and `bookings` tables in Supabase.
 
 ---
 
+## 3. System Status Service (`system_status.py`)
+
+### **Purpose**
+
+- Collects and uploads system health metrics to Supabase.
+
+### **Main Algorithm**
+
+- Periodically collects CPU, memory, disk, and other system stats.
+- Uploads metrics to Supabase for monitoring and alerting.
+
+### **Key Configuration**
+
+- `SYSTEM_STATUS_INTERVAL` (default: 60 seconds)
+
+### **Error Handling**
+
+- Logs all errors.
+- Continues running even if a metric upload fails.
+
+### **Interactions**
+
+- Updates the `system_status` table in Supabase.
+
+---
+
+## 4. API Server (`api_server.py`)
+
+### **Purpose**
+
+- Provides a FastAPI backend for managing bookings, system status, and media notifications.
+- Manages the bookings cache file used by the recorder.
+
+### **Main Algorithm**
+
+- Exposes endpoints for bookings, system status, and media notifications.
+- Handles POST/GET requests for bookings and updates the local cache file accordingly.
+- Handles notifications for new/updated media (logos, intros, etc.).
+
+### **Key Configuration**
+
+- `API_PORT` (default: 8000)
+
+### **Error Handling**
+
+- Logs all API errors.
+- Returns appropriate HTTP error codes.
+
+### **Interactions**
+
+- Reads/writes the bookings cache file.
+- Communicates with Supabase for user and booking data.
+
+---
+
+**Note:** The Booking Sync Service (`booking_sync.py`) is no longer used. Bookings are now managed directly via the API/backend, and the cache is updated by the API server.
+
 ### **Booking Status Values in Supabase**
+
 - `confirmed`: Booking is upcoming or active
 - `completed`: Recording finished, not yet processed
 - `video_processed`: Video processed, not yet uploaded
 - `video_uploaded`: Video uploaded and available
-
----
-
-## 4. System Status Service (`system_status.py`)
-
-### **Purpose**
-- Collects system info (CPU, memory, disk, temp, etc.) every 1 second.
-- Updates the `system_status` table in Supabase.
-
-### **Main Algorithm**
-- Every 1 second:
-  - Collects CPU, memory, disk, temperature, and other system metrics.
-  - Updates or inserts a row in the `system_status` table for the current camera/user.
-
-### **Key Configuration**
-- `SYSTEM_STATUS_INTERVAL` (default: 1 second)
-
-### **Error Handling**
-- Logs all system info and DB errors.
-- Continues running even if an update fails.
-
-### **Interactions**
-- Writes to the `system_status` table in Supabase.
-
----
-
-## **General Notes**
-- All services are designed to run independently and communicate via local files and Supabase.
-- All configuration is via environment variables or `.env`.
-- All logs are written to `/opt/ezrec-backend/logs/` for troubleshooting.
-- For more details, see the code comments and docstrings in each script. 
