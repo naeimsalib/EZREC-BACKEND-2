@@ -363,8 +363,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         for i, static_sponsor_path in enumerate(static_sponsor_paths):
             if static_sponsor_path.exists():
                 log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
-        for name, idx, position in filter_parts:
-            log.info(f"Overlay: {name} (input idx {idx}) at {position}")
+        log.info("Filter chain: " + "; ".join(filter_parts))
         log.info("------------------------------")
         ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
         if filter_parts:
