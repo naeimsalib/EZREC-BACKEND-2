@@ -841,15 +841,15 @@ def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live
         now = datetime.now(tz)
         timer_text = now.strftime('%Y-%m-%d %H:%M:%S')
         font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 1.0
-        thickness = 2
+        font_scale = 0.5
+        thickness = 1
         text_size, _ = cv2.getTextSize(timer_text, font, font_scale, thickness)
         text_x = w - text_size[0] - 20
-        text_y = 40
-        # Draw black outline
+        text_y = 30
+        # Draw black outline for contrast
         cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (0,0,0), thickness+2, cv2.LINE_AA)
-        # Draw white text
-        cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (255,255,255), thickness, cv2.LINE_AA)
+        # Draw green text
+        cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (0,255,0), thickness, cv2.LINE_AA)
         return frame
     if PICAMERA2_AVAILABLE:
         try:
