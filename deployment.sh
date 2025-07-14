@@ -248,20 +248,7 @@ sudo systemctl restart status_updater.service
 sudo systemctl status status_updater.service --no-pager
 
 # Camera Streamer
-sudo tee "$SYSTEMD_DIR/camera_streamer.service" > /dev/null <<EOF
-[Unit]
-Description=EZREC Camera Streamer
-After=network.target
-
-[Service]
-ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/camera_streamer.py
-WorkingDirectory=$PROJECT_DIR/backend
-Restart=always
-User=$USER
-
-[Install]
-WantedBy=multi-user.target
-EOF
+sudo cp "$PROJECT_DIR/backend/camera_streamer.service" "$SYSTEMD_DIR/camera_streamer.service"
 
 sudo systemctl daemon-reload
 sudo systemctl enable camera_streamer.service
