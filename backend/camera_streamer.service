@@ -6,7 +6,7 @@ After=network.target
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/camera_streamer.py
 WorkingDirectory=/opt/ezrec-backend/backend
 Restart=always
-User=pi
+User=michomanoly14892
 
 [Install]
 WantedBy=multi-user.target 
