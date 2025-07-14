@@ -803,90 +803,10 @@ def check_live_preview_auth(request: Request):
     return True
 
 @app.get("/live-preview")
-def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live_preview_auth)):
-    # Error if camera is busy (recording)
-    if is_recording():
-        return JSONResponse(status_code=423, content={"detail": "Camera is currently recording. Live preview unavailable."})
-    LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
-    LOGO_SIZE = (120, 120)
-    logo_img = None
-    if os.path.exists(LOGO_PATH):
-        import cv2
-        logo_img = cv2.imread(LOGO_PATH, cv2.IMREAD_UNCHANGED)
-        if logo_img is not None:
-            logo_img = cv2.resize(logo_img, LOGO_SIZE, interpolation=cv2.INTER_AREA)
-    def overlay_logo_and_timer(frame):
-        import cv2
-        h, w = frame.shape[:2]
-        # Overlay logo (bottom right)
-        if logo_img is not None:
-            lh, lw = logo_img.shape[:2]
-            # If logo has alpha, blend; else, paste
-            if logo_img.shape[2] == 4:
-                # Split channels
-                logo_rgb = logo_img[:, :, :3]
-                alpha = logo_img[:, :, 3] / 255.0
-                y1 = h - lh - 10
-                x1 = w - lw - 10
-                for c in range(3):
-                    frame[y1:y1+lh, x1:x1+lw, c] = (
-                        alpha * logo_rgb[:, :, c] + (1 - alpha) * frame[y1:y1+lh, x1:x1+lw, c]
-                    ).astype(np.uint8)
-            else:
-                y1 = h - lh - 10
-                x1 = w - lw - 10
-                frame[y1:y1+lh, x1:x1+lw] = logo_img
-        # Overlay local date and time (top right)
-        tz = pytz.timezone(os.getenv("LOCAL_TIMEZONE", "America/New_York"))
-        now = datetime.now(tz)
-        timer_text = now.strftime('%Y-%m-%d %H:%M:%S')
-        font = cv2.FONT_HERSHEY_SIMPLEX
-        font_scale = 0.5
-        thickness = 1
-        text_size, _ = cv2.getTextSize(timer_text, font, font_scale, thickness)
-        text_x = w - text_size[0] - 20
-        text_y = 30
-        # Draw black outline for contrast
-        cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (0,0,0), thickness+2, cv2.LINE_AA)
-        # Draw green text
-        cv2.putText(frame, timer_text, (text_x, text_y), font, font_scale, (0,255,0), thickness, cv2.LINE_AA)
-        return frame
-    if PICAMERA2_AVAILABLE:
-        try:
-            picam = Picamera2()
-            picam.start()
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"detail": f"Camera error: {e}"})
-        def gen():
-            import cv2
-            frame_interval = 1.0 / max(1, min(fps, 30))
-            while True:
-                frame = picam.capture_array()
-                frame = overlay_logo_and_timer(frame)
-                _, jpeg = cv2.imencode('.jpg', frame)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
-                time.sleep(frame_interval)
-        return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
-    else:
-        try:
-            cap = cv2.VideoCapture(0)
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"detail": f"Camera error: {e}"})
-        def gen():
-            import cv2
-            frame_interval = 1.0 / max(1, min(fps, 30))
-            while True:
-                ret, frame = cap.read()
-                if not ret:
-                    break
-                frame = overlay_logo_and_timer(frame)
-                _, jpeg = cv2.imencode('.jpg', frame)
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
-                time.sleep(frame_interval)
-            cap.release()
-        return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
+def live_preview():
+    # Proxy MJPEG stream from camera_streamer
+    stream = requests.get("http://localhost:9000", stream=True)
+    return StreamingResponse(stream.raw, media_type='multipart/x-mixed-replace; boundary=frame')
 
 status_path = Path("/opt/ezrec-backend/status.json")
 
