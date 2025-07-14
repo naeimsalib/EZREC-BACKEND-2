@@ -943,3 +943,43 @@ def get_is_recording():
 @app.get("/status/network")
 def get_network():
     return {"network": read_status().get("network")}
+
+@app.post("/delete-user-data")
+def delete_user_data(user_id: str = Query(...)):
+    import json
+    from pathlib import Path
+    # Delete local recordings for user
+    rec_dir = Path("/opt/ezrec-backend/recordings")
+    for date_dir in rec_dir.glob("*/"):
+        for f in date_dir.glob("*.mp4"):
+            meta_path = f.with_suffix(".json")
+            if meta_path.exists():
+                try:
+                    with open(meta_path) as mf:
+                        meta = json.load(mf)
+                    if meta.get("user_id") == user_id:
+                        f.unlink(missing_ok=True)
+                        meta_path.unlink(missing_ok=True)
+                        # Also remove .done, .completed, .lock if present
+                        for ext in [".done", ".completed", ".lock"]:
+                            aux = f.with_suffix(ext)
+                            if aux.exists():
+                                aux.unlink()
+                except Exception:
+                    continue
+    # Delete media cache for user
+    media_cache = Path(f"/opt/ezrec-backend/media_cache/{user_id}")
+    if media_cache.exists():
+        shutil.rmtree(media_cache)
+    # Remove user bookings from local cache
+    bookings_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+    if bookings_file.exists():
+        try:
+            with open(bookings_file) as f:
+                bookings = json.load(f)
+            bookings = [b for b in bookings if b.get("user_id") != user_id]
+            with open(bookings_file, "w") as f:
+                json.dump(bookings, f, indent=2)
+        except Exception:
+            pass
+    return {"status": "ok"}
