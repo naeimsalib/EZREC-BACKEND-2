@@ -1,5 +1,5 @@
 from supabase import create_client
-from fastapi import FastAPI, HTTPException, Query, Request, Body, Header
+from fastapi import FastAPI, HTTPException, Query, Request, Body, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
@@ -21,6 +21,7 @@ from uuid import uuid4
 import smtplib
 from email.message import EmailMessage
 import psutil
+import time
 try:
     from picamera2 import Picamera2
     PICAMERA2_AVAILABLE = True
@@ -774,22 +775,60 @@ def send_share_email(req: SendShareEmailRequest):
 
     return {"status": "ok"}
 
+LIVE_PREVIEW_TOKEN = os.getenv("LIVE_PREVIEW_TOKEN", "changeme")
+
+# Helper to check if recording is active
+status_path = Path("/opt/ezrec-backend/status.json")
+def is_recording():
+    if status_path.exists():
+        try:
+            with open(status_path) as f:
+                status = json.load(f)
+            return bool(status.get("is_recording", False))
+        except Exception:
+            return False
+    return False
+
+def check_live_preview_auth(request: Request):
+    # Check for token in query param or Authorization header
+    token = request.query_params.get("token")
+    if not token:
+        auth = request.headers.get("Authorization")
+        if auth and auth.startswith("Bearer "):
+            token = auth[7:]
+    if token != LIVE_PREVIEW_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized for live preview")
+    return True
+
 @app.get("/live-preview")
-def live_preview():
+def live_preview(request: Request, fps: int = 5, auth: bool = Depends(check_live_preview_auth)):
+    # Error if camera is busy (recording)
+    if is_recording():
+        return JSONResponse(status_code=423, content={"detail": "Camera is currently recording. Live preview unavailable."})
     if PICAMERA2_AVAILABLE:
-        picam = Picamera2()
-        picam.start()
+        try:
+            picam = Picamera2()
+            picam.start()
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"detail": f"Camera error: {e}"})
         def gen():
+            import cv2
+            frame_interval = 1.0 / max(1, min(fps, 30))
             while True:
                 frame = picam.capture_array()
-                import cv2
                 _, jpeg = cv2.imencode('.jpg', frame)
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                time.sleep(frame_interval)
         return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
     else:
-        cap = cv2.VideoCapture(0)
+        try:
+            cap = cv2.VideoCapture(0)
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"detail": f"Camera error: {e}"})
         def gen():
+            import cv2
+            frame_interval = 1.0 / max(1, min(fps, 30))
             while True:
                 ret, frame = cap.read()
                 if not ret:
@@ -797,6 +836,7 @@ def live_preview():
                 _, jpeg = cv2.imencode('.jpg', frame)
                 yield (b'--frame\r\n'
                        b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                time.sleep(frame_interval)
             cap.release()
         return StreamingResponse(gen(), media_type='multipart/x-mixed-replace; boundary=frame')
 
