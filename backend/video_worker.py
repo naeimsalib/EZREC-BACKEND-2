@@ -118,7 +118,8 @@ STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
 STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
 STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
 
-LOGO_SIZE = int(os.getenv('LOGO_SIZE', '120'))  # Default logo size in pixels
+LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
+LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
 
 def get_duration(file: Path) -> float:
     try:
@@ -353,7 +354,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             scaled = f"{spec['name']}_scaled"
             out = f"{spec['name']}_out"
             # Scale and pad to fixed size, preserving aspect ratio, pad with transparent
-            filter_chain += f"[{i+1}:v]scale={LOGO_SIZE}:{LOGO_SIZE}:force_original_aspect_ratio=decrease,pad={LOGO_SIZE}:{LOGO_SIZE}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
+            filter_chain += f"[{i+1}:v]scale={LOGO_WIDTH}:{LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={LOGO_WIDTH}:{LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
             pos = spec['position']
             if pos == 'bottom_right':
                 x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
