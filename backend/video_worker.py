@@ -301,6 +301,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
     # --- Two-pass logic if intro video is present ---
     if intro_path.exists():
+        sponsor_logo_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
         concat_output = raw_file.parent / f"concat_{raw_file.name}"
         # Pass 1: Concat and scale intro + main
         concat_cmd = [
@@ -338,10 +339,10 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             overlay_files.append(static_logo_path)
             overlay_specs.append({
                 'name': 'staticlogo',
-                'position': static_logo_position,
+                'position': STATIC_LOGO_POSITION,
                 'type': 'static_main'
             })
-            overlay_positions.append(static_logo_position)
+            overlay_positions.append(STATIC_LOGO_POSITION)
 
         # Add user logo if present
         if logo_path and os.path.exists(logo_path):
