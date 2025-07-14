@@ -19,6 +19,7 @@ from dateutil import parser
 from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
+import subprocess
 
 # 🔧 Ensure API utils can be imported
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
@@ -137,11 +138,52 @@ class RecordingSession:
         self.active = False
         self.recording_start_time = None
 
+    def terminate_camera_users(self):
+        """Detect and terminate any process using /dev/video0 (e.g., live preview) before recording."""
+        camera_dev = "/dev/video0"
+        max_wait = 10  # seconds
+        killed_any = False
+        for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+            try:
+                if proc.pid == os.getpid():
+                    continue
+                # Check if process is using the camera device
+                for f in proc.open_files():
+                    if f.path == camera_dev:
+                        logger.warning(f"Terminating process {proc.pid} ({proc.name()}) using {camera_dev}")
+                        proc.terminate()
+                        killed_any = True
+            except Exception:
+                continue
+        if killed_any:
+            logger.info(f"Waiting for {camera_dev} to become available...")
+            start = time.time()
+            while time.time() - start < max_wait:
+                # Check if any process is still using the camera
+                busy = False
+                for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
+                    try:
+                        if proc.pid == os.getpid():
+                            continue
+                        for f in proc.open_files():
+                            if f.path == camera_dev:
+                                busy = True
+                    except Exception:
+                        continue
+                if not busy:
+                    logger.info(f"{camera_dev} is now available.")
+                    return
+                time.sleep(1)
+            logger.error(f"Timeout: {camera_dev} still busy after {max_wait}s.")
+        else:
+            logger.info(f"No other process using {camera_dev} detected.")
+
     def start(self):
         if not Picamera2:
             logger.error("❌ picamera2 not available; cannot record.")
             return False
         try:
+            self.terminate_camera_users()
             self.lockfile.touch()
             logger.info("🔧 Initializing camera...")
             self.picam2 = safe_init_camera()
@@ -185,7 +227,6 @@ class RecordingSession:
                 # Update status to 'Recording Finished' immediately after stopping
                 update_booking_status(self.booking["id"], "Recording Finished")
                 # Convert raw H264 to MP4 using ffmpeg
-                import subprocess
                 ffmpeg_cmd = [
                     "ffmpeg", "-y", "-framerate", "30", "-i", str(self.raw_filepath),
                     "-c:v", "libx264", "-preset", "fast", "-pix_fmt", "yuv420p", "-movflags", "+faststart", str(self.final_filepath)
