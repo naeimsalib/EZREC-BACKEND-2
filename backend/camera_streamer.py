@@ -12,7 +12,7 @@ import time
 import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from dotenv import load_dotenv
-from picamera2 import Picamera2, MjpegEncoder
+from picamera2 import Picamera2
 import numpy as np
 
 load_dotenv("/opt/ezrec-backend/.env")
