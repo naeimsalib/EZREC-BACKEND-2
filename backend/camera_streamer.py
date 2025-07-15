@@ -13,6 +13,7 @@ import socket
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from dotenv import load_dotenv
 from picamera2 import Picamera2
+from picamera2.encoders import H264Encoder
 import numpy as np
 
 load_dotenv("/opt/ezrec-backend/.env")
@@ -65,7 +66,8 @@ class CameraStreamer:
                 filename = data.split(" ")[1].strip()
                 with self.lock:
                     if not self.recording:
-                        self.picam2.start_recording(filename, quality=85)
+                        encoder = H264Encoder()
+                        self.picam2.start_recording(encoder, filename)
                         self.recording = True
                         self.recording_filename = filename
                 conn.sendall(b'OK\n')
