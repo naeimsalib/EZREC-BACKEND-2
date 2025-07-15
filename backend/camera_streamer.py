@@ -1,64 +1,56 @@
 #!/usr/bin/env python3
 """
-EZREC Camera Streamer Service
-- Owns the camera (Picamera2 or OpenCV)
+EZREC Camera Streamer Service (picamera2 version)
+- Owns the camera (Picamera2)
 - Streams MJPEG on port 9000
-- Accepts START_RECORD/STOP_RECORD commands on port 9999
-- Reads resolution/FPS/camera device from .env or auto-detects
+- Accepts START <filename>/STOP commands on port 9999
+- Reads resolution/FPS from .env or uses defaults
 """
 import os
 import threading
 import time
 import socket
-import cv2
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from dotenv import load_dotenv
+from picamera2 import Picamera2, MjpegEncoder
+import numpy as np
 
 load_dotenv("/opt/ezrec-backend/.env")
 
 RESOLUTION = os.getenv("RESOLUTION", "1280x720")
 RECORDING_FPS = int(os.getenv("RECORDING_FPS", "30"))
-CAMERA_DEVICE = os.getenv("CAMERA_DEVICE")
-
-# Auto-detect camera device if not set
-if not CAMERA_DEVICE:
-    for i in range(4):
-        dev = f"/dev/video{i}"
-        if os.path.exists(dev):
-            CAMERA_DEVICE = dev
-            break
-    else:
-        CAMERA_DEVICE = 0  # fallback to default
-
 width, height = map(int, RESOLUTION.lower().split('x'))
 
 class CameraStreamer:
     def __init__(self):
-        self.cap = cv2.VideoCapture(CAMERA_DEVICE)
-        self.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-        self.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-        self.cap.set(cv2.CAP_PROP_FPS, RECORDING_FPS)
+        self.picam2 = Picamera2()
+        self.config = self.picam2.create_video_configuration(
+            main={"size": (width, height), "format": "RGB888"},
+            controls={"FrameRate": RECORDING_FPS}
+        )
+        self.picam2.configure(self.config)
         self.frame = None
         self.recording = False
-        self.video_writer = None
+        self.recording_filename = None
         self.lock = threading.Lock()
         self.running = True
+        self.mjpeg_encoder = None
+        self.mjpeg_stream_clients = []
 
     def start(self):
+        self.picam2.start()
         threading.Thread(target=self.capture_loop, daemon=True).start()
         threading.Thread(target=self.command_server, daemon=True).start()
         self.http_server()
 
     def capture_loop(self):
         while self.running:
-            ret, frame = self.cap.read()
-            if not ret:
-                time.sleep(0.1)
-                continue
+            frame = self.picam2.capture_array()
             with self.lock:
                 self.frame = frame.copy()
-                if self.recording and self.video_writer:
-                    self.video_writer.write(frame)
+            if self.recording and self.mjpeg_encoder:
+                # Recording is handled by picamera2's start_recording
+                pass
             time.sleep(1/RECORDING_FPS)
 
     def command_server(self):
@@ -71,15 +63,18 @@ class CameraStreamer:
             data = conn.recv(1024).decode()
             if data.startswith("START"):
                 filename = data.split(" ")[1].strip()
-                fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-                self.video_writer = cv2.VideoWriter(filename, fourcc, RECORDING_FPS, (width, height))
-                self.recording = True
+                with self.lock:
+                    if not self.recording:
+                        self.picam2.start_recording(filename, quality=85)
+                        self.recording = True
+                        self.recording_filename = filename
                 conn.sendall(b'OK\n')
             elif data.startswith("STOP"):
-                self.recording = False
-                if self.video_writer:
-                    self.video_writer.release()
-                    self.video_writer = None
+                with self.lock:
+                    if self.recording:
+                        self.picam2.stop_recording()
+                        self.recording = False
+                        self.recording_filename = None
                 conn.sendall(b'OK\n')
             conn.close()
 
@@ -93,6 +88,8 @@ class CameraStreamer:
                     with self.lock:
                         if self.frame is None:
                             continue
+                        # Convert to JPEG
+                        import cv2
                         ret, jpeg = cv2.imencode('.jpg', self.frame)
                         if not ret:
                             continue

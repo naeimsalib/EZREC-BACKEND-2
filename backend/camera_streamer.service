@@ -1,5 +1,5 @@
 [Unit]
-Description=EZREC Camera Streamer
+Description=EZREC Camera Streamer (picamera2)
 After=network.target
 
 [Service]
@@ -7,6 +7,8 @@ ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/cam
 WorkingDirectory=/opt/ezrec-backend/backend
 Restart=always
 User=michomanoly14892
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target 
