@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-EZREC Camera Streamer Service (picamera2 version)
+EZREC Camera Streamer Service (robust picamera2 version)
 - Owns the camera (Picamera2)
 - Streams MJPEG on port 9000
 - Accepts START <filename>/STOP commands on port 9999
-- Reads resolution/FPS from .env or uses defaults
+- Thread-safe, robust, and production-ready
 """
 import os
 import threading
@@ -15,12 +15,19 @@ from dotenv import load_dotenv
 from picamera2 import Picamera2
 from picamera2.encoders import H264Encoder
 import numpy as np
+import cv2
+import logging
+from queue import Queue, Empty
 
 load_dotenv("/opt/ezrec-backend/.env")
 
 RESOLUTION = os.getenv("RESOLUTION", "1280x720")
 RECORDING_FPS = int(os.getenv("RECORDING_FPS", "30"))
 width, height = map(int, RESOLUTION.lower().split('x'))
+MAX_MJPEG_CLIENTS = int(os.getenv("MAX_MJPEG_CLIENTS", "2"))
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] %(message)s')
+logger = logging.getLogger("camera_streamer")
 
 class CameraStreamer:
     def __init__(self):
@@ -30,13 +37,13 @@ class CameraStreamer:
             controls={"FrameRate": RECORDING_FPS}
         )
         self.picam2.configure(self.config)
-        self.frame = None
+        self.frame_queue = Queue(maxsize=2)  # Thread-safe buffer for latest frame
         self.recording = False
         self.recording_filename = None
         self.lock = threading.Lock()
         self.running = True
-        self.mjpeg_encoder = None
-        self.mjpeg_stream_clients = []
+        self.mjpeg_clients = set()
+        self.mjpeg_clients_lock = threading.Lock()
 
     def start(self):
         self.picam2.start()
@@ -46,12 +53,17 @@ class CameraStreamer:
 
     def capture_loop(self):
         while self.running:
-            frame = self.picam2.capture_array()
-            with self.lock:
-                self.frame = frame.copy()
-            if self.recording and self.mjpeg_encoder:
-                # Recording is handled by picamera2's start_recording
-                pass
+            try:
+                frame = self.picam2.capture_array()
+                # Always keep only the latest frame in the queue
+                if not self.frame_queue.empty():
+                    try:
+                        self.frame_queue.get_nowait()
+                    except Empty:
+                        pass
+                self.frame_queue.put(frame, block=False)
+            except Exception as e:
+                logger.error(f"Capture loop error: {e}")
             time.sleep(1/RECORDING_FPS)
 
     def command_server(self):
@@ -59,45 +71,75 @@ class CameraStreamer:
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         s.bind(('localhost', 9999))
         s.listen(1)
+        logger.info("Command server listening on port 9999")
         while self.running:
-            conn, _ = s.accept()
-            data = conn.recv(1024).decode()
-            if data.startswith("START"):
-                filename = data.split(" ")[1].strip()
-                with self.lock:
-                    if not self.recording:
-                        encoder = H264Encoder()
-                        self.picam2.start_recording(encoder, filename)
-                        self.recording = True
-                        self.recording_filename = filename
-                conn.sendall(b'OK\n')
-            elif data.startswith("STOP"):
-                with self.lock:
-                    if self.recording:
-                        self.picam2.stop_recording()
-                        self.recording = False
-                        self.recording_filename = None
-                conn.sendall(b'OK\n')
-            conn.close()
+            try:
+                conn, _ = s.accept()
+                data = conn.recv(1024).decode()
+                if data.startswith("START"):
+                    filename = data.split(" ")[1].strip()
+                    with self.lock:
+                        if not self.recording:
+                            encoder = H264Encoder()
+                            self.picam2.start_recording(encoder, filename)
+                            self.recording = True
+                            self.recording_filename = filename
+                            logger.info(f"Started recording: {filename}")
+                    conn.sendall(b'OK\n')
+                elif data.startswith("STOP"):
+                    with self.lock:
+                        if self.recording:
+                            try:
+                                self.picam2.stop_recording()
+                                logger.info(f"Stopped recording: {self.recording_filename}")
+                            except Exception as e:
+                                logger.error(f"Error stopping recording: {e}")
+                            self.recording = False
+                            self.recording_filename = None
+                    conn.sendall(b'OK\n')
+                else:
+                    conn.sendall(b'ERR\n')
+                conn.close()
+            except Exception as e:
+                logger.error(f"Command server error: {e}")
 
     def http_server(self):
+        streamer = self
         class StreamHandler(BaseHTTPRequestHandler):
             def do_GET(inner_self):
-                inner_self.send_response(200)
-                inner_self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=frame')
-                inner_self.end_headers()
-                while True:
-                    with self.lock:
-                        if self.frame is None:
+                # Limit number of clients
+                with streamer.mjpeg_clients_lock:
+                    if len(streamer.mjpeg_clients) >= MAX_MJPEG_CLIENTS:
+                        inner_self.send_response(503)
+                        inner_self.end_headers()
+                        return
+                    client_id = id(inner_self)
+                    streamer.mjpeg_clients.add(client_id)
+                try:
+                    inner_self.send_response(200)
+                    inner_self.send_header('Content-type', 'multipart/x-mixed-replace; boundary=frame')
+                    inner_self.end_headers()
+                    while True:
+                        try:
+                            frame = streamer.frame_queue.get(timeout=2)
+                        except Empty:
                             continue
-                        # Convert to JPEG
-                        import cv2
-                        ret, jpeg = cv2.imencode('.jpg', self.frame)
+                        ret, jpeg = cv2.imencode('.jpg', frame)
                         if not ret:
                             continue
-                        inner_self.wfile.write(b'--frame\r\n')
-                        inner_self.wfile.write(b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
-                    time.sleep(1/RECORDING_FPS)
+                        try:
+                            inner_self.wfile.write(b'--frame\r\n')
+                            inner_self.wfile.write(b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                        except (ConnectionResetError, BrokenPipeError):
+                            break
+                        except Exception as e:
+                            logger.error(f"MJPEG stream error: {e}")
+                            break
+                        time.sleep(1/RECORDING_FPS)
+                finally:
+                    with streamer.mjpeg_clients_lock:
+                        streamer.mjpeg_clients.discard(client_id)
+        logger.info("MJPEG HTTP server listening on port 9000")
         HTTPServer(('0.0.0.0', 9000), StreamHandler).serve_forever()
 
 if __name__ == "__main__":
