@@ -169,6 +169,17 @@ class RecordingSession:
                 logger.info(f"⏹️ Stopped recording: {self.final_filepath}")
                 update_booking_status(self.booking["id"], "RecordingFinished")
                 self.completed_marker.touch()
+                # --- Create meta file for video_worker ---
+                meta_path = self.final_filepath.with_suffix('.json')
+                meta = {
+                    "user_id": USER_ID,
+                    "camera_id": CAMERA_ID,
+                    "booking_id": self.booking["id"],
+                    "start_time": self.booking["start_time"],
+                    "end_time": self.booking["end_time"]
+                }
+                with open(meta_path, "w") as f:
+                    json.dump(meta, f, indent=2)
                 supabase.table('cameras').update({
                     'is_recording': False,
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
