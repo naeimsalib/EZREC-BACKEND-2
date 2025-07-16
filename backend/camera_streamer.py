@@ -55,12 +55,13 @@ class CameraStreamer:
         while self.running:
             try:
                 frame = self.picam2.capture_array()
+                logger.info("Captured a frame")
                 # Always keep only the latest frame in the queue
-                if not self.frame_queue.empty():
+                while not self.frame_queue.empty():
                     try:
                         self.frame_queue.get_nowait()
                     except Empty:
-                        pass
+                        break
                 self.frame_queue.put(frame, block=False)
             except Exception as e:
                 logger.error(f"Capture loop error: {e}")
@@ -122,15 +123,19 @@ class CameraStreamer:
                     while True:
                         try:
                             frame = streamer.frame_queue.get(timeout=2)
+                            logger.info("Sending a frame to MJPEG client")
                         except Empty:
+                            logger.warning("MJPEG handler: No frame available in queue")
                             continue
                         ret, jpeg = cv2.imencode('.jpg', frame)
                         if not ret:
+                            logger.warning("MJPEG handler: Failed to encode frame as JPEG")
                             continue
                         try:
                             inner_self.wfile.write(b'--frame\r\n')
                             inner_self.wfile.write(b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
                         except (ConnectionResetError, BrokenPipeError):
+                            logger.info("MJPEG client disconnected")
                             break
                         except Exception as e:
                             logger.error(f"MJPEG stream error: {e}")
