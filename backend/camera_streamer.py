@@ -18,6 +18,8 @@ import numpy as np
 import cv2
 import logging
 from queue import Queue, Empty
+import io
+from PIL import Image, ImageDraw, ImageFont
 
 load_dotenv("/opt/ezrec-backend/.env")
 
@@ -44,6 +46,25 @@ class CameraStreamer:
         self.running = True
         self.mjpeg_clients = set()
         self.mjpeg_clients_lock = threading.Lock()
+        self.last_frame = None
+        self.placeholder_jpeg = self.generate_placeholder_jpeg()
+
+    def generate_placeholder_jpeg(self):
+        # Generate a simple 'Recording in Progress' JPEG
+        img = Image.new('RGB', (width, height), color=(30, 30, 30))
+        draw = ImageDraw.Draw(img)
+        text = "RECORDING IN PROGRESS"
+        try:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 48)
+        except Exception:
+            font = ImageFont.load_default()
+        textwidth, textheight = draw.textsize(text, font=font)
+        x = (width - textwidth) // 2
+        y = (height - textheight) // 2
+        draw.text((x, y), text, font=font, fill=(255, 0, 0))
+        buf = io.BytesIO()
+        img.save(buf, format='JPEG')
+        return buf.getvalue()
 
     def start(self):
         self.picam2.start()
@@ -55,7 +76,7 @@ class CameraStreamer:
         while self.running:
             try:
                 frame = self.picam2.capture_array()
-                logger.info("Captured a frame")
+                self.last_frame = frame
                 # Always keep only the latest frame in the queue
                 while not self.frame_queue.empty():
                     try:
@@ -122,18 +143,23 @@ class CameraStreamer:
                     inner_self.end_headers()
                     while True:
                         try:
-                            frame = streamer.frame_queue.get(timeout=2)
-                            logger.info("Sending a frame to MJPEG client")
+                            with streamer.lock:
+                                if streamer.recording and streamer.last_frame is not None:
+                                    # If recording, serve placeholder
+                                    jpeg_bytes = streamer.placeholder_jpeg
+                                else:
+                                    frame = streamer.frame_queue.get(timeout=2)
+                                    ret, jpeg = cv2.imencode('.jpg', frame)
+                                    if not ret:
+                                        logger.warning("MJPEG handler: Failed to encode frame as JPEG")
+                                        continue
+                                    jpeg_bytes = jpeg.tobytes()
                         except Empty:
                             logger.warning("MJPEG handler: No frame available in queue")
                             continue
-                        ret, jpeg = cv2.imencode('.jpg', frame)
-                        if not ret:
-                            logger.warning("MJPEG handler: Failed to encode frame as JPEG")
-                            continue
                         try:
                             inner_self.wfile.write(b'--frame\r\n')
-                            inner_self.wfile.write(b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                            inner_self.wfile.write(b'Content-Type: image/jpeg\r\n\r\n' + jpeg_bytes + b'\r\n')
                         except (ConnectionResetError, BrokenPipeError):
                             logger.info("MJPEG client disconnected")
                             break
