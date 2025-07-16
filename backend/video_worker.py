@@ -241,9 +241,22 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
     # Use local cache for user media
     user_media_dir = MEDIA_CACHE_DIR / user_id
+    user_media_dir.mkdir(parents=True, exist_ok=True)
+    # --- Always fetch latest user media from Supabase and download if needed ---
+    intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
     intro_path = user_media_dir / "intro.mp4"
     logo_path = user_media_dir / "logo.png"
     sponsor_paths = [user_media_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
+    # Download intro
+    if intro_url:
+        download_if_needed(intro_url, intro_path)
+    # Download logo
+    if logo_url:
+        download_if_needed(logo_url, logo_path)
+    # Download sponsors
+    for i, sponsor_url in enumerate(sponsor_urls):
+        if sponsor_url:
+            download_if_needed(sponsor_url, sponsor_paths[i])
 
     # --- Always add static main logo as overlay input ---
     static_logo_path = Path(STATIC_LOGO_PATH)
