@@ -55,6 +55,22 @@ sudo rm -f "$PROJECT_DIR/pending_uploads.json"
 sudo rm -f "$LOG_DIR/ezrec.log"
 
 #------------------------------#
+# 2.6 DEEP CLEANUP OF ALL DATA #
+#------------------------------#
+echo "🧹 Deep cleaning all recordings, processed videos, media cache, and state files..."
+# Remove all files in /opt/ezrec-backend/recordings and subfolders
+sudo find "$PROJECT_DIR/recordings" -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.done' -o -name '*.lock' -o -name '*.completed' \) -delete 2>/dev/null || true
+# Remove all files in /opt/ezrec-backend/processed and subfolders
+sudo find "$PROJECT_DIR/processed" -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.done' -o -name '*.lock' -o -name '*.completed' \) -delete 2>/dev/null || true
+# Remove all files in /opt/ezrec-backend/media_cache and subfolders
+sudo rm -rf "$PROJECT_DIR/media_cache"/* 2>/dev/null || true
+# Remove pending uploads and health/status files
+sudo rm -f "$PROJECT_DIR/pending_uploads.json" "$PROJECT_DIR/health_report.json" "$PROJECT_DIR/status.json"
+# Remove all cache/state files in api/local_data
+sudo rm -f "$API_DIR/local_data/bookings.json" "$API_DIR/local_data/status.json" "$API_DIR/local_data/system.json"
+echo "✅ All recordings, processed videos, media cache, and state files cleaned."
+
+#------------------------------#
 # 3. CREATE FOLDERS + PERMISSIONS
 #------------------------------#
 echo "📁 Setting up directories..."
@@ -292,7 +308,7 @@ fi
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
-for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared; do
+for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared camera_streamer status_updater; do
   sudo systemctl enable "$svc"
   sudo systemctl restart "$svc"
   sleep 1
