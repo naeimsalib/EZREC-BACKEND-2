@@ -164,6 +164,19 @@ def download_file(url: str, path: Path, bucket=None, key=None):
         except Exception as e:
             log.error(f"Failed to download {url}: {e}")
 
+def s3_signed_url(bucket, key, region, expires=3600):
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
+        aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
+        region_name=region
+    )
+    return s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={'Bucket': bucket, 'Key': key},
+        ExpiresIn=expires
+    )
+
 def fetch_user_media(user_id: str):
     """
     Fetch intro video, logo, and sponsor logos for the user from user_settings table.
@@ -178,7 +191,7 @@ def fetch_user_media(user_id: str):
             sponsor1 = res.data.get("sponsor_logo1_path")
             sponsor2 = res.data.get("sponsor_logo2_path")
             sponsor3 = res.data.get("sponsor_logo3_path")
-            # Build full S3 URLs if only key is stored
+            # Build signed S3 URLs if only key is stored
             bucket = os.getenv("AWS_USER_MEDIA_BUCKET") or os.getenv("AWS_S3_BUCKET")
             region = os.getenv("AWS_REGION", "us-east-1")
             def s3_url(path):
@@ -186,7 +199,8 @@ def fetch_user_media(user_id: str):
                     return None
                 if path.startswith("http"):
                     return path
-                return f"https://{bucket}.s3.{region}.amazonaws.com/{path}"
+                # Use signed URL for private S3 object
+                return s3_signed_url(bucket, path, region)
             intro_url = s3_url(intro_path)
             logo_url = s3_url(logo_path)
             sponsor_urls = [s3_url(s) for s in [sponsor1, sponsor2, sponsor3] if s]
