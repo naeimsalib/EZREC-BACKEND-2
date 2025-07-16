@@ -76,38 +76,8 @@ echo "✅ All recordings, processed videos, media cache, and state files cleaned
 echo "🔄 Refreshing user media cache for main user..."
 USER_ID=$(grep '^USER_ID=' "$PROJECT_DIR/.env" | cut -d'=' -f2 | tr -d '"')
 if [ -n "$USER_ID" ]; then
-  "$VENV_DIR/bin/python3" -c '
-import os, sys
-sys.path.append("'$PROJECT_DIR/backend'")
-from video_worker import fetch_user_media, download_if_needed, MEDIA_CACHE_DIR
-user_id = os.environ.get("USER_ID")
-intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
-user_media_dir = MEDIA_CACHE_DIR / user_id
-user_media_dir.mkdir(parents=True, exist_ok=True)
-intro_path = user_media_dir / "intro.mp4"
-logo_path = user_media_dir / "logo.png"
-sponsor_paths = [user_media_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
-print(f"Intro URL: {intro_url}")
-print(f"Logo URL: {logo_url}")
-print(f"Sponsor URLs: {sponsor_urls}")
-if intro_url:
-    print(f"Downloading intro to {intro_path}...")
-    download_if_needed(intro_url, intro_path)
-    print(f"Intro exists: {intro_path.exists()}")
-if logo_url:
-    print(f"Downloading logo to {logo_path}...")
-    download_if_needed(logo_url, logo_path)
-    print(f"Logo exists: {logo_path.exists()}")
-for i, sponsor_url in enumerate(sponsor_urls):
-    if sponsor_url:
-        print(f"Downloading sponsor {i+1} to {sponsor_paths[i]}...")
-        download_if_needed(sponsor_url, sponsor_paths[i])
-        print(f"Sponsor {i+1} exists: {sponsor_paths[i].exists()}")
-print("User media cache directory contents:")
-for f in user_media_dir.iterdir():
-    print(f" - {f}")
-print(f"✅ Refreshed user media cache for {user_id}")
-' || echo "⚠️ Failed to refresh user media cache."
+  export USER_ID
+  "$VENV_DIR/bin/python3" "$PROJECT_DIR/backend/refresh_user_media.py"
 else
   echo "⚠️ USER_ID not set in .env, skipping user media refresh."
 fi
