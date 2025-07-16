@@ -116,6 +116,18 @@ else
 fi
 
 #------------------------------#
+# 5.1 REFRESH USER MEDIA CACHE #
+#------------------------------#
+echo "🔄 Refreshing user media cache for main user..."
+USER_ID=$(grep '^USER_ID=' "$PROJECT_DIR/.env" | cut -d'=' -f2 | tr -d '"')
+if [ -n "$USER_ID" ]; then
+  export USER_ID
+  "$VENV_DIR/bin/python3" "$PROJECT_DIR/backend/refresh_user_media.py"
+else
+  echo "⚠️ USER_ID not set in .env, skipping user media refresh."
+fi
+
+#------------------------------#
 # 5.5. DOWNLOAD MAIN EZREC LOGO #
 #------------------------------#
 # Temporarily export AWS credentials for S3 download
