@@ -107,8 +107,10 @@ sudo chown -R "$USER:$USER" "$VENV_DIR"
 #------------------------------#
 # 5. SYNC PROJECT FILES
 #------------------------------#
-echo "📦 Syncing updated project files..."
-DEV_DIR="/home/$USER/EZREC-BACKEND-2"
+echo "\U0001F4E6 Syncing updated project files..."
+echo "[DEBUG] DEV_DIR=$DEV_DIR"
+echo "[DEBUG] PROJECT_DIR=$PROJECT_DIR"
+ls -l "$DEV_DIR/backend/refresh_user_media.py" || echo "[DEBUG] refresh_user_media.py not found in DEV_DIR/backend"
 if [ -d "$DEV_DIR" ]; then
   rsync -av --exclude='venv' --exclude='.git' --exclude='__pycache__' "$DEV_DIR/" "$PROJECT_DIR/"
 else
