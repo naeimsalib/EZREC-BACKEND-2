@@ -123,6 +123,15 @@ def main():
     status_path = '/opt/ezrec-backend/status.json'
     while True:
         try:
+            # Read the current is_recording value
+            is_recording = False
+            if os.path.exists(status_path):
+                try:
+                    with open(status_path) as f:
+                        status = json.load(f)
+                    is_recording = status.get('is_recording', False)
+                except Exception:
+                    pass
             status = {
                 'cpu_usage': get_cpu_usage(),
                 'memory_usage': get_memory_usage(),
@@ -131,7 +140,7 @@ def main():
                 'uptime': get_uptime(),
                 'errors': get_errors(),
                 'recent_recordings': get_recent_recordings(),
-                'is_recording': read_is_recording(),
+                'is_recording': is_recording,  # preserve the value
                 'network': get_network_status(),
                 'timestamp': datetime.now().isoformat()
             }
