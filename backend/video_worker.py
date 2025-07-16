@@ -271,6 +271,47 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         if sponsor_url:
             download_if_needed(sponsor_url, sponsor_paths[i])
 
+    # --- Validate intro and logo/sponsor files ---
+    def is_valid_video(file: Path):
+        codec, w, h, fps, pix_fmt = get_video_info(file)
+        return None not in (codec, w, h, fps, pix_fmt)
+    def is_valid_image(file: Path):
+        try:
+            from PIL import Image
+            with Image.open(file) as img:
+                img.verify()
+            return True
+        except Exception:
+            return False
+
+    # Check intro
+    if intro_path.exists() and not is_valid_video(intro_path):
+        log.error(f"Intro video at {intro_path} is invalid or corrupted. Skipping intro for this video.")
+        try:
+            intro_path.unlink()
+        except Exception:
+            pass
+        intro_path = None
+
+    # Check logo
+    if logo_path.exists() and not is_valid_image(logo_path):
+        log.error(f"Logo image at {logo_path} is invalid or corrupted. Skipping logo overlay.")
+        try:
+            logo_path.unlink()
+        except Exception:
+            pass
+        logo_path = None
+
+    # Check sponsor logos
+    for i, sponsor_path in enumerate(sponsor_paths):
+        if sponsor_path.exists() and not is_valid_image(sponsor_path):
+            log.error(f"Sponsor logo {i+1} at {sponsor_path} is invalid or corrupted. Skipping this sponsor overlay.")
+            try:
+                sponsor_path.unlink()
+            except Exception:
+                pass
+            sponsor_paths[i] = None
+
     # --- Always add static main logo as overlay input ---
     static_logo_path = Path(STATIC_LOGO_PATH)
     if not static_logo_path.exists():
@@ -293,7 +334,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     #     return None
     
     # Check intro duration and trim if needed
-    if intro_path.exists():
+    if intro_path and intro_path.exists():
         intro_duration = get_duration(intro_path)
         if intro_duration > 600:
             log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to 600s.")
@@ -329,7 +370,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             intro_path = reencoded_intro
 
     # --- Two-pass logic if intro video is present ---
-    if intro_path.exists():
+    if intro_path and intro_path.exists():
         sponsor_logo_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
         # Step 1: Overlay logos on main recording only
         overlay_files = []
@@ -347,7 +388,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             overlay_positions.append(STATIC_LOGO_POSITION)
 
         # Add user logo if present
-        if logo_path and os.path.exists(logo_path):
+        if logo_path and logo_path.exists():
             overlay_files.append(logo_path)
             overlay_specs.append({
                 'name': 'userlogo',
@@ -358,7 +399,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
         # Add sponsor logos if present
         for idx, sponsor_logo_path in enumerate(sponsor_paths):
-            if sponsor_logo_path and os.path.exists(sponsor_logo_path):
+            if sponsor_logo_path and sponsor_logo_path.exists():
                 overlay_files.append(sponsor_logo_path)
                 overlay_specs.append({
                     'name': f'sponsor{idx}',
@@ -486,12 +527,12 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         filter_parts.append(overlay_filter)
         last_output = f"[{name}_out]"
     logo_inputs = []
-    if logo_path.exists():
+    if logo_path and logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
         logo_inputs.append(("logo", video_inputs + len(static_logo_inputs) + 1, LOGO_POSITION))
     sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
-        if sponsor_path.exists():
+        if sponsor_path and sponsor_path.exists():
             input_args.extend(["-i", str(sponsor_path)])
             logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
     # LOGGING: Print overlays and positions AFTER logo_inputs is built
