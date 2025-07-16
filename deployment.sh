@@ -71,6 +71,36 @@ sudo rm -f "$API_DIR/local_data/bookings.json" "$API_DIR/local_data/status.json"
 echo "✅ All recordings, processed videos, media cache, and state files cleaned."
 
 #------------------------------#
+# 2.7 REFRESH USER MEDIA CACHE #
+#------------------------------#
+echo "🔄 Refreshing user media cache for main user..."
+USER_ID=$(grep '^USER_ID=' "$PROJECT_DIR/.env" | cut -d'=' -f2 | tr -d '"')
+if [ -n "$USER_ID" ]; then
+  "$VENV_DIR/bin/python3" -c '
+import os, sys
+sys.path.append("'$PROJECT_DIR/backend'")
+from video_worker import fetch_user_media, download_if_needed, MEDIA_CACHE_DIR
+user_id = os.environ.get("USER_ID")
+intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
+user_media_dir = MEDIA_CACHE_DIR / user_id
+user_media_dir.mkdir(parents=True, exist_ok=True)
+intro_path = user_media_dir / "intro.mp4"
+logo_path = user_media_dir / "logo.png"
+sponsor_paths = [user_media_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
+if intro_url:
+    download_if_needed(intro_url, intro_path)
+if logo_url:
+    download_if_needed(logo_url, logo_path)
+for i, sponsor_url in enumerate(sponsor_urls):
+    if sponsor_url:
+        download_if_needed(sponsor_url, sponsor_paths[i])
+print(f"✅ Refreshed user media cache for {user_id}")
+' || echo "⚠️ Failed to refresh user media cache."
+else
+  echo "⚠️ USER_ID not set in .env, skipping user media refresh."
+fi
+
+#------------------------------#
 # 3. CREATE FOLDERS + PERMISSIONS
 #------------------------------#
 echo "📁 Setting up directories..."
