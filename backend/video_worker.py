@@ -199,12 +199,21 @@ def fetch_user_media(user_id: str):
 def download_if_needed(url, path: Path):
     if url and not path.exists():
         try:
-            r = requests.get(url, stream=True)
-            with open(path, 'wb') as f:
-                for chunk in r.iter_content(chunk_size=8192):
-                    f.write(chunk)
+            r = requests.get(url, stream=True, timeout=30)
+            if r.status_code == 200:
+                with open(path, 'wb') as f:
+                    for chunk in r.iter_content(chunk_size=8192):
+                        f.write(chunk)
+                # Check file size
+                if path.stat().st_size < 1024:  # Arbitrary threshold for a real video/image
+                    print(f"Downloaded file {path} is too small, likely corrupt. Deleting.")
+                    path.unlink()
+            else:
+                print(f"Failed to download {url}: HTTP {r.status_code}")
         except Exception as e:
-            log.error(f"Failed to download {url}: {e}")
+            print(f"Failed to download {url}: {e}")
+            if path.exists():
+                path.unlink()
     return path if path.exists() else None
 
 def is_internet_available(host="8.8.8.8", port=53, timeout=3):
