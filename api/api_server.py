@@ -13,7 +13,7 @@ from dotenv import load_dotenv
 from urllib.parse import unquote
 import sys
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse
+from fastapi.responses import JSONResponse, StreamingResponse, HTMLResponse, PlainTextResponse
 import urllib.parse
 import requests
 import shutil
@@ -804,9 +804,20 @@ def check_live_preview_auth(request: Request):
 
 @app.get("/live-preview")
 def live_preview():
-    # Proxy MJPEG stream from camera_streamer
-    stream = requests.get("http://localhost:9000", stream=True)
-    return StreamingResponse(stream.raw, media_type='multipart/x-mixed-replace; boundary=frame')
+    """
+    Proxy MJPEG stream from camera_streamer. If unavailable, return a clear error.
+    """
+    import requests
+    logger.info("/live-preview endpoint accessed, proxying to camera_streamer on port 9000")
+    try:
+        stream = requests.get("http://localhost:9000", stream=True, timeout=5)
+        if stream.status_code != 200:
+            logger.error(f"camera_streamer returned status {stream.status_code}")
+            return PlainTextResponse("Camera streamer unavailable", status_code=503)
+        return StreamingResponse(stream.raw, media_type='multipart/x-mixed-replace; boundary=frame')
+    except requests.RequestException as e:
+        logger.error(f"Error connecting to camera_streamer: {e}")
+        return PlainTextResponse("Camera streamer unavailable", status_code=503)
 
 status_path = Path("/opt/ezrec-backend/status.json")
 
