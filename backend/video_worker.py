@@ -172,15 +172,28 @@ def fetch_user_media(user_id: str):
     try:
         res = supabase.table("user_settings").select("*").eq("user_id", user_id).single().execute()
         if res.data:
-            intro = res.data.get("intro_video_url")
-            logo = res.data.get("logo_url")
-            sponsors = res.data.get("sponsor_logo_urls") or []
-            if isinstance(sponsors, str):
-                # In case it's stored as a comma-separated string
-                sponsors = [s.strip() for s in sponsors.split(",") if s.strip()]
-            return intro, logo, sponsors[:3]
+            # Use correct field names from your table
+            intro_path = res.data.get("intro_video_path")
+            logo_path = res.data.get("logo_path")
+            sponsor1 = res.data.get("sponsor_logo1_path")
+            sponsor2 = res.data.get("sponsor_logo2_path")
+            sponsor3 = res.data.get("sponsor_logo3_path")
+            # Build full S3 URLs if only key is stored
+            bucket = os.getenv("AWS_USER_MEDIA_BUCKET") or os.getenv("AWS_S3_BUCKET")
+            region = os.getenv("AWS_REGION", "us-east-1")
+            def s3_url(path):
+                if not path:
+                    return None
+                if path.startswith("http"):
+                    return path
+                return f"https://{bucket}.s3.{region}.amazonaws.com/{path}"
+            intro_url = s3_url(intro_path)
+            logo_url = s3_url(logo_path)
+            sponsor_urls = [s3_url(s) for s in [sponsor1, sponsor2, sponsor3] if s]
+            return intro_url, logo_url, sponsor_urls
         return None, None, []
-    except Exception:
+    except Exception as e:
+        log.error(f"fetch_user_media error: {e}")
         return None, None, []
 
 def download_if_needed(url, path: Path):
