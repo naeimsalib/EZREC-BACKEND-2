@@ -151,6 +151,7 @@ class RecordingSession:
                 'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                 'status': 'online'
             }).eq('id', CAMERA_ID).execute()
+            set_is_recording(True)
             return True
         except Exception as e:
             logger.error(f"❌ Failed to start recording: {e}")
@@ -185,6 +186,7 @@ class RecordingSession:
                     'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                     'status': 'idle'
                 }).eq('id', CAMERA_ID).execute()
+                set_is_recording(False)
             except Exception as e:
                 logger.error(f"Error stopping recording: {e}")
             finally:
