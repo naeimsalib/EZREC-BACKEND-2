@@ -810,7 +810,7 @@ def live_preview():
     import requests
     logger.info("/live-preview endpoint accessed, proxying to camera_streamer on port 9000")
     try:
-        stream = requests.get("http://localhost:9000", stream=True, timeout=5)
+        stream = requests.get("http://127.0.0.1:9000", stream=True, timeout=5)
         if stream.status_code != 200:
             logger.error(f"camera_streamer returned status {stream.status_code}")
             return PlainTextResponse("Camera streamer unavailable", status_code=503)
