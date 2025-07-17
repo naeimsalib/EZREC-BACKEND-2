@@ -20,6 +20,8 @@ import logging
 from queue import Queue, Empty
 import io
 from PIL import Image, ImageDraw, ImageFont
+import sys
+import traceback
 
 load_dotenv("/opt/ezrec-backend/.env")
 
@@ -67,7 +69,12 @@ class CameraStreamer:
         return buf.getvalue()
 
     def start(self):
-        self.picam2.start()
+        try:
+            self.picam2.start()
+        except Exception as e:
+            logger.error(f"Failed to start camera: {e}")
+            traceback.print_exc()
+            sys.exit(1)
         threading.Thread(target=self.capture_loop, daemon=True).start()
         threading.Thread(target=self.command_server, daemon=True).start()
         self.http_server()
@@ -86,6 +93,7 @@ class CameraStreamer:
                 self.frame_queue.put(frame, block=False)
             except Exception as e:
                 logger.error(f"Capture loop error: {e}")
+                traceback.print_exc()
             time.sleep(1/RECORDING_FPS)
 
     def command_server(self):
