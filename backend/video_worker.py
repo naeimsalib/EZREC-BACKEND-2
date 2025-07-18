@@ -406,7 +406,8 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             overlay_specs.append({
                 'name': 'staticlogo',
                 'position': STATIC_LOGO_POSITION,
-                'type': 'static_main'
+                'type': 'static_main',
+                'no_scale': True  # <-- Mark this logo as not to be scaled
             })
             overlay_positions.append(STATIC_LOGO_POSITION)
 
@@ -443,8 +444,11 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         for i, spec in enumerate(overlay_specs):
             scaled = f"{spec['name']}_scaled"
             out = f"{spec['name']}_out"
-            # Scale and pad to fixed size, preserving aspect ratio, pad with transparent
-            filter_chain += f"[{i+1}:v]scale={LOGO_WIDTH}:{LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={LOGO_WIDTH}:{LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
+            # Only scale if not static main logo
+            if spec.get('no_scale'):
+                filter_chain += f"[{i+1}:v]null[{scaled}]; "
+            else:
+                filter_chain += f"[{i+1}:v]scale={LOGO_WIDTH}:{LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={LOGO_WIDTH}:{LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
             pos = spec['position']
             if pos == 'bottom_right':
                 x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
@@ -535,7 +539,8 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     input_args = ["-i", str(raw_file), "-i", str(static_logo_path)]
     main_video_idx = 0
     video_inputs = 1
-    filter_parts = [f"[1:v]scale=iw*0.15:ih*0.15[staticlogo_scaled]", f"[{main_video_idx}:v][staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]"]
+    # For static main logo, do not scale, just overlay at original size
+    filter_parts = [f"[{main_video_idx}:v][1:v]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]"]
     last_output = "[staticlogo_out]"
     static_logo_inputs = []
     for i, static_sponsor_path in enumerate(static_sponsor_paths):
