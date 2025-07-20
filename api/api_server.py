@@ -803,22 +803,26 @@ def check_live_preview_auth(request: Request):
     return True
 
 @app.get("/live-preview")
-def live_preview():
+async def live_preview():
     """
-    Proxy MJPEG stream from camera_streamer. If unavailable, return a clear error.
+    Proxy MJPEG stream from camera_streamer running locally on port 9000.
+    Returns 503 if the camera streamer is down.
     """
-    import requests
-    logger.info("/live-preview endpoint accessed, proxying to camera_streamer on port 9000")
+    logger.info("/live-preview: Attempting to connect to camera_streamer at 127.0.0.1:9000")
     try:
-        # Use LAN IP instead of localhost for robust access
-        stream = requests.get("http://192.168.86.36:9000", stream=True, timeout=5)
-        if stream.status_code != 200:
-            logger.error(f"camera_streamer returned status {stream.status_code}")
-            return PlainTextResponse("Camera streamer unavailable", status_code=503)
-        return StreamingResponse(stream.raw, media_type='multipart/x-mixed-replace; boundary=frame')
-    except requests.RequestException as e:
-        logger.error(f"Error connecting to camera_streamer: {e}")
-        return PlainTextResponse("Camera streamer unavailable", status_code=503)
+        import httpx
+        async with httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0)) as client:
+            response = await client.get("http://127.0.0.1:9000", stream=True)
+            if response.status_code != 200:
+                logger.error(f"camera_streamer returned HTTP {response.status_code}")
+                return PlainTextResponse("Camera streamer unavailable", status_code=503)
+            return StreamingResponse(
+                response.aiter_raw(),
+                media_type="multipart/x-mixed-replace; boundary=frame"
+            )
+    except Exception as e:
+        logger.error(f"camera_streamer connection failed: {e}")
+        return PlainTextResponse("Camera streamer connection error", status_code=503)
 
 status_path = Path("/opt/ezrec-backend/status.json")
 
