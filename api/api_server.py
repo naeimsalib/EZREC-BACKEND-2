@@ -811,13 +811,23 @@ async def live_preview():
     logger.info("/live-preview: Attempting to connect to camera_streamer at 127.0.0.1:9000")
     try:
         import httpx
-        async with httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0)) as client:
+        # Use a longer timeout for streaming and disable limits
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(30.0, connect=5.0, read=30.0),
+            limits=httpx.Limits(max_keepalive_connections=1, max_connections=1)
+        ) as client:
             response = await client.get("http://127.0.0.1:9000")
             if response.status_code != 200:
                 logger.error(f"camera_streamer returned HTTP {response.status_code}")
                 return PlainTextResponse("Camera streamer unavailable", status_code=503)
+            
+            # Stream the response properly
+            async def stream_generator():
+                async for chunk in response.aiter_bytes():
+                    yield chunk
+            
             return StreamingResponse(
-                response.aiter_raw(),
+                stream_generator(),
                 media_type="multipart/x-mixed-replace; boundary=frame"
             )
     except Exception as e:
