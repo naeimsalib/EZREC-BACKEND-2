@@ -811,9 +811,9 @@ async def live_preview():
     logger.info("/live-preview: Attempting to connect to camera_streamer at 127.0.0.1:9000")
     try:
         import aiohttp
-        # Use aiohttp with proper timeout and connection settings
-        timeout = aiohttp.ClientTimeout(total=30, connect=5)
-        connector = aiohttp.TCPConnector(limit=1, limit_per_host=1)
+        # Use aiohttp with proper streaming settings
+        timeout = aiohttp.ClientTimeout(total=30, connect=5, sock_read=30)
+        connector = aiohttp.TCPConnector(limit=1, limit_per_host=1, keepalive_timeout=30)
         
         async with aiohttp.ClientSession(
             timeout=timeout,
@@ -824,24 +824,30 @@ async def live_preview():
                     logger.error(f"camera_streamer returned HTTP {response.status}")
                     return PlainTextResponse("Camera streamer unavailable", status_code=503)
                 
-                # Stream the response with error handling
+                # Stream the response with proper error handling
                 async def stream_generator():
                     try:
-                        async for chunk in response.content.iter_chunked(8192):
-                            if chunk:  # Only yield non-empty chunks
+                        # Read the response in chunks and yield immediately
+                        async for chunk in response.content.iter_any():
+                            if chunk:
                                 yield chunk
+                    except aiohttp.ClientError as e:
+                        logger.error(f"Streaming client error: {e}")
+                        yield b"Camera stream temporarily unavailable"
                     except Exception as e:
                         logger.error(f"Streaming error: {e}")
-                        # Return a simple error message as fallback
                         yield b"Camera stream temporarily unavailable"
                 
                 return StreamingResponse(
                     stream_generator(),
                     media_type="multipart/x-mixed-replace; boundary=frame"
                 )
-    except Exception as e:
-        logger.error(f"camera_streamer connection failed: {e}")
+    except aiohttp.ClientError as e:
+        logger.error(f"camera_streamer connection error: {e}")
         return PlainTextResponse("Camera streamer connection error", status_code=503)
+    except Exception as e:
+        logger.error(f"camera_streamer unexpected error: {e}")
+        return PlainTextResponse("Camera streamer error", status_code=503)
 
 status_path = Path("/opt/ezrec-backend/status.json")
 
