@@ -811,17 +811,29 @@ async def live_preview():
     logger.info("/live-preview: Attempting to connect to camera_streamer at 127.0.0.1:9000")
     try:
         import aiohttp
-        # Use aiohttp for better streaming support
-        async with aiohttp.ClientSession() as session:
+        # Use aiohttp with proper timeout and connection settings
+        timeout = aiohttp.ClientTimeout(total=30, connect=5)
+        connector = aiohttp.TCPConnector(limit=1, limit_per_host=1)
+        
+        async with aiohttp.ClientSession(
+            timeout=timeout,
+            connector=connector
+        ) as session:
             async with session.get("http://127.0.0.1:9000") as response:
                 if response.status != 200:
                     logger.error(f"camera_streamer returned HTTP {response.status}")
                     return PlainTextResponse("Camera streamer unavailable", status_code=503)
                 
-                # Stream the response properly
+                # Stream the response with error handling
                 async def stream_generator():
-                    async for chunk in response.content.iter_chunked(8192):
-                        yield chunk
+                    try:
+                        async for chunk in response.content.iter_chunked(8192):
+                            if chunk:  # Only yield non-empty chunks
+                                yield chunk
+                    except Exception as e:
+                        logger.error(f"Streaming error: {e}")
+                        # Return a simple error message as fallback
+                        yield b"Camera stream temporarily unavailable"
                 
                 return StreamingResponse(
                     stream_generator(),
