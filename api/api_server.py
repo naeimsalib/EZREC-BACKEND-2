@@ -812,7 +812,7 @@ async def live_preview():
     try:
         import httpx
         async with httpx.AsyncClient(timeout=httpx.Timeout(5.0, connect=2.0)) as client:
-            response = await client.get("http://127.0.0.1:9000", stream=True)
+            response = await client.get("http://127.0.0.1:9000")
             if response.status_code != 200:
                 logger.error(f"camera_streamer returned HTTP {response.status_code}")
                 return PlainTextResponse("Camera streamer unavailable", status_code=503)
