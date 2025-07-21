@@ -37,19 +37,17 @@ logger = logging.getLogger("camera_streamer")
 class CameraStreamer:
     def __init__(self):
         self.picam2 = Picamera2()
-        # Configure for both preview (main) and recording (lores)
+        # Use RGB888 for preview (more stable) and YUV420 only for recording
         self.config = self.picam2.create_video_configuration(
-            main={"size": (width, height), "format": "YUV420"},
+            main={"size": (width, height), "format": "RGB888"},
             lores={"size": (width, height), "format": "YUV420"},
             controls={
                 "FrameRate": RECORDING_FPS,
-                "FrameRateRange": (1, 60),
-                "ExposureTime": 16666,  # 1/60 second
-                "AnalogueGain": 1.0,
-                "Brightness": 0.0,
-                "Contrast": 1.0
+                "FrameDurationLimits": (33333, 1000000),  # 1-30fps
+                "ExposureTime": 33333,  # 1/30 second
+                "AnalogueGain": 1.0
             },
-            buffer_count=4
+            buffer_count=2  # Reduce buffer count for more stability
         )
         self.picam2.configure(self.config)
         self.frame_queue = Queue(maxsize=2)  # Thread-safe buffer for latest frame
@@ -121,28 +119,41 @@ class CameraStreamer:
                     filename = data.split(" ")[1].strip()
                     with self.lock:
                         if not self.recording:
-                            encoder = H264Encoder(
-                                bitrate=10000000,  # 10Mbps
-                                repeat=False,
-                                iperiod=30
-                            )
-                            output = encoder.output
-                            self.picam2.start_recording(encoder, filename)
-                            self.recording = True
-                            self.recording_filename = filename
-                            logger.info(f"Started recording: {filename}")
-                    conn.sendall(b'OK\n')
+                            try:
+                                encoder = H264Encoder(
+                                    bitrate=10000000,  # 10Mbps
+                                    repeat=False,
+                                    iperiod=30
+                                )
+                                self.picam2.start_recording(encoder, filename)
+                                self.recording = True
+                                self.recording_filename = filename
+                                logger.info(f"✅ Started recording to {filename}")
+                                conn.sendall(b'OK\n')
+                            except Exception as e:
+                                logger.error(f"❌ Failed to start recording: {e}")
+                                conn.sendall(b'ERROR\n')
+                        else:
+                            logger.warning("⚠️ Recording already in progress")
+                            conn.sendall(b'BUSY\n')
                 elif data.startswith("STOP"):
                     with self.lock:
                         if self.recording:
                             try:
                                 self.picam2.stop_recording()
-                                logger.info(f"Stopped recording: {self.recording_filename}")
+                                logger.info(f"⏹️ Stopped recording: {self.recording_filename}")
+                                self.recording = False
+                                self.recording_filename = None
+                                conn.sendall(b'OK\n')
                             except Exception as e:
-                                logger.error(f"Error stopping recording: {e}")
-                            self.recording = False
-                            self.recording_filename = None
-                    conn.sendall(b'OK\n')
+                                logger.error(f"❌ Error stopping recording: {e}")
+                                # Force reset recording state even if stop fails
+                                self.recording = False
+                                self.recording_filename = None
+                                conn.sendall(b'ERROR\n')
+                        else:
+                            logger.warning("⚠️ No recording in progress")
+                            conn.sendall(b'NOTRECORDING\n')
                 else:
                     conn.sendall(b'ERR\n')
                 conn.close()
