@@ -42,7 +42,6 @@ class CameraStreamer:
             main={"size": (width, height), "format": "RGB888"},
             lores={"size": (width, height), "format": "YUV420"},
             controls={
-                "FrameRate": RECORDING_FPS,
                 "FrameDurationLimits": (33333, 1000000),  # 1-30fps
                 "ExposureTime": 33333,  # 1/30 second
                 "AnalogueGain": 1.0
