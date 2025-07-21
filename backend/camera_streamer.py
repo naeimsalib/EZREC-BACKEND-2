@@ -37,9 +37,19 @@ logger = logging.getLogger("camera_streamer")
 class CameraStreamer:
     def __init__(self):
         self.picam2 = Picamera2()
+        # Configure for both preview (main) and recording (lores)
         self.config = self.picam2.create_video_configuration(
-            main={"size": (width, height), "format": "RGB888"},
-            controls={"FrameRate": RECORDING_FPS}
+            main={"size": (width, height), "format": "YUV420"},
+            lores={"size": (width, height), "format": "YUV420"},
+            controls={
+                "FrameRate": RECORDING_FPS,
+                "FrameRateRange": (1, 60),
+                "ExposureTime": 16666,  # 1/60 second
+                "AnalogueGain": 1.0,
+                "Brightness": 0.0,
+                "Contrast": 1.0
+            },
+            buffer_count=4
         )
         self.picam2.configure(self.config)
         self.frame_queue = Queue(maxsize=2)  # Thread-safe buffer for latest frame
@@ -111,7 +121,12 @@ class CameraStreamer:
                     filename = data.split(" ")[1].strip()
                     with self.lock:
                         if not self.recording:
-                            encoder = H264Encoder()
+                            encoder = H264Encoder(
+                                bitrate=10000000,  # 10Mbps
+                                repeat=False,
+                                iperiod=30
+                            )
+                            output = encoder.output
                             self.picam2.start_recording(encoder, filename)
                             self.recording = True
                             self.recording_filename = filename

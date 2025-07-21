@@ -120,6 +120,9 @@ STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right
 
 LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
 LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
+# Add these lines for main logo size
+MAIN_LOGO_WIDTH = int(os.getenv('MAIN_LOGO_WIDTH', str(LOGO_WIDTH)))
+MAIN_LOGO_HEIGHT = int(os.getenv('MAIN_LOGO_HEIGHT', str(LOGO_HEIGHT)))
 
 def get_duration(file: Path) -> float:
     try:
@@ -407,7 +410,9 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 'name': 'staticlogo',
                 'position': STATIC_LOGO_POSITION,
                 'type': 'static_main',
-                'no_scale': True  # <-- Mark this logo as not to be scaled
+                'no_scale': False,  # <-- Always scale static main logo now
+                'width': MAIN_LOGO_WIDTH,
+                'height': MAIN_LOGO_HEIGHT
             })
             overlay_positions.append(STATIC_LOGO_POSITION)
 
@@ -444,11 +449,10 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         for i, spec in enumerate(overlay_specs):
             scaled = f"{spec['name']}_scaled"
             out = f"{spec['name']}_out"
-            # Only scale if not static main logo
-            if spec.get('no_scale'):
-                filter_chain += f"[{i+1}:v]null[{scaled}]; "
-            else:
-                filter_chain += f"[{i+1}:v]scale={LOGO_WIDTH}:{LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={LOGO_WIDTH}:{LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
+            # Use per-logo width/height if present
+            w = spec.get('width', LOGO_WIDTH)
+            h = spec.get('height', LOGO_HEIGHT)
+            filter_chain += f"[{i+1}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
             pos = spec['position']
             if pos == 'bottom_right':
                 x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
