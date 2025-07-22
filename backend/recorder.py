@@ -159,40 +159,64 @@ class RecordingSession:
                 self.lockfile.unlink()
             return False
 
-    def stop(self):
-        if self.active:
-            try:
-                logger.info(f"Sending STOP_RECORD to camera_streamer for {self.final_filepath}")
-                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                    s.connect(("localhost", 9999))
-                    s.sendall(b"STOP\n")
-                    s.recv(1024)
-                logger.info(f"⏹️ Stopped recording: {self.final_filepath}")
-                update_booking_status(self.booking["id"], "RecordingFinished")
-                self.completed_marker.touch()
-                # --- Create meta file for video_worker ---
-                meta_path = self.final_filepath.with_suffix('.json')
-                meta = {
-                    "user_id": USER_ID,
-                    "camera_id": CAMERA_ID,
-                    "booking_id": self.booking["id"],
-                    "start_time": self.booking["start_time"],
-                    "end_time": self.booking["end_time"]
-                }
-                with open(meta_path, "w") as f:
-                    json.dump(meta, f, indent=2)
-                supabase.table('cameras').update({
-                    'is_recording': False,
-                    'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                    'status': 'idle'
-                }).eq('id', CAMERA_ID).execute()
-                set_is_recording(False)
-            except Exception as e:
-                logger.error(f"Error stopping recording: {e}")
-            finally:
-                if self.lockfile.exists():
-                    self.lockfile.unlink()
-                self.active = False
+def stop(self):
+    if self.active:
+        try:
+            logger.info(f"Sending STOP_RECORD to camera_streamer for {self.final_filepath}")
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.connect(("localhost", 9999))
+                s.sendall(b"STOP\n")
+                s.recv(1024)
+
+            # Wait a few seconds to allow camera_streamer to flush the video file
+            time.sleep(2)
+
+            # Wait up to 10 seconds for file to become available and grow in size
+            for i in range(10):
+                if self.final_filepath.exists():
+                    file_size = self.final_filepath.stat().st_size
+                    logger.info(f"⏳ Waiting for recording to finalize... attempt {i+1}, size={file_size} bytes")
+                    if file_size > 1024 * 1024:  # 1MB minimum
+                        break
+                time.sleep(1)
+            else:
+                logger.error(f"❌ Timed out or file too small after STOP: {self.final_filepath}")
+                return
+
+            logger.info(f"⏹️ Stopped recording: {self.final_filepath}")
+            logger.info(f"📁 Final video size: {self.final_filepath.stat().st_size} bytes")
+
+            # Only mark as completed if file is valid
+            self.completed_marker.touch()
+
+            # --- Create meta file for video_worker ---
+            meta_path = self.final_filepath.with_suffix('.json')
+            meta = {
+                "user_id": USER_ID,
+                "camera_id": CAMERA_ID,
+                "booking_id": self.booking["id"],
+                "start_time": self.booking["start_time"],
+                "end_time": self.booking["end_time"]
+            }
+            with open(meta_path, "w") as f:
+                json.dump(meta, f, indent=2)
+
+            # Update Supabase
+            update_booking_status(self.booking["id"], "RecordingFinished")
+            supabase.table('cameras').update({
+                'is_recording': False,
+                'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                'status': 'idle'
+            }).eq('id', CAMERA_ID).execute()
+            set_is_recording(False)
+
+        except Exception as e:
+            logger.error(f"Error stopping recording: {e}")
+
+        finally:
+            if self.lockfile.exists():
+                self.lockfile.unlink()
+            self.active = False
 
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
