@@ -1,5 +1,5 @@
 [Unit]
-Description=EZREC Recorder
+Description=EZREC Single Camera Recorder
 After=network.target
 
 [Service]
@@ -7,10 +7,9 @@ Type=simple
 User=michomanoly14892
 Group=video
 WorkingDirectory=/opt/ezrec-backend
-[Service]
 Environment="PYTHONPATH=/usr/lib/python3/dist-packages"
 ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" || true; done'
-ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/recorder.py
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
 
 Restart=on-failure
 RestartSec=5
