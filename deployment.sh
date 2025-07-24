@@ -646,6 +646,13 @@ fi
 sudo chown root:root "$API_DIR/local_data/bookings.json"
 sudo chmod 644 "$API_DIR/local_data/bookings.json"
 
+# 🔧 Ensure recordings directory exists with correct permissions for dual_recorder service
+echo "📁 Setting up recordings directory permissions..."
+sudo mkdir -p "$PROJECT_DIR/recordings"
+sudo chown -R michomanoly14892:video "$PROJECT_DIR/recordings"
+sudo chmod -R 775 "$PROJECT_DIR/recordings"
+echo "✅ Recordings directory permissions set for dual_recorder service"
+
 # Verify the file is writable
 if [ -w "$API_DIR/local_data/bookings.json" ]; then
   echo "✅ bookings.json is writable by root"
