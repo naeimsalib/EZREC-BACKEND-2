@@ -155,7 +155,87 @@ def root():
 
 @app.get("/status")
 def status():
-    return {"status": "online", "time": datetime.utcnow().isoformat()}
+    """Enhanced system status endpoint with detailed health information"""
+    try:
+        import psutil
+        import shutil
+        
+        # Get system metrics
+        cpu_percent = psutil.cpu_percent(interval=1)
+        memory = psutil.virtual_memory()
+        disk = shutil.disk_usage("/opt/ezrec-backend")
+        disk_used_percent = (disk.used / disk.total) * 100
+        
+        # Get camera status
+        camera_status = "unknown"
+        try:
+            from pathlib import Path
+            status_file = Path("/opt/ezrec-backend/status.json")
+            if status_file.exists():
+                with open(status_file) as f:
+                    status_data = json.load(f)
+                    camera_status = "recording" if status_data.get("is_recording", False) else "idle"
+        except Exception:
+            camera_status = "error"
+        
+        # Get recent recordings
+        recent_recordings = []
+        try:
+            recordings_dir = Path("/opt/ezrec-backend/recordings")
+            if recordings_dir.exists():
+                for date_dir in sorted(recordings_dir.glob("*"), reverse=True)[:3]:
+                    if date_dir.is_dir():
+                        recordings = list(date_dir.glob("*.mp4"))
+                        if recordings:
+                            recent_recordings.append({
+                                "date": date_dir.name,
+                                "count": len(recordings),
+                                "latest": recordings[-1].name if recordings else None
+                            })
+        except Exception:
+            pass
+        
+        # Get last upload time
+        last_upload = "unknown"
+        try:
+            processed_dir = Path("/opt/ezrec-backend/processed")
+            if processed_dir.exists():
+                processed_files = list(processed_dir.rglob("*.mp4"))
+                if processed_files:
+                    latest_file = max(processed_files, key=lambda x: x.stat().st_mtime)
+                    last_upload = datetime.fromtimestamp(latest_file.stat().st_mtime).isoformat()
+        except Exception:
+            pass
+        
+        return {
+            "status": "ok",
+            "timestamp": datetime.now().isoformat(),
+            "system": {
+                "cpu_percent": cpu_percent,
+                "memory_percent": memory.percent,
+                "disk_used_percent": round(disk_used_percent, 1),
+                "disk_free_gb": round(disk.free / (1024**3), 1)
+            },
+            "camera": {
+                "status": camera_status,
+                "mode": "dual" if os.getenv("DUAL_CAMERA_MODE", "false").lower() == "true" else "single"
+            },
+            "recordings": {
+                "recent": recent_recordings,
+                "last_upload": last_upload
+            },
+            "services": {
+                "recorder": "running",  # TODO: Check actual service status
+                "video_worker": "running",
+                "api": "running"
+            }
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "timestamp": datetime.now().isoformat(),
+            "error": str(e)
+        }
 
 @app.get("/bookings")
 def get_bookings():

@@ -312,34 +312,43 @@ def process_dual_camera_video(raw_file: Path, user_id: str, date_dir: Path) -> P
     # Extract base filename (e.g., "143022-143322" from "143022-143322_cam1.mp4")
     base_name = raw_file.stem.replace("_cam1", "").replace("_cam2", "")
     
-    # Find both camera files
+    # Find camera files (support both dual and single camera scenarios)
     cam1_file = date_dir / f"{base_name}_cam1.mp4"
     cam2_file = date_dir / f"{base_name}_cam2.mp4"
     merged_file = date_dir / f"{base_name}_merged.mp4"
+    
+    # Check if we have both camera files
+    has_cam1 = cam1_file.exists() and is_file_readable(cam1_file)
+    has_cam2 = cam2_file.exists() and is_file_readable(cam2_file)
+    
+    log.info(f"🔍 Camera file status:")
+    log.info(f"   Camera 1: {cam1_file} - {'✅ Available' if has_cam1 else '❌ Missing/Invalid'}")
+    log.info(f"   Camera 2: {cam2_file} - {'✅ Available' if has_cam2 else '❌ Missing/Invalid'}")
+    
+    # Handle single camera scenarios
+    if has_cam1 and not has_cam2:
+        log.info(f"🔄 Only Camera 1 available. Processing as single camera: {cam1_file}")
+        return process_single_video(cam1_file, user_id, date_dir)
+    
+    if has_cam2 and not has_cam1:
+        log.info(f"🔄 Only Camera 2 available. Processing as single camera: {cam2_file}")
+        return process_single_video(cam2_file, user_id, date_dir)
+    
+    if not has_cam1 and not has_cam2:
+        log.error(f"❌ No valid camera files found for {base_name}")
+        # Create error marker to prevent infinite retries
+        error_file = date_dir / f"{base_name}.error"
+        error_file.touch()
+        return None
     
     log.info(f"🔍 Looking for dual camera files:")
     log.info(f"   Camera 1: {cam1_file}")
     log.info(f"   Camera 2: {cam2_file}")
     log.info(f"   Merged output: {merged_file}")
     
-    # Check if both camera files exist
-    if not cam1_file.exists():
-        log.error(f"❌ Camera 1 file not found: {cam1_file}")
-        return None
-    
-    if not cam2_file.exists():
-        log.error(f"❌ Camera 2 file not found: {cam2_file}")
-        # If only one camera file exists, process it as single camera
-        log.info(f"🔄 Falling back to single camera processing for: {cam1_file}")
-        return process_single_video(cam1_file, user_id, date_dir)
-    
-    # Validate both camera files
-    if not is_file_readable(cam1_file):
-        log.error(f"❌ Camera 1 file is not readable: {cam1_file}")
-        return None
-    
-    if not is_file_readable(cam2_file):
-        log.error(f"❌ Camera 2 file is not readable: {cam2_file}")
+    # At this point, we should have both camera files available
+    if not has_cam1 or not has_cam2:
+        log.error(f"❌ Camera files validation failed after initial check")
         return None
     
     # Check if merged file already exists
@@ -838,19 +847,110 @@ def retry_pending_uploads():
     if not new_queue:
         PENDING_UPLOADS_FILE.unlink()
 
+def check_disk_space():
+    """Check available disk space and return percentage used"""
+    try:
+        import shutil
+        total, used, free = shutil.disk_usage("/opt/ezrec-backend")
+        used_percent = (used / total) * 100
+        return used_percent, free
+    except Exception as e:
+        log.error(f"Error checking disk space: {e}")
+        return 0, 0
+
+def cleanup_old_files():
+    """Clean up old recordings and processed files to free disk space"""
+    try:
+        # Check disk space first
+        used_percent, free_space = check_disk_space()
+        log.info(f"📊 Disk usage: {used_percent:.1f}% used, {free_space / (1024**3):.1f} GB free")
+        
+        # Only cleanup if disk usage is above 80%
+        if used_percent < 80:
+            return
+        
+        log.warning(f"⚠️ Disk usage high ({used_percent:.1f}%). Starting cleanup...")
+        
+        # Clean up old recordings (keep last 7 days)
+        recordings_dir = Path("/opt/ezrec-backend/recordings")
+        if recordings_dir.exists():
+            import datetime
+            cutoff_date = datetime.datetime.now() - datetime.timedelta(days=7)
+            
+            for date_dir in recordings_dir.glob("*"):
+                if date_dir.is_dir():
+                    try:
+                        dir_date = datetime.datetime.strptime(date_dir.name, "%Y-%m-%d")
+                        if dir_date < cutoff_date:
+                            log.info(f"🗑️ Removing old recordings directory: {date_dir}")
+                            shutil.rmtree(date_dir)
+                    except ValueError:
+                        # Skip non-date directories
+                        continue
+        
+        # Clean up old processed videos (keep last 3 days)
+        processed_dir = Path("/opt/ezrec-backend/processed")
+        if processed_dir.exists():
+            cutoff_date = datetime.datetime.now() - datetime.timedelta(days=3)
+            
+            for date_dir in processed_dir.glob("*"):
+                if date_dir.is_dir():
+                    try:
+                        dir_date = datetime.datetime.strptime(date_dir.name, "%Y-%m-%d")
+                        if dir_date < cutoff_date:
+                            log.info(f"🗑️ Removing old processed directory: {date_dir}")
+                            shutil.rmtree(date_dir)
+                    except ValueError:
+                        # Skip non-date directories
+                        continue
+        
+        # Clean up old log files (keep last 30 days)
+        logs_dir = Path("/opt/ezrec-backend/logs")
+        if logs_dir.exists():
+            cutoff_date = datetime.datetime.now() - datetime.timedelta(days=30)
+            
+            for log_file in logs_dir.glob("*.log"):
+                try:
+                    file_time = datetime.datetime.fromtimestamp(log_file.stat().st_mtime)
+                    if file_time < cutoff_date:
+                        log.info(f"🗑️ Removing old log file: {log_file}")
+                        log_file.unlink()
+                except Exception:
+                    continue
+        
+        log.info("✅ Cleanup completed")
+        
+    except Exception as e:
+        log.error(f"❌ Error during cleanup: {e}")
+
+def is_valid_video(file: Path):
+    """Validate video file using FFmpeg"""
+    try:
+        result = subprocess.run([
+            "ffprobe", "-v", "error", "-select_streams", "v:0",
+            "-show_entries", "stream=codec_name", "-of", "default=noprint_wrappers=1:nokey=1",
+            str(file)
+        ], capture_output=True, text=True, timeout=30)
+        return result.returncode == 0 and result.stdout.strip()
+    except Exception as e:
+        log.error(f"Video validation failed for {file}: {e}")
+        return False
+
 def main():
     log.info("Video worker started and entering main loop")
     while True:
         retry_pending_uploads()
+        cleanup_old_files() # Run cleanup at the start of each interval
         for date_dir in RECORDINGS_DIR.glob("*/"):
             log.info(f"Scanning directory: {date_dir}")
             for raw_file in date_dir.glob("*.mp4"):
                 done = raw_file.with_suffix(".done")
                 completed = raw_file.with_suffix(".completed")
                 lock = raw_file.with_suffix(".lock")
+                error = raw_file.with_suffix(".error")
                 meta_path = raw_file.with_suffix(".json")
-                log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, meta={meta_path.exists()}")
-                if not done.exists() or completed.exists() or lock.exists():
+                log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, error={error.exists()}, meta={meta_path.exists()}")
+                if not done.exists() or completed.exists() or lock.exists() or error.exists():
                     continue
                 
                 # Check if this file has been processed too many times (prevent infinite loops)
