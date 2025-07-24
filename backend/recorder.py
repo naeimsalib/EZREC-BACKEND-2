@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """
-Main Recording Service
+Main Recording Service - Dual Camera Support
 - Reads bookings from bookings_cache.json
 - Starts/stops recordings at scheduled times (local timezone)
+- Records from both cameras in parallel using threading
 - Saves raw recordings to /opt/ezrec-backend/recordings/
 """
 
@@ -14,6 +15,7 @@ import logging
 import signal
 import pytz
 import psutil
+import threading
 from pathlib import Path
 from dateutil import parser
 from datetime import datetime
@@ -32,7 +34,8 @@ try:
     from picamera2.encoders import H264Encoder
     from picamera2.outputs import FileOutput
 
-    def safe_init_camera(retries=3, delay=3, camera_serial=None):
+    def safe_init_camera(camera_serial=None, retries=3, delay=3):
+        """Initialize a camera with the specified serial number"""
         for i in range(retries):
             try:
                 camera = Picamera2()
@@ -51,37 +54,32 @@ try:
                 return camera
             except RuntimeError as e:
                 if "Camera __init__ sequence did not complete" in str(e):
-                    print(f"⚠️ Camera busy (try {i+1}/{retries})... retrying in {delay}s")
+                    logger.warning(f"⚠️ Camera busy (try {i+1}/{retries})... retrying in {delay}s")
                     time.sleep(delay)
                 else:
                     raise
         raise RuntimeError("❌ Camera failed to initialize after multiple attempts")
 
-    def get_camera_serial():
-        """Get the camera serial number from environment or detect available cameras"""
-        # Check if specific camera serial is configured
-        camera_serial = os.getenv('CAMERA_SERIAL')
-        if camera_serial:
-            return camera_serial
+    def get_camera_serials():
+        """Get camera serials from environment variables"""
+        cam1_serial = os.getenv('CAMERA_1_SERIAL')
+        cam2_serial = os.getenv('CAMERA_2_SERIAL')
         
-        # If no specific serial, try to detect cameras
-        try:
-            import subprocess
-            result = subprocess.run(['libcamera-hello', '--list-cameras'], 
-                                  capture_output=True, text=True, timeout=10)
-            if result.returncode == 0:
-                lines = result.stdout.split('\n')
-                for line in lines:
-                    if 'serial' in line.lower():
-                        # Extract serial number from output
-                        import re
-                        match = re.search(r'serial[:\s]+([a-f0-9]+)', line, re.IGNORECASE)
-                        if match:
-                            return match.group(1)
-        except Exception as e:
-            logger.warning(f"Could not detect camera serial: {e}")
+        if not cam1_serial and not cam2_serial:
+            logger.warning("⚠️ No camera serials configured. Using single camera mode.")
+            return None, None
         
-        return None
+        if not cam1_serial:
+            logger.warning("⚠️ CAMERA_1_SERIAL not configured. Using single camera mode.")
+            return None, cam2_serial
+        
+        if not cam2_serial:
+            logger.warning("⚠️ CAMERA_2_SERIAL not configured. Using single camera mode.")
+            return cam1_serial, None
+        
+        logger.info(f"🔍 Dual camera mode: CAMERA_1_SERIAL={cam1_serial}, CAMERA_2_SERIAL={cam2_serial}")
+        return cam1_serial, cam2_serial
+
 except ImportError:
     Picamera2 = None
 
@@ -202,34 +200,26 @@ def repair_mp4_file(file_path: Path) -> bool:
             backup_path.rename(file_path)
         return False
 
-class RecordingSession:
-    def __init__(self, booking):
-        self.booking = booking
-        self.date_folder = RAW_DIR / datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
-        self.date_folder.mkdir(parents=True, exist_ok=True)
-        start_dt = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
-        end_dt = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
-        self.filename_base = f"{start_dt.strftime('%H%M%S')}-{end_dt.strftime('%H%M%S')}"
-        self.final_filepath = self.date_folder / (self.filename_base + ".mp4")
-        self.lockfile = self.final_filepath.with_suffix(".lock")
-        self.completed_marker = self.final_filepath.with_suffix(".done")
-        self.active = False
-        self.recording_start_time = None
+class CameraRecordingThread:
+    """Thread for recording from a single camera"""
+    def __init__(self, camera_serial, output_path, duration, camera_name="unknown"):
+        self.camera_serial = camera_serial
+        self.output_path = output_path
+        self.duration = duration
+        self.camera_name = camera_name
         self.camera = None
         self.encoder = None
+        self.success = False
+        self.error = None
+        self.thread = None
 
-    def start(self):
+    def record(self):
+        """Record from this camera for the specified duration"""
         try:
-            self.lockfile.touch()
-            logger.info(f"Starting direct recording to {self.final_filepath}")
+            logger.info(f"🎥 Starting recording from {self.camera_name} (serial: {self.camera_serial})")
             
-            # Get camera serial for this specific camera
-            camera_serial = get_camera_serial()
-            if camera_serial:
-                logger.info(f"🔍 Using camera with serial: {camera_serial}")
-            
-            # Initialize camera directly with serial
-            self.camera = safe_init_camera(camera_serial=camera_serial)
+            # Initialize camera
+            self.camera = safe_init_camera(camera_serial=self.camera_serial)
             
             # Create camera configuration optimized for reliable recording
             config = self.camera.create_video_configuration(
@@ -256,14 +246,117 @@ class RecordingSession:
             )
             
             # Start recording
-            self.camera.start_recording(self.encoder, str(self.final_filepath))
+            self.camera.start_recording(self.encoder, str(self.output_path))
             
-            # Wait longer to ensure recording has started properly
-            time.sleep(1.0)
+            # Wait for recording duration
+            time.sleep(self.duration)
+            
+            # Stop recording
+            self.camera.stop_recording()
+            time.sleep(2.0)  # Give time for file finalization
+            
+            # Stop and close camera
+            self.camera.stop()
+            self.camera.close()
+            
+            self.success = True
+            logger.info(f"✅ Completed recording from {self.camera_name}: {self.output_path}")
+            
+        except Exception as e:
+            self.error = str(e)
+            logger.error(f"❌ Recording failed for {self.camera_name}: {e}")
+            if self.camera:
+                try:
+                    self.camera.close()
+                except:
+                    pass
+
+    def start(self):
+        """Start the recording thread"""
+        self.thread = threading.Thread(target=self.record)
+        self.thread.start()
+
+    def join(self):
+        """Wait for the recording thread to complete"""
+        if self.thread:
+            self.thread.join()
+
+class DualRecordingSession:
+    def __init__(self, booking):
+        self.booking = booking
+        self.date_folder = RAW_DIR / datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
+        self.date_folder.mkdir(parents=True, exist_ok=True)
+        start_dt = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
+        end_dt = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
+        self.filename_base = f"{start_dt.strftime('%H%M%S')}-{end_dt.strftime('%H%M%S')}"
+        
+        # File paths for dual camera setup
+        self.cam1_filepath = self.date_folder / (self.filename_base + "_cam1.mp4")
+        self.cam2_filepath = self.date_folder / (self.filename_base + "_cam2.mp4")
+        self.merged_filepath = self.date_folder / (self.filename_base + "_merged.mp4")
+        
+        # Use merged filepath as the main output for compatibility
+        self.final_filepath = self.merged_filepath
+        
+        self.lockfile = self.final_filepath.with_suffix(".lock")
+        self.completed_marker = self.final_filepath.with_suffix(".done")
+        self.active = False
+        self.recording_start_time = None
+        self.camera_threads = []
+        self.camera_errors = {}
+
+    def start(self):
+        try:
+            self.lockfile.touch()
+            logger.info(f"🎬 Starting dual camera recording session: {self.filename_base}")
+            
+            # Get camera serials
+            cam1_serial, cam2_serial = get_camera_serials()
+            
+            if not cam1_serial and not cam2_serial:
+                logger.error("❌ No cameras configured. Cannot start recording.")
+                return False
+            
+            # Calculate recording duration
+            start_dt = parser.isoparse(self.booking["start_time"]).astimezone(LOCAL_TZ)
+            end_dt = parser.isoparse(self.booking["end_time"]).astimezone(LOCAL_TZ)
+            duration = (end_dt - datetime.now(LOCAL_TZ)).total_seconds()
+            
+            if duration <= 0:
+                logger.warning("⚠️ Recording duration is 0 or negative. Using minimum duration.")
+                duration = 10  # Minimum 10 seconds
+            
+            # Create camera recording threads
+            self.camera_threads = []
+            
+            if cam1_serial:
+                cam1_thread = CameraRecordingThread(
+                    camera_serial=cam1_serial,
+                    output_path=self.cam1_filepath,
+                    duration=duration,
+                    camera_name="Camera 1"
+                )
+                self.camera_threads.append(cam1_thread)
+            
+            if cam2_serial:
+                cam2_thread = CameraRecordingThread(
+                    camera_serial=cam2_serial,
+                    output_path=self.cam2_filepath,
+                    duration=duration,
+                    camera_name="Camera 2"
+                )
+                self.camera_threads.append(cam2_thread)
+            
+            # Start all camera threads
+            logger.info(f"🎥 Starting {len(self.camera_threads)} camera recording threads...")
+            for thread in self.camera_threads:
+                thread.start()
             
             self.active = True
             self.recording_start_time = datetime.now(LOCAL_TZ)
-            logger.info(f"✅ Started recording: {self.final_filepath}")
+            logger.info(f"✅ Started dual camera recording: {len(self.camera_threads)} cameras active")
+            
+            # Update booking status
             update_booking_status(self.booking["id"], "Recording")
             supabase.table('cameras').update({
                 'is_recording': True,
@@ -271,91 +364,95 @@ class RecordingSession:
                 'status': 'online'
             }).eq('id', CAMERA_ID).execute()
             set_is_recording(True)
+            
             return True
+            
         except Exception as e:
-            logger.error(f"❌ Failed to start recording: {e}")
+            logger.error(f"❌ Failed to start dual camera recording: {e}")
             if self.lockfile.exists():
                 self.lockfile.unlink()
-            if self.camera:
-                try:
-                    self.camera.close()
-                except:
-                    pass
             return False
 
     def stop(self):
-        logger.info("🛑 Stopping recording session")
+        logger.info("🛑 Stopping dual camera recording session")
         try:
-            if self.camera and self.active:
-                # Stop recording first
-                logger.info("Stopping camera recording...")
-                self.camera.stop_recording()
-                
-                # Wait for recording to fully stop and file to be finalized
-                logger.info("Waiting for recording to finalize...")
-                time.sleep(2.0)  # Give more time for file finalization
-                
-                # Stop the camera
-                logger.info("Stopping camera...")
-                self.camera.stop()
-                
-                # Close camera properly
-                logger.info("Closing camera...")
-                self.camera.close()
+            if self.active:
+                # Wait for all camera threads to complete
+                logger.info("⏳ Waiting for camera recording threads to complete...")
+                for thread in self.camera_threads:
+                    thread.join()
                 
                 self.active = False
-                logger.info(f"⏹️ Stopped recording: {self.final_filepath}")
+                logger.info(f"⏹️ Stopped dual camera recording: {self.filename_base}")
 
-                # Check if file exists and is not corrupted
-                if self.final_filepath.exists():
-                    file_size = self.final_filepath.stat().st_size
-                    logger.info(f"Recorded file size: {file_size} bytes")
-                    
-                    # Always create .done file if file size is reasonable, regardless of MP4 validation
-                    if file_size > 100 * 1024:  # 100KB minimum
-                        # Try to validate the MP4 file first
-                        mp4_valid = False
-                        try:
-                            import subprocess
-                            result = subprocess.run(
-                                ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', str(self.final_filepath)],
-                                capture_output=True, text=True, timeout=10
-                            )
-                            if result.returncode == 0:
-                                mp4_valid = True
-                                logger.info("✅ MP4 file validation passed")
-                            else:
-                                logger.warning(f"⚠️ MP4 file validation failed: {result.stderr}")
-                        except Exception as e:
-                            logger.warning(f"⚠️ Could not validate MP4 file: {e}")
-                        
-                        # If MP4 is corrupted, try to repair it
-                        if not mp4_valid:
-                            logger.info("🔧 Attempting to repair corrupted MP4 file...")
-                            if repair_mp4_file(self.final_filepath):
-                                logger.info("✅ Successfully repaired MP4 file")
-                                mp4_valid = True
-                            else:
-                                logger.warning("⚠️ Could not repair MP4 file, but will still process it")
-                        
-                        # Always create .done file if file size is reasonable
-                        # Let the video worker handle corrupted files during processing
-                        self.completed_marker.touch()
-                        if mp4_valid:
-                            logger.info(f"✅ Marked video as ready for processing: {self.completed_marker}")
-                        else:
-                            logger.info(f"⚠️ Marked corrupted video for processing (video worker will handle): {self.completed_marker}")
+                # Check recording results
+                successful_recordings = []
+                for thread in self.camera_threads:
+                    if thread.success:
+                        successful_recordings.append(thread.output_path)
                     else:
-                        logger.warning(f"⚠️ Video file too small or incomplete: {file_size} bytes. Skipping .done creation.")
-                else:
-                    logger.warning("⚠️ Recording file not found after stop.")
+                        self.camera_errors[thread.camera_name] = thread.error
+                        logger.warning(f"⚠️ {thread.camera_name} recording failed: {thread.error}")
 
-                # Remove lock file to allow video worker to process
+                # Create .done file if at least one camera recorded successfully
+                if successful_recordings:
+                    # Check if files exist and are not corrupted
+                    valid_files = []
+                    for file_path in successful_recordings:
+                        if file_path.exists():
+                            file_size = file_path.stat().st_size
+                            logger.info(f"📹 {file_path.name} size: {file_size} bytes")
+                            
+                            if file_size > 100 * 1024:  # 100KB minimum
+                                # Try to validate the MP4 file
+                                mp4_valid = False
+                                try:
+                                    import subprocess
+                                    result = subprocess.run(
+                                        ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', str(file_path)],
+                                        capture_output=True, text=True, timeout=10
+                                    )
+                                    if result.returncode == 0:
+                                        mp4_valid = True
+                                        logger.info(f"✅ {file_path.name} validation passed")
+                                    else:
+                                        logger.warning(f"⚠️ {file_path.name} validation failed")
+                                except Exception as e:
+                                    logger.warning(f"⚠️ Could not validate {file_path.name}: {e}")
+                                
+                                # If MP4 is corrupted, try to repair it
+                                if not mp4_valid:
+                                    logger.info(f"🔧 Attempting to repair {file_path.name}...")
+                                    if repair_mp4_file(file_path):
+                                        logger.info(f"✅ Successfully repaired {file_path.name}")
+                                        mp4_valid = True
+                                    else:
+                                        logger.warning(f"⚠️ Could not repair {file_path.name}")
+                                
+                                if mp4_valid:
+                                    valid_files.append(file_path)
+                                else:
+                                    logger.warning(f"⚠️ {file_path.name} is corrupted and could not be repaired")
+                            else:
+                                logger.warning(f"⚠️ {file_path.name} too small: {file_size} bytes")
+                        else:
+                            logger.warning(f"⚠️ {file_path.name} not found after recording")
+                    
+                    # Create .done file if we have valid recordings
+                    if valid_files:
+                        self.completed_marker.touch()
+                        logger.info(f"✅ Marked {len(valid_files)} valid recordings for processing: {self.completed_marker}")
+                    else:
+                        logger.error("❌ No valid recordings created. Skipping .done creation.")
+                else:
+                    logger.error("❌ No cameras recorded successfully. Skipping .done creation.")
+
+                # Remove lock file
                 if self.lockfile.exists():
                     self.lockfile.unlink()
                     logger.info(f"🔓 Removed lock file: {self.lockfile}")
 
-                # Save metadata file
+                # Save metadata file with camera information
                 try:
                     metadata_path = self.final_filepath.with_suffix(".json")
                     metadata = {
@@ -367,7 +464,14 @@ class RecordingSession:
                         "recording_start": self.recording_start_time.isoformat() if self.recording_start_time else None,
                         "recording_end": datetime.now(LOCAL_TZ).isoformat(),
                         "file_path": str(self.final_filepath),
-                        "file_size": self.final_filepath.stat().st_size if self.final_filepath.exists() else 0
+                        "dual_camera": True,
+                        "cameras_configured": len(self.camera_threads),
+                        "cameras_successful": len([t for t in self.camera_threads if t.success]),
+                        "camera_errors": self.camera_errors,
+                        "cam1_file": str(self.cam1_filepath) if self.cam1_filepath.exists() else None,
+                        "cam2_file": str(self.cam2_filepath) if self.cam2_filepath.exists() else None,
+                        "cam1_size": self.cam1_filepath.stat().st_size if self.cam1_filepath.exists() else 0,
+                        "cam2_size": self.cam2_filepath.stat().st_size if self.cam2_filepath.exists() else 0
                     }
                     with open(metadata_path, "w") as f:
                         json.dump(metadata, f, indent=2)
@@ -394,13 +498,8 @@ class RecordingSession:
                     logger.error(f"❌ Failed to update camera status: {e}")
 
         except Exception as e:
-            logger.error(f"❌ Error stopping recording: {e}")
+            logger.error(f"❌ Error stopping dual camera recording: {e}")
             self.active = False
-            if self.camera:
-                try:
-                    self.camera.close()
-                except:
-                    pass
 
 def get_active_booking(bookings):
     now = datetime.now(LOCAL_TZ)
@@ -449,7 +548,7 @@ def main():
                     current_session = None
                     
             if not current_session and active_booking:
-                current_session = RecordingSession(active_booking)
+                current_session = DualRecordingSession(active_booking)
                 if not current_session.start():
                     current_session = None
                     

@@ -290,6 +290,123 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     output_file = PROCESSED_DIR / date_dir.name / raw_file.name
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
+    # Check if this is a dual camera recording that needs merging
+    if "_merged.mp4" in raw_file.name:
+        # This is already a merged file, process normally
+        log.info(f"📹 Processing merged dual camera video: {raw_file.name}")
+        return process_single_video(raw_file, user_id, date_dir)
+    
+    # Check if this is a dual camera recording that needs merging
+    if "_cam1.mp4" in raw_file.name or "_cam2.mp4" in raw_file.name:
+        log.info(f"🎬 Detected dual camera recording: {raw_file.name}")
+        return process_dual_camera_video(raw_file, user_id, date_dir)
+    
+    # Single camera recording - process normally
+    log.info(f"📹 Processing single camera video: {raw_file.name}")
+    return process_single_video(raw_file, user_id, date_dir)
+
+def process_dual_camera_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
+    """
+    Process dual camera recordings by merging cam1 and cam2 videos side-by-side
+    """
+    # Extract base filename (e.g., "143022-143322" from "143022-143322_cam1.mp4")
+    base_name = raw_file.stem.replace("_cam1", "").replace("_cam2", "")
+    
+    # Find both camera files
+    cam1_file = date_dir / f"{base_name}_cam1.mp4"
+    cam2_file = date_dir / f"{base_name}_cam2.mp4"
+    merged_file = date_dir / f"{base_name}_merged.mp4"
+    
+    log.info(f"🔍 Looking for dual camera files:")
+    log.info(f"   Camera 1: {cam1_file}")
+    log.info(f"   Camera 2: {cam2_file}")
+    log.info(f"   Merged output: {merged_file}")
+    
+    # Check if both camera files exist
+    if not cam1_file.exists():
+        log.error(f"❌ Camera 1 file not found: {cam1_file}")
+        return None
+    
+    if not cam2_file.exists():
+        log.error(f"❌ Camera 2 file not found: {cam2_file}")
+        # If only one camera file exists, process it as single camera
+        log.info(f"🔄 Falling back to single camera processing for: {cam1_file}")
+        return process_single_video(cam1_file, user_id, date_dir)
+    
+    # Validate both camera files
+    if not is_file_readable(cam1_file):
+        log.error(f"❌ Camera 1 file is not readable: {cam1_file}")
+        return None
+    
+    if not is_file_readable(cam2_file):
+        log.error(f"❌ Camera 2 file is not readable: {cam2_file}")
+        return None
+    
+    # Check if merged file already exists
+    if merged_file.exists():
+        log.info(f"✅ Merged file already exists: {merged_file}")
+        # Process the merged file
+        return process_single_video(merged_file, user_id, date_dir)
+    
+    # Merge the two camera videos side-by-side
+    log.info(f"🎬 Merging dual camera videos side-by-side...")
+    
+    try:
+        # Calculate target dimensions for each camera (half width, full height)
+        target_width = width // 2
+        target_height = height
+        
+        # FFmpeg command to merge videos side-by-side
+        merge_cmd = [
+            "ffmpeg", "-y",
+            "-i", str(cam1_file),
+            "-i", str(cam2_file),
+            "-filter_complex", f"[0:v]scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:color=black[cam1];[1:v]scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:color=black[cam2];[cam1][cam2]hstack=inputs=2",
+            "-c:v", "libx264",
+            "-preset", "ultrafast",
+            "-crf", "28",
+            "-pix_fmt", "yuv420p",
+            str(merged_file)
+        ]
+        
+        log.info(f"🔧 FFmpeg merge command: {' '.join(merge_cmd)}")
+        
+        start_time = time.time()
+        result = subprocess.run(merge_cmd, capture_output=True, text=True, timeout=600)
+        end_time = time.time()
+        
+        if result.returncode == 0 and merged_file.exists():
+            merge_time = end_time - start_time
+            file_size = merged_file.stat().st_size
+            log.info(f"✅ Dual camera merge completed in {merge_time:.1f}s")
+            log.info(f"📊 Merged file size: {file_size} bytes")
+            
+            # Validate the merged file
+            if is_file_readable(merged_file):
+                log.info(f"✅ Merged file validation passed")
+                # Process the merged file with overlays and intro
+                return process_single_video(merged_file, user_id, date_dir)
+            else:
+                log.error(f"❌ Merged file validation failed")
+                return None
+        else:
+            log.error(f"❌ FFmpeg merge failed: {result.stderr}")
+            return None
+            
+    except subprocess.TimeoutExpired:
+        log.error("❌ FFmpeg merge timed out after 10 minutes")
+        return None
+    except Exception as e:
+        log.error(f"❌ Error during dual camera merge: {e}")
+        return None
+
+def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
+    """
+    Process a single video file (either single camera or already merged dual camera)
+    """
+    output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+    output_file.parent.mkdir(parents=True, exist_ok=True)
+
     # Use local cache for user media
     user_media_dir = MEDIA_CACHE_DIR / user_id
     user_media_dir.mkdir(parents=True, exist_ok=True)
