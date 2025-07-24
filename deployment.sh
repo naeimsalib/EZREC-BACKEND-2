@@ -635,7 +635,25 @@ echo "🔧 Applying final permission fixes..."
 sudo chown -R root:root "$PROJECT_DIR"
 sudo chmod -R 755 "$PROJECT_DIR"
 sudo chmod 755 "$API_DIR/local_data"
+
+# Ensure bookings.json exists and has proper content
+if [ ! -f "$API_DIR/local_data/bookings.json" ]; then
+  echo "📝 Creating bookings.json file..."
+  echo '[]' | sudo tee "$API_DIR/local_data/bookings.json" > /dev/null
+fi
+
+# Set proper permissions for bookings.json
+sudo chown root:root "$API_DIR/local_data/bookings.json"
 sudo chmod 644 "$API_DIR/local_data/bookings.json"
+
+# Verify the file is writable
+if [ -w "$API_DIR/local_data/bookings.json" ]; then
+  echo "✅ bookings.json is writable by root"
+else
+  echo "❌ bookings.json is not writable by root"
+  sudo chmod 666 "$API_DIR/local_data/bookings.json"
+  echo "🔧 Temporarily set permissions to 666 for debugging"
+fi
 
 # Start the API service
 echo "🚀 Starting API service..."
@@ -645,6 +663,28 @@ sleep 3
 
 if sudo systemctl is-active --quiet ezrec-api.service; then
   echo "✅ ezrec-api.service started successfully"
+  
+  # Test API write permissions
+  echo "🧪 Testing API write permissions..."
+  sleep 2
+  if curl -s http://localhost:8000/status > /dev/null; then
+    echo "✅ API is responding correctly"
+    
+    # Test creating a temporary booking to verify write permissions
+    TEST_BOOKING='[{"id":"test-perm-001","user_id":"test-user","start_time":"2025-01-01T00:00:00Z","end_time":"2025-01-01T00:01:00Z","date":"2025-01-01","camera_id":"test-cam","booking_id":"test-perm-001"}]'
+    if curl -s -X POST http://localhost:8000/bookings \
+       -H "Content-Type: application/json" \
+       -d "$TEST_BOOKING" > /dev/null; then
+      echo "✅ API can write to bookings.json successfully"
+      
+      # Clean up test booking
+      curl -s -X DELETE http://localhost:8000/bookings/test-perm-001 > /dev/null
+    else
+      echo "⚠️ API write test failed - check permissions manually"
+    fi
+  else
+    echo "⚠️ API is not responding - check service status"
+  fi
 else
   echo "❌ ezrec-api.service failed to start"
   sudo systemctl status ezrec-api.service --no-pager -l
@@ -726,8 +766,8 @@ echo "   ls -la $PROJECT_DIR/recordings/                # Check recordings"
 echo "   ls -la $LOG_DIR/                               # Check logs"
 echo ""
 echo "7. 🔄 PERMISSION FIXES (if needed):"
-echo "   sudo chown $USER:$USER $API_DIR/local_data/bookings.json"
-echo "   sudo chmod 644 $API_DIR/local_data/bookings.json"
+echo "   # Permissions are now automatically fixed during deployment"
+echo "   # If issues persist, check: sudo journalctl -u ezrec-api.service -n 20"
 echo ""
 echo "8. 📊 SYSTEM MONITORING:"
 echo "   htop                                           # Monitor system resources"
