@@ -29,6 +29,27 @@ if API_DIR not in sys.path:
 
 from booking_utils import update_booking_status
 
+# 🔧 Set up logging FIRST before any functions that use logger
+LOG_DIR = "/opt/ezrec-backend/logs"
+Path(LOG_DIR).mkdir(parents=True, exist_ok=True)
+LOG_FILE = os.path.join(LOG_DIR, "recorder.log")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[
+        logging.FileHandler(LOG_FILE),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger("recorder")
+
+# 🔧 Set up basic configuration variables
+RESOLUTION = os.getenv('RESOLUTION', '1280x720')
+try:
+    width, height = map(int, RESOLUTION.lower().split('x'))
+except Exception:
+    width, height = 1280, 720
+
 try:
     from picamera2 import Picamera2
     from picamera2.encoders import H264Encoder
@@ -162,11 +183,7 @@ BOOKING_CACHE_FILE = Path('/opt/ezrec-backend/api/local_data/bookings.json')
 RAW_DIR = Path(os.getenv('RAW_RECORDINGS_DIR', '/opt/ezrec-backend/recordings/'))
 LOG_FILE = Path(os.getenv('RECORDER_LOG', '/opt/ezrec-backend/logs/recorder.log'))
 CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
-RESOLUTION = os.getenv('RESOLUTION', '1280x720')
-try:
-    width, height = map(int, RESOLUTION.lower().split('x'))
-except Exception:
-    width, height = 1280, 720
+# 🔧 Resolution already parsed at the top of the file
 
 # Avoid double processes
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
@@ -177,18 +194,15 @@ for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     except Exception:
         continue
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()]
-)
-logger = logging.getLogger(__name__)
+# 🔧 Logging already set up at the top of the file
 
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 logger.info(f"📡 Recorder started [Timezone: {TIMEZONE_NAME}]")
 logger.info(f"📄 Watching bookings cache: {BOOKING_CACHE_FILE}")
+logger.info(f"🎥 Resolution configured: {width}x{height}")
+logger.info(f"🔧 Environment loaded from: {dotenv_path}")
 
 def handle_exit(sig, frame):
     logger.info("🛑 Received termination signal. Exiting gracefully.")
