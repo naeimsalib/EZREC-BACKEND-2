@@ -62,6 +62,7 @@ echo "🧹 Deep cleaning all recordings, processed videos, media cache, and stat
 # Stop all EZREC services before cleanup
 echo "🛑 Stopping all EZREC services for clean deployment..."
 sudo systemctl stop recorder.service 2>/dev/null || true
+sudo systemctl stop dual_recorder.service 2>/dev/null || true
 sudo systemctl stop video_worker.service 2>/dev/null || true
 sudo systemctl stop system_status.service 2>/dev/null || true
 sudo systemctl stop log_collector.service 2>/dev/null || true
@@ -70,6 +71,7 @@ sudo systemctl stop health_api.service 2>/dev/null || true
 # Kill any remaining Python processes that might be holding files
 echo "🔪 Killing any remaining EZREC Python processes..."
 sudo pkill -f "recorder.py" 2>/dev/null || true
+sudo pkill -f "dual_recorder.py" 2>/dev/null || true
 sudo pkill -f "video_worker.py" 2>/dev/null || true
 sudo pkill -f "system_status.py" 2>/dev/null || true
 sudo pkill -f "log_collector.py" 2>/dev/null || true
@@ -178,6 +180,118 @@ else
 fi
 
 #------------------------------#
+# 5.2 AUTOMATIC CAMERA DETECTION #
+#------------------------------#
+echo "📷 Detecting cameras automatically..."
+
+# Function to detect camera serials
+detect_camera_serials() {
+  echo "🔍 Running camera detection..."
+  
+  # Check if libcamera-hello is available
+  if ! command -v libcamera-hello &>/dev/null; then
+    echo "⚠️ libcamera-hello not found, installing..."
+    sudo apt-get update && sudo apt-get install -y libcamera-tools
+  fi
+  
+  # Run camera detection
+  CAMERA_OUTPUT=$(libcamera-hello --list-cameras 2>/dev/null || echo "")
+  
+  if [ -z "$CAMERA_OUTPUT" ]; then
+    echo "❌ No cameras detected or libcamera-hello failed"
+    return 1
+  fi
+  
+  echo "📋 Camera detection output:"
+  echo "$CAMERA_OUTPUT"
+  
+  # Extract serial numbers using regex
+  SERIALS=($(echo "$CAMERA_OUTPUT" | grep -o 'i2c@[0-9a-f]*' | sed 's/i2c@//' | sort -u))
+  
+  if [ ${#SERIALS[@]} -eq 0 ]; then
+    echo "❌ No camera serials found in output"
+    return 1
+  fi
+  
+  echo "✅ Found ${#SERIALS[@]} camera(s) with serials: ${SERIALS[*]}"
+  
+  # Set camera serials based on count
+  if [ ${#SERIALS[@]} -eq 1 ]; then
+    CAMERA_0_SERIAL="${SERIALS[0]}"
+    CAMERA_1_SERIAL=""
+    echo "📷 Single camera detected: $CAMERA_0_SERIAL"
+  elif [ ${#SERIALS[@]} -eq 2 ]; then
+    CAMERA_0_SERIAL="${SERIALS[0]}"
+    CAMERA_1_SERIAL="${SERIALS[1]}"
+    echo "📷 Dual cameras detected: $CAMERA_0_SERIAL, $CAMERA_1_SERIAL"
+  else
+    echo "⚠️ More than 2 cameras detected, using first two: ${SERIALS[0]}, ${SERIALS[1]}"
+    CAMERA_0_SERIAL="${SERIALS[0]}"
+    CAMERA_1_SERIAL="${SERIALS[1]}"
+  fi
+  
+  return 0
+}
+
+# Detect cameras
+if detect_camera_serials; then
+  echo "✅ Camera detection successful"
+  
+  # Update .env file with detected camera serials
+  if [ -f "$PROJECT_DIR/.env" ]; then
+    echo "📝 Updating .env file with detected camera serials..."
+    
+    # Update or add CAMERA_0_SERIAL
+    if grep -q "^CAMERA_0_SERIAL=" "$PROJECT_DIR/.env"; then
+      sed -i "s/^CAMERA_0_SERIAL=.*/CAMERA_0_SERIAL=$CAMERA_0_SERIAL/" "$PROJECT_DIR/.env"
+    else
+      echo "CAMERA_0_SERIAL=$CAMERA_0_SERIAL" >> "$PROJECT_DIR/.env"
+    fi
+    
+    # Update or add CAMERA_1_SERIAL (only if dual camera detected)
+    if [ -n "$CAMERA_1_SERIAL" ]; then
+      if grep -q "^CAMERA_1_SERIAL=" "$PROJECT_DIR/.env"; then
+        sed -i "s/^CAMERA_1_SERIAL=.*/CAMERA_1_SERIAL=$CAMERA_1_SERIAL/" "$PROJECT_DIR/.env"
+      else
+        echo "CAMERA_1_SERIAL=$CAMERA_1_SERIAL" >> "$PROJECT_DIR/.env"
+      fi
+      
+      # Set dual camera mode
+      if grep -q "^DUAL_CAMERA_MODE=" "$PROJECT_DIR/.env"; then
+        sed -i "s/^DUAL_CAMERA_MODE=.*/DUAL_CAMERA_MODE=true/" "$PROJECT_DIR/.env"
+      else
+        echo "DUAL_CAMERA_MODE=true" >> "$PROJECT_DIR/.env"
+      fi
+      
+      # Set merge method
+      if grep -q "^MERGE_METHOD=" "$PROJECT_DIR/.env"; then
+        sed -i "s/^MERGE_METHOD=.*/MERGE_METHOD=side_by_side/" "$PROJECT_DIR/.env"
+      else
+        echo "MERGE_METHOD=side_by_side" >> "$PROJECT_DIR/.env"
+      fi
+      
+      echo "✅ Dual camera mode enabled with merge method: side_by_side"
+    else
+      # Single camera mode
+      if grep -q "^DUAL_CAMERA_MODE=" "$PROJECT_DIR/.env"; then
+        sed -i "s/^DUAL_CAMERA_MODE=.*/DUAL_CAMERA_MODE=false/" "$PROJECT_DIR/.env"
+      else
+        echo "DUAL_CAMERA_MODE=false" >> "$PROJECT_DIR/.env"
+      fi
+      echo "✅ Single camera mode enabled"
+    fi
+    
+    echo "📝 Camera configuration updated in .env file"
+  else
+    echo "⚠️ .env file not found, camera serials not updated"
+  fi
+else
+  echo "⚠️ Camera detection failed, using default values"
+  CAMERA_0_SERIAL="88000"
+  CAMERA_1_SERIAL="80000"
+fi
+
+#------------------------------#
 # 5.5. DOWNLOAD MAIN EZREC LOGO #
 #------------------------------#
 # Temporarily export AWS credentials for S3 download
@@ -251,10 +365,10 @@ User=$USER
 WantedBy=multi-user.target
 EOF
 
-# Recorder
+# Single Camera Recorder (legacy)
 sudo tee "$SYSTEMD_DIR/recorder.service" > /dev/null <<EOF
 [Unit]
-Description=EZREC Recorder
+Description=EZREC Single Camera Recorder
 After=network.target
 
 [Service]
@@ -272,6 +386,39 @@ PrivateDevices=no
 WantedBy=multi-user.target
 EOF
 
+# Dual Camera Recorder (new)
+sudo tee "$SYSTEMD_DIR/dual_recorder.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC Dual Camera Recorder
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=$USER
+Group=video
+WorkingDirectory=$PROJECT_DIR/backend
+Environment=PYTHONPATH=$PROJECT_DIR/backend:$PROJECT_DIR/api
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/dual_recorder.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Camera device access
+ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "\$dev" 2>/dev/null || true; done'
+ExecStartPre=/bin/sleep 2
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=$PROJECT_DIR/recordings $LOG_DIR $API_DIR/local_data $PROJECT_DIR/status.json
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 # Video Worker
 sudo tee "$SYSTEMD_DIR/video_worker.service" > /dev/null <<EOF
 [Unit]
@@ -280,6 +427,54 @@ After=network.target
 
 [Service]
 ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/video_worker.py
+WorkingDirectory=$PROJECT_DIR/backend
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# System Status
+sudo tee "$SYSTEMD_DIR/system_status.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC System Status Service
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/system_status.py
+WorkingDirectory=$PROJECT_DIR/backend
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Log Collector
+sudo tee "$SYSTEMD_DIR/log_collector.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC Log Collector Service
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/log_collector.py
+WorkingDirectory=$PROJECT_DIR/backend
+Restart=always
+User=$USER
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Health API
+sudo tee "$SYSTEMD_DIR/health_api.service" > /dev/null <<EOF
+[Unit]
+Description=EZREC Health API Service
+After=network.target
+
+[Service]
+ExecStart=$VENV_DIR/bin/python3 $PROJECT_DIR/backend/health_api.py
 WorkingDirectory=$PROJECT_DIR/backend
 Restart=always
 User=$USER
@@ -337,8 +532,6 @@ sudo systemctl enable status_updater.service
 sudo systemctl restart status_updater.service
 sudo systemctl status status_updater.service --no-pager
 
-# Camera Streamer removed - using direct picamera2 recording
-
 #------------------------------#
 # 9. CLOUDFLARED INSTALL
 #------------------------------#
@@ -377,9 +570,22 @@ fi
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
 
+# Determine which recorder service to start based on camera configuration
+if [ -f "$PROJECT_DIR/.env" ] && grep -q "^DUAL_CAMERA_MODE=true" "$PROJECT_DIR/.env"; then
+  echo "🎬 Starting dual camera recorder..."
+  RECORDER_SERVICE="dual_recorder"
+  # Disable single camera recorder
+  sudo systemctl disable recorder.service 2>/dev/null || true
+else
+  echo "📷 Starting single camera recorder..."
+  RECORDER_SERVICE="recorder"
+  # Disable dual camera recorder
+  sudo systemctl disable dual_recorder.service 2>/dev/null || true
+fi
+
 # Start services in the correct order
 echo "🚀 Starting EZREC services..."
-for svc in system_status log_collector health_api recorder video_worker; do
+for svc in system_status log_collector health_api $RECORDER_SERVICE video_worker; do
   echo "Starting $svc.service..."
   sudo systemctl enable "$svc.service"
   sudo systemctl start "$svc.service"
@@ -415,12 +621,32 @@ echo "🎉 EZREC deployed successfully!"
 echo ""
 echo "📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org"
 echo "🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f"
-echo "📹 Recorder logs:  sudo journalctl -u recorder.service -f"
+if [ "$RECORDER_SERVICE" = "dual_recorder" ]; then
+  echo "📹 Dual recorder logs: sudo journalctl -u dual_recorder.service -f"
+else
+  echo "📹 Recorder logs:  sudo journalctl -u recorder.service -f"
+fi
 echo "🎞️ Video logs:     sudo journalctl -u video_worker.service -f"
 echo "🌐 Tunnel logs:    sudo journalctl -u cloudflared -f"
 echo "📁 Project files:  $PROJECT_DIR"
 echo "📁 API entry:      $API_DIR/api_server.py"
 echo "📃 Logs dir:       $LOG_DIR"
+echo ""
+
+# Show camera configuration
+if [ -f "$PROJECT_DIR/.env" ]; then
+  echo "📷 Camera Configuration:"
+  if grep -q "^DUAL_CAMERA_MODE=true" "$PROJECT_DIR/.env"; then
+    echo "   Mode: Dual Camera"
+    echo "   Camera 0 Serial: $(grep '^CAMERA_0_SERIAL=' "$PROJECT_DIR/.env" | cut -d'=' -f2)"
+    echo "   Camera 1 Serial: $(grep '^CAMERA_1_SERIAL=' "$PROJECT_DIR/.env" | cut -d'=' -f2)"
+    echo "   Merge Method: $(grep '^MERGE_METHOD=' "$PROJECT_DIR/.env" | cut -d'=' -f2)"
+  else
+    echo "   Mode: Single Camera"
+    echo "   Camera Serial: $(grep '^CAMERA_0_SERIAL=' "$PROJECT_DIR/.env" | cut -d'=' -f2)"
+  fi
+fi
+
 echo ""
 echo "⚠️  IMPORTANT: Make sure to create and configure $PROJECT_DIR/.env file"
 echo "    Use env.example as a template and add your credentials"
