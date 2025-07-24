@@ -1,0 +1,399 @@
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $    cd ~/EZREC-BACKEND-2
+   git pull
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 6 (delta 4), reused 6 (delta 4), pack-reused 0 (from 0)
+Unpacking objects: 100% (6/6), 981 bytes | 981.00 KiB/s, done.
+From https://github.com/naeimsalib/EZREC-BACKEND-2
+   c78f7dd..2e78ec1  main       -> origin/main
+Updating c78f7dd..2e78ec1
+Fast-forward
+ backend/test_dual_camera.py |   6 ++++
+ logs.txt                    | 329 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 2 files changed, 6 insertions(+), 329 deletions(-)
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $    ./deployment.sh
+🚀 Starting EZREC Deployment as user 'michomanoly14892' with tunnel name 'ezrec-tunnel'...
+🧹 Cleaning up old recordings, uploads, and logs...
+🧹 Deep cleaning all recordings, processed videos, media cache, and state files...
+🛑 Stopping all EZREC services for clean deployment...
+🔪 Killing any remaining EZREC Python processes...
+🗑️ Removing all recordings and related files...
+🗑️ Removing all processed videos...
+🗑️ Removing media cache...
+🗑️ Removing state files...
+🗑️ Removing API cache files...
+🗑️ Removing temporary files...
+🗑️ Cleaning old log files...
+🔄 Resetting booking cache...
+✅ All recordings, processed videos, media cache, and state files cleaned.
+✅ All EZREC services stopped and processes killed.
+🔄 Refreshing user media cache for main user...
+INFO:httpx:HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/2 200 OK"
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro-video/intro.mp4?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=QrSF%2Fma9m6pH%2FXkCh1crRAjTmOY%3D&Expires=1753334806 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4 ...
+Exists after download: True
+File size: 1332881 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo/logo.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=eo8eKTfQ2JtmWU8c2Z2bAk5bwa4%3D&Expires=1753334806 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png ...
+Exists after download: True
+File size: 59105 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo1/logo1.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=qvUIkXKuiMSHdk%2BTJjLMab8yEC8%3D&Expires=1753334806 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png ...
+Exists after download: True
+File size: 149947 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo2/logo2.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=hzzmybCpmzaW6x7wC4tFlIEc5cA%3D&Expires=1753334806 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png ...
+Exists after download: True
+File size: 137038 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo3/logo3.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=29f3mEL0pz36KOxWoLapYfZSWYU%3D&Expires=1753334806 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png ...
+Exists after download: True
+File size: 788138 bytes
+User media cache directory contents:
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png
+📁 Setting up directories...
+🐍 Setting up virtual environment...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: pip in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (23.0.1)
+Collecting pip
+  Using cached pip-25.1.1-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 23.0.1
+    Uninstalling pip-23.0.1:
+      Successfully uninstalled pip-23.0.1
+Successfully installed pip-25.1.1
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Collecting fastapi
+  Using cached fastapi-0.116.1-py3-none-any.whl.metadata (28 kB)
+Collecting uvicorn
+  Using cached uvicorn-0.35.0-py3-none-any.whl.metadata (6.5 kB)
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+Requirement already satisfied: requests in /home/michomanoly14892/.local/lib/python3.11/site-packages (2.31.0)
+Collecting boto3
+  Using cached boto3-1.39.12-py3-none-any.whl.metadata (6.7 kB)
+Requirement already satisfied: python-dotenv in /home/michomanoly14892/.local/lib/python3.11/site-packages (1.0.0)
+Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (2022.7.1)
+Requirement already satisfied: python-dateutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (2.9.0.post0)
+Requirement already satisfied: supabase in /usr/local/lib/python3.11/dist-packages (2.16.0)
+Collecting starlette<0.48.0,>=0.40.0 (from fastapi)
+  Using cached starlette-0.47.2-py3-none-any.whl.metadata (6.2 kB)
+Requirement already satisfied: pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from fastapi) (2.11.7)
+Requirement already satisfied: typing-extensions>=4.8.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from fastapi) (4.14.0)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (0.4.1)
+Requirement already satisfied: anyio<5,>=3.6.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from starlette<0.48.0,>=0.40.0->fastapi) (4.9.0)
+Requirement already satisfied: idna>=2.8 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi) (3.10)
+Requirement already satisfied: sniffio>=1.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi) (1.3.1)
+Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (from uvicorn) (8.1.3)
+Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.11/dist-packages (from uvicorn) (0.16.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in /usr/lib/python3/dist-packages (from requests) (3.0.1)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (from requests) (1.26.12)
+Requirement already satisfied: certifi>=2017.4.17 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from requests) (2025.6.15)
+Collecting botocore<1.40.0,>=1.39.12 (from boto3)
+  Using cached botocore-1.39.12-py3-none-any.whl.metadata (5.7 kB)
+Collecting jmespath<2.0.0,>=0.7.1 (from boto3)
+  Using cached https://www.piwheels.org/simple/jmespath/jmespath-1.0.1-py3-none-any.whl (20 kB)
+Collecting s3transfer<0.14.0,>=0.13.0 (from boto3)
+  Using cached s3transfer-0.13.1-py3-none-any.whl.metadata (1.7 kB)
+Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil) (1.17.0)
+Requirement already satisfied: gotrue<3.0.0,>=2.11.0 in /usr/local/lib/python3.11/dist-packages (from supabase) (2.12.2)
+Requirement already satisfied: httpx<0.29,>=0.26 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.28.1)
+Requirement already satisfied: postgrest<1.2,>0.19 in /usr/local/lib/python3.11/dist-packages (from supabase) (1.1.1)
+Requirement already satisfied: realtime<2.6.0,>=2.4.0 in /usr/local/lib/python3.11/dist-packages (from supabase) (2.5.3)
+Requirement already satisfied: storage3<0.13,>=0.10 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.12.0)
+Requirement already satisfied: supafunc<0.11,>=0.9 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.10.1)
+Requirement already satisfied: pyjwt<3.0.0,>=2.10.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue<3.0.0,>=2.11.0->supabase) (2.10.1)
+Requirement already satisfied: pytest-mock<4.0.0,>=3.14.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue<3.0.0,>=2.11.0->supabase) (3.14.1)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<0.29,>=0.26->supabase) (1.0.9)
+Requirement already satisfied: h2<5,>=3 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (4.2.0)
+Requirement already satisfied: hyperframe<7,>=6.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (6.1.0)
+Requirement already satisfied: hpack<5,>=4.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (4.1.0)
+Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from postgrest<1.2,>0.19->supabase) (2.1.0)
+Requirement already satisfied: packaging in /home/michomanoly14892/.local/lib/python3.11/site-packages (from deprecation<3.0.0,>=2.1.0->postgrest<1.2,>0.19->supabase) (25.0)
+Requirement already satisfied: pytest>=6.2.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (8.4.1)
+Requirement already satisfied: websockets<16,>=11 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime<2.6.0,>=2.4.0->supabase) (12.0)
+Requirement already satisfied: strenum<0.5.0,>=0.4.15 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from supafunc<0.11,>=0.9->supabase) (0.4.15)
+Requirement already satisfied: iniconfig>=1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (2.1.0)
+Requirement already satisfied: pluggy<2,>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in /usr/lib/python3/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (2.14.0)
+Using cached fastapi-0.116.1-py3-none-any.whl (95 kB)
+Using cached starlette-0.47.2-py3-none-any.whl (72 kB)
+Using cached uvicorn-0.35.0-py3-none-any.whl (66 kB)
+Using cached boto3-1.39.12-py3-none-any.whl (139 kB)
+Using cached botocore-1.39.12-py3-none-any.whl (13.9 MB)
+Using cached s3transfer-0.13.1-py3-none-any.whl (85 kB)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+Installing collected packages: uvicorn, jmespath, starlette, botocore, s3transfer, fastapi, boto3
+Successfully installed boto3-1.39.12 botocore-1.39.12 fastapi-0.116.1 jmespath-1.0.1 s3transfer-0.13.1 starlette-0.47.2 uvicorn-0.35.0
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: pydantic[email] in /home/michomanoly14892/.local/lib/python3.11/site-packages (2.11.7)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (4.14.0)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (0.4.1)
+Collecting email-validator>=2.0.0 (from pydantic[email])
+  Using cached https://www.piwheels.org/simple/email-validator/email_validator-2.2.0-py3-none-any.whl (33 kB)
+Collecting dnspython>=2.0.0 (from email-validator>=2.0.0->pydantic[email])
+  Using cached https://www.piwheels.org/simple/dnspython/dnspython-2.7.0-py3-none-any.whl (313 kB)
+Requirement already satisfied: idna>=2.0.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from email-validator>=2.0.0->pydantic[email]) (3.10)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+Installing collected packages: dnspython, email-validator
+Successfully installed dnspython-2.7.0 email-validator-2.2.0
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: opencv-python in /home/michomanoly14892/.local/lib/python3.11/site-packages (4.11.0.86)
+Requirement already satisfied: picamera2 in /usr/lib/python3/dist-packages (0.3.28)
+Requirement already satisfied: numpy>=1.21.2 in /usr/lib/python3/dist-packages (from opencv-python) (1.24.2)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[DEBUG] DEV_DIR=/home/michomanoly14892/EZREC-BACKEND-2
+[DEBUG] PROJECT_DIR=/opt/ezrec-backend
+-rw-r--r-- 1 michomanoly14892 michomanoly14892 1271 Jul 21 01:14 /home/michomanoly14892/EZREC-BACKEND-2/backend/refresh_user_media.py
+\U0001F4E6 Syncing updated project files...
+sending incremental file list
+./
+logs.txt
+api/
+backend/
+backend/test_dual_camera.py
+
+sent 10,826 bytes  received 191 bytes  22,034.00 bytes/sec
+total size is 1,398,274  speedup is 126.92
+🔄 Refreshing user media cache for main user...
+INFO:httpx:HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/2 200 OK"
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro-video/intro.mp4?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=BEFFk041Q5aDf%2B6DbJPWeNNJ944%3D&Expires=1753334827 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4 ...
+Exists after download: True
+File size: 1332881 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo/logo.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=8Okk%2FFRuD8KKNLGchwpno5oRPNQ%3D&Expires=1753334827 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png ...
+Exists after download: True
+File size: 59105 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo1/logo1.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=wr3l%2FzKrFyb%2FW5Ubb%2FNb6H5a%2Fog%3D&Expires=1753334827 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png ...
+Exists after download: True
+File size: 149947 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo2/logo2.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=HTKkqXrezD6L8xOl%2FUm5iziqi1g%3D&Expires=1753334827 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png ...
+Exists after download: True
+File size: 137038 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo3/logo3.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=efUsBHK%2BkUmMAujRBBL%2FwmH0QxY%3D&Expires=1753334827 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png ...
+Exists after download: True
+File size: 788138 bytes
+User media cache directory contents:
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png
+📷 Detecting cameras automatically...
+🔍 Running camera detection...
+📋 Camera detection output:
+Available cameras
+-----------------
+0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+
+1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+✅ Found 2 camera(s) with serials: 80000 88000
+📷 Dual cameras detected: 80000, 88000
+✅ Camera detection successful
+📝 Updating .env file with detected camera serials...
+✅ Dual camera mode enabled with merge method: side_by_side
+📝 Camera configuration updated in .env file
+🖼️ Downloading main EZREC logo from S3...
+download: s3://ezrec-user-media/main_ezrec_logo.png to ../../../opt/ezrec-backend/main_ezrec_logo.png
+📦 Installing backend requirements.txt dependencies...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: python-dotenv in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 1)) (1.0.0)
+Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 2)) (2022.7.1)
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 3)) (5.9.5)
+Requirement already satisfied: supabase in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 4)) (2.16.0)
+Requirement already satisfied: gotrue in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.12.2)
+Requirement already satisfied: httpx in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (0.28.1)
+Requirement already satisfied: postgrest in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 7)) (1.1.1)
+Requirement already satisfied: realtime in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 8)) (2.5.3)
+Requirement already satisfied: storage3 in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 9)) (0.12.0)
+Requirement already satisfied: supafunc in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 10)) (0.10.1)
+Requirement already satisfied: picamera2 in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 11)) (0.3.28)
+Requirement already satisfied: ffmpeg-python in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 12)) (0.2.0)
+Requirement already satisfied: Flask in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 13)) (2.2.2)
+Requirement already satisfied: Pillow in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 14)) (9.4.0)
+Requirement already satisfied: numpy in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 15)) (1.24.2)
+Requirement already satisfied: requests in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 16)) (2.31.0)
+Requirement already satisfied: boto3 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (1.39.12)
+Requirement already satisfied: fastapi in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 18)) (0.116.1)
+Requirement already satisfied: uvicorn in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 19)) (0.35.0)
+Requirement already satisfied: opencv-python in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 20)) (4.11.0.86)
+Requirement already satisfied: speedtest-cli in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 21)) (2.1.3)
+Requirement already satisfied: pydantic<3,>=1.10 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.11.7)
+Requirement already satisfied: pyjwt<3.0.0,>=2.10.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.10.1)
+Requirement already satisfied: pytest-mock<4.0.0,>=3.14.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (3.14.1)
+Requirement already satisfied: anyio in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (4.9.0)
+Requirement already satisfied: certifi in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (2025.6.15)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (1.0.9)
+Requirement already satisfied: idna in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (3.10)
+Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from postgrest->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 7)) (2.1.0)
+Requirement already satisfied: typing-extensions<5.0.0,>=4.14.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 8)) (4.14.0)
+Requirement already satisfied: websockets<16,>=11 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 8)) (12.0)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.8.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from storage3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 9)) (2.9.0.post0)
+Requirement already satisfied: strenum<0.5.0,>=0.4.15 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from supafunc->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 10)) (0.4.15)
+Requirement already satisfied: packaging in /home/michomanoly14892/.local/lib/python3.11/site-packages (from deprecation<3.0.0,>=2.1.0->postgrest->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 7)) (25.0)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.11/dist-packages (from httpcore==1.*->httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (0.16.0)
+Requirement already satisfied: h2<5,>=3 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx[http2]<0.29,>=0.26->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (4.2.0)
+Requirement already satisfied: hyperframe<7,>=6.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (6.1.0)
+Requirement already satisfied: hpack<5,>=4.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (4.1.0)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (0.4.1)
+Requirement already satisfied: pytest>=6.2.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (8.4.1)
+Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.8.2->storage3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 9)) (1.17.0)
+Requirement already satisfied: future in /home/michomanoly14892/.local/lib/python3.11/site-packages (from ffmpeg-python->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 12)) (1.0.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in /usr/lib/python3/dist-packages (from requests->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 16)) (3.0.1)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (from requests->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 16)) (1.26.12)
+Requirement already satisfied: botocore<1.40.0,>=1.39.12 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from boto3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (1.39.12)
+Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from boto3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (1.0.1)
+Requirement already satisfied: s3transfer<0.14.0,>=0.13.0 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from boto3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (0.13.1)
+Requirement already satisfied: starlette<0.48.0,>=0.40.0 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from fastapi->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 18)) (0.47.2)
+Requirement already satisfied: sniffio>=1.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from anyio->httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (1.3.1)
+Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (from uvicorn->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 19)) (8.1.3)
+Requirement already satisfied: iniconfig>=1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.1.0)
+Requirement already satisfied: pluggy<2,>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in /usr/lib/python3/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.14.0)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+⚖️ Fixing log permissions...
+⚙️ Setting up systemd services...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+✅ Copied status_updater.py to /opt/ezrec-backend
+● status_updater.service - EZREC System Status Updater
+     Loaded: loaded (/etc/systemd/system/status_updater.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2025-07-24 00:27:11 EDT; 14ms ago
+   Main PID: 19156 (python3)
+      Tasks: 1 (limit: 9577)
+        CPU: 11ms
+     CGroup: /system.slice/status_updater.service
+             └─19156 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/status_updater.py
+
+Jul 24 00:27:11 raspberrypi systemd[1]: Started status_updater.service - EZREC System Status Updater.
+✅ cloudflared is already installed
+🛠️ Increasing UDP buffer size for cloudflared...
+✅ UDP buffer already configured
+🔁 Enabling and starting services...
+🎬 Starting dual camera recorder...
+🚀 Starting EZREC services...
+Starting system_status.service...
+✅ system_status.service started successfully
+Starting log_collector.service...
+✅ log_collector.service started successfully
+Starting health_api.service...
+✅ health_api.service started successfully
+Starting dual_recorder.service...
+✅ dual_recorder.service started successfully
+Starting video_worker.service...
+✅ video_worker.service started successfully
+🌐 Starting cloudflared tunnel...
+✅ cloudflared started successfully
+
+🎉 EZREC deployed successfully!
+
+📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org
+🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f
+📹 Dual recorder logs: sudo journalctl -u dual_recorder.service -f
+🎞️ Video logs:     sudo journalctl -u video_worker.service -f
+🌐 Tunnel logs:    sudo journalctl -u cloudflared -f
+📁 Project files:  /opt/ezrec-backend
+📁 API entry:      /opt/ezrec-backend/api/api_server.py
+📃 Logs dir:       /opt/ezrec-backend/logs
+
+📷 Camera Configuration:
+   Mode: Dual Camera
+   Camera 0 Serial: 80000
+   Camera 1 Serial: 88000
+   Merge Method: side_by_side
+side_by_side
+
+⚠️  IMPORTANT: Make sure to create and configure /opt/ezrec-backend/.env file
+    Use env.example as a template and add your credentials
+\n🎥 Video encoder set to: h264_v4l2m2m (see .env)
+✅ main_ezrec_logo.png already present.
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $    cd /opt/ezrec-backend/backend
+   sudo python3 test_dual_camera.py
+2025-07-24 00:28:19,422 - INFO - 🎬 Starting dual camera test sequence...
+2025-07-24 00:28:19,422 - INFO - 📷 Camera 0: left (Serial: 80000)
+2025-07-24 00:28:19,423 - INFO - 📷 Camera 1: right (Serial: 88000)
+2025-07-24 00:28:19,423 - INFO - Stopping all EZREC services...
+2025-07-24 00:28:19,439 - INFO - ✅ Stopped recorder
+2025-07-24 00:28:19,621 - INFO - ✅ Stopped dual_recorder
+2025-07-24 00:28:19,635 - INFO - ✅ Stopped video_worker
+2025-07-24 00:28:19,647 - INFO - ✅ Stopped status_updater
+2025-07-24 00:28:19,647 - INFO - Killing any processes using the cameras...
+Specified filename /dev/video16 does not exist.
+Specified filename /dev/video17 does not exist.
+Specified filename /dev/video18 does not exist.
+2025-07-24 00:28:23,133 - INFO - Testing dual camera setup...
+2025-07-24 00:28:23,461 - INFO - 📷 Testing left camera (Serial: 80000)...
+[1:43:54.351526536] [19575]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
+[1:43:54.361065644] [19659]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+[1:43:54.370107771] [19659]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
+[1:43:54.370192271] [19659]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+[1:43:54.378638028] [19659]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+2025-07-24 00:28:23,490 - INFO - Initialization successful.
+2025-07-24 00:28:23,490 - INFO - Camera now open.
+2025-07-24 00:28:23,491 - INFO - ✅ Initialized left camera with serial: 80000
+2025-07-24 00:28:23,492 - INFO - Camera configuration has been adjusted!
+[1:43:54.382056916] [19575]  INFO Camera camera.cpp:1205 configuring streams: (0) 640x480-XBGR8888 (1) 2028x1520-BGGR_PISP_COMP1
+[1:43:54.382161453] [19659]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1520-SBGGR12_1X12 - Selected CFE format: 2028x1520-PC1B
+2025-07-24 00:28:23,492 - INFO - Configuration successful!
+2025-07-24 00:28:24,010 - INFO - Camera started
+2025-07-24 00:28:24,010 - INFO - ✅ left camera opened successfully
+2025-07-24 00:28:24,010 - INFO - 📷 Testing right camera (Serial: 88000)...
+2025-07-24 00:28:24,010 - INFO - Initialization successful.
+[1:43:54.900369976] [19575] ERROR Camera camera.cpp:693 Camera in Running state trying acquire() requiring state Available
+2025-07-24 00:28:24,010 - ERROR - Camera __init__ sequence did not complete.
+2025-07-24 00:28:24,011 - WARNING - ⚠️ right camera busy (try 1/3)... retrying in 3s
+Exception in thread Thread-1 (listen):
+Traceback (most recent call last):
+  File "/usr/lib/python3.11/threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "/usr/lib/python3.11/threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 125, in listen
+    callback()
+  File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 142, in handle_request
+    self.cameras[req.cookie]._requests += [CompletedRequest(req, self.cameras[req.cookie])]
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/picamera2/request.py", line 93, in __init__
+    self.syncs = [picam2.allocator.sync(self.picam2.allocator, buffer, False)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3/dist-packages/picamera2/request.py", line 93, in <listcomp>
+    self.syncs = [picam2.allocator.sync(self.picam2.allocator, buffer, False)
+                  ^^^^^^^^^^^^^^^^
+AttributeError: 'Picamera2' object has no attribute 'allocator'
+2025-07-24 00:28:27,011 - INFO - Initialization successful.
+[1:43:57.901402336] [19575] ERROR Camera camera.cpp:693 Camera in Running state trying acquire() requiring state Available
+2025-07-24 00:28:27,012 - ERROR - Camera __init__ sequence did not complete.
+2025-07-24 00:28:27,012 - WARNING - ⚠️ right camera busy (try 2/3)... retrying in 3s
+2025-07-24 00:28:30,035 - INFO - Initialization successful.
+[1:44:00.924618740] [19575] ERROR Camera camera.cpp:693 Camera in Running state trying acquire() requiring state Available
+2025-07-24 00:28:30,035 - ERROR - Camera __init__ sequence did not complete.
+2025-07-24 00:28:30,035 - WARNING - ⚠️ right camera busy (try 3/3)... retrying in 3s
+2025-07-24 00:28:33,035 - ERROR - ❌ Dual camera test failed: ❌ right camera failed to initialize after multiple attempts
+2025-07-24 00:28:33,035 - ERROR - ❌ Dual camera test failed! Check camera connections and permissions.
+2025-07-24 00:28:33,040 - INFO - Camera stopped
+2025-07-24 00:28:33,045 - INFO - Camera closed successfully.
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ 
