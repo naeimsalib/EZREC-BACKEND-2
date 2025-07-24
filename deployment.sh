@@ -132,7 +132,8 @@ USER_ID=$(grep '^USER_ID=' "$PROJECT_DIR/.env" | cut -d'=' -f2 | tr -d '"')
 if [ -n "$USER_ID" ]; then
   export USER_ID
   # Use simplified refresh script to avoid logging permission issues
-  "$VENV_DIR/bin/python3" "$PROJECT_DIR/backend/refresh_user_media_simple.py"
+  # Note: This will be called again after file sync
+  echo "⏳ User media refresh will be done after file sync..."
 else
   echo "⚠️ USER_ID not set in .env, skipping user media refresh."
 fi
