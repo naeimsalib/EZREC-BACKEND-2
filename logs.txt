@@ -1,7 +1,53 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a test booking for the next few minutes
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # Stop dual recorder
+sudo systemctl stop dual_recorder.service
+
+# Edit the .env file to disable dual camera mode
+sudo nano /opt/ezrec-backend/.env
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # Start the regular single camera recorder
+sudo systemctl start recorder.service
+
+# Check status
+sudo systemctl status recorder.service
+
+# Monitor logs
+sudo journalctl -u recorder.service -f
+● recorder.service - EZREC Single Camera Recorder
+     Loaded: loaded (/etc/systemd/system/recorder.service; disabled; preset: enabled)
+     Active: active (running) since Thu 2025-07-24 01:54:32 EDT; 19ms ago
+    Process: 33187 ExecStartPre=/bin/bash -c for dev in /dev/video*; do fuser -k "$dev" || true; done (code=exited, status=0/SUCCESS)
+   Main PID: 33221 (python3)
+      Tasks: 1 (limit: 9577)
+        CPU: 208ms
+     CGroup: /system.slice/recorder.service
+             └─33221 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/8: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/9: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/0: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/1: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/2: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/255: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/0: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/1: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/2: Permission denied
+Jul 24 01:54:32 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/8: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/9: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/0: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/1: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/2: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/255: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/0: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/1: Permission denied
+Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/2: Permission denied
+Jul 24 01:54:32 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
+Jul 24 01:54:33 raspberrypi python3[33221]: INFO:__main__:📡 Recorder started [Timezone: America/New_York]
+Jul 24 01:54:33 raspberrypi python3[33221]: INFO:__main__:📄 Watching bookings cache: /opt/ezrec-backend/api/local_data/bookings.json
+^C
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # Create a test booking
 echo '[
   {
-    "id": "test-dual-debug-001",
+    "id": "test-single-001",
     "start_time": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
     "end_time": "'$(date -u -d "+3 minutes" +"%Y-%m-%dT%H:%M:%SZ")'",
     "status": "active",
@@ -11,261 +57,134 @@ echo '[
 ]' | sudo tee /opt/ezrec-backend/api/local_data/bookings.json
 [
   {
-    "id": "test-dual-debug-001",
-    "start_time": "2025-07-24T05:26:48Z",
-    "end_time": "2025-07-24T05:29:48Z",
+    "id": "test-single-001",
+    "start_time": "2025-07-24T05:54:43Z",
+    "end_time": "2025-07-24T05:57:43Z",
     "status": "active",
     "user_id": "65aa2e2a-e463-424d-b88f-0724bb0bea3a",
     "camera_id": "pi-001"
   }
 ]
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo journalctl -u dual_recorder.service -f
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:📷 Camera 1: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_right.mp4
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:🔧 Creating camera recorder scripts...
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for left camera (Serial: 80000)
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_left_recorder.py
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_left_recorder.py
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for right camera (Serial: 88000)
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_right_recorder.py
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_right_recorder.py
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:📝 Created scripts: /tmp/camera_left_recorder.py, /tmp/camera_right_recorder.py
-Jul 24 01:26:55 raspberrypi python3[27084]: INFO:__main__:📷 Starting left camera process...
-Jul 24 01:26:58 raspberrypi python3[27084]: ERROR:__main__:❌ Camera 0 process failed to start
-Jul 24 01:26:58 raspberrypi python3[27084]: ERROR:__main__:📤 Camera 0 stdout: 📷 Starting left camera recording (Serial: 80000)
-Jul 24 01:26:58 raspberrypi python3[27084]: 📁 Output file: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:26:58 raspberrypi python3[27084]: 🔧 Initializing camera with serial: 80000
-Jul 24 01:26:58 raspberrypi python3[27084]: ⚙️ Configuring camera...
-Jul 24 01:26:58 raspberrypi python3[27084]: ❌ Error in left camera: Control FrameSkip is not advertised by libcamera
-Jul 24 01:26:58 raspberrypi python3[27084]: 📋 Traceback: Traceback (most recent call last):
-Jul 24 01:26:58 raspberrypi python3[27084]:   File "/tmp/camera_left_recorder.py", line 62, in main
-Jul 24 01:26:58 raspberrypi python3[27084]:     camera.configure(config)
-Jul 24 01:26:58 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1210, in configure
-Jul 24 01:26:58 raspberrypi python3[27084]:     self.configure_("preview" if camera_config is None else camera_config)
-Jul 24 01:26:58 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1197, in configure_
-Jul 24 01:26:58 raspberrypi python3[27084]:     self.controls = Controls(self, controls=self.camera_config['controls'])
-Jul 24 01:26:58 raspberrypi python3[27084]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Jul 24 01:26:58 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 24, in __init__
-Jul 24 01:26:58 raspberrypi python3[27084]:     self.set_controls(controls)
-Jul 24 01:26:58 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 58, in set_controls
-Jul 24 01:26:58 raspberrypi python3[27084]:     self.__setattr__(k, v)
-Jul 24 01:26:58 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 33, in __setattr__
-Jul 24 01:26:58 raspberrypi python3[27084]:     raise RuntimeError(f"Control {name} is not advertised by libcamera")
-Jul 24 01:26:58 raspberrypi python3[27084]: RuntimeError: Control FrameSkip is not advertised by libcamera
-Jul 24 01:26:58 raspberrypi python3[27084]: ERROR:__main__:📥 Camera 0 stderr: [2:42:26.459637598] [27227]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
-Jul 24 01:26:58 raspberrypi python3[27084]: [2:42:26.469423707] [27232]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:26:58 raspberrypi python3[27084]: [2:42:26.478701387] [27232]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
-Jul 24 01:26:58 raspberrypi python3[27084]: [2:42:26.478758424] [27232]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:26:58 raspberrypi python3[27084]: [2:42:26.487604842] [27232]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-Jul 24 01:26:58 raspberrypi python3[27084]: [2:42:26.490564062] [27227]  INFO Camera camera.cpp:1205 configuring streams: (0) 1920x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:26:58 raspberrypi python3[27084]: [2:42:26.490670155] [27232]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:26:58 raspberrypi python3[27084]: ERROR:__main__:❌ Failed to start recording session
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:🎬 Starting recording for booking: test-dual-debug-001
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:🎬 Starting dual camera recording to /opt/ezrec-backend/recordings/2025-07-24/012648-012948_merged.mp4
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:📷 Camera 0: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:📷 Camera 1: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_right.mp4
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:🔧 Creating camera recorder scripts...
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for left camera (Serial: 80000)
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_left_recorder.py
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_left_recorder.py
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for right camera (Serial: 88000)
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_right_recorder.py
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_right_recorder.py
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:📝 Created scripts: /tmp/camera_left_recorder.py, /tmp/camera_right_recorder.py
-Jul 24 01:27:01 raspberrypi python3[27084]: INFO:__main__:📷 Starting left camera process...
-Jul 24 01:27:04 raspberrypi python3[27084]: ERROR:__main__:❌ Camera 0 process failed to start
-Jul 24 01:27:04 raspberrypi python3[27084]: ERROR:__main__:📤 Camera 0 stdout: 📷 Starting left camera recording (Serial: 80000)
-Jul 24 01:27:04 raspberrypi python3[27084]: 📁 Output file: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:04 raspberrypi python3[27084]: 🔧 Initializing camera with serial: 80000
-Jul 24 01:27:04 raspberrypi python3[27084]: ⚙️ Configuring camera...
-Jul 24 01:27:04 raspberrypi python3[27084]: ❌ Error in left camera: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:04 raspberrypi python3[27084]: 📋 Traceback: Traceback (most recent call last):
-Jul 24 01:27:04 raspberrypi python3[27084]:   File "/tmp/camera_left_recorder.py", line 62, in main
-Jul 24 01:27:04 raspberrypi python3[27084]:     camera.configure(config)
-Jul 24 01:27:04 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1210, in configure
-Jul 24 01:27:04 raspberrypi python3[27084]:     self.configure_("preview" if camera_config is None else camera_config)
-Jul 24 01:27:04 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1197, in configure_
-Jul 24 01:27:04 raspberrypi python3[27084]:     self.controls = Controls(self, controls=self.camera_config['controls'])
-Jul 24 01:27:04 raspberrypi python3[27084]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Jul 24 01:27:04 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 24, in __init__
-Jul 24 01:27:04 raspberrypi python3[27084]:     self.set_controls(controls)
-Jul 24 01:27:04 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 58, in set_controls
-Jul 24 01:27:04 raspberrypi python3[27084]:     self.__setattr__(k, v)
-Jul 24 01:27:04 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 33, in __setattr__
-Jul 24 01:27:04 raspberrypi python3[27084]:     raise RuntimeError(f"Control {name} is not advertised by libcamera")
-Jul 24 01:27:04 raspberrypi python3[27084]: RuntimeError: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:04 raspberrypi python3[27084]: ERROR:__main__:📥 Camera 0 stderr: [2:42:32.439447873] [27247]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
-Jul 24 01:27:04 raspberrypi python3[27084]: [2:42:32.449011055] [27250]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:04 raspberrypi python3[27084]: [2:42:32.458114474] [27250]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
-Jul 24 01:27:04 raspberrypi python3[27084]: [2:42:32.458168919] [27250]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:04 raspberrypi python3[27084]: [2:42:32.466601279] [27250]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-Jul 24 01:27:04 raspberrypi python3[27084]: [2:42:32.469294738] [27247]  INFO Camera camera.cpp:1205 configuring streams: (0) 1920x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:27:04 raspberrypi python3[27084]: [2:42:32.469385905] [27250]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:27:04 raspberrypi python3[27084]: ERROR:__main__:❌ Failed to start recording session
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:🎬 Starting recording for booking: test-dual-debug-001
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:🎬 Starting dual camera recording to /opt/ezrec-backend/recordings/2025-07-24/012648-012948_merged.mp4
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:📷 Camera 0: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:📷 Camera 1: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_right.mp4
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:🔧 Creating camera recorder scripts...
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for left camera (Serial: 80000)
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_left_recorder.py
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_left_recorder.py
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for right camera (Serial: 88000)
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_right_recorder.py
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_right_recorder.py
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:📝 Created scripts: /tmp/camera_left_recorder.py, /tmp/camera_right_recorder.py
-Jul 24 01:27:07 raspberrypi python3[27084]: INFO:__main__:📷 Starting left camera process...
-Jul 24 01:27:10 raspberrypi python3[27084]: ERROR:__main__:❌ Camera 0 process failed to start
-Jul 24 01:27:10 raspberrypi python3[27084]: ERROR:__main__:📤 Camera 0 stdout: 📷 Starting left camera recording (Serial: 80000)
-Jul 24 01:27:10 raspberrypi python3[27084]: 📁 Output file: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:10 raspberrypi python3[27084]: 🔧 Initializing camera with serial: 80000
-Jul 24 01:27:10 raspberrypi python3[27084]: ⚙️ Configuring camera...
-Jul 24 01:27:10 raspberrypi python3[27084]: ❌ Error in left camera: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:10 raspberrypi python3[27084]: 📋 Traceback: Traceback (most recent call last):
-Jul 24 01:27:10 raspberrypi python3[27084]:   File "/tmp/camera_left_recorder.py", line 62, in main
-Jul 24 01:27:10 raspberrypi python3[27084]:     camera.configure(config)
-Jul 24 01:27:10 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1210, in configure
-Jul 24 01:27:10 raspberrypi python3[27084]:     self.configure_("preview" if camera_config is None else camera_config)
-Jul 24 01:27:10 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1197, in configure_
-Jul 24 01:27:10 raspberrypi python3[27084]:     self.controls = Controls(self, controls=self.camera_config['controls'])
-Jul 24 01:27:10 raspberrypi python3[27084]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Jul 24 01:27:10 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 24, in __init__
-Jul 24 01:27:10 raspberrypi python3[27084]:     self.set_controls(controls)
-Jul 24 01:27:10 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 58, in set_controls
-Jul 24 01:27:10 raspberrypi python3[27084]:     self.__setattr__(k, v)
-Jul 24 01:27:10 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 33, in __setattr__
-Jul 24 01:27:10 raspberrypi python3[27084]:     raise RuntimeError(f"Control {name} is not advertised by libcamera")
-Jul 24 01:27:10 raspberrypi python3[27084]: RuntimeError: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:10 raspberrypi python3[27084]: ERROR:__main__:📥 Camera 0 stderr: [2:42:38.478558634] [27269]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
-Jul 24 01:27:10 raspberrypi python3[27084]: [2:42:38.488758763] [27272]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:10 raspberrypi python3[27084]: [2:42:38.498793484] [27272]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
-Jul 24 01:27:10 raspberrypi python3[27084]: [2:42:38.498859688] [27272]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:10 raspberrypi python3[27084]: [2:42:38.508154367] [27272]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-Jul 24 01:27:10 raspberrypi python3[27084]: [2:42:38.511291606] [27269]  INFO Camera camera.cpp:1205 configuring streams: (0) 1920x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:27:10 raspberrypi python3[27084]: [2:42:38.511418070] [27272]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:27:10 raspberrypi python3[27084]: ERROR:__main__:❌ Failed to start recording session
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:🎬 Starting recording for booking: test-dual-debug-001
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:🎬 Starting dual camera recording to /opt/ezrec-backend/recordings/2025-07-24/012648-012948_merged.mp4
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:📷 Camera 0: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:📷 Camera 1: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_right.mp4
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:🔧 Creating camera recorder scripts...
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for left camera (Serial: 80000)
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_left_recorder.py
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_left_recorder.py
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for right camera (Serial: 88000)
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_right_recorder.py
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_right_recorder.py
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:📝 Created scripts: /tmp/camera_left_recorder.py, /tmp/camera_right_recorder.py
-Jul 24 01:27:13 raspberrypi python3[27084]: INFO:__main__:📷 Starting left camera process...
-Jul 24 01:27:16 raspberrypi python3[27084]: ERROR:__main__:❌ Camera 0 process failed to start
-Jul 24 01:27:16 raspberrypi python3[27084]: ERROR:__main__:📤 Camera 0 stdout: 📷 Starting left camera recording (Serial: 80000)
-Jul 24 01:27:16 raspberrypi python3[27084]: 📁 Output file: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:16 raspberrypi python3[27084]: 🔧 Initializing camera with serial: 80000
-Jul 24 01:27:16 raspberrypi python3[27084]: ⚙️ Configuring camera...
-Jul 24 01:27:16 raspberrypi python3[27084]: ❌ Error in left camera: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:16 raspberrypi python3[27084]: 📋 Traceback: Traceback (most recent call last):
-Jul 24 01:27:16 raspberrypi python3[27084]:   File "/tmp/camera_left_recorder.py", line 62, in main
-Jul 24 01:27:16 raspberrypi python3[27084]:     camera.configure(config)
-Jul 24 01:27:16 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1210, in configure
-Jul 24 01:27:16 raspberrypi python3[27084]:     self.configure_("preview" if camera_config is None else camera_config)
-Jul 24 01:27:16 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1197, in configure_
-Jul 24 01:27:16 raspberrypi python3[27084]:     self.controls = Controls(self, controls=self.camera_config['controls'])
-Jul 24 01:27:16 raspberrypi python3[27084]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Jul 24 01:27:16 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 24, in __init__
-Jul 24 01:27:16 raspberrypi python3[27084]:     self.set_controls(controls)
-Jul 24 01:27:16 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 58, in set_controls
-Jul 24 01:27:16 raspberrypi python3[27084]:     self.__setattr__(k, v)
-Jul 24 01:27:16 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 33, in __setattr__
-Jul 24 01:27:16 raspberrypi python3[27084]:     raise RuntimeError(f"Control {name} is not advertised by libcamera")
-Jul 24 01:27:16 raspberrypi python3[27084]: RuntimeError: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:16 raspberrypi python3[27084]: ERROR:__main__:📥 Camera 0 stderr: [2:42:44.418078268] [27285]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
-Jul 24 01:27:16 raspberrypi python3[27084]: [2:42:44.427666300] [27288]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:16 raspberrypi python3[27084]: [2:42:44.436826961] [27288]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
-Jul 24 01:27:16 raspberrypi python3[27084]: [2:42:44.436899350] [27288]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:16 raspberrypi python3[27084]: [2:42:44.445452822] [27288]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-Jul 24 01:27:16 raspberrypi python3[27084]: [2:42:44.448222929] [27285]  INFO Camera camera.cpp:1205 configuring streams: (0) 1920x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:27:16 raspberrypi python3[27084]: [2:42:44.448315115] [27288]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:27:16 raspberrypi python3[27084]: ERROR:__main__:❌ Failed to start recording session
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:🎬 Starting recording for booking: test-dual-debug-001
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:🎬 Starting dual camera recording to /opt/ezrec-backend/recordings/2025-07-24/012648-012948_merged.mp4
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:📷 Camera 0: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:📷 Camera 1: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_right.mp4
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:🔧 Creating camera recorder scripts...
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for left camera (Serial: 80000)
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_left_recorder.py
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_left_recorder.py
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for right camera (Serial: 88000)
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_right_recorder.py
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_right_recorder.py
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:📝 Created scripts: /tmp/camera_left_recorder.py, /tmp/camera_right_recorder.py
-Jul 24 01:27:19 raspberrypi python3[27084]: INFO:__main__:📷 Starting left camera process...
-Jul 24 01:27:22 raspberrypi python3[27084]: ERROR:__main__:❌ Camera 0 process failed to start
-Jul 24 01:27:22 raspberrypi python3[27084]: ERROR:__main__:📤 Camera 0 stdout: 📷 Starting left camera recording (Serial: 80000)
-Jul 24 01:27:22 raspberrypi python3[27084]: 📁 Output file: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:22 raspberrypi python3[27084]: 🔧 Initializing camera with serial: 80000
-Jul 24 01:27:22 raspberrypi python3[27084]: ⚙️ Configuring camera...
-Jul 24 01:27:22 raspberrypi python3[27084]: ❌ Error in left camera: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:22 raspberrypi python3[27084]: 📋 Traceback: Traceback (most recent call last):
-Jul 24 01:27:22 raspberrypi python3[27084]:   File "/tmp/camera_left_recorder.py", line 62, in main
-Jul 24 01:27:22 raspberrypi python3[27084]:     camera.configure(config)
-Jul 24 01:27:22 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1210, in configure
-Jul 24 01:27:22 raspberrypi python3[27084]:     self.configure_("preview" if camera_config is None else camera_config)
-Jul 24 01:27:22 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1197, in configure_
-Jul 24 01:27:22 raspberrypi python3[27084]:     self.controls = Controls(self, controls=self.camera_config['controls'])
-Jul 24 01:27:22 raspberrypi python3[27084]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Jul 24 01:27:22 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 24, in __init__
-Jul 24 01:27:22 raspberrypi python3[27084]:     self.set_controls(controls)
-Jul 24 01:27:22 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 58, in set_controls
-Jul 24 01:27:22 raspberrypi python3[27084]:     self.__setattr__(k, v)
-Jul 24 01:27:22 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 33, in __setattr__
-Jul 24 01:27:22 raspberrypi python3[27084]:     raise RuntimeError(f"Control {name} is not advertised by libcamera")
-Jul 24 01:27:22 raspberrypi python3[27084]: RuntimeError: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:22 raspberrypi python3[27084]: ERROR:__main__:📥 Camera 0 stderr: [2:42:50.522708176] [27307]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
-Jul 24 01:27:22 raspberrypi python3[27084]: [2:42:50.532282431] [27310]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:22 raspberrypi python3[27084]: [2:42:50.541269702] [27310]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
-Jul 24 01:27:22 raspberrypi python3[27084]: [2:42:50.541324146] [27310]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:22 raspberrypi python3[27084]: [2:42:50.549676913] [27310]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-Jul 24 01:27:22 raspberrypi python3[27084]: [2:42:50.552458224] [27307]  INFO Camera camera.cpp:1205 configuring streams: (0) 1920x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:27:22 raspberrypi python3[27084]: [2:42:50.552549225] [27310]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:27:22 raspberrypi python3[27084]: ERROR:__main__:❌ Failed to start recording session
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:🎬 Starting recording for booking: test-dual-debug-001
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:🎬 Starting dual camera recording to /opt/ezrec-backend/recordings/2025-07-24/012648-012948_merged.mp4
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:📷 Camera 0: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:📷 Camera 1: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_right.mp4
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:🔧 Creating camera recorder scripts...
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for left camera (Serial: 80000)
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_left_recorder.py
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_left_recorder.py
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:🔧 Creating recorder script for right camera (Serial: 88000)
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:📝 Writing script to: /tmp/camera_right_recorder.py
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:✅ Created executable script: /tmp/camera_right_recorder.py
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:📝 Created scripts: /tmp/camera_left_recorder.py, /tmp/camera_right_recorder.py
-Jul 24 01:27:25 raspberrypi python3[27084]: INFO:__main__:📷 Starting left camera process...
-Jul 24 01:27:28 raspberrypi python3[27084]: ERROR:__main__:❌ Camera 0 process failed to start
-Jul 24 01:27:28 raspberrypi python3[27084]: ERROR:__main__:📤 Camera 0 stdout: 📷 Starting left camera recording (Serial: 80000)
-Jul 24 01:27:28 raspberrypi python3[27084]: 📁 Output file: /opt/ezrec-backend/recordings/2025-07-24/012648-012948_left.mp4
-Jul 24 01:27:28 raspberrypi python3[27084]: 🔧 Initializing camera with serial: 80000
-Jul 24 01:27:28 raspberrypi python3[27084]: ⚙️ Configuring camera...
-Jul 24 01:27:28 raspberrypi python3[27084]: ❌ Error in left camera: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:28 raspberrypi python3[27084]: 📋 Traceback: Traceback (most recent call last):
-Jul 24 01:27:28 raspberrypi python3[27084]:   File "/tmp/camera_left_recorder.py", line 62, in main
-Jul 24 01:27:28 raspberrypi python3[27084]:     camera.configure(config)
-Jul 24 01:27:28 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1210, in configure
-Jul 24 01:27:28 raspberrypi python3[27084]:     self.configure_("preview" if camera_config is None else camera_config)
-Jul 24 01:27:28 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/picamera2.py", line 1197, in configure_
-Jul 24 01:27:28 raspberrypi python3[27084]:     self.controls = Controls(self, controls=self.camera_config['controls'])
-Jul 24 01:27:28 raspberrypi python3[27084]:                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Jul 24 01:27:28 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 24, in __init__
-Jul 24 01:27:28 raspberrypi python3[27084]:     self.set_controls(controls)
-Jul 24 01:27:28 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 58, in set_controls
-Jul 24 01:27:28 raspberrypi python3[27084]:     self.__setattr__(k, v)
-Jul 24 01:27:28 raspberrypi python3[27084]:   File "/usr/lib/python3/dist-packages/picamera2/controls.py", line 33, in __setattr__
-Jul 24 01:27:28 raspberrypi python3[27084]:     raise RuntimeError(f"Control {name} is not advertised by libcamera")
-Jul 24 01:27:28 raspberrypi python3[27084]: RuntimeError: Control FrameSkip is not advertised by libcamera
-Jul 24 01:27:28 raspberrypi python3[27084]: ERROR:__main__:📥 Camera 0 stderr: [2:42:56.471367197] [27322]  INFO Camera camera_manager.cpp:326 libcamera v0.5.0+59-d83ff0a4
-Jul 24 01:27:28 raspberrypi python3[27084]: [2:42:56.481003896] [27325]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:28 raspberrypi python3[27084]: [2:42:56.490679448] [27325]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media1 using PiSP variant BCM2712_D0
-Jul 24 01:27:28 raspberrypi python3[27084]: [2:42:56.490738282] [27325]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-Jul 24 01:27:28 raspberrypi python3[27084]: [2:42:56.500181777] [27325]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media4 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-Jul 24 01:27:28 raspberrypi python3[27084]: [2:42:56.503213571] [27322]  INFO Camera camera.cpp:1205 configuring streams: (0) 1920x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:27:28 raspberrypi python3[27084]: [2:42:56.503318053] [27325]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:27:28 raspberrypi python3[27084]: ERROR:__main__:❌ Failed to start recording session
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ sudo journalctl -u recorder.service -f
+Jul 24 01:54:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera now open.
+Jul 24 01:54:46 raspberrypi python3[33221]: INFO:__main__:✅ Initialized default camera
+Jul 24 01:54:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera configuration has been adjusted!
+Jul 24 01:54:46 raspberrypi python3[33221]: [3:10:16.901129765] [33221]  INFO Camera camera.cpp:1205 configuring streams: (0) 2028x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
+Jul 24 01:54:46 raspberrypi python3[33221]: [3:10:16.901230654] [33259]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
+Jul 24 01:54:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Configuration successful!
+Jul 24 01:55:03 raspberrypi systemd-journald[311]: [🡕] Suppressed 10 messages from recorder.service
+Jul 24 01:55:03 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:03.186474-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:06 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:06.190858-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:09 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:09.191299-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:12 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:12.191717-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:15 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:15.192141-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:18 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:18.192569-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:21 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:21.193166-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:24 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:24.194711-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:27 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:27.195091-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:30 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:30.195515-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:33 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:33.196316-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:36 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:36.196689-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:39 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:39.197222-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:42 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:42.197755-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:45 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:45.198201-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:48 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:48.198732-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:51 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:51.199200-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:54 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:54.199603-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:55:57 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:57.200049-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:00 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:00.200878-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:03 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:03.201763-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:06 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:06.202254-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:09 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:09.202721-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:12 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:12.203127-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:15 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:15.203524-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:18 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:18.204118-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:21 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:21.204849-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:24 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:24.205277-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:27 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:27.205758-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:30 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:30.206172-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:33 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:33.206591-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:36 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:36.209759-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:39 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:39.210502-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:42 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:42.213041-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:45 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:45.213475-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:48 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:48.213866-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:51 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:51.214838-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:54 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:54.215495-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:56:57 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:57.216133-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:00 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:00.216654-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:03 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:03.217526-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:06 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:06.217946-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:09 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:09.218374-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:12 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:12.220960-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:15 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:15.221806-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:18 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:18.222250-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:21 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:21.222686-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:24 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:24.223175-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:27 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:27.224175-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:30 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:30.224710-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:33 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:33.225341-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:36 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:36.225995-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:39 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:39.226460-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:42 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:42.226904-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:45.227327-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: True, Session started: 2025-07-24T01:54:47.541756-04:00
+Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Stopping session: now=2025-07-24 01:57:45.227327-04:00, end_time=2025-07-24 01:57:43-04:00, elapsed=177.685571s
+Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:🛑 Stopping recording session
+Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Stopping camera recording...
+Jul 24 01:57:45 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera stopped
+Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Waiting for recording to finalize...
+Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:Stopping camera...
+Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:Closing camera...
+Jul 24 01:57:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera closed successfully.
+Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:⏹️ Stopped recording: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.mp4
+Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:Recorded file size: 1553689 bytes
+Jul 24 01:57:46 raspberrypi python3[33221]: WARNING:__main__:⚠️ MP4 file validation failed:
+Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:🔧 Attempting to repair corrupted MP4 file...
+Jul 24 01:57:47 raspberrypi python3[33221]: ERROR:__main__:❌ Failed to repair MP4 file: ffmpeg version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2000-2024 the FFmpeg developers
+Jul 24 01:57:47 raspberrypi python3[33221]:   built with gcc 12 (Debian 12.2.0-14)
+Jul 24 01:57:47 raspberrypi python3[33221]:   configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
+Jul 24 01:57:47 raspberrypi python3[33221]:   WARNING: library configuration mismatch
+Jul 24 01:57:47 raspberrypi python3[33221]:   avcodec     configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared --enable-version3 --disable-doc --disable-programs --enable-libaribb24 --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libtesseract --enable-libvo_amrwbenc --enable-libsmbclient
+Jul 24 01:57:47 raspberrypi python3[33221]:   libavutil      57. 28.100 / 57. 28.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libavcodec     59. 37.100 / 59. 37.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libavformat    59. 27.100 / 59. 27.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libavdevice    59.  7.100 / 59.  7.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libavfilter     8. 44.100 /  8. 44.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libswscale      6.  7.100 /  6.  7.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libswresample   4.  7.100 /  4.  7.100
+Jul 24 01:57:47 raspberrypi python3[33221]:   libpostproc    56.  6.100 / 56.  6.100
+Jul 24 01:57:47 raspberrypi python3[33221]: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.mp4.backup: Invalid data found when processing input
+Jul 24 01:57:47 raspberrypi python3[33221]: WARNING:__main__:⚠️ Could not repair MP4 file, but will still process it
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:⚠️ Marked corrupted video for processing (video worker will handle): /opt/ezrec-backend/recordings/2025-07-24/015443-015743.done
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:🔓 Removed lock file: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.lock
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:📝 Metadata saved to: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.json
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:booking_utils:🔄 Updating Supabase booking test-single-001 to status 'RecordingFinished'
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:httpx:HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.test-single-001 "HTTP/2 200 OK"
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:booking_utils:📄 Updated local cache for booking test-single-001 to status 'RecordingFinished'
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:📡 Updated booking status to RecordingFinished for booking ID: test-single-001
+Jul 24 01:57:47 raspberrypi python3[33221]: INFO:httpx:HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/cameras?id=eq.pi-001 "HTTP/2 200 OK"
+
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ sudo journalctl -u video_worker.service -f
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Checking 014242-014742_left.mp4: done=False, completed=False, lock=False, meta=False
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Checking 015443-015743.mp4: done=True, completed=False, lock=False, meta=True
+Jul 24 01:57:53 raspberrypi python3[33091]: ERROR:video_worker:❌ Error validating video 015443-015743.mp4: name 'is_file_readable' is not defined
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Checking 014700-014800_left.mp4: done=False, completed=False, lock=False, meta=False
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-21
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-16
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-23
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-18
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-20
+Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-22
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-19
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-15
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-24
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Checking 014242-014742_left.mp4: done=False, completed=False, lock=False, meta=False
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Checking 015443-015743.mp4: done=True, completed=True, lock=False, meta=True
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Checking 014700-014800_left.mp4: done=False, completed=False, lock=False, meta=False
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-21
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-16
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-23
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-18
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-20
+Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
