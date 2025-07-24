@@ -209,7 +209,6 @@ def main():
                 "FrameDurationLimits": (33333, 1000000),
                 "ExposureTime": 33333,
                 "AnalogueGain": 1.0,
-                "FrameSkip": 0,
                 "NoiseReductionMode": 0
             }}
         )
