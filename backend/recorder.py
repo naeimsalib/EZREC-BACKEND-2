@@ -231,30 +231,28 @@ class RecordingSession:
             # Initialize camera directly with serial
             self.camera = safe_init_camera(camera_serial=camera_serial)
             
-            # Add camera-specific configuration for dual camera setups
+            # Create camera configuration optimized for reliable recording
             config = self.camera.create_video_configuration(
                 main={"size": (width, height), "format": "YUV420"},
                 controls={
                     "FrameDurationLimits": (33333, 1000000),  # 1-30fps
                     "ExposureTime": 33333,  # 1/30 second
-                    "AnalogueGain": 1.0
+                    "AnalogueGain": 1.0,
+                    "NoiseReductionMode": 0  # Disable noise reduction for stability
                 }
             )
-            
-            # For dual camera setups, add additional stability settings
-            if camera_serial:
-                config["controls"]["FrameSkip"] = 0  # Prevent frame skipping
-                config["controls"]["NoiseReductionMode"] = 0  # Disable noise reduction for stability
             
             self.camera.configure(config)
             self.camera.start()
             
-            # Create encoder with better settings for reliable recording
+            # Create encoder with settings optimized for reliable MP4 output
             self.encoder = H264Encoder(
-                bitrate=6000000,  # 6Mbps (further reduced for dual camera stability)
+                bitrate=4000000,  # 4Mbps (reduced for stability)
                 repeat=False,
                 iperiod=30,
-                qp=25  # Slightly higher QP for stability
+                qp=30,  # Higher QP for stability
+                profile="baseline",  # Use baseline profile for compatibility
+                level="4.1"  # Specify H.264 level
             )
             
             # Start recording
@@ -295,7 +293,7 @@ class RecordingSession:
                 
                 # Wait for recording to fully stop and file to be finalized
                 logger.info("Waiting for recording to finalize...")
-                time.sleep(1.0)  # Give time for file finalization
+                time.sleep(2.0)  # Give more time for file finalization
                 
                 # Stop the camera
                 logger.info("Stopping camera...")
