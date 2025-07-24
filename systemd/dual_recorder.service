@@ -1,0 +1,29 @@
+[Unit]
+Description=EZREC Dual Camera Recorder
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=michomanoly14892
+Group=video
+WorkingDirectory=/opt/ezrec-backend/backend
+Environment=PYTHONPATH=/opt/ezrec-backend/backend:/opt/ezrec-backend/api
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+# Camera device access
+ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" 2>/dev/null || true; done'
+ExecStartPre=/bin/sleep 2
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/ezrec-backend/recordings /opt/ezrec-backend/logs /opt/ezrec-backend/api/local_data /opt/ezrec-backend/status.json
+
+[Install]
+WantedBy=multi-user.target 
