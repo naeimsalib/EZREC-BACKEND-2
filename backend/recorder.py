@@ -100,6 +100,13 @@ logger.info(f"📄 Watching bookings cache: {BOOKING_CACHE_FILE}")
 
 def handle_exit(sig, frame):
     logger.info("🛑 Received termination signal. Exiting gracefully.")
+    # If we're currently recording, try to stop gracefully
+    if 'current_session' in globals() and current_session and current_session.active:
+        logger.info("🛑 Stopping active recording before exit...")
+        try:
+            current_session.stop()
+        except Exception as e:
+            logger.error(f"❌ Error stopping recording during exit: {e}")
     sys.exit(0)
 
 signal.signal(signal.SIGINT, handle_exit)
@@ -117,6 +124,44 @@ def set_is_recording(value: bool):
     status["is_recording"] = value
     with open(status_path, "w") as f:
         json.dump(status, f, indent=2)
+
+def repair_mp4_file(file_path: Path) -> bool:
+    """
+    Attempt to repair a corrupted MP4 file using FFmpeg.
+    Returns True if repair was successful, False otherwise.
+    """
+    try:
+        import subprocess
+        
+        # Create a backup of the original file
+        backup_path = file_path.with_suffix('.mp4.backup')
+        file_path.rename(backup_path)
+        
+        # Try to repair using FFmpeg
+        result = subprocess.run([
+            'ffmpeg', '-i', str(backup_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero',
+            str(file_path)
+        ], capture_output=True, text=True, timeout=60)
+        
+        if result.returncode == 0 and file_path.exists():
+            logger.info(f"✅ Successfully repaired MP4 file: {file_path}")
+            # Remove backup if repair was successful
+            backup_path.unlink()
+            return True
+        else:
+            logger.error(f"❌ Failed to repair MP4 file: {result.stderr}")
+            # Restore original file
+            if backup_path.exists():
+                backup_path.rename(file_path)
+            return False
+            
+    except Exception as e:
+        logger.error(f"❌ Error during MP4 repair: {e}")
+        # Restore original file if backup exists
+        backup_path = file_path.with_suffix('.mp4.backup')
+        if backup_path.exists():
+            backup_path.rename(file_path)
+        return False
 
 class RecordingSession:
     def __init__(self, booking):
@@ -152,15 +197,19 @@ class RecordingSession:
             self.camera.configure(config)
             self.camera.start()
             
-            # Create encoder
+            # Create encoder with better settings for reliable recording
             self.encoder = H264Encoder(
-                bitrate=10000000,  # 10Mbps
+                bitrate=8000000,  # 8Mbps (reduced for stability)
                 repeat=False,
-                iperiod=30
+                iperiod=30,
+                qp=23  # Add quality parameter
             )
             
             # Start recording
             self.camera.start_recording(self.encoder, str(self.final_filepath))
+            
+            # Wait a moment to ensure recording has started
+            time.sleep(0.5)
             
             self.active = True
             self.recording_start_time = datetime.now(LOCAL_TZ)
@@ -188,8 +237,22 @@ class RecordingSession:
         logger.info("🛑 Stopping recording session")
         try:
             if self.camera and self.active:
+                # Stop recording first
+                logger.info("Stopping camera recording...")
                 self.camera.stop_recording()
+                
+                # Wait for recording to fully stop and file to be finalized
+                logger.info("Waiting for recording to finalize...")
+                time.sleep(1.0)  # Give time for file finalization
+                
+                # Stop the camera
+                logger.info("Stopping camera...")
+                self.camera.stop()
+                
+                # Close camera properly
+                logger.info("Closing camera...")
                 self.camera.close()
+                
                 self.active = False
                 logger.info(f"⏹️ Stopped recording: {self.final_filepath}")
 
@@ -197,9 +260,34 @@ class RecordingSession:
                 if self.final_filepath.exists():
                     file_size = self.final_filepath.stat().st_size
                     logger.info(f"Recorded file size: {file_size} bytes")
+                    
+                    # Validate MP4 file integrity
                     if file_size > 100 * 1024:  # 100KB minimum
-                        self.completed_marker.touch()
-                        logger.info(f"✅ Marked video as ready for processing: {self.completed_marker}")
+                        # Try to validate the MP4 file
+                        try:
+                            import subprocess
+                            result = subprocess.run(
+                                ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', str(self.final_filepath)],
+                                capture_output=True, text=True, timeout=10
+                            )
+                            if result.returncode == 0:
+                                self.completed_marker.touch()
+                                logger.info(f"✅ Marked video as ready for processing: {self.completed_marker}")
+                            else:
+                                logger.warning(f"⚠️ MP4 file validation failed: {result.stderr}")
+                                # Try to repair the corrupted file
+                                logger.info("🔧 Attempting to repair corrupted MP4 file...")
+                                if repair_mp4_file(self.final_filepath):
+                                    self.completed_marker.touch()
+                                    logger.info(f"✅ Repaired and marked video as ready for processing: {self.completed_marker}")
+                                else:
+                                    logger.error(f"❌ Failed to repair MP4 file: {self.final_filepath}")
+                        except Exception as e:
+                            logger.warning(f"⚠️ Could not validate MP4 file: {e}")
+                            # Still mark as done if file size is reasonable
+                            if file_size > 500 * 1024:  # 500KB minimum
+                                self.completed_marker.touch()
+                                logger.info(f"✅ Marked video as ready for processing (size check only): {self.completed_marker}")
                     else:
                         logger.warning(f"⚠️ Video file too small or incomplete: {file_size} bytes. Skipping .done creation.")
                 else:
