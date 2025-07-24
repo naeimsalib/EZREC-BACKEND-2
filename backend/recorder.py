@@ -61,7 +61,7 @@ try:
         raise RuntimeError("❌ Camera failed to initialize after multiple attempts")
 
     def get_camera_serials():
-        """Get camera serials from environment variables"""
+        """Get camera serials from environment variables with fallback logic"""
         cam1_serial = os.getenv('CAMERA_1_SERIAL')
         cam2_serial = os.getenv('CAMERA_2_SERIAL')
         
@@ -79,6 +79,61 @@ try:
         
         logger.info(f"🔍 Dual camera mode: CAMERA_1_SERIAL={cam1_serial}, CAMERA_2_SERIAL={cam2_serial}")
         return cam1_serial, cam2_serial
+
+    def test_camera_availability(camera_serial, camera_name):
+        """Test if a camera is available and working"""
+        try:
+            logger.info(f"🔍 Testing {camera_name} availability (serial: {camera_serial})")
+            camera = Picamera2()
+            
+            # Get camera info
+            camera_info = camera.camera_properties
+            actual_serial = camera_info.get('SerialNumber', 'Unknown')
+            
+            if camera_serial and actual_serial != camera_serial:
+                logger.warning(f"⚠️ {camera_name} serial mismatch. Expected: {camera_serial}, Got: {actual_serial}")
+                camera.close()
+                return False
+            
+            # Test basic configuration
+            config = camera.create_video_configuration(
+                main={"size": (width, height), "format": "YUV420"},
+                controls={
+                    "FrameDurationLimits": (33333, 1000000),
+                    "ExposureTime": 33333,
+                    "AnalogueGain": 1.0
+                }
+            )
+            
+            camera.configure(config)
+            camera.start()
+            camera.stop()
+            camera.close()
+            
+            logger.info(f"✅ {camera_name} is available and working")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ {camera_name} is not available: {e}")
+            return False
+
+    def get_available_cameras():
+        """Get list of available cameras with fallback logic"""
+        cam1_serial, cam2_serial = get_camera_serials()
+        available_cameras = []
+        
+        if cam1_serial and test_camera_availability(cam1_serial, "Camera 1"):
+            available_cameras.append(("Camera 1", cam1_serial))
+        
+        if cam2_serial and test_camera_availability(cam2_serial, "Camera 2"):
+            available_cameras.append(("Camera 2", cam2_serial))
+        
+        if not available_cameras:
+            logger.error("❌ No cameras are available. Cannot start recording.")
+            return []
+        
+        logger.info(f"✅ Available cameras: {[name for name, _ in available_cameras]}")
+        return available_cameras
 
 except ImportError:
     Picamera2 = None
@@ -310,12 +365,18 @@ class DualRecordingSession:
             self.lockfile.touch()
             logger.info(f"🎬 Starting dual camera recording session: {self.filename_base}")
             
-            # Get camera serials
-            cam1_serial, cam2_serial = get_camera_serials()
+            # Get available cameras with fallback logic
+            available_cameras = get_available_cameras()
             
-            if not cam1_serial and not cam2_serial:
-                logger.error("❌ No cameras configured. Cannot start recording.")
+            if not available_cameras:
+                logger.error("❌ No cameras available. Cannot start recording.")
                 return False
+            
+            # Log camera availability
+            if len(available_cameras) == 1:
+                logger.warning(f"⚠️ Only one camera available: {available_cameras[0][0]}. Using single camera mode.")
+            else:
+                logger.info(f"✅ {len(available_cameras)} cameras available for recording.")
             
             # Calculate recording duration
             start_dt = parser.isoparse(self.booking["start_time"]).astimezone(LOCAL_TZ)
@@ -326,26 +387,25 @@ class DualRecordingSession:
                 logger.warning("⚠️ Recording duration is 0 or negative. Using minimum duration.")
                 duration = 10  # Minimum 10 seconds
             
-            # Create camera recording threads
+            # Create camera recording threads based on available cameras
             self.camera_threads = []
             
-            if cam1_serial:
-                cam1_thread = CameraRecordingThread(
-                    camera_serial=cam1_serial,
-                    output_path=self.cam1_filepath,
+            for i, (camera_name, camera_serial) in enumerate(available_cameras):
+                if i == 0:
+                    output_path = self.cam1_filepath
+                elif i == 1:
+                    output_path = self.cam2_filepath
+                else:
+                    # Fallback for additional cameras
+                    output_path = self.date_folder / f"{self.filename_base}_cam{i+1}.mp4"
+                
+                thread = CameraRecordingThread(
+                    camera_serial=camera_serial,
+                    output_path=output_path,
                     duration=duration,
-                    camera_name="Camera 1"
+                    camera_name=camera_name
                 )
-                self.camera_threads.append(cam1_thread)
-            
-            if cam2_serial:
-                cam2_thread = CameraRecordingThread(
-                    camera_serial=cam2_serial,
-                    output_path=self.cam2_filepath,
-                    duration=duration,
-                    camera_name="Camera 2"
-                )
-                self.camera_threads.append(cam2_thread)
+                self.camera_threads.append(thread)
             
             # Start all camera threads
             logger.info(f"🎥 Starting {len(self.camera_threads)} camera recording threads...")
