@@ -1,163 +1,125 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Make the script executable and run it
-chmod +x fix_camera_issue.sh
-sudo ./fix_camera_issue.sh
-🔧 EZREC Camera Fix Script
-==========================
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo python3 detect_cameras.py
+python3: can't open file '/home/michomanoly14892/EZREC-BACKEND-2/detect_cameras.py': [Errno 2] No such file or directory
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cd /opt/ezrec-backend/backend
+sudo python3 detect_cameras.py
+🎥 EZREC Camera Detection Tool
+==================================================
+🔍 Detecting cameras using libcamera-hello...
 
-Step 1: Finding all processes using camera devices...
+❌ No cameras detected
 
-📷 Processes using video devices:
-COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 6912 michomanoly14892   18u   CHR  81,32      0t0  788 /dev/video12
-python3 6912 michomanoly14892   19u   CHR  81,35      0t0  791 /dev/video15
-python3 6912 michomanoly14892   20u   CHR  81,34      0t0  790 /dev/video14
-python3 6912 michomanoly14892   21u   CHR  81,29      0t0  785 /dev/video9
-python3 6912 michomanoly14892   22u   CHR   81,1      0t0  551 /dev/video20
-python3 6912 michomanoly14892   23u   CHR   81,4      0t0  554 /dev/video23
-python3 6912 michomanoly14892   24u   CHR   81,5      0t0  555 /dev/video24
-python3 6912 michomanoly14892   25u   CHR   81,8      0t0  560 /dev/video27
-python3 6912 michomanoly14892   26u   CHR   81,2      0t0  552 /dev/video21
-python3 6912 michomanoly14892   27u   CHR   81,6      0t0  558 /dev/video25
-python3 6912 michomanoly14892   28u   CHR   81,3      0t0  553 /dev/video22
-python3 6912 michomanoly14892   29u   CHR   81,7      0t0  559 /dev/video26
-python3 6912 michomanoly14892   37u   CHR  81,21      0t0  759 /dev/video4
-python3 6912 michomanoly14892   38u   CHR  81,24      0t0  762 /dev/video7
-python3 6912 michomanoly14892   39u   CHR  81,23      0t0  761 /dev/video6
-python3 6912 michomanoly14892   40u   CHR  81,18      0t0  756 /dev/video1
-python3 6912 michomanoly14892   41u   CHR   81,9      0t0  565 /dev/video28
-python3 6912 michomanoly14892   42u   CHR  81,12      0t0  568 /dev/video31
-python3 6912 michomanoly14892   43u   CHR  81,13      0t0  569 /dev/video32
-python3 6912 michomanoly14892   44u   CHR  81,16      0t0  574 /dev/video35
-python3 6912 michomanoly14892   45u   CHR  81,10      0t0  566 /dev/video29
-python3 6912 michomanoly14892   46u   CHR  81,14      0t0  570 /dev/video33
-python3 6912 michomanoly14892   47u   CHR  81,11      0t0  567 /dev/video30
-python3 6912 michomanoly14892   48u   CHR  81,15      0t0  571 /dev/video34
-No processes found using video devices
+📹 Checking video devices...
 
-📹 Processes using media devices:
-COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 6912 michomanoly14892   11uW  CHR  238,1      0t0  549 /dev/media1
-python3 6912 michomanoly14892   12uW  CHR  238,3      0t0  561 /dev/media3
-python3 6912 michomanoly14892   30u   CHR  238,2      0t0  550 /dev/media2
-python3 6912 michomanoly14892   31u   CHR  238,4      0t0  583 /dev/media4
-No processes found using media devices
+✅ Found 10 video device(s):
 
-🐍 Python processes:
-michoma+    4500  0.2  2.5 766608 209056 ?       SLsl 22:20   0:03 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
-michoma+    4533  0.0  0.1  21856 13024 ?        Ss   22:20   0:00 /opt/ezrec-backend/api/venv/bin/python3 monitor.py
-michoma+    6912 14.2  2.5 1405840 214608 ?      SLsl 22:40   0:17 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/camera_streamer.py
-michoma+    7019  1.0  2.0 652896 169072 ?       SLsl 22:40   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
-michoma+    7024  0.9  0.9  92992 80688 ?        Ss   22:40   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
-michoma+    7031  1.0  0.5  61840 49216 ?        Ss   22:40   0:01 /opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
-michoma+    7036  0.8  0.7  71600 60288 ?        Ss   22:40   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/log_collector.py
-michoma+    7041  0.2  0.3  40928 31584 ?        Ss   22:40   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/health_api.py
+📹 /dev/video0:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-Step 2: Stopping all EZREC services...
+📹 /dev/video1:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-ℹ️ Stopping recorder.service...
-ℹ️ Stopping video_worker.service...
-ℹ️ Stopping system_status.service...
-ℹ️ Stopping log_collector.service...
-ℹ️ Stopping health_api.service...
+📹 /dev/video2:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-Step 3: Killing all camera-related processes...
+📹 /dev/video3:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-ℹ️ Killing processes using video devices...
-  6912ℹ️ Killing processes using media devices...
-ℹ️ Killing Python processes...
+📹 /dev/video4:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-Step 4: Waiting for processes to terminate...
+📹 /dev/video5:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-Step 5: Verifying camera is free...
+📹 /dev/video6:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-📷 Video devices status:
-crw-rw----+ 1 root video 81, 17 Jul 23 21:17 /dev/video0
-crw-rw----+ 1 root video 81, 18 Jul 23 21:17 /dev/video1
-crw-rw----+ 1 root video 81, 30 Jul 23 22:05 /dev/video10
-crw-rw----+ 1 root video 81, 31 Jul 23 22:05 /dev/video11
-crw-rw----+ 1 root video 81, 32 Jul 23 22:05 /dev/video12
-crw-rw----+ 1 root video 81, 33 Jul 23 22:05 /dev/video13
-crw-rw----+ 1 root video 81, 34 Jul 23 22:05 /dev/video14
-crw-rw----+ 1 root video 81, 35 Jul 23 22:05 /dev/video15
-crw-rw----+ 1 root video 81,  0 Jul 23 21:17 /dev/video19
-crw-rw----+ 1 root video 81, 19 Jul 23 21:17 /dev/video2
-crw-rw----+ 1 root video 81,  1 Jul 23 21:17 /dev/video20
-crw-rw----+ 1 root video 81,  2 Jul 23 21:17 /dev/video21
-crw-rw----+ 1 root video 81,  3 Jul 23 21:17 /dev/video22
-crw-rw----+ 1 root video 81,  4 Jul 23 21:17 /dev/video23
-crw-rw----+ 1 root video 81,  5 Jul 23 21:17 /dev/video24
-crw-rw----+ 1 root video 81,  6 Jul 23 21:17 /dev/video25
-crw-rw----+ 1 root video 81,  7 Jul 23 21:17 /dev/video26
-crw-rw----+ 1 root video 81,  8 Jul 23 21:17 /dev/video27
-crw-rw----+ 1 root video 81,  9 Jul 23 21:17 /dev/video28
-crw-rw----+ 1 root video 81, 10 Jul 23 21:17 /dev/video29
-crw-rw----+ 1 root video 81, 20 Jul 23 21:17 /dev/video3
-crw-rw----+ 1 root video 81, 11 Jul 23 21:17 /dev/video30
-crw-rw----+ 1 root video 81, 12 Jul 23 21:17 /dev/video31
-crw-rw----+ 1 root video 81, 13 Jul 23 21:17 /dev/video32
-crw-rw----+ 1 root video 81, 14 Jul 23 21:17 /dev/video33
-crw-rw----+ 1 root video 81, 15 Jul 23 21:17 /dev/video34
-crw-rw----+ 1 root video 81, 16 Jul 23 21:17 /dev/video35
-crw-rw----+ 1 root video 81, 21 Jul 23 21:17 /dev/video4
-crw-rw----+ 1 root video 81, 22 Jul 23 21:17 /dev/video5
-crw-rw----+ 1 root video 81, 23 Jul 23 21:17 /dev/video6
-crw-rw----+ 1 root video 81, 24 Jul 23 21:17 /dev/video7
-crw-rw----+ 1 root video 81, 28 Jul 23 22:05 /dev/video8
-crw-rw----+ 1 root video 81, 29 Jul 23 22:05 /dev/video9
+📹 /dev/video7:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-📹 Media devices status:
-crw-rw----+ 1 root video 238, 0 Jul 23 21:17 /dev/media0
-crw-rw----+ 1 root video 238, 1 Jul 23 21:17 /dev/media1
-crw-rw----+ 1 root video 238, 2 Jul 23 21:17 /dev/media2
-crw-rw----+ 1 root video 238, 3 Jul 23 21:17 /dev/media3
-crw-rw----+ 1 root video 238, 4 Jul 23 21:17 /dev/media4
+📹 /dev/video8:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00110000.csi
+  Driver version   : 6.12.34
 
-🔍 Processes using video devices (should be empty):
-COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 7227 michomanoly14892   18u   CHR  81,32      0t0  788 /dev/video12
-python3 7227 michomanoly14892   19u   CHR  81,35      0t0  791 /dev/video15
-python3 7227 michomanoly14892   20u   CHR  81,34      0t0  790 /dev/video14
-python3 7227 michomanoly14892   21u   CHR  81,29      0t0  785 /dev/video9
-python3 7227 michomanoly14892   22u   CHR   81,1      0t0  551 /dev/video20
-python3 7227 michomanoly14892   23u   CHR   81,4      0t0  554 /dev/video23
-python3 7227 michomanoly14892   24u   CHR   81,5      0t0  555 /dev/video24
-python3 7227 michomanoly14892   25u   CHR   81,8      0t0  560 /dev/video27
-python3 7227 michomanoly14892   26u   CHR   81,2      0t0  552 /dev/video21
-python3 7227 michomanoly14892   27u   CHR   81,6      0t0  558 /dev/video25
-python3 7227 michomanoly14892   28u   CHR   81,3      0t0  553 /dev/video22
-python3 7227 michomanoly14892   29u   CHR   81,7      0t0  559 /dev/video26
-python3 7227 michomanoly14892   37u   CHR  81,21      0t0  759 /dev/video4
-python3 7227 michomanoly14892   38u   CHR  81,24      0t0  762 /dev/video7
-python3 7227 michomanoly14892   39u   CHR  81,23      0t0  761 /dev/video6
-python3 7227 michomanoly14892   40u   CHR  81,18      0t0  756 /dev/video1
-python3 7227 michomanoly14892   41u   CHR   81,9      0t0  565 /dev/video28
-python3 7227 michomanoly14892   42u   CHR  81,12      0t0  568 /dev/video31
-python3 7227 michomanoly14892   43u   CHR  81,13      0t0  569 /dev/video32
-python3 7227 michomanoly14892   44u   CHR  81,16      0t0  574 /dev/video35
-python3 7227 michomanoly14892   45u   CHR  81,10      0t0  566 /dev/video29
-python3 7227 michomanoly14892   46u   CHR  81,14      0t0  570 /dev/video33
-python3 7227 michomanoly14892   47u   CHR  81,11      0t0  567 /dev/video30
-python3 7227 michomanoly14892   48u   CHR  81,15      0t0  571 /dev/video34
-✅ No processes using video devices
+📹 /dev/video9:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00110000.csi
+  Driver version   : 6.12.34
 
-🔍 Processes using media devices (should be empty):
-COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 7227 michomanoly14892   11uW  CHR  238,1      0t0  549 /dev/media1
-python3 7227 michomanoly14892   12uW  CHR  238,3      0t0  561 /dev/media3
-python3 7227 michomanoly14892   30u   CHR  238,2      0t0  550 /dev/media2
-python3 7227 michomanoly14892   31u   CHR  238,4      0t0  583 /dev/media4
-✅ No processes using media devices
+🔌 Checking I2C devices...
 
-Step 6: Testing camera access...
+❌ No I2C devices found
 
-ℹ️ Testing camera with libcamera-hello...
+⚙️ Checking camera configuration...
+
+⚙️ Camera configuration in /boot/config.txt:
+  camera_auto_detect=1
+
+==================================================
+💡 RECOMMENDATIONS:
+❌ No cameras detected - check connections and drivers
+
+🔧 To fix dual camera issues:
+   1. Add unique serial numbers to each camera
+   2. Configure one camera at a time
+   3. Reduce bitrate and resolution
+   4. Add cooling if temperature is high
+   5. Consider using separate Pis for multiple cameras
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # List all cameras
+libcamera-hello --list-cameras
+
+# Check video devices
+ls -la /dev/video*
+
+# Check I2C devices
+i2cdetect -y 1
+i2cdetect -y 0
+
+# Check camera processes
+ps aux | grep -i camera
 Available cameras
 -----------------
-0 : imx477 [4056x3040 12-bit] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
-    Modes: 'SBGGR10_CSI2P' : 1332x990 [30.00 fps - (65535, 65535)/65535x65535 crop]
-           'SBGGR12_CSI2P' : 2028x1080 [30.00 fps - (65535, 65535)/65535x65535 crop]
-                             2028x1520 [30.00 fps - (65535, 65535)/65535x65535 crop]
-                             4056x3040 [30.00 fps - (65535, 65535)/65535x65535 crop]
+0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
 
 1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
     Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
@@ -165,208 +127,6 @@ Available cameras
                              2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
                              4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
 
-✅ Camera test successful
-
-Step 7: Restarting EZREC services...
-
-ℹ️ Starting recorder.service...
-ℹ️ Starting video_worker.service...
-ℹ️ Starting system_status.service...
-ℹ️ Starting log_collector.service...
-ℹ️ Starting health_api.service...
-
-Step 8: Checking service status...
-
-✅ recorder.service: ACTIVE
-✅ video_worker.service: ACTIVE
-✅ system_status.service: ACTIVE
-✅ log_collector.service: ACTIVE
-✅ health_api.service: ACTIVE
-
-🎉 Camera fix completed!
-
-📋 Next steps:
-1. Check if camera is working: sudo python3 test_camera.py
-2. Monitor logs: sudo journalctl -u recorder.service -f
-3. Check for any remaining issues
-
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check if camera is now working
-sudo python3 test_camera.py
-
-# Check service status
-sudo systemctl status recorder.service
-sudo systemctl status video_worker.service
-sudo systemctl status system_status.service
-sudo systemctl status log_collector.service
-sudo systemctl status health_api.service
-python3: can't open file '/home/michomanoly14892/EZREC-BACKEND-2/test_camera.py': [Errno 2] No such file or directory
-● recorder.service - EZREC Recorder
-     Loaded: loaded (/etc/systemd/system/recorder.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2025-07-23 22:42:40 EDT; 1min 22s ago
-    Process: 7282 ExecStartPre=/bin/bash -c for dev in /dev/video*; do fuser -k "$dev" || true; done (code=exited, status=0/SUCCESS)
-   Main PID: 7316 (python3)
-      Tasks: 3 (limit: 9577)
-        CPU: 1.077s
-     CGroup: /system.slice/recorder.service
-             └─7316 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
-
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/113: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/114: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/115: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/116: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/117: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/118: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/119: Permission denied
-Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/120: Permission denied
-Jul 23 22:42:41 raspberrypi python3[7316]: INFO:__main__:📡 Recorder started [Timezone: America/New_York]
-Jul 23 22:42:41 raspberrypi python3[7316]: INFO:__main__:📄 Watching bookings cache: /opt/ezrec-backend/api/local_data/bookings.json
-● video_worker.service - EZREC Video Processor
-     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2025-07-23 22:42:42 EDT; 1min 20s ago
-   Main PID: 7329 (python3)
-      Tasks: 1 (limit: 9577)
-        CPU: 802ms
-     CGroup: /system.slice/video_worker.service
-             └─7329 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
-
-Jul 23 22:43:43 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-22
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-19
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-15
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-21
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-16
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-23
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-18
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-20
-Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
-● system_status.service - EZREC System Status
-     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2025-07-23 22:42:44 EDT; 1min 18s ago
-   Main PID: 7336 (python3)
-      Tasks: 2 (limit: 9577)
-        CPU: 838ms
-     CGroup: /system.slice/system_status.service
-             └─7336 /opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
-
-Jul 23 22:43:51 raspberrypi system_status[7336]: 2025-07-23 22:43:51,955 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:53 raspberrypi system_status[7336]: 2025-07-23 22:43:53,068 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:54 raspberrypi system_status[7336]: 2025-07-23 22:43:54,192 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:55 raspberrypi system_status[7336]: 2025-07-23 22:43:55,302 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:56 raspberrypi system_status[7336]: 2025-07-23 22:43:56,402 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:57 raspberrypi system_status[7336]: 2025-07-23 22:43:57,505 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:58 raspberrypi system_status[7336]: 2025-07-23 22:43:58,598 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:43:59 raspberrypi system_status[7336]: 2025-07-23 22:43:59,693 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:44:00 raspberrypi system_status[7336]: 2025-07-23 22:44:00,808 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 23 22:44:01 raspberrypi system_status[7336]: 2025-07-23 22:44:01,902 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-● log_collector.service - EZREC Log Collector
-     Loaded: loaded (/etc/systemd/system/log_collector.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2025-07-23 22:42:46 EDT; 1min 16s ago
-   Main PID: 7342 (python3)
-      Tasks: 1 (limit: 9577)
-        CPU: 2.242s
-     CGroup: /system.slice/log_collector.service
-             └─7342 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/log_collector.py
-
-Jul 23 22:42:46 raspberrypi systemd[1]: Started log_collector.service - EZREC Log Collector.
-Jul 23 22:42:46 raspberrypi python3[7342]: 2025-07-23 22:42:46,886 - INFO - Log Collector Service started
-Jul 23 22:42:47 raspberrypi python3[7342]: 2025-07-23 22:42:47,250 - INFO - HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/storage/v1/bucket "HTTP/2 200 OK"
-Jul 23 22:42:47 raspberrypi python3[7342]: 2025-07-23 22:42:47,372 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/storage/v1/bucket "HTTP/2 400 Bad Request"
-Jul 23 22:42:47 raspberrypi python3[7342]: 2025-07-23 22:42:47,373 - ERROR - Failed to ensure log bucket: {'statusCode': 403, 'error': Unauthorized, 'message': new row violates row-level security policy}
-Jul 23 22:42:49 raspberrypi python3[7342]: 2025-07-23 22:42:49,986 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/storage/v1/object/logs/pi-001/20250723_224247_logs.zip "HTTP/2 200 OK"
-Jul 23 22:42:49 raspberrypi python3[7342]: 2025-07-23 22:42:49,986 - INFO - Uploaded log archive to logs/pi-001/20250723_224247_logs.zip
-● health_api.service - EZREC Health API
-     Loaded: loaded (/etc/systemd/system/health_api.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2025-07-23 22:42:48 EDT; 1min 14s ago
-   Main PID: 7348 (python3)
-      Tasks: 1 (limit: 9577)
-        CPU: 192ms
-     CGroup: /system.slice/health_api.service
-             └─7348 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/health_api.py
-
-Jul 23 22:42:48 raspberrypi systemd[1]: Started health_api.service - EZREC Health API.
-Jul 23 22:42:48 raspberrypi python3[7348]:  * Serving Flask app 'health_api'
-Jul 23 22:42:48 raspberrypi python3[7348]:  * Debug mode: off
-Jul 23 22:42:48 raspberrypi python3[7348]: WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
-Jul 23 22:42:48 raspberrypi python3[7348]:  * Running on all addresses (0.0.0.0)
-Jul 23 22:42:48 raspberrypi python3[7348]:  * Running on http://127.0.0.1:8080
-Jul 23 22:42:48 raspberrypi python3[7348]:  * Running on http://192.168.86.36:8080
-Jul 23 22:42:48 raspberrypi python3[7348]: Press CTRL+C to quit
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
-
-sudo reboot
-
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./fix_camera_issue.sh 
-🔧 EZREC Camera Fix Script
-==========================
-
-Step 1: Finding all processes using camera devices...
-
-📷 Processes using video devices:
-COMMAND PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 834 michomanoly14892   18u   CHR  81,32      0t0  781 /dev/video12
-python3 834 michomanoly14892   19u   CHR  81,35      0t0  784 /dev/video15
-python3 834 michomanoly14892   20u   CHR  81,34      0t0  783 /dev/video14
-python3 834 michomanoly14892   21u   CHR  81,29      0t0  778 /dev/video9
-python3 834 michomanoly14892   22u   CHR   81,0      0t0  534 /dev/video20
-python3 834 michomanoly14892   23u   CHR   81,3      0t0  538 /dev/video23
-python3 834 michomanoly14892   24u   CHR   81,4      0t0  539 /dev/video24
-python3 834 michomanoly14892   25u   CHR   81,7      0t0  542 /dev/video27
-python3 834 michomanoly14892   26u   CHR   81,1      0t0  536 /dev/video21
-python3 834 michomanoly14892   27u   CHR   81,5      0t0  540 /dev/video25
-python3 834 michomanoly14892   28u   CHR   81,2      0t0  537 /dev/video22
-python3 834 michomanoly14892   29u   CHR   81,6      0t0  541 /dev/video26
-python3 834 michomanoly14892   37u   CHR  81,21      0t0  752 /dev/video4
-python3 834 michomanoly14892   38u   CHR  81,24      0t0  755 /dev/video7
-python3 834 michomanoly14892   39u   CHR  81,23      0t0  754 /dev/video6
-python3 834 michomanoly14892   40u   CHR  81,18      0t0  749 /dev/video1
-python3 834 michomanoly14892   41u   CHR   81,8      0t0  544 /dev/video28
-python3 834 michomanoly14892   42u   CHR  81,12      0t0  549 /dev/video31
-python3 834 michomanoly14892   43u   CHR  81,13      0t0  550 /dev/video32
-python3 834 michomanoly14892   44u   CHR  81,16      0t0  553 /dev/video35
-python3 834 michomanoly14892   45u   CHR  81,10      0t0  545 /dev/video29
-python3 834 michomanoly14892   46u   CHR  81,14      0t0  551 /dev/video33
-python3 834 michomanoly14892   47u   CHR  81,11      0t0  547 /dev/video30
-python3 834 michomanoly14892   48u   CHR  81,15      0t0  552 /dev/video34
-No processes found using video devices
-
-📹 Processes using media devices:
-COMMAND PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 834 michomanoly14892   11uW  CHR  238,0      0t0  535 /dev/media0
-python3 834 michomanoly14892   12uW  CHR  238,1      0t0  543 /dev/media1
-python3 834 michomanoly14892   30u   CHR  238,4      0t0  558 /dev/media4
-python3 834 michomanoly14892   31u   CHR  238,3      0t0  554 /dev/media3
-No processes found using media devices
-
-🐍 Python processes:
-michoma+     834 13.3  2.5 1405840 212784 ?      SLsl 22:44   0:08 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/camera_streamer.py
-michoma+     837  2.8  2.4 692800 205840 ?       SLsl 22:44   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
-michoma+     838  0.1  0.1  21856 11840 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 monitor.py
-michoma+     839  0.3  0.3  40928 30640 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/health_api.py
-michoma+     840  1.0  0.5  60368 47584 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/log_collector.py
-michoma+     844  0.1  0.1  22240 12512 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/status_updater.py
-michoma+     846  1.5  0.9  92992 79296 ?        Ss   22:44   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
-michoma+     892  1.7  2.0 652896 166928 ?       SLsl 22:44   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
-michoma+    1314  1.2  0.5  61840 48624 ?        Ss   22:44   0:00 /opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
-
-Step 2: Stopping all EZREC services...
-
-ℹ️ Stopping recorder.service...
-ℹ️ Stopping video_worker.service...
-ℹ️ Stopping system_status.service...
-ℹ️ Stopping log_collector.service...
-ℹ️ Stopping health_api.service...
-
-Step 3: Killing all camera-related processes...
-
-ℹ️ Killing processes using video devices...
-   834  2113ℹ️ Killing processes using media devices...
-ℹ️ Killing Python processes...
-
-Step 4: Waiting for processes to terminate...
-
-Step 5: Verifying camera is free...
-
-📷 Video devices status:
 crw-rw----+ 1 root video 81, 17 Jul 23 22:44 /dev/video0
 crw-rw----+ 1 root video 81, 18 Jul 23 22:44 /dev/video1
 crw-rw----+ 1 root video 81, 30 Jul 23 22:44 /dev/video10
@@ -400,60 +160,129 @@ crw-rw----+ 1 root video 81, 23 Jul 23 22:44 /dev/video6
 crw-rw----+ 1 root video 81, 24 Jul 23 22:44 /dev/video7
 crw-rw----+ 1 root video 81, 28 Jul 23 22:44 /dev/video8
 crw-rw----+ 1 root video 81, 29 Jul 23 22:44 /dev/video9
+Error: Could not open file `/dev/i2c-1' or `/dev/i2c/1': No such file or directory
+Error: Could not open file `/dev/i2c-0' or `/dev/i2c/0': No such file or directory
+michoma+   11640  0.0  0.0   6240  1600 pts/0    S+   23:36   0:00 grep --color=auto -i camera
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ cd /opt/ezrec-backend/backend
+sudo python3 detect_cameras.py
+🎥 EZREC Camera Detection Tool
+==================================================
+🔍 Detecting cameras using libcamera-hello...
 
-📹 Media devices status:
-crw-rw----+ 1 root video 238, 0 Jul 23 22:44 /dev/media0
-crw-rw----+ 1 root video 238, 1 Jul 23 22:44 /dev/media1
-crw-rw----+ 1 root video 238, 2 Jul 23 22:44 /dev/media2
-crw-rw----+ 1 root video 238, 3 Jul 23 22:44 /dev/media3
-crw-rw----+ 1 root video 238, 4 Jul 23 22:44 /dev/media4
+❌ No cameras detected
 
-🔍 Processes using video devices (should be empty):
-COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 2158 michomanoly14892   18u   CHR  81,32      0t0  781 /dev/video12
-python3 2158 michomanoly14892   19u   CHR  81,35      0t0  784 /dev/video15
-python3 2158 michomanoly14892   20u   CHR  81,34      0t0  783 /dev/video14
-python3 2158 michomanoly14892   21u   CHR  81,29      0t0  778 /dev/video9
-python3 2158 michomanoly14892   22u   CHR   81,0      0t0  534 /dev/video20
-python3 2158 michomanoly14892   23u   CHR   81,3      0t0  538 /dev/video23
-python3 2158 michomanoly14892   24u   CHR   81,4      0t0  539 /dev/video24
-python3 2158 michomanoly14892   25u   CHR   81,7      0t0  542 /dev/video27
-python3 2158 michomanoly14892   26u   CHR   81,1      0t0  536 /dev/video21
-python3 2158 michomanoly14892   27u   CHR   81,5      0t0  540 /dev/video25
-python3 2158 michomanoly14892   28u   CHR   81,2      0t0  537 /dev/video22
-python3 2158 michomanoly14892   29u   CHR   81,6      0t0  541 /dev/video26
-python3 2158 michomanoly14892   37u   CHR  81,21      0t0  752 /dev/video4
-python3 2158 michomanoly14892   38u   CHR  81,24      0t0  755 /dev/video7
-python3 2158 michomanoly14892   39u   CHR  81,23      0t0  754 /dev/video6
-python3 2158 michomanoly14892   40u   CHR  81,18      0t0  749 /dev/video1
-python3 2158 michomanoly14892   41u   CHR   81,8      0t0  544 /dev/video28
-python3 2158 michomanoly14892   42u   CHR  81,12      0t0  549 /dev/video31
-python3 2158 michomanoly14892   43u   CHR  81,13      0t0  550 /dev/video32
-python3 2158 michomanoly14892   44u   CHR  81,16      0t0  553 /dev/video35
-python3 2158 michomanoly14892   45u   CHR  81,10      0t0  545 /dev/video29
-python3 2158 michomanoly14892   46u   CHR  81,14      0t0  551 /dev/video33
-python3 2158 michomanoly14892   47u   CHR  81,11      0t0  547 /dev/video30
-python3 2158 michomanoly14892   48u   CHR  81,15      0t0  552 /dev/video34
-✅ No processes using video devices
+📹 Checking video devices...
 
-🔍 Processes using media devices (should be empty):
-COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
-python3 2158 michomanoly14892   11uW  CHR  238,0      0t0  535 /dev/media0
-python3 2158 michomanoly14892   12uW  CHR  238,1      0t0  543 /dev/media1
-python3 2158 michomanoly14892   30u   CHR  238,4      0t0  558 /dev/media4
-python3 2158 michomanoly14892   31u   CHR  238,3      0t0  554 /dev/media3
-✅ No processes using media devices
+✅ Found 10 video device(s):
 
-Step 6: Testing camera access...
+📹 /dev/video0:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
 
-ℹ️ Testing camera with libcamera-hello...
+📹 /dev/video1:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video2:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video3:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video4:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video5:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video6:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video7:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00128000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video8:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00110000.csi
+  Driver version   : 6.12.34
+
+📹 /dev/video9:
+  Driver Info:
+  Driver name      : rp1-cfe
+  Card type        : rp1-cfe
+  Bus info         : platform:1f00110000.csi
+  Driver version   : 6.12.34
+
+🔌 Checking I2C devices...
+
+❌ No I2C devices found
+
+⚙️ Checking camera configuration...
+
+⚙️ Camera configuration in /boot/config.txt:
+  camera_auto_detect=1
+
+==================================================
+💡 RECOMMENDATIONS:
+❌ No cameras detected - check connections and drivers
+
+🔧 To fix dual camera issues:
+   1. Add unique serial numbers to each camera
+   2. Configure one camera at a time
+   3. Reduce bitrate and resolution
+   4. Add cooling if temperature is high
+   5. Consider using separate Pis for multiple cameras
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # List all cameras
+libcamera-hello --list-cameras
+
+# Check video devices
+ls -la /dev/video*
+
+# Check I2C devices
+i2cdetect -y 1
+i2cdetect -y 0
+
+# Check camera processes
+ps aux | grep -i camera
 Available cameras
 -----------------
-0 : imx477 [4056x3040 12-bit] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
-    Modes: 'SBGGR10_CSI2P' : 1332x990 [30.00 fps - (65535, 65535)/65535x65535 crop]
-           'SBGGR12_CSI2P' : 2028x1080 [30.00 fps - (65535, 65535)/65535x65535 crop]
-                             2028x1520 [30.00 fps - (65535, 65535)/65535x65535 crop]
-                             4056x3040 [30.00 fps - (65535, 65535)/65535x65535 crop]
+0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
 
 1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
     Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
@@ -461,29 +290,40 @@ Available cameras
                              2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
                              4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
 
-✅ Camera test successful
-
-Step 7: Restarting EZREC services...
-
-ℹ️ Starting recorder.service...
-ℹ️ Starting video_worker.service...
-ℹ️ Starting system_status.service...
-ℹ️ Starting log_collector.service...
-ℹ️ Starting health_api.service...
-
-Step 8: Checking service status...
-
-✅ recorder.service: ACTIVE
-✅ video_worker.service: ACTIVE
-✅ system_status.service: ACTIVE
-✅ log_collector.service: ACTIVE
-✅ health_api.service: ACTIVE
-
-🎉 Camera fix completed!
-
-📋 Next steps:
-1. Check if camera is working: sudo python3 test_camera.py
-2. Monitor logs: sudo journalctl -u recorder.service -f
-3. Check for any remaining issues
-
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+crw-rw----+ 1 root video 81, 17 Jul 23 22:44 /dev/video0
+crw-rw----+ 1 root video 81, 18 Jul 23 22:44 /dev/video1
+crw-rw----+ 1 root video 81, 30 Jul 23 22:44 /dev/video10
+crw-rw----+ 1 root video 81, 31 Jul 23 22:44 /dev/video11
+crw-rw----+ 1 root video 81, 32 Jul 23 22:44 /dev/video12
+crw-rw----+ 1 root video 81, 33 Jul 23 22:44 /dev/video13
+crw-rw----+ 1 root video 81, 34 Jul 23 22:44 /dev/video14
+crw-rw----+ 1 root video 81, 35 Jul 23 22:44 /dev/video15
+crw-rw----+ 1 root video 81,  9 Jul 23 22:44 /dev/video19
+crw-rw----+ 1 root video 81, 19 Jul 23 22:44 /dev/video2
+crw-rw----+ 1 root video 81,  0 Jul 23 22:44 /dev/video20
+crw-rw----+ 1 root video 81,  1 Jul 23 22:44 /dev/video21
+crw-rw----+ 1 root video 81,  2 Jul 23 22:44 /dev/video22
+crw-rw----+ 1 root video 81,  3 Jul 23 22:44 /dev/video23
+crw-rw----+ 1 root video 81,  4 Jul 23 22:44 /dev/video24
+crw-rw----+ 1 root video 81,  5 Jul 23 22:44 /dev/video25
+crw-rw----+ 1 root video 81,  6 Jul 23 22:44 /dev/video26
+crw-rw----+ 1 root video 81,  7 Jul 23 22:44 /dev/video27
+crw-rw----+ 1 root video 81,  8 Jul 23 22:44 /dev/video28
+crw-rw----+ 1 root video 81, 10 Jul 23 22:44 /dev/video29
+crw-rw----+ 1 root video 81, 20 Jul 23 22:44 /dev/video3
+crw-rw----+ 1 root video 81, 11 Jul 23 22:44 /dev/video30
+crw-rw----+ 1 root video 81, 12 Jul 23 22:44 /dev/video31
+crw-rw----+ 1 root video 81, 13 Jul 23 22:44 /dev/video32
+crw-rw----+ 1 root video 81, 14 Jul 23 22:44 /dev/video33
+crw-rw----+ 1 root video 81, 15 Jul 23 22:44 /dev/video34
+crw-rw----+ 1 root video 81, 16 Jul 23 22:44 /dev/video35
+crw-rw----+ 1 root video 81, 21 Jul 23 22:44 /dev/video4
+crw-rw----+ 1 root video 81, 22 Jul 23 22:44 /dev/video5
+crw-rw----+ 1 root video 81, 23 Jul 23 22:44 /dev/video6
+crw-rw----+ 1 root video 81, 24 Jul 23 22:44 /dev/video7
+crw-rw----+ 1 root video 81, 28 Jul 23 22:44 /dev/video8
+crw-rw----+ 1 root video 81, 29 Jul 23 22:44 /dev/video9
+Error: Could not open file `/dev/i2c-1' or `/dev/i2c/1': No such file or directory
+Error: Could not open file `/dev/i2c-0' or `/dev/i2c/0': No such file or directory
+michoma+   11695  0.0  0.0   6240  1600 pts/0    S+   23:36   0:00 grep --color=auto -i camera
+michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ 
