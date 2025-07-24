@@ -299,8 +299,41 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
     # --- Validate intro and logo/sponsor files ---
     def is_valid_video(file: Path):
-        codec, w, h, fps, pix_fmt = get_video_info(file)
-        return None not in (codec, w, h, fps, pix_fmt)
+        try:
+            codec, w, h, fps, pix_fmt = get_video_info(file)
+            return None not in (codec, w, h, fps, pix_fmt)
+        except Exception as e:
+            log.warning(f"Video validation failed for {file}: {e}")
+            # Try to repair the video file
+            try:
+                log.info(f"🔧 Attempting to repair corrupted video: {file}")
+                backup_path = file.with_suffix('.mp4.backup')
+                file.rename(backup_path)
+                
+                result = subprocess.run([
+                    'ffmpeg', '-i', str(backup_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero',
+                    str(file)
+                ], capture_output=True, text=True, timeout=120)
+                
+                if result.returncode == 0 and file.exists():
+                    log.info(f"✅ Successfully repaired video: {file}")
+                    backup_path.unlink()
+                    # Try validation again
+                    codec, w, h, fps, pix_fmt = get_video_info(file)
+                    return None not in (codec, w, h, fps, pix_fmt)
+                else:
+                    log.error(f"❌ Failed to repair video: {result.stderr}")
+                    # Restore original file
+                    if backup_path.exists():
+                        backup_path.rename(file)
+                    return False
+            except Exception as repair_error:
+                log.error(f"❌ Error during video repair: {repair_error}")
+                # Restore original file if backup exists
+                backup_path = file.with_suffix('.mp4.backup')
+                if backup_path.exists():
+                    backup_path.rename(file)
+                return False
     def is_valid_image(file: Path):
         try:
             from PIL import Image

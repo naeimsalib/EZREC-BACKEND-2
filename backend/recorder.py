@@ -261,9 +261,10 @@ class RecordingSession:
                     file_size = self.final_filepath.stat().st_size
                     logger.info(f"Recorded file size: {file_size} bytes")
                     
-                    # Validate MP4 file integrity
+                    # Always create .done file if file size is reasonable, regardless of MP4 validation
                     if file_size > 100 * 1024:  # 100KB minimum
-                        # Try to validate the MP4 file
+                        # Try to validate the MP4 file first
+                        mp4_valid = False
                         try:
                             import subprocess
                             result = subprocess.run(
@@ -271,23 +272,29 @@ class RecordingSession:
                                 capture_output=True, text=True, timeout=10
                             )
                             if result.returncode == 0:
-                                self.completed_marker.touch()
-                                logger.info(f"✅ Marked video as ready for processing: {self.completed_marker}")
+                                mp4_valid = True
+                                logger.info("✅ MP4 file validation passed")
                             else:
                                 logger.warning(f"⚠️ MP4 file validation failed: {result.stderr}")
-                                # Try to repair the corrupted file
-                                logger.info("🔧 Attempting to repair corrupted MP4 file...")
-                                if repair_mp4_file(self.final_filepath):
-                                    self.completed_marker.touch()
-                                    logger.info(f"✅ Repaired and marked video as ready for processing: {self.completed_marker}")
-                                else:
-                                    logger.error(f"❌ Failed to repair MP4 file: {self.final_filepath}")
                         except Exception as e:
                             logger.warning(f"⚠️ Could not validate MP4 file: {e}")
-                            # Still mark as done if file size is reasonable
-                            if file_size > 500 * 1024:  # 500KB minimum
-                                self.completed_marker.touch()
-                                logger.info(f"✅ Marked video as ready for processing (size check only): {self.completed_marker}")
+                        
+                        # If MP4 is corrupted, try to repair it
+                        if not mp4_valid:
+                            logger.info("🔧 Attempting to repair corrupted MP4 file...")
+                            if repair_mp4_file(self.final_filepath):
+                                logger.info("✅ Successfully repaired MP4 file")
+                                mp4_valid = True
+                            else:
+                                logger.warning("⚠️ Could not repair MP4 file, but will still process it")
+                        
+                        # Always create .done file if file size is reasonable
+                        # Let the video worker handle corrupted files during processing
+                        self.completed_marker.touch()
+                        if mp4_valid:
+                            logger.info(f"✅ Marked video as ready for processing: {self.completed_marker}")
+                        else:
+                            logger.info(f"⚠️ Marked corrupted video for processing (video worker will handle): {self.completed_marker}")
                     else:
                         logger.warning(f"⚠️ Video file too small or incomplete: {file_size} bytes. Skipping .done creation.")
                 else:
