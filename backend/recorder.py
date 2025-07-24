@@ -32,10 +32,23 @@ try:
     from picamera2.encoders import H264Encoder
     from picamera2.outputs import FileOutput
 
-    def safe_init_camera(retries=3, delay=3):
+    def safe_init_camera(retries=3, delay=3, camera_serial=None):
         for i in range(retries):
             try:
-                return Picamera2()
+                camera = Picamera2()
+                
+                # If camera serial is specified, configure it
+                if camera_serial:
+                    # Get camera info and find the one with matching serial
+                    camera_info = camera.camera_properties
+                    if 'SerialNumber' in camera_info and camera_info['SerialNumber'] != camera_serial:
+                        camera.close()
+                        raise RuntimeError(f"Camera serial mismatch. Expected: {camera_serial}, Got: {camera_info['SerialNumber']}")
+                    logger.info(f"✅ Initialized camera with serial: {camera_serial}")
+                else:
+                    logger.info("✅ Initialized default camera")
+                    
+                return camera
             except RuntimeError as e:
                 if "Camera __init__ sequence did not complete" in str(e):
                     print(f"⚠️ Camera busy (try {i+1}/{retries})... retrying in {delay}s")
@@ -43,6 +56,32 @@ try:
                 else:
                     raise
         raise RuntimeError("❌ Camera failed to initialize after multiple attempts")
+
+    def get_camera_serial():
+        """Get the camera serial number from environment or detect available cameras"""
+        # Check if specific camera serial is configured
+        camera_serial = os.getenv('CAMERA_SERIAL')
+        if camera_serial:
+            return camera_serial
+        
+        # If no specific serial, try to detect cameras
+        try:
+            import subprocess
+            result = subprocess.run(['libcamera-hello', '--list-cameras'], 
+                                  capture_output=True, text=True, timeout=10)
+            if result.returncode == 0:
+                lines = result.stdout.split('\n')
+                for line in lines:
+                    if 'serial' in line.lower():
+                        # Extract serial number from output
+                        import re
+                        match = re.search(r'serial[:\s]+([a-f0-9]+)', line, re.IGNORECASE)
+                        if match:
+                            return match.group(1)
+        except Exception as e:
+            logger.warning(f"Could not detect camera serial: {e}")
+        
+        return None
 except ImportError:
     Picamera2 = None
 
@@ -184,8 +223,15 @@ class RecordingSession:
             self.lockfile.touch()
             logger.info(f"Starting direct recording to {self.final_filepath}")
             
-            # Initialize camera directly
-            self.camera = safe_init_camera()
+            # Get camera serial for this specific camera
+            camera_serial = get_camera_serial()
+            if camera_serial:
+                logger.info(f"🔍 Using camera with serial: {camera_serial}")
+            
+            # Initialize camera directly with serial
+            self.camera = safe_init_camera(camera_serial=camera_serial)
+            
+            # Add camera-specific configuration for dual camera setups
             config = self.camera.create_video_configuration(
                 main={"size": (width, height), "format": "YUV420"},
                 controls={
@@ -194,22 +240,28 @@ class RecordingSession:
                     "AnalogueGain": 1.0
                 }
             )
+            
+            # For dual camera setups, add additional stability settings
+            if camera_serial:
+                config["controls"]["FrameSkip"] = 0  # Prevent frame skipping
+                config["controls"]["NoiseReductionMode"] = 0  # Disable noise reduction for stability
+            
             self.camera.configure(config)
             self.camera.start()
             
             # Create encoder with better settings for reliable recording
             self.encoder = H264Encoder(
-                bitrate=8000000,  # 8Mbps (reduced for stability)
+                bitrate=6000000,  # 6Mbps (further reduced for dual camera stability)
                 repeat=False,
                 iperiod=30,
-                qp=23  # Add quality parameter
+                qp=25  # Slightly higher QP for stability
             )
             
             # Start recording
             self.camera.start_recording(self.encoder, str(self.final_filepath))
             
-            # Wait a moment to ensure recording has started
-            time.sleep(0.5)
+            # Wait longer to ensure recording has started properly
+            time.sleep(1.0)
             
             self.active = True
             self.recording_start_time = datetime.now(LOCAL_TZ)
