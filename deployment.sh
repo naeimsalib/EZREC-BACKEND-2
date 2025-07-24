@@ -58,17 +58,64 @@ sudo rm -f "$LOG_DIR/ezrec.log"
 # 2.6 DEEP CLEANUP OF ALL DATA #
 #------------------------------#
 echo "🧹 Deep cleaning all recordings, processed videos, media cache, and state files..."
+
+# Stop all EZREC services before cleanup
+echo "🛑 Stopping all EZREC services for clean deployment..."
+sudo systemctl stop recorder.service 2>/dev/null || true
+sudo systemctl stop video_worker.service 2>/dev/null || true
+sudo systemctl stop system_status.service 2>/dev/null || true
+sudo systemctl stop log_collector.service 2>/dev/null || true
+sudo systemctl stop health_api.service 2>/dev/null || true
+
+# Kill any remaining Python processes that might be holding files
+echo "🔪 Killing any remaining EZREC Python processes..."
+sudo pkill -f "recorder.py" 2>/dev/null || true
+sudo pkill -f "video_worker.py" 2>/dev/null || true
+sudo pkill -f "system_status.py" 2>/dev/null || true
+sudo pkill -f "log_collector.py" 2>/dev/null || true
+sudo pkill -f "health_api.py" 2>/dev/null || true
+
 # Remove all files in /opt/ezrec-backend/recordings and subfolders
-sudo find "$PROJECT_DIR/recordings" -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.done' -o -name '*.lock' -o -name '*.completed' \) -delete 2>/dev/null || true
+echo "🗑️ Removing all recordings and related files..."
+sudo find "$PROJECT_DIR/recordings" -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.done' -o -name '*.lock' -o -name '*.completed' -o -name '*.tmp' -o -name '*.partial' \) -delete 2>/dev/null || true
+
 # Remove all files in /opt/ezrec-backend/processed and subfolders
-sudo find "$PROJECT_DIR/processed" -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.done' -o -name '*.lock' -o -name '*.completed' \) -delete 2>/dev/null || true
+echo "🗑️ Removing all processed videos..."
+sudo find "$PROJECT_DIR/processed" -type f \( -name '*.mp4' -o -name '*.json' -o -name '*.done' -o -name '*.lock' -o -name '*.completed' -o -name '*.tmp' -o -name '*.partial' \) -delete 2>/dev/null || true
+
 # Remove all files in /opt/ezrec-backend/media_cache and subfolders
+echo "🗑️ Removing media cache..."
 sudo rm -rf "$PROJECT_DIR/media_cache"/* 2>/dev/null || true
+
 # Remove pending uploads and health/status files
+echo "🗑️ Removing state files..."
 sudo rm -f "$PROJECT_DIR/pending_uploads.json" "$PROJECT_DIR/health_report.json" "$PROJECT_DIR/status.json"
+sudo rm -f "$PROJECT_DIR/failed_uploads.json" "$PROJECT_DIR/upload_retry.json"
+
 # Remove all cache/state files in api/local_data
+echo "🗑️ Removing API cache files..."
 sudo rm -f "$API_DIR/local_data/bookings.json" "$API_DIR/local_data/status.json" "$API_DIR/local_data/system.json"
+
+# Clean up any temporary files
+echo "🗑️ Removing temporary files..."
+sudo find "$PROJECT_DIR" -name "*.tmp" -delete 2>/dev/null || true
+sudo find "$PROJECT_DIR" -name "*.partial" -delete 2>/dev/null || true
+sudo find "$PROJECT_DIR" -name "*.lock" -delete 2>/dev/null || true
+
+# Clean up log files (keep recent ones)
+echo "🗑️ Cleaning old log files..."
+sudo find "$LOG_DIR" -name "*.log" -mtime +7 -delete 2>/dev/null || true
+
+# Reset any failed booking statuses in local cache
+echo "🔄 Resetting booking cache..."
+if [ -f "$API_DIR/local_data/bookings.json" ]; then
+  sudo sed -i 's/"status": "Recording"/"status": "Scheduled"/g' "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+  sudo sed -i 's/"status": "Processing"/"status": "Scheduled"/g' "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+  sudo sed -i 's/"status": "RecordingFinished"/"status": "Scheduled"/g' "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+fi
+
 echo "✅ All recordings, processed videos, media cache, and state files cleaned."
+echo "✅ All EZREC services stopped and processes killed."
 
 #------------------------------#
 # 2.7 REFRESH USER MEDIA CACHE #
@@ -329,11 +376,36 @@ fi
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
-for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared status_updater; do
-  sudo systemctl enable "$svc"
-  sudo systemctl restart "$svc"
-  sleep 1
+
+# Start services in the correct order
+echo "🚀 Starting EZREC services..."
+for svc in system_status log_collector health_api recorder video_worker; do
+  echo "Starting $svc.service..."
+  sudo systemctl enable "$svc.service"
+  sudo systemctl start "$svc.service"
+  sleep 2
+  
+  # Check if service started successfully
+  if sudo systemctl is-active --quiet "$svc.service"; then
+    echo "✅ $svc.service started successfully"
+  else
+    echo "❌ $svc.service failed to start"
+    sudo systemctl status "$svc.service" --no-pager -l
+  fi
 done
+
+# Start cloudflared tunnel
+echo "🌐 Starting cloudflared tunnel..."
+sudo systemctl enable cloudflared
+sudo systemctl start cloudflared
+sleep 2
+
+if sudo systemctl is-active --quiet cloudflared; then
+  echo "✅ cloudflared started successfully"
+else
+  echo "❌ cloudflared failed to start"
+  sudo systemctl status cloudflared --no-pager -l
+fi
 
 #------------------------------#
 # 13. DONE!
