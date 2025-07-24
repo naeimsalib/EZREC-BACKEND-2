@@ -290,13 +290,7 @@ sudo systemctl enable status_updater.service
 sudo systemctl restart status_updater.service
 sudo systemctl status status_updater.service --no-pager
 
-# Camera Streamer
-sudo cp "$PROJECT_DIR/backend/camera_streamer.service" "$SYSTEMD_DIR/camera_streamer.service"
-
-sudo systemctl daemon-reload
-sudo systemctl enable camera_streamer.service
-sudo systemctl restart camera_streamer.service
-sudo systemctl status camera_streamer.service --no-pager
+# Camera Streamer removed - using direct picamera2 recording
 
 #------------------------------#
 # 9. CLOUDFLARED INSTALL
@@ -335,7 +329,7 @@ fi
 #------------------------------#
 echo "🔁 Enabling and starting services..."
 sudo systemctl daemon-reload
-for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared camera_streamer status_updater; do
+for svc in ezrec-api ezrec-monitor recorder video_worker cloudflared status_updater; do
   sudo systemctl enable "$svc"
   sudo systemctl restart "$svc"
   sleep 1
