@@ -660,6 +660,13 @@ sudo chown michomanoly14892:video "$PROJECT_DIR/status.json"
 sudo chmod 664 "$PROJECT_DIR/status.json"
 echo "✅ status.json permissions set for dual_recorder service"
 
+# 🔧 Ensure logs directory is writable by dual_recorder service
+echo "📝 Setting up logs directory permissions..."
+sudo mkdir -p "$PROJECT_DIR/logs"
+sudo chown -R michomanoly14892:video "$PROJECT_DIR/logs"
+sudo chmod -R 775 "$PROJECT_DIR/logs"
+echo "✅ Logs directory permissions set for dual_recorder service"
+
 # Verify the file is writable
 if [ -w "$API_DIR/local_data/bookings.json" ]; then
   echo "✅ bookings.json is writable by root"
