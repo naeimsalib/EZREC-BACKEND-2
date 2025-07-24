@@ -250,6 +250,7 @@ def main():
         )
         
         # Start recording
+        print(f"🎥 Starting recording to: {{output_file}}")
         camera.start_recording(encoder, str(output_file))
         time.sleep(1.0)
         
@@ -258,6 +259,11 @@ def main():
         # Keep recording until interrupted
         while True:
             time.sleep(1)
+            # Check if file exists and has content
+            if Path(output_file).exists():
+                file_size = Path(output_file).stat().st_size
+                if file_size > 0:
+                    print(f"📹 Recording in progress: {{file_size}} bytes written")
             
     except Exception as e:
         print(f"❌ Error in {camera_name} camera: {{e}}")
@@ -339,7 +345,9 @@ class DualRecordingSession:
                 [sys.executable, str(script0)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                bufsize=1,
+                universal_newlines=True
             )
             
             # Wait for first camera to initialize
@@ -363,7 +371,9 @@ class DualRecordingSession:
                 [sys.executable, str(script1)],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=True
+                text=True,
+                bufsize=1,
+                universal_newlines=True
             )
             
             # Wait for second camera to initialize
@@ -435,8 +445,24 @@ class DualRecordingSession:
             # Wait for files to be finalized
             time.sleep(2)
             
-            # Check if both camera files exist
-            if self.camera0_file.exists() and self.camera1_file.exists():
+            # Check if both camera files exist and log details
+            logger.info("🔍 Checking camera recording files...")
+            cam0_exists = self.camera0_file.exists()
+            cam1_exists = self.camera1_file.exists()
+            
+            if cam0_exists:
+                cam0_size = self.camera0_file.stat().st_size
+                logger.info(f"✅ {CAMERA_0_NAME} recording: {self.camera0_file.name} ({cam0_size} bytes)")
+            else:
+                logger.error(f"❌ {CAMERA_0_NAME} recording file missing: {self.camera0_file}")
+            
+            if cam1_exists:
+                cam1_size = self.camera1_file.stat().st_size
+                logger.info(f"✅ {CAMERA_1_NAME} recording: {self.camera1_file.name} ({cam1_size} bytes)")
+            else:
+                logger.error(f"❌ {CAMERA_1_NAME} recording file missing: {self.camera1_file}")
+            
+            if cam0_exists and cam1_exists:
                 logger.info("✅ Both camera recordings completed")
                 
                 # Merge the videos
@@ -458,6 +484,10 @@ class DualRecordingSession:
                     logger.error("❌ Failed to merge videos")
             else:
                 logger.warning("⚠️ One or both camera recordings are missing")
+                # Create error marker to prevent infinite retries
+                error_marker = self.merged_file.with_suffix('.error')
+                error_marker.touch()
+                logger.error("🔧 Created .error marker to prevent infinite retries")
             
             # Update booking status
             update_booking_status(self.booking["id"], "RecordingFinished")
@@ -469,7 +499,11 @@ class DualRecordingSession:
                 'status': 'online'
             }).eq('id', CAMERA_ID).execute()
             
-            set_is_recording(False)
+            try:
+                set_is_recording(False)
+            except Exception as e:
+                logger.error(f"❌ Failed to update recording status: {e}")
+                logger.error(f"🔧 This is likely a permission issue with status.json")
             
         except Exception as e:
             logger.error(f"❌ Error stopping dual recording: {e}")
