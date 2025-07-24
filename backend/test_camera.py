@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 """
-EZREC Camera Test Script
-- Opens camera
-- Shows preview for 5 seconds
-- Properly releases camera
-- Redeploys and restarts all services
+Test camera functionality and restart services.
 """
 
 import time
@@ -21,7 +17,6 @@ def stop_services():
     """Stop all EZREC services."""
     logger.info("Stopping all EZREC services...")
     services = [
-        "camera_streamer",
         "recorder",
         "video_worker",
         "status_updater"
@@ -64,7 +59,6 @@ def restart_services():
     """Restart all EZREC services in correct order."""
     logger.info("Starting services in order...")
     services = [
-        "camera_streamer",
         "recorder",
         "video_worker",
         "status_updater"
@@ -103,7 +97,7 @@ def main():
     
     logger.info("✨ Camera test sequence completed!")
     logger.info("📝 Check service logs for any issues:")
-    logger.info("   sudo journalctl -u camera_streamer -f")
+    logger.info("   sudo journalctl -u recorder.service -f")
 
 if __name__ == "__main__":
     main() 
