@@ -98,6 +98,11 @@ sudo rm -f "$PROJECT_DIR/failed_uploads.json" "$PROJECT_DIR/upload_retry.json"
 echo "🗑️ Removing API cache files..."
 sudo rm -f "$API_DIR/local_data/bookings.json" "$API_DIR/local_data/status.json" "$API_DIR/local_data/system.json"
 
+# Fix permissions for bookings.json file to prevent permission errors
+echo "🔧 Fixing permissions for bookings.json file..."
+sudo chown "$USER:$USER" "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+sudo chmod 644 "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+
 # Clean up any temporary files
 echo "🗑️ Removing temporary files..."
 sudo find "$PROJECT_DIR" -name "*.tmp" -delete 2>/dev/null || true
@@ -140,6 +145,12 @@ sudo chown -R "$USER:$USER" "$PROJECT_DIR"
 sudo chmod -R 755 "$PROJECT_DIR"
 chmod 700 "$API_DIR/local_data"
 sudo chmod 755 "$LOG_DIR"
+
+# Ensure proper permissions for bookings.json file
+echo "🔧 Setting up proper permissions for bookings.json..."
+sudo touch "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+sudo chown "$USER:$USER" "$API_DIR/local_data/bookings.json"
+sudo chmod 644 "$API_DIR/local_data/bookings.json"
 
 #------------------------------#
 # 4. CREATE VENV + INSTALL PYTHON DEPS
@@ -650,6 +661,56 @@ fi
 echo ""
 echo "⚠️  IMPORTANT: Make sure to create and configure $PROJECT_DIR/.env file"
 echo "    Use env.example as a template and add your credentials"
+
+#------------------------------#
+# 15. NEXT STEPS & TROUBLESHOOTING
+#------------------------------#
+echo ""
+echo "🚀 NEXT STEPS AFTER DEPLOYMENT:"
+echo "================================"
+echo ""
+echo "1. 📝 CREATE TEST BOOKING:"
+echo "   echo '[\"id\": \"test-001\", \"start_time\": \"$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")\", \"end_time\": \"$(date -u -d \"+5 minutes\" +\"%Y-%m-%dT%H:%M:%SZ\")\", \"status\": \"active\", \"user_id\": \"YOUR_USER_ID\", \"camera_id\": \"YOUR_CAMERA_ID\"}]' | sudo tee $API_DIR/local_data/bookings.json"
+echo ""
+echo "2. 📊 MONITOR SERVICES:"
+echo "   sudo journalctl -u dual_recorder.service -f    # Watch dual camera recording"
+echo "   sudo journalctl -u video_worker.service -f     # Watch video processing"
+echo "   sudo journalctl -u system_status.service -f    # Watch system status"
+echo ""
+echo "3. 🔧 TROUBLESHOOTING COMMANDS:"
+echo "   sudo systemctl status dual_recorder.service     # Check service status"
+echo "   sudo systemctl restart dual_recorder.service    # Restart if needed"
+echo "   ls -la $PROJECT_DIR/recordings/$(date +%Y-%m-%d)/  # Check recordings"
+echo "   vcgencmd measure_temp                           # Check temperature"
+echo "   df -h                                           # Check disk space"
+echo ""
+echo "4. 📷 CAMERA TESTING:"
+echo "   cd $PROJECT_DIR/backend"
+echo "   python3 detect_cameras.py                       # Test camera detection"
+echo "   python3 test_dual_camera.py                     # Test dual camera setup"
+echo ""
+echo "5. 🌐 NETWORK TESTING:"
+echo "   curl http://localhost:8000/status               # Test API locally"
+echo "   curl https://api.ezrec.org/status              # Test API via tunnel"
+echo ""
+echo "6. 📁 CHECK FILES:"
+echo "   ls -la $API_DIR/local_data/                    # Check booking cache"
+echo "   ls -la $PROJECT_DIR/recordings/                # Check recordings"
+echo "   ls -la $LOG_DIR/                               # Check logs"
+echo ""
+echo "7. 🔄 PERMISSION FIXES (if needed):"
+echo "   sudo chown $USER:$USER $API_DIR/local_data/bookings.json"
+echo "   sudo chmod 644 $API_DIR/local_data/bookings.json"
+echo ""
+echo "8. 📊 SYSTEM MONITORING:"
+echo "   htop                                           # Monitor system resources"
+echo "   sudo journalctl -f                             # Monitor all logs"
+echo "   sudo systemctl list-units --type=service | grep ezrec  # List all EZREC services"
+echo ""
+echo "✅ Your dual camera EZREC system is now ready for production use!"
+echo "🎬 Both cameras will record simultaneously and merge into one video"
+echo "📡 Videos will be automatically processed and uploaded to S3"
+echo "🌐 API is available at https://api.ezrec.org"
 
 #------------------------------#
 # 14. CLOUDFLARED CONFIG
