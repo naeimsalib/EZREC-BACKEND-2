@@ -197,27 +197,51 @@ def main():
     print(f"📁 Output file: {{output_file}}")
     
     try:
-        # Initialize camera
+        # Initialize camera with retry logic
         print(f"🔧 Initializing camera with serial: {{camera_serial}}")
-        camera = Picamera2()
         
-        # Configure camera
-        print(f"⚙️ Configuring camera...")
-        config = camera.create_video_configuration(
-            main={{"size": (1920, 1080), "format": "YUV420"}},
-            controls={{
-                "FrameDurationLimits": (33333, 1000000),
-                "ExposureTime": 33333,
-                "AnalogueGain": 1.0,
-                "NoiseReductionMode": 0
-            }}
-        )
+        # Kill any existing camera processes that might be using the device
+        os.system("sudo fuser -k /dev/video* 2>/dev/null || true")
+        time.sleep(2)
         
-        camera.configure(config)
-        camera.start()
+        # Initialize camera with multiple retries
+        camera = None
+        for attempt in range(3):
+            try:
+                camera = Picamera2()
+                
+                # Configure camera with serial-specific settings
+                config = camera.create_video_configuration(
+                    main={{"size": (1920, 1080), "format": "YUV420"}},
+                    controls={{
+                        "FrameDurationLimits": (33333, 1000000),
+                        "ExposureTime": 33333,
+                        "AnalogueGain": 1.0,
+                        "NoiseReductionMode": 0
+                    }}
+                )
+                
+                print(f"⚙️ Configuring camera...")
+                camera.configure(config)
+                camera.start()
+                
+                print(f"✅ Camera initialized successfully on attempt {{attempt + 1}}")
+                break
+                
+            except Exception as e:
+                print(f"⚠️ Camera initialization attempt {{attempt + 1}} failed: {{e}}")
+                if camera:
+                    try:
+                        camera.close()
+                    except:
+                        pass
+                if attempt < 2:
+                    print(f"🔄 Retrying in 3 seconds...")
+                    time.sleep(3)
+                else:
+                    raise Exception(f"Failed to initialize camera after 3 attempts: {{e}}")
         
         # Create encoder
-        print(f"🎬 Creating encoder...")
         encoder = H264Encoder(
             bitrate=6000000,
             repeat=False,
@@ -226,7 +250,6 @@ def main():
         )
         
         # Start recording
-        print(f"🎥 Starting recording to {{output_file}}")
         camera.start_recording(encoder, str(output_file))
         time.sleep(1.0)
         
@@ -249,17 +272,14 @@ if __name__ == "__main__":
     script_path = Path(f"/tmp/camera_{camera_name}_recorder.py")
     logger.info(f"📝 Writing script to: {script_path}")
     
-    try:
-        with open(script_path, 'w') as f:
-            f.write(script_content)
-        
-        # Make executable
-        script_path.chmod(0o755)
-        logger.info(f"✅ Created executable script: {script_path}")
-        return script_path
-    except Exception as e:
-        logger.error(f"❌ Failed to create script {script_path}: {e}")
-        raise
+    with open(script_path, 'w') as f:
+        f.write(script_content)
+    
+    # Make executable
+    script_path.chmod(0o755)
+    logger.info(f"✅ Created executable script: {script_path}")
+    
+    return script_path
 
 class DualRecordingSession:
     def __init__(self, booking):
@@ -297,23 +317,23 @@ class DualRecordingSession:
             logger.info(f"📝 Created scripts: {script0}, {script1}")
             
             # Verify scripts exist and are executable
-            if not script0.exists():
-                logger.error(f"❌ Camera 0 script not created: {script0}")
-                return False
-            if not script1.exists():
-                logger.error(f"❌ Camera 1 script not created: {script1}")
+            if not script0.exists() or not script1.exists():
+                logger.error("❌ Failed to create camera recorder scripts")
                 return False
             
-            # Start camera 0 process with error capture
-            logger.info(f"📷 Starting {CAMERA_0_NAME} camera process...")
-            self.camera0_process = subprocess.Popen([
-                sys.executable, str(script0)
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            # Start cameras sequentially with delays to avoid resource conflicts
+            logger.info(f"📷 Starting left camera process...")
+            self.camera0_process = subprocess.Popen(
+                [sys.executable, str(script0)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
             
-            # Wait a moment for camera 0 to initialize
-            time.sleep(3)
+            # Wait for first camera to initialize
+            time.sleep(5.0)
             
-            # Check camera 0 process status
+            # Check if first camera started successfully
             if self.camera0_process.poll() is not None:
                 stdout, stderr = self.camera0_process.communicate()
                 logger.error(f"❌ Camera 0 process failed to start")
@@ -321,66 +341,66 @@ class DualRecordingSession:
                 logger.error(f"📥 Camera 0 stderr: {stderr}")
                 return False
             
-            # Start camera 1 process with error capture
-            logger.info(f"📷 Starting {CAMERA_1_NAME} camera process...")
-            self.camera1_process = subprocess.Popen([
-                sys.executable, str(script1)
-            ], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            logger.info(f"✅ Camera 0 process started successfully")
             
-            # Wait for both processes to start
-            time.sleep(2)
+            # Wait additional time before starting second camera
+            time.sleep(3.0)
             
-            # Check camera 1 process status
+            logger.info(f"📷 Starting right camera process...")
+            self.camera1_process = subprocess.Popen(
+                [sys.executable, str(script1)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # Wait for second camera to initialize
+            time.sleep(5.0)
+            
+            # Check if second camera started successfully
             if self.camera1_process.poll() is not None:
                 stdout, stderr = self.camera1_process.communicate()
                 logger.error(f"❌ Camera 1 process failed to start")
                 logger.error(f"📤 Camera 1 stdout: {stdout}")
                 logger.error(f"📥 Camera 1 stderr: {stderr}")
-                # Stop camera 0 if it's still running
+                # Stop first camera if second failed
                 if self.camera0_process.poll() is None:
                     self.camera0_process.terminate()
-                    self.camera0_process.wait(timeout=5)
+                    self.camera0_process.wait()
                 return False
             
-            # Check if both processes are running
-            if (self.camera0_process.poll() is None and 
-                self.camera1_process.poll() is None):
-                
+            logger.info(f"✅ Camera 1 process started successfully")
+            
+            # Final check that both processes are running
+            if self.camera0_process.poll() is None and self.camera1_process.poll() is None:
                 self.active = True
-                self.recording_start_time = datetime.now(LOCAL_TZ)
-                logger.info("✅ Dual camera recording started successfully")
+                logger.info(f"🎬 Both camera processes started successfully")
                 
                 # Update booking status
-                update_booking_status(self.booking["id"], "Recording")
+                try:
+                    update_booking_status(self.booking["id"], "Recording")
+                    logger.info(f"📡 Updated booking status to Recording")
+                except Exception as e:
+                    logger.error(f"❌ Failed to update booking status: {e}")
                 
                 # Update camera status
-                supabase.table('cameras').update({
-                    'is_recording': True,
-                    'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                    'status': 'online'
-                }).eq('id', CAMERA_ID).execute()
+                try:
+                    supabase.table('cameras').update({
+                        'is_recording': True,
+                        'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                        'status': 'online'
+                    }).eq('id', CAMERA_ID).execute()
+                    logger.info(f"📡 Updated camera status")
+                except Exception as e:
+                    logger.error(f"❌ Failed to update camera status: {e}")
                 
-                set_is_recording(True)
                 return True
             else:
-                logger.error("❌ One or both camera processes failed to start")
-                # Get error output from failed processes
-                if self.camera0_process.poll() is not None:
-                    stdout, stderr = self.camera0_process.communicate()
-                    logger.error(f"📤 Camera 0 stdout: {stdout}")
-                    logger.error(f"📥 Camera 0 stderr: {stderr}")
-                if self.camera1_process.poll() is not None:
-                    stdout, stderr = self.camera1_process.communicate()
-                    logger.error(f"📤 Camera 1 stdout: {stdout}")
-                    logger.error(f"📥 Camera 1 stderr: {stderr}")
-                self.stop()
+                logger.error(f"❌ One or both camera processes failed to start")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ Failed to start dual recording: {e}")
-            import traceback
-            logger.error(f"📋 Traceback: {traceback.format_exc()}")
-            self.stop()
+            logger.error(f"❌ Failed to start recording session: {e}")
             return False
 
     def stop(self):
