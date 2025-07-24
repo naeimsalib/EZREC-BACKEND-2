@@ -53,6 +53,12 @@ def kill_camera_processes():
 
 def safe_init_camera(camera_serial, camera_name, retries=3, delay=3):
     """Initialize a camera with specific serial number"""
+    try:
+        from picamera2 import Picamera2
+    except ImportError:
+        logger.error("❌ Picamera2 not available. Please install: sudo apt-get install python3-picamera2")
+        raise ImportError("Picamera2 not available")
+    
     for i in range(retries):
         try:
             camera = Picamera2()
