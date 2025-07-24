@@ -1,510 +1,489 @@
-Jul 08 17:23:11 raspberrypi python3[64179]: 2025-07-08 17:23:11,227 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:23:11 raspberrypi python3[64179]: 2025-07-08 17:23:11,228 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:23:26 raspberrypi python3[64179]: 2025-07-08 17:23:26,228 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:23:26 raspberrypi python3[64179]: 2025-07-08 17:23:26,228 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:23:41 raspberrypi python3[64179]: 2025-07-08 17:23:41,229 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:23:41 raspberrypi python3[64179]: 2025-07-08 17:23:41,229 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:23:56 raspberrypi python3[64179]: 2025-07-08 17:23:56,229 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:23:56 raspberrypi python3[64179]: 2025-07-08 17:23:56,229 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:24:11 raspberrypi python3[64179]: 2025-07-08 17:24:11,230 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:24:11 raspberrypi python3[64179]: 2025-07-08 17:24:11,230 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:24:26 raspberrypi python3[64179]: 2025-07-08 17:24:26,230 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:24:26 raspberrypi python3[64179]: 2025-07-08 17:24:26,230 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:24:41 raspberrypi python3[64179]: 2025-07-08 17:24:41,231 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:24:41 raspberrypi python3[64179]: 2025-07-08 17:24:41,231 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:24:56 raspberrypi python3[64179]: 2025-07-08 17:24:56,231 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:24:56 raspberrypi python3[64179]: 2025-07-08 17:24:56,231 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:25:11 raspberrypi python3[64179]: 2025-07-08 17:25:11,232 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:25:11 raspberrypi python3[64179]: 2025-07-08 17:25:11,232 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:25:26 raspberrypi python3[64179]: 2025-07-08 17:25:26,232 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:25:26 raspberrypi python3[64179]: 2025-07-08 17:25:26,233 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:25:41 raspberrypi python3[64179]: 2025-07-08 17:25:41,233 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:25:41 raspberrypi python3[64179]: 2025-07-08 17:25:41,233 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:25:56 raspberrypi python3[64179]: 2025-07-08 17:25:56,234 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:25:56 raspberrypi python3[64179]: 2025-07-08 17:25:56,234 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:26:11 raspberrypi python3[64179]: 2025-07-08 17:26:11,234 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:26:11 raspberrypi python3[64179]: 2025-07-08 17:26:11,235 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:26:26 raspberrypi python3[64179]: 2025-07-08 17:26:26,235 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:26:26 raspberrypi python3[64179]: 2025-07-08 17:26:26,235 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:26:41 raspberrypi python3[64179]: 2025-07-08 17:26:41,236 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:26:41 raspberrypi python3[64179]: 2025-07-08 17:26:41,236 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:26:56 raspberrypi python3[64179]: 2025-07-08 17:26:56,236 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:26:56 raspberrypi python3[64179]: 2025-07-08 17:26:56,236 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:27:11 raspberrypi python3[64179]: 2025-07-08 17:27:11,238 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:27:11 raspberrypi python3[64179]: 2025-07-08 17:27:11,238 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:27:26 raspberrypi python3[64179]: 2025-07-08 17:27:26,239 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:27:26 raspberrypi python3[64179]: 2025-07-08 17:27:26,239 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:27:41 raspberrypi python3[64179]: 2025-07-08 17:27:41,239 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:27:41 raspberrypi python3[64179]: 2025-07-08 17:27:41,239 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:27:56 raspberrypi python3[64179]: 2025-07-08 17:27:56,240 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:27:56 raspberrypi python3[64179]: 2025-07-08 17:27:56,240 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:28:11 raspberrypi python3[64179]: 2025-07-08 17:28:11,245 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:28:11 raspberrypi python3[64179]: 2025-07-08 17:28:11,245 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:28:26 raspberrypi python3[64179]: 2025-07-08 17:28:26,246 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:28:26 raspberrypi python3[64179]: 2025-07-08 17:28:26,246 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:28:41 raspberrypi python3[64179]: 2025-07-08 17:28:41,246 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:28:41 raspberrypi python3[64179]: 2025-07-08 17:28:41,246 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:28:56 raspberrypi python3[64179]: 2025-07-08 17:28:56,247 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:28:56 raspberrypi python3[64179]: 2025-07-08 17:28:56,247 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:29:11 raspberrypi python3[64179]: 2025-07-08 17:29:11,247 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:29:11 raspberrypi python3[64179]: 2025-07-08 17:29:11,247 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:29:26 raspberrypi python3[64179]: 2025-07-08 17:29:26,248 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:29:26 raspberrypi python3[64179]: 2025-07-08 17:29:26,248 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:29:41 raspberrypi python3[64179]: 2025-07-08 17:29:41,248 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:29:41 raspberrypi python3[64179]: 2025-07-08 17:29:41,249 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:29:56 raspberrypi python3[64179]: 2025-07-08 17:29:56,249 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:29:56 raspberrypi python3[64179]: 2025-07-08 17:29:56,249 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:30:11 raspberrypi python3[64179]: 2025-07-08 17:30:11,249 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:30:11 raspberrypi python3[64179]: 2025-07-08 17:30:11,250 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:30:26 raspberrypi python3[64179]: 2025-07-08 17:30:26,250 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:30:26 raspberrypi python3[64179]: 2025-07-08 17:30:26,250 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:30:41 raspberrypi python3[64179]: 2025-07-08 17:30:41,251 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:30:41 raspberrypi python3[64179]: 2025-07-08 17:30:41,251 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:30:56 raspberrypi python3[64179]: 2025-07-08 17:30:56,251 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:30:56 raspberrypi python3[64179]: 2025-07-08 17:30:56,251 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:31:11 raspberrypi python3[64179]: 2025-07-08 17:31:11,252 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:31:11 raspberrypi python3[64179]: 2025-07-08 17:31:11,252 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:31:26 raspberrypi python3[64179]: 2025-07-08 17:31:26,252 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:31:26 raspberrypi python3[64179]: 2025-07-08 17:31:26,252 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:31:41 raspberrypi python3[64179]: 2025-07-08 17:31:41,253 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:31:41 raspberrypi python3[64179]: 2025-07-08 17:31:41,253 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:31:56 raspberrypi python3[64179]: 2025-07-08 17:31:56,253 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:31:56 raspberrypi python3[64179]: 2025-07-08 17:31:56,253 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:32:11 raspberrypi python3[64179]: 2025-07-08 17:32:11,254 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:32:11 raspberrypi python3[64179]: 2025-07-08 17:32:11,254 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:32:26 raspberrypi python3[64179]: 2025-07-08 17:32:26,254 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:32:26 raspberrypi python3[64179]: 2025-07-08 17:32:26,255 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:32:41 raspberrypi python3[64179]: 2025-07-08 17:32:41,255 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:32:41 raspberrypi python3[64179]: 2025-07-08 17:32:41,255 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:32:56 raspberrypi python3[64179]: 2025-07-08 17:32:56,256 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:32:56 raspberrypi python3[64179]: 2025-07-08 17:32:56,256 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:33:11 raspberrypi python3[64179]: 2025-07-08 17:33:11,256 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:33:11 raspberrypi python3[64179]: 2025-07-08 17:33:11,256 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:33:26 raspberrypi python3[64179]: 2025-07-08 17:33:26,257 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:33:26 raspberrypi python3[64179]: 2025-07-08 17:33:26,257 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:33:41 raspberrypi python3[64179]: 2025-07-08 17:33:41,257 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:33:41 raspberrypi python3[64179]: 2025-07-08 17:33:41,258 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:33:56 raspberrypi python3[64179]: 2025-07-08 17:33:56,258 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:33:56 raspberrypi python3[64179]: 2025-07-08 17:33:56,258 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:34:11 raspberrypi python3[64179]: 2025-07-08 17:34:11,258 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:34:11 raspberrypi python3[64179]: 2025-07-08 17:34:11,259 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:34:26 raspberrypi python3[64179]: 2025-07-08 17:34:26,259 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:34:26 raspberrypi python3[64179]: 2025-07-08 17:34:26,259 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:34:41 raspberrypi python3[64179]: 2025-07-08 17:34:41,260 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:34:41 raspberrypi python3[64179]: 2025-07-08 17:34:41,260 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:34:56 raspberrypi python3[64179]: 2025-07-08 17:34:56,260 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:34:56 raspberrypi python3[64179]: 2025-07-08 17:34:56,260 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:35:11 raspberrypi python3[64179]: 2025-07-08 17:35:11,261 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:35:11 raspberrypi python3[64179]: 2025-07-08 17:35:11,261 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:35:26 raspberrypi python3[64179]: 2025-07-08 17:35:26,261 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:35:26 raspberrypi python3[64179]: 2025-07-08 17:35:26,261 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:35:41 raspberrypi python3[64179]: 2025-07-08 17:35:41,262 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:35:41 raspberrypi python3[64179]: 2025-07-08 17:35:41,262 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:35:56 raspberrypi python3[64179]: 2025-07-08 17:35:56,262 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:35:56 raspberrypi python3[64179]: 2025-07-08 17:35:56,262 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:36:11 raspberrypi python3[64179]: 2025-07-08 17:36:11,263 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:36:11 raspberrypi python3[64179]: 2025-07-08 17:36:11,263 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:36:26 raspberrypi python3[64179]: 2025-07-08 17:36:26,263 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:36:26 raspberrypi python3[64179]: 2025-07-08 17:36:26,264 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:36:41 raspberrypi python3[64179]: 2025-07-08 17:36:41,264 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:36:41 raspberrypi python3[64179]: 2025-07-08 17:36:41,264 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:36:56 raspberrypi python3[64179]: 2025-07-08 17:36:56,264 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:36:56 raspberrypi python3[64179]: 2025-07-08 17:36:56,265 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:37:11 raspberrypi python3[64179]: 2025-07-08 17:37:11,265 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:37:11 raspberrypi python3[64179]: 2025-07-08 17:37:11,265 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:37:26 raspberrypi python3[64179]: 2025-07-08 17:37:26,265 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:37:26 raspberrypi python3[64179]: 2025-07-08 17:37:26,266 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:37:41 raspberrypi python3[64179]: 2025-07-08 17:37:41,266 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:37:41 raspberrypi python3[64179]: 2025-07-08 17:37:41,266 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:37:56 raspberrypi python3[64179]: 2025-07-08 17:37:56,267 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:37:56 raspberrypi python3[64179]: 2025-07-08 17:37:56,267 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:38:11 raspberrypi python3[64179]: 2025-07-08 17:38:11,267 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:38:11 raspberrypi python3[64179]: 2025-07-08 17:38:11,267 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:38:26 raspberrypi python3[64179]: 2025-07-08 17:38:26,268 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:38:26 raspberrypi python3[64179]: 2025-07-08 17:38:26,268 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:38:41 raspberrypi python3[64179]: 2025-07-08 17:38:41,268 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:38:41 raspberrypi python3[64179]: 2025-07-08 17:38:41,268 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:38:56 raspberrypi python3[64179]: 2025-07-08 17:38:56,269 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:38:56 raspberrypi python3[64179]: 2025-07-08 17:38:56,269 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:39:11 raspberrypi python3[64179]: 2025-07-08 17:39:11,270 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:39:11 raspberrypi python3[64179]: 2025-07-08 17:39:11,270 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:39:26 raspberrypi python3[64179]: 2025-07-08 17:39:26,270 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:39:26 raspberrypi python3[64179]: 2025-07-08 17:39:26,271 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:39:41 raspberrypi python3[64179]: 2025-07-08 17:39:41,271 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:39:41 raspberrypi python3[64179]: 2025-07-08 17:39:41,271 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:39:56 raspberrypi python3[64179]: 2025-07-08 17:39:56,272 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:39:56 raspberrypi python3[64179]: 2025-07-08 17:39:56,272 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:40:11 raspberrypi python3[64179]: 2025-07-08 17:40:11,272 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:40:11 raspberrypi python3[64179]: 2025-07-08 17:40:11,272 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:40:26 raspberrypi python3[64179]: 2025-07-08 17:40:26,273 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:40:26 raspberrypi python3[64179]: 2025-07-08 17:40:26,273 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:40:41 raspberrypi python3[64179]: 2025-07-08 17:40:41,273 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:40:41 raspberrypi python3[64179]: 2025-07-08 17:40:41,273 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:40:56 raspberrypi python3[64179]: 2025-07-08 17:40:56,274 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:40:56 raspberrypi python3[64179]: 2025-07-08 17:40:56,274 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:41:11 raspberrypi python3[64179]: 2025-07-08 17:41:11,274 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:41:11 raspberrypi python3[64179]: 2025-07-08 17:41:11,274 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:41:26 raspberrypi python3[64179]: 2025-07-08 17:41:26,275 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:41:26 raspberrypi python3[64179]: 2025-07-08 17:41:26,275 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:41:41 raspberrypi python3[64179]: 2025-07-08 17:41:41,275 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:41:41 raspberrypi python3[64179]: 2025-07-08 17:41:41,275 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:41:56 raspberrypi python3[64179]: 2025-07-08 17:41:56,276 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:41:56 raspberrypi python3[64179]: 2025-07-08 17:41:56,276 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:42:11 raspberrypi python3[64179]: 2025-07-08 17:42:11,276 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:42:11 raspberrypi python3[64179]: 2025-07-08 17:42:11,277 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:42:26 raspberrypi python3[64179]: 2025-07-08 17:42:26,277 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:42:26 raspberrypi python3[64179]: 2025-07-08 17:42:26,277 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:42:41 raspberrypi python3[64179]: 2025-07-08 17:42:41,277 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:42:41 raspberrypi python3[64179]: 2025-07-08 17:42:41,278 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:42:56 raspberrypi python3[64179]: 2025-07-08 17:42:56,278 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:42:56 raspberrypi python3[64179]: 2025-07-08 17:42:56,278 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:43:11 raspberrypi python3[64179]: 2025-07-08 17:43:11,278 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:43:11 raspberrypi python3[64179]: 2025-07-08 17:43:11,279 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:43:26 raspberrypi python3[64179]: 2025-07-08 17:43:26,279 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:43:26 raspberrypi python3[64179]: 2025-07-08 17:43:26,279 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:43:41 raspberrypi python3[64179]: 2025-07-08 17:43:41,279 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:43:41 raspberrypi python3[64179]: 2025-07-08 17:43:41,280 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:43:56 raspberrypi python3[64179]: 2025-07-08 17:43:56,280 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:43:56 raspberrypi python3[64179]: 2025-07-08 17:43:56,280 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:44:11 raspberrypi python3[64179]: 2025-07-08 17:44:11,280 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:44:11 raspberrypi python3[64179]: 2025-07-08 17:44:11,281 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:44:26 raspberrypi python3[64179]: 2025-07-08 17:44:26,281 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:44:26 raspberrypi python3[64179]: 2025-07-08 17:44:26,281 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:44:41 raspberrypi python3[64179]: 2025-07-08 17:44:41,282 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:44:41 raspberrypi python3[64179]: 2025-07-08 17:44:41,282 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:44:56 raspberrypi python3[64179]: 2025-07-08 17:44:56,282 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:44:56 raspberrypi python3[64179]: 2025-07-08 17:44:56,283 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:45:11 raspberrypi python3[64179]: 2025-07-08 17:45:11,283 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:45:11 raspberrypi python3[64179]: 2025-07-08 17:45:11,283 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:45:26 raspberrypi python3[64179]: 2025-07-08 17:45:26,284 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:45:26 raspberrypi python3[64179]: 2025-07-08 17:45:26,284 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:45:41 raspberrypi python3[64179]: 2025-07-08 17:45:41,284 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:45:41 raspberrypi python3[64179]: 2025-07-08 17:45:41,285 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:45:56 raspberrypi python3[64179]: 2025-07-08 17:45:56,285 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:45:56 raspberrypi python3[64179]: 2025-07-08 17:45:56,285 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:46:11 raspberrypi python3[64179]: 2025-07-08 17:46:11,286 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:46:11 raspberrypi python3[64179]: 2025-07-08 17:46:11,286 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:46:26 raspberrypi python3[64179]: 2025-07-08 17:46:26,286 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:46:26 raspberrypi python3[64179]: 2025-07-08 17:46:26,287 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:46:41 raspberrypi python3[64179]: 2025-07-08 17:46:41,287 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:46:41 raspberrypi python3[64179]: 2025-07-08 17:46:41,287 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:46:56 raspberrypi python3[64179]: 2025-07-08 17:46:56,287 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:46:56 raspberrypi python3[64179]: 2025-07-08 17:46:56,288 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:47:11 raspberrypi python3[64179]: 2025-07-08 17:47:11,288 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:47:11 raspberrypi python3[64179]: 2025-07-08 17:47:11,288 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:47:26 raspberrypi python3[64179]: 2025-07-08 17:47:26,288 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:47:26 raspberrypi python3[64179]: 2025-07-08 17:47:26,289 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:47:41 raspberrypi python3[64179]: 2025-07-08 17:47:41,289 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:47:41 raspberrypi python3[64179]: 2025-07-08 17:47:41,289 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:47:56 raspberrypi python3[64179]: 2025-07-08 17:47:56,290 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:47:56 raspberrypi python3[64179]: 2025-07-08 17:47:56,290 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:48:11 raspberrypi python3[64179]: 2025-07-08 17:48:11,290 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:48:11 raspberrypi python3[64179]: 2025-07-08 17:48:11,290 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:48:26 raspberrypi python3[64179]: 2025-07-08 17:48:26,295 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:48:26 raspberrypi python3[64179]: 2025-07-08 17:48:26,295 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:48:41 raspberrypi python3[64179]: 2025-07-08 17:48:41,296 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:48:41 raspberrypi python3[64179]: 2025-07-08 17:48:41,296 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:48:56 raspberrypi python3[64179]: 2025-07-08 17:48:56,296 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:48:56 raspberrypi python3[64179]: 2025-07-08 17:48:56,297 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:49:11 raspberrypi python3[64179]: 2025-07-08 17:49:11,297 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:49:11 raspberrypi python3[64179]: 2025-07-08 17:49:11,297 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:49:26 raspberrypi python3[64179]: 2025-07-08 17:49:26,297 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:49:26 raspberrypi python3[64179]: 2025-07-08 17:49:26,298 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:49:41 raspberrypi python3[64179]: 2025-07-08 17:49:41,298 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:49:41 raspberrypi python3[64179]: 2025-07-08 17:49:41,298 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:49:56 raspberrypi python3[64179]: 2025-07-08 17:49:56,299 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:49:56 raspberrypi python3[64179]: 2025-07-08 17:49:56,299 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:50:11 raspberrypi python3[64179]: 2025-07-08 17:50:11,304 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:50:11 raspberrypi python3[64179]: 2025-07-08 17:50:11,304 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:50:26 raspberrypi python3[64179]: 2025-07-08 17:50:26,304 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:50:26 raspberrypi python3[64179]: 2025-07-08 17:50:26,305 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:50:41 raspberrypi python3[64179]: 2025-07-08 17:50:41,305 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:50:41 raspberrypi python3[64179]: 2025-07-08 17:50:41,306 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:50:56 raspberrypi python3[64179]: 2025-07-08 17:50:56,306 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:50:56 raspberrypi python3[64179]: 2025-07-08 17:50:56,306 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:51:11 raspberrypi python3[64179]: 2025-07-08 17:51:11,307 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:51:11 raspberrypi python3[64179]: 2025-07-08 17:51:11,307 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:51:26 raspberrypi python3[64179]: 2025-07-08 17:51:26,307 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:51:26 raspberrypi python3[64179]: 2025-07-08 17:51:26,307 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:51:41 raspberrypi python3[64179]: 2025-07-08 17:51:41,308 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:51:41 raspberrypi python3[64179]: 2025-07-08 17:51:41,308 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:51:56 raspberrypi python3[64179]: 2025-07-08 17:51:56,308 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:51:56 raspberrypi python3[64179]: 2025-07-08 17:51:56,308 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:52:11 raspberrypi python3[64179]: 2025-07-08 17:52:11,309 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:52:11 raspberrypi python3[64179]: 2025-07-08 17:52:11,309 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:52:26 raspberrypi python3[64179]: 2025-07-08 17:52:26,309 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:52:26 raspberrypi python3[64179]: 2025-07-08 17:52:26,309 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:52:41 raspberrypi python3[64179]: 2025-07-08 17:52:41,310 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:52:41 raspberrypi python3[64179]: 2025-07-08 17:52:41,310 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:52:56 raspberrypi python3[64179]: 2025-07-08 17:52:56,310 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:52:56 raspberrypi python3[64179]: 2025-07-08 17:52:56,310 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:53:11 raspberrypi python3[64179]: 2025-07-08 17:53:11,311 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:53:11 raspberrypi python3[64179]: 2025-07-08 17:53:11,311 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:53:26 raspberrypi python3[64179]: 2025-07-08 17:53:26,311 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:53:26 raspberrypi python3[64179]: 2025-07-08 17:53:26,312 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:53:41 raspberrypi python3[64179]: 2025-07-08 17:53:41,312 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:53:41 raspberrypi python3[64179]: 2025-07-08 17:53:41,312 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:53:56 raspberrypi python3[64179]: 2025-07-08 17:53:56,312 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:53:56 raspberrypi python3[64179]: 2025-07-08 17:53:56,313 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:54:11 raspberrypi python3[64179]: 2025-07-08 17:54:11,313 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:54:11 raspberrypi python3[64179]: 2025-07-08 17:54:11,313 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:54:26 raspberrypi python3[64179]: 2025-07-08 17:54:26,313 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:54:26 raspberrypi python3[64179]: 2025-07-08 17:54:26,314 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:54:41 raspberrypi python3[64179]: 2025-07-08 17:54:41,314 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:54:41 raspberrypi python3[64179]: 2025-07-08 17:54:41,314 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:54:56 raspberrypi python3[64179]: 2025-07-08 17:54:56,314 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:54:56 raspberrypi python3[64179]: 2025-07-08 17:54:56,315 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:55:11 raspberrypi python3[64179]: 2025-07-08 17:55:11,315 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:55:11 raspberrypi python3[64179]: 2025-07-08 17:55:11,315 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:55:26 raspberrypi python3[64179]: 2025-07-08 17:55:26,316 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:55:26 raspberrypi python3[64179]: 2025-07-08 17:55:26,316 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:55:41 raspberrypi python3[64179]: 2025-07-08 17:55:41,316 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:55:41 raspberrypi python3[64179]: 2025-07-08 17:55:41,316 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:55:56 raspberrypi python3[64179]: 2025-07-08 17:55:56,317 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:55:56 raspberrypi python3[64179]: 2025-07-08 17:55:56,317 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:56:11 raspberrypi python3[64179]: 2025-07-08 17:56:11,317 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:56:11 raspberrypi python3[64179]: 2025-07-08 17:56:11,317 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:56:26 raspberrypi python3[64179]: 2025-07-08 17:56:26,318 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:56:26 raspberrypi python3[64179]: 2025-07-08 17:56:26,318 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:56:41 raspberrypi python3[64179]: 2025-07-08 17:56:41,318 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:56:41 raspberrypi python3[64179]: 2025-07-08 17:56:41,318 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:56:56 raspberrypi python3[64179]: 2025-07-08 17:56:56,319 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:56:56 raspberrypi python3[64179]: 2025-07-08 17:56:56,319 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:57:11 raspberrypi python3[64179]: 2025-07-08 17:57:11,319 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:57:11 raspberrypi python3[64179]: 2025-07-08 17:57:11,319 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:57:26 raspberrypi python3[64179]: 2025-07-08 17:57:26,320 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:57:26 raspberrypi python3[64179]: 2025-07-08 17:57:26,320 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:57:41 raspberrypi python3[64179]: 2025-07-08 17:57:41,320 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:57:41 raspberrypi python3[64179]: 2025-07-08 17:57:41,320 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:57:56 raspberrypi python3[64179]: 2025-07-08 17:57:56,321 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:57:56 raspberrypi python3[64179]: 2025-07-08 17:57:56,321 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:58:11 raspberrypi python3[64179]: 2025-07-08 17:58:11,322 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:58:11 raspberrypi python3[64179]: 2025-07-08 17:58:11,322 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:58:26 raspberrypi python3[64179]: 2025-07-08 17:58:26,322 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:58:26 raspberrypi python3[64179]: 2025-07-08 17:58:26,322 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:58:41 raspberrypi python3[64179]: 2025-07-08 17:58:41,323 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:58:41 raspberrypi python3[64179]: 2025-07-08 17:58:41,323 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:58:56 raspberrypi python3[64179]: 2025-07-08 17:58:56,323 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:58:56 raspberrypi python3[64179]: 2025-07-08 17:58:56,323 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:59:11 raspberrypi python3[64179]: 2025-07-08 17:59:11,324 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:59:11 raspberrypi python3[64179]: 2025-07-08 17:59:11,324 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:59:26 raspberrypi python3[64179]: 2025-07-08 17:59:26,324 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:59:26 raspberrypi python3[64179]: 2025-07-08 17:59:26,325 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:59:41 raspberrypi python3[64179]: 2025-07-08 17:59:41,325 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:59:41 raspberrypi python3[64179]: 2025-07-08 17:59:41,325 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 17:59:56 raspberrypi python3[64179]: 2025-07-08 17:59:56,325 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 17:59:56 raspberrypi python3[64179]: 2025-07-08 17:59:56,326 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:00:11 raspberrypi python3[64179]: 2025-07-08 18:00:11,326 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:00:11 raspberrypi python3[64179]: 2025-07-08 18:00:11,326 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:00:26 raspberrypi python3[64179]: 2025-07-08 18:00:26,326 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:00:26 raspberrypi python3[64179]: 2025-07-08 18:00:26,327 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:00:41 raspberrypi python3[64179]: 2025-07-08 18:00:41,327 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:00:41 raspberrypi python3[64179]: 2025-07-08 18:00:41,327 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:00:56 raspberrypi python3[64179]: 2025-07-08 18:00:56,327 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:00:56 raspberrypi python3[64179]: 2025-07-08 18:00:56,328 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:01:11 raspberrypi python3[64179]: 2025-07-08 18:01:11,328 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:01:11 raspberrypi python3[64179]: 2025-07-08 18:01:11,328 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:01:26 raspberrypi python3[64179]: 2025-07-08 18:01:26,328 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:01:26 raspberrypi python3[64179]: 2025-07-08 18:01:26,329 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:01:41 raspberrypi python3[64179]: 2025-07-08 18:01:41,329 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:01:41 raspberrypi python3[64179]: 2025-07-08 18:01:41,329 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:01:56 raspberrypi python3[64179]: 2025-07-08 18:01:56,329 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:01:56 raspberrypi python3[64179]: 2025-07-08 18:01:56,330 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:02:11 raspberrypi python3[64179]: 2025-07-08 18:02:11,330 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:02:11 raspberrypi python3[64179]: 2025-07-08 18:02:11,330 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:02:26 raspberrypi python3[64179]: 2025-07-08 18:02:26,330 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:02:26 raspberrypi python3[64179]: 2025-07-08 18:02:26,331 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:02:41 raspberrypi python3[64179]: 2025-07-08 18:02:41,331 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:02:41 raspberrypi python3[64179]: 2025-07-08 18:02:41,331 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:02:56 raspberrypi python3[64179]: 2025-07-08 18:02:56,331 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:02:56 raspberrypi python3[64179]: 2025-07-08 18:02:56,332 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:03:11 raspberrypi python3[64179]: 2025-07-08 18:03:11,332 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:03:11 raspberrypi python3[64179]: 2025-07-08 18:03:11,332 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:03:26 raspberrypi python3[64179]: 2025-07-08 18:03:26,332 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:03:26 raspberrypi python3[64179]: 2025-07-08 18:03:26,333 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:03:41 raspberrypi python3[64179]: 2025-07-08 18:03:41,333 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:03:41 raspberrypi python3[64179]: 2025-07-08 18:03:41,333 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:03:56 raspberrypi python3[64179]: 2025-07-08 18:03:56,333 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:03:56 raspberrypi python3[64179]: 2025-07-08 18:03:56,334 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:04:11 raspberrypi python3[64179]: 2025-07-08 18:04:11,334 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:04:11 raspberrypi python3[64179]: 2025-07-08 18:04:11,334 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:04:26 raspberrypi python3[64179]: 2025-07-08 18:04:26,335 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:04:26 raspberrypi python3[64179]: 2025-07-08 18:04:26,335 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:04:41 raspberrypi python3[64179]: 2025-07-08 18:04:41,335 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:04:41 raspberrypi python3[64179]: 2025-07-08 18:04:41,335 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:04:56 raspberrypi python3[64179]: 2025-07-08 18:04:56,336 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:04:56 raspberrypi python3[64179]: 2025-07-08 18:04:56,336 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:05:11 raspberrypi python3[64179]: 2025-07-08 18:05:11,336 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:05:11 raspberrypi python3[64179]: 2025-07-08 18:05:11,336 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:05:26 raspberrypi python3[64179]: 2025-07-08 18:05:26,337 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:05:26 raspberrypi python3[64179]: 2025-07-08 18:05:26,337 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:05:41 raspberrypi python3[64179]: 2025-07-08 18:05:41,337 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:05:41 raspberrypi python3[64179]: 2025-07-08 18:05:41,337 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:05:56 raspberrypi python3[64179]: 2025-07-08 18:05:56,338 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:05:56 raspberrypi python3[64179]: 2025-07-08 18:05:56,338 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:06:11 raspberrypi python3[64179]: 2025-07-08 18:06:11,338 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:06:11 raspberrypi python3[64179]: 2025-07-08 18:06:11,338 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:06:26 raspberrypi python3[64179]: 2025-07-08 18:06:26,339 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:06:26 raspberrypi python3[64179]: 2025-07-08 18:06:26,339 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:06:41 raspberrypi python3[64179]: 2025-07-08 18:06:41,339 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:06:41 raspberrypi python3[64179]: 2025-07-08 18:06:41,340 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:06:56 raspberrypi python3[64179]: 2025-07-08 18:06:56,340 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:06:56 raspberrypi python3[64179]: 2025-07-08 18:06:56,340 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:07:11 raspberrypi python3[64179]: 2025-07-08 18:07:11,340 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:07:11 raspberrypi python3[64179]: 2025-07-08 18:07:11,341 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:07:26 raspberrypi python3[64179]: 2025-07-08 18:07:26,341 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:07:26 raspberrypi python3[64179]: 2025-07-08 18:07:26,341 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:07:41 raspberrypi python3[64179]: 2025-07-08 18:07:41,341 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:07:41 raspberrypi python3[64179]: 2025-07-08 18:07:41,342 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:07:56 raspberrypi python3[64179]: 2025-07-08 18:07:56,342 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:07:56 raspberrypi python3[64179]: 2025-07-08 18:07:56,342 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:08:11 raspberrypi python3[64179]: 2025-07-08 18:08:11,342 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:08:11 raspberrypi python3[64179]: 2025-07-08 18:08:11,343 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:08:26 raspberrypi python3[64179]: 2025-07-08 18:08:26,343 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:08:26 raspberrypi python3[64179]: 2025-07-08 18:08:26,343 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:08:41 raspberrypi python3[64179]: 2025-07-08 18:08:41,345 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:08:41 raspberrypi python3[64179]: 2025-07-08 18:08:41,346 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:08:56 raspberrypi python3[64179]: 2025-07-08 18:08:56,346 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:08:56 raspberrypi python3[64179]: 2025-07-08 18:08:56,346 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:09:11 raspberrypi python3[64179]: 2025-07-08 18:09:11,346 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:09:11 raspberrypi python3[64179]: 2025-07-08 18:09:11,347 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:09:26 raspberrypi python3[64179]: 2025-07-08 18:09:26,347 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:09:26 raspberrypi python3[64179]: 2025-07-08 18:09:26,347 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:09:41 raspberrypi python3[64179]: 2025-07-08 18:09:41,347 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:09:41 raspberrypi python3[64179]: 2025-07-08 18:09:41,348 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:09:56 raspberrypi python3[64179]: 2025-07-08 18:09:56,348 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:09:56 raspberrypi python3[64179]: 2025-07-08 18:09:56,348 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:10:11 raspberrypi python3[64179]: 2025-07-08 18:10:11,349 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:10:11 raspberrypi python3[64179]: 2025-07-08 18:10:11,349 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:10:26 raspberrypi python3[64179]: 2025-07-08 18:10:26,349 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:10:26 raspberrypi python3[64179]: 2025-07-08 18:10:26,349 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:10:41 raspberrypi python3[64179]: 2025-07-08 18:10:41,350 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:10:41 raspberrypi python3[64179]: 2025-07-08 18:10:41,350 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:10:56 raspberrypi python3[64179]: 2025-07-08 18:10:56,350 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:10:56 raspberrypi python3[64179]: 2025-07-08 18:10:56,350 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:11:11 raspberrypi python3[64179]: 2025-07-08 18:11:11,351 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:11:11 raspberrypi python3[64179]: 2025-07-08 18:11:11,351 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:11:26 raspberrypi python3[64179]: 2025-07-08 18:11:26,351 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:11:26 raspberrypi python3[64179]: 2025-07-08 18:11:26,351 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:11:41 raspberrypi python3[64179]: 2025-07-08 18:11:41,352 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:11:41 raspberrypi python3[64179]: 2025-07-08 18:11:41,352 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:11:56 raspberrypi python3[64179]: 2025-07-08 18:11:56,352 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:11:56 raspberrypi python3[64179]: 2025-07-08 18:11:56,352 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:12:11 raspberrypi python3[64179]: 2025-07-08 18:12:11,353 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:12:11 raspberrypi python3[64179]: 2025-07-08 18:12:11,353 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:12:26 raspberrypi python3[64179]: 2025-07-08 18:12:26,353 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:12:26 raspberrypi python3[64179]: 2025-07-08 18:12:26,353 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:12:41 raspberrypi python3[64179]: 2025-07-08 18:12:41,354 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:12:41 raspberrypi python3[64179]: 2025-07-08 18:12:41,354 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:12:56 raspberrypi python3[64179]: 2025-07-08 18:12:56,354 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:12:56 raspberrypi python3[64179]: 2025-07-08 18:12:56,354 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:13:11 raspberrypi python3[64179]: 2025-07-08 18:13:11,354 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:13:11 raspberrypi python3[64179]: 2025-07-08 18:13:11,355 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:13:26 raspberrypi python3[64179]: 2025-07-08 18:13:26,355 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:13:26 raspberrypi python3[64179]: 2025-07-08 18:13:26,355 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:13:41 raspberrypi python3[64179]: 2025-07-08 18:13:41,355 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:13:41 raspberrypi python3[64179]: 2025-07-08 18:13:41,356 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:13:56 raspberrypi python3[64179]: 2025-07-08 18:13:56,356 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:13:56 raspberrypi python3[64179]: 2025-07-08 18:13:56,356 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:14:11 raspberrypi python3[64179]: 2025-07-08 18:14:11,357 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:14:11 raspberrypi python3[64179]: 2025-07-08 18:14:11,357 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:14:26 raspberrypi python3[64179]: 2025-07-08 18:14:26,358 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:14:26 raspberrypi python3[64179]: 2025-07-08 18:14:26,358 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:14:41 raspberrypi python3[64179]: 2025-07-08 18:14:41,359 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:14:41 raspberrypi python3[64179]: 2025-07-08 18:14:41,359 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:14:56 raspberrypi python3[64179]: 2025-07-08 18:14:56,359 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:14:56 raspberrypi python3[64179]: 2025-07-08 18:14:56,359 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:15:11 raspberrypi python3[64179]: 2025-07-08 18:15:11,360 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-07
-Jul 08 18:15:11 raspberrypi python3[64179]: 2025-07-08 18:15:11,360 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-07-08
-Jul 08 18:15:11 raspberrypi python3[64179]: 2025-07-08 18:15:11,360 [INFO] Checking 181400-181500.mp4: done=True, completed=False, lock=False, meta=True
-Jul 08 18:15:11 raspberrypi python3[64179]: 2025-07-08 18:15:11,758 [INFO] HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.a96ddd25-da36-408a-885d-d3535febbc8f "HTTP/2 200 OK"
-Jul 08 18:15:11 raspberrypi python3[67235]: ffmpeg version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2000-2024 the FFmpeg developers
-Jul 08 18:15:11 raspberrypi python3[67235]:   built with gcc 12 (Debian 12.2.0-14)
-Jul 08 18:15:11 raspberrypi python3[67235]:   configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
-Jul 08 18:15:11 raspberrypi python3[67235]:   libavutil      57. 28.100 / 57. 28.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libavcodec     59. 37.100 / 59. 37.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libavformat    59. 27.100 / 59. 27.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libavdevice    59.  7.100 / 59.  7.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libavfilter     8. 44.100 /  8. 44.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libswscale      6.  7.100 /  6.  7.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libswresample   4.  7.100 /  4.  7.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   libpostproc    56.  6.100 / 56.  6.100
-Jul 08 18:15:11 raspberrypi python3[67235]: [mov,mp4,m4a,3gp,3g2,mj2 @ 0x5555817af070] Auto-inserting h264_mp4toannexb bitstream filter
-Jul 08 18:15:11 raspberrypi python3[67235]: Input #0, concat, from '/opt/ezrec-backend/media_cache/concat_49e9b5b02fe64aedae55f69fc04510ce.txt':
-Jul 08 18:15:11 raspberrypi python3[67235]:   Duration: N/A, start: 0.000000, bitrate: 15668 kb/s
-Jul 08 18:15:11 raspberrypi python3[67235]:   Stream #0:0(eng): Video: h264 (Main) (avc1 / 0x31637661), yuv420p(progressive), 1920x1080 [SAR 1:1 DAR 16:9], 15668 kb/s, 29.97 fps, 29.97 tbr, 30k tbn
-Jul 08 18:15:11 raspberrypi python3[67235]:     Metadata:
-Jul 08 18:15:11 raspberrypi python3[67235]:       creation_time   : 2024-06-21T06:38:30.000000Z
-Jul 08 18:15:11 raspberrypi python3[67235]:       handler_name    : ?Mainconcept Video Media Handler
-Jul 08 18:15:11 raspberrypi python3[67235]:       vendor_id       : [0][0][0][0]
-Jul 08 18:15:11 raspberrypi python3[67235]:       encoder         : AVC Coding
-Jul 08 18:15:11 raspberrypi python3[67235]: Output #0, mp4, to '/opt/ezrec-backend/processed/2025-07-08/with_intro.mp4':
-Jul 08 18:15:11 raspberrypi python3[67235]:   Metadata:
-Jul 08 18:15:11 raspberrypi python3[67235]:     encoder         : Lavf59.27.100
-Jul 08 18:15:11 raspberrypi python3[67235]:   Stream #0:0(eng): Video: h264 (Main) (avc1 / 0x31637661), yuv420p(progressive), 1920x1080 [SAR 1:1 DAR 16:9], q=2-31, 15668 kb/s, 29.97 fps, 29.97 tbr, 30k tbn
-Jul 08 18:15:11 raspberrypi python3[67235]:     Metadata:
-Jul 08 18:15:11 raspberrypi python3[67235]:       creation_time   : 2024-06-21T06:38:30.000000Z
-Jul 08 18:15:11 raspberrypi python3[67235]:       handler_name    : ?Mainconcept Video Media Handler
-Jul 08 18:15:11 raspberrypi python3[67235]:       vendor_id       : [0][0][0][0]
-Jul 08 18:15:11 raspberrypi python3[67235]:       encoder         : AVC Coding
-Jul 08 18:15:11 raspberrypi python3[67235]: Stream mapping:
-Jul 08 18:15:11 raspberrypi python3[67235]:   Stream #0:0 -> #0:0 (copy)
-Jul 08 18:15:11 raspberrypi python3[67235]: Press [q] to stop, [?] for help
-Jul 08 18:15:11 raspberrypi python3[67235]: [190B blob data]
-Jul 08 18:15:12 raspberrypi python3[67235]: frame= 1986 fps=0.0 q=-1.0 Lsize=   87029kB time=00:44:06.87 bitrate= 269.4kbits/s speed=2.27e+04x
-Jul 08 18:15:12 raspberrypi python3[67235]: video:87008kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.024605%
-Jul 08 18:15:13 raspberrypi python3[67236]: ffmpeg version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2000-2024 the FFmpeg developers
-Jul 08 18:15:13 raspberrypi python3[67236]:   built with gcc 12 (Debian 12.2.0-14)
-Jul 08 18:15:13 raspberrypi python3[67236]:   configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
-Jul 08 18:15:13 raspberrypi python3[67236]:   libavutil      57. 28.100 / 57. 28.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libavcodec     59. 37.100 / 59. 37.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libavformat    59. 27.100 / 59. 27.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libavdevice    59.  7.100 / 59.  7.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libavfilter     8. 44.100 /  8. 44.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libswscale      6.  7.100 /  6.  7.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libswresample   4.  7.100 /  4.  7.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   libpostproc    56.  6.100 / 56.  6.100
-Jul 08 18:15:13 raspberrypi python3[67236]: Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/opt/ezrec-backend/processed/2025-07-08/with_intro.mp4':
-Jul 08 18:15:13 raspberrypi python3[67236]:   Metadata:
-Jul 08 18:15:13 raspberrypi python3[67236]:     major_brand     : isom
-Jul 08 18:15:13 raspberrypi python3[67236]:     minor_version   : 512
-Jul 08 18:15:13 raspberrypi python3[67236]:     compatible_brands: isomiso2avc1mp41
-Jul 08 18:15:13 raspberrypi python3[67236]:     encoder         : Lavf59.27.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   Duration: 00:44:08.21, start: 0.000000, bitrate: 269 kb/s
-Jul 08 18:15:13 raspberrypi python3[67236]:   Stream #0:0[0x1](eng): Video: h264 (Main) (avc1 / 0x31637661), yuv420p(progressive), 1920x1080 [SAR 1:1 DAR 16:9], 269 kb/s, 0.75 fps, 29.97 tbr, 30k tbn (default)
-Jul 08 18:15:13 raspberrypi python3[67236]:     Metadata:
-Jul 08 18:15:13 raspberrypi python3[67236]:       handler_name    : ?Mainconcept Video Media Handler
-Jul 08 18:15:13 raspberrypi python3[67236]:       vendor_id       : [0][0][0][0]
-Jul 08 18:15:13 raspberrypi python3[67236]:       encoder         : AVC Coding
-Jul 08 18:15:13 raspberrypi python3[67236]: Input #1, png_pipe, from '/opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png':
-Jul 08 18:15:13 raspberrypi python3[67236]:   Duration: N/A, bitrate: N/A
-Jul 08 18:15:13 raspberrypi python3[67236]:   Stream #1:0: Video: png, rgba(pc), 526x421, 25 fps, 25 tbr, 25 tbn
-Jul 08 18:15:13 raspberrypi python3[67236]: Stream mapping:
-Jul 08 18:15:13 raspberrypi python3[67236]:   Stream #0:0 (h264) -> overlay
-Jul 08 18:15:13 raspberrypi python3[67236]:   Stream #1:0 (png) -> scale:default
-Jul 08 18:15:13 raspberrypi python3[67236]:   overlay:default -> Stream #0:0 (libx264)
-Jul 08 18:15:13 raspberrypi python3[67236]: Press [q] to stop, [?] for help
-Jul 08 18:15:13 raspberrypi python3[67236]: [swscaler @ 0x55557d0f0190] [swscaler @ 0x55557d0fdf40] No accelerated colorspace conversion found from yuv420p to rgba.
-Jul 08 18:15:13 raspberrypi python3[67236]: [swscaler @ 0x55557d0f0190] [swscaler @ 0x55557d12f3c0] No accelerated colorspace conversion found from yuv420p to rgba.
-Jul 08 18:15:13 raspberrypi python3[67236]: [swscaler @ 0x55557d0f0190] [swscaler @ 0x55557d15c7b0] No accelerated colorspace conversion found from yuv420p to rgba.
-Jul 08 18:15:13 raspberrypi python3[67236]: [swscaler @ 0x55557d0f0190] [swscaler @ 0x55557d187860] No accelerated colorspace conversion found from yuv420p to rgba.
-Jul 08 18:15:13 raspberrypi python3[67236]: [swscaler @ 0x55557d0f0190] [swscaler @ 0x55557d1b4c50] No accelerated colorspace conversion found from yuv420p to rgba.
-Jul 08 18:15:13 raspberrypi python3[67236]: [libx264 @ 0x55557c89bb90] using SAR=1/1
-Jul 08 18:15:13 raspberrypi python3[67236]: [libx264 @ 0x55557c89bb90] using cpu capabilities: ARMv8 NEON
-Jul 08 18:15:13 raspberrypi python3[67236]: [libx264 @ 0x55557c89bb90] profile High 4:4:4 Predictive, level 4.0, 4:4:4, 8-bit
-Jul 08 18:15:13 raspberrypi python3[67236]: [libx264 @ 0x55557c89bb90] 264 - core 164 r3095 baee400 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=1 ref=2 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=6 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=4 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=1 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=30 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
-Jul 08 18:15:13 raspberrypi python3[67236]: Output #0, mp4, to '/opt/ezrec-backend/processed/2025-07-08/181400-181500.mp4':
-Jul 08 18:15:13 raspberrypi python3[67236]:   Metadata:
-Jul 08 18:15:13 raspberrypi python3[67236]:     major_brand     : isom
-Jul 08 18:15:13 raspberrypi python3[67236]:     minor_version   : 512
-Jul 08 18:15:13 raspberrypi python3[67236]:     compatible_brands: isomiso2avc1mp41
-Jul 08 18:15:13 raspberrypi python3[67236]:     encoder         : Lavf59.27.100
-Jul 08 18:15:13 raspberrypi python3[67236]:   Stream #0:0: Video: h264 (avc1 / 0x31637661), yuv444p(tv, progressive), 1920x1080 [SAR 1:1 DAR 16:9], q=2-31, 29.97 fps, 30k tbn
-Jul 08 18:15:13 raspberrypi python3[67236]:     Metadata:
-Jul 08 18:15:13 raspberrypi python3[67236]:       encoder         : Lavc59.37.100 libx264
-Jul 08 18:15:13 raspberrypi python3[67236]:     Side data:
-Jul 08 18:15:13 raspberrypi python3[67236]:       cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
-Jul 08 18:15:26 raspberrypi python3[67236]: [2.2K blob data]
-Jul 08 18:19:09 raspberrypi python3[67236]: [8.7K blob data]
-Jul 08 18:26:18 raspberrypi python3[67236]: [48.0K blob data]
-michomanoly14892@raspberrypi:~ $ 
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Make the script executable and run it
+chmod +x fix_camera_issue.sh
+sudo ./fix_camera_issue.sh
+🔧 EZREC Camera Fix Script
+==========================
+
+Step 1: Finding all processes using camera devices...
+
+📷 Processes using video devices:
+COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 6912 michomanoly14892   18u   CHR  81,32      0t0  788 /dev/video12
+python3 6912 michomanoly14892   19u   CHR  81,35      0t0  791 /dev/video15
+python3 6912 michomanoly14892   20u   CHR  81,34      0t0  790 /dev/video14
+python3 6912 michomanoly14892   21u   CHR  81,29      0t0  785 /dev/video9
+python3 6912 michomanoly14892   22u   CHR   81,1      0t0  551 /dev/video20
+python3 6912 michomanoly14892   23u   CHR   81,4      0t0  554 /dev/video23
+python3 6912 michomanoly14892   24u   CHR   81,5      0t0  555 /dev/video24
+python3 6912 michomanoly14892   25u   CHR   81,8      0t0  560 /dev/video27
+python3 6912 michomanoly14892   26u   CHR   81,2      0t0  552 /dev/video21
+python3 6912 michomanoly14892   27u   CHR   81,6      0t0  558 /dev/video25
+python3 6912 michomanoly14892   28u   CHR   81,3      0t0  553 /dev/video22
+python3 6912 michomanoly14892   29u   CHR   81,7      0t0  559 /dev/video26
+python3 6912 michomanoly14892   37u   CHR  81,21      0t0  759 /dev/video4
+python3 6912 michomanoly14892   38u   CHR  81,24      0t0  762 /dev/video7
+python3 6912 michomanoly14892   39u   CHR  81,23      0t0  761 /dev/video6
+python3 6912 michomanoly14892   40u   CHR  81,18      0t0  756 /dev/video1
+python3 6912 michomanoly14892   41u   CHR   81,9      0t0  565 /dev/video28
+python3 6912 michomanoly14892   42u   CHR  81,12      0t0  568 /dev/video31
+python3 6912 michomanoly14892   43u   CHR  81,13      0t0  569 /dev/video32
+python3 6912 michomanoly14892   44u   CHR  81,16      0t0  574 /dev/video35
+python3 6912 michomanoly14892   45u   CHR  81,10      0t0  566 /dev/video29
+python3 6912 michomanoly14892   46u   CHR  81,14      0t0  570 /dev/video33
+python3 6912 michomanoly14892   47u   CHR  81,11      0t0  567 /dev/video30
+python3 6912 michomanoly14892   48u   CHR  81,15      0t0  571 /dev/video34
+No processes found using video devices
+
+📹 Processes using media devices:
+COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 6912 michomanoly14892   11uW  CHR  238,1      0t0  549 /dev/media1
+python3 6912 michomanoly14892   12uW  CHR  238,3      0t0  561 /dev/media3
+python3 6912 michomanoly14892   30u   CHR  238,2      0t0  550 /dev/media2
+python3 6912 michomanoly14892   31u   CHR  238,4      0t0  583 /dev/media4
+No processes found using media devices
+
+🐍 Python processes:
+michoma+    4500  0.2  2.5 766608 209056 ?       SLsl 22:20   0:03 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
+michoma+    4533  0.0  0.1  21856 13024 ?        Ss   22:20   0:00 /opt/ezrec-backend/api/venv/bin/python3 monitor.py
+michoma+    6912 14.2  2.5 1405840 214608 ?      SLsl 22:40   0:17 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/camera_streamer.py
+michoma+    7019  1.0  2.0 652896 169072 ?       SLsl 22:40   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+michoma+    7024  0.9  0.9  92992 80688 ?        Ss   22:40   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+michoma+    7031  1.0  0.5  61840 49216 ?        Ss   22:40   0:01 /opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
+michoma+    7036  0.8  0.7  71600 60288 ?        Ss   22:40   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/log_collector.py
+michoma+    7041  0.2  0.3  40928 31584 ?        Ss   22:40   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/health_api.py
+
+Step 2: Stopping all EZREC services...
+
+ℹ️ Stopping recorder.service...
+ℹ️ Stopping video_worker.service...
+ℹ️ Stopping system_status.service...
+ℹ️ Stopping log_collector.service...
+ℹ️ Stopping health_api.service...
+
+Step 3: Killing all camera-related processes...
+
+ℹ️ Killing processes using video devices...
+  6912ℹ️ Killing processes using media devices...
+ℹ️ Killing Python processes...
+
+Step 4: Waiting for processes to terminate...
+
+Step 5: Verifying camera is free...
+
+📷 Video devices status:
+crw-rw----+ 1 root video 81, 17 Jul 23 21:17 /dev/video0
+crw-rw----+ 1 root video 81, 18 Jul 23 21:17 /dev/video1
+crw-rw----+ 1 root video 81, 30 Jul 23 22:05 /dev/video10
+crw-rw----+ 1 root video 81, 31 Jul 23 22:05 /dev/video11
+crw-rw----+ 1 root video 81, 32 Jul 23 22:05 /dev/video12
+crw-rw----+ 1 root video 81, 33 Jul 23 22:05 /dev/video13
+crw-rw----+ 1 root video 81, 34 Jul 23 22:05 /dev/video14
+crw-rw----+ 1 root video 81, 35 Jul 23 22:05 /dev/video15
+crw-rw----+ 1 root video 81,  0 Jul 23 21:17 /dev/video19
+crw-rw----+ 1 root video 81, 19 Jul 23 21:17 /dev/video2
+crw-rw----+ 1 root video 81,  1 Jul 23 21:17 /dev/video20
+crw-rw----+ 1 root video 81,  2 Jul 23 21:17 /dev/video21
+crw-rw----+ 1 root video 81,  3 Jul 23 21:17 /dev/video22
+crw-rw----+ 1 root video 81,  4 Jul 23 21:17 /dev/video23
+crw-rw----+ 1 root video 81,  5 Jul 23 21:17 /dev/video24
+crw-rw----+ 1 root video 81,  6 Jul 23 21:17 /dev/video25
+crw-rw----+ 1 root video 81,  7 Jul 23 21:17 /dev/video26
+crw-rw----+ 1 root video 81,  8 Jul 23 21:17 /dev/video27
+crw-rw----+ 1 root video 81,  9 Jul 23 21:17 /dev/video28
+crw-rw----+ 1 root video 81, 10 Jul 23 21:17 /dev/video29
+crw-rw----+ 1 root video 81, 20 Jul 23 21:17 /dev/video3
+crw-rw----+ 1 root video 81, 11 Jul 23 21:17 /dev/video30
+crw-rw----+ 1 root video 81, 12 Jul 23 21:17 /dev/video31
+crw-rw----+ 1 root video 81, 13 Jul 23 21:17 /dev/video32
+crw-rw----+ 1 root video 81, 14 Jul 23 21:17 /dev/video33
+crw-rw----+ 1 root video 81, 15 Jul 23 21:17 /dev/video34
+crw-rw----+ 1 root video 81, 16 Jul 23 21:17 /dev/video35
+crw-rw----+ 1 root video 81, 21 Jul 23 21:17 /dev/video4
+crw-rw----+ 1 root video 81, 22 Jul 23 21:17 /dev/video5
+crw-rw----+ 1 root video 81, 23 Jul 23 21:17 /dev/video6
+crw-rw----+ 1 root video 81, 24 Jul 23 21:17 /dev/video7
+crw-rw----+ 1 root video 81, 28 Jul 23 22:05 /dev/video8
+crw-rw----+ 1 root video 81, 29 Jul 23 22:05 /dev/video9
+
+📹 Media devices status:
+crw-rw----+ 1 root video 238, 0 Jul 23 21:17 /dev/media0
+crw-rw----+ 1 root video 238, 1 Jul 23 21:17 /dev/media1
+crw-rw----+ 1 root video 238, 2 Jul 23 21:17 /dev/media2
+crw-rw----+ 1 root video 238, 3 Jul 23 21:17 /dev/media3
+crw-rw----+ 1 root video 238, 4 Jul 23 21:17 /dev/media4
+
+🔍 Processes using video devices (should be empty):
+COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 7227 michomanoly14892   18u   CHR  81,32      0t0  788 /dev/video12
+python3 7227 michomanoly14892   19u   CHR  81,35      0t0  791 /dev/video15
+python3 7227 michomanoly14892   20u   CHR  81,34      0t0  790 /dev/video14
+python3 7227 michomanoly14892   21u   CHR  81,29      0t0  785 /dev/video9
+python3 7227 michomanoly14892   22u   CHR   81,1      0t0  551 /dev/video20
+python3 7227 michomanoly14892   23u   CHR   81,4      0t0  554 /dev/video23
+python3 7227 michomanoly14892   24u   CHR   81,5      0t0  555 /dev/video24
+python3 7227 michomanoly14892   25u   CHR   81,8      0t0  560 /dev/video27
+python3 7227 michomanoly14892   26u   CHR   81,2      0t0  552 /dev/video21
+python3 7227 michomanoly14892   27u   CHR   81,6      0t0  558 /dev/video25
+python3 7227 michomanoly14892   28u   CHR   81,3      0t0  553 /dev/video22
+python3 7227 michomanoly14892   29u   CHR   81,7      0t0  559 /dev/video26
+python3 7227 michomanoly14892   37u   CHR  81,21      0t0  759 /dev/video4
+python3 7227 michomanoly14892   38u   CHR  81,24      0t0  762 /dev/video7
+python3 7227 michomanoly14892   39u   CHR  81,23      0t0  761 /dev/video6
+python3 7227 michomanoly14892   40u   CHR  81,18      0t0  756 /dev/video1
+python3 7227 michomanoly14892   41u   CHR   81,9      0t0  565 /dev/video28
+python3 7227 michomanoly14892   42u   CHR  81,12      0t0  568 /dev/video31
+python3 7227 michomanoly14892   43u   CHR  81,13      0t0  569 /dev/video32
+python3 7227 michomanoly14892   44u   CHR  81,16      0t0  574 /dev/video35
+python3 7227 michomanoly14892   45u   CHR  81,10      0t0  566 /dev/video29
+python3 7227 michomanoly14892   46u   CHR  81,14      0t0  570 /dev/video33
+python3 7227 michomanoly14892   47u   CHR  81,11      0t0  567 /dev/video30
+python3 7227 michomanoly14892   48u   CHR  81,15      0t0  571 /dev/video34
+✅ No processes using video devices
+
+🔍 Processes using media devices (should be empty):
+COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 7227 michomanoly14892   11uW  CHR  238,1      0t0  549 /dev/media1
+python3 7227 michomanoly14892   12uW  CHR  238,3      0t0  561 /dev/media3
+python3 7227 michomanoly14892   30u   CHR  238,2      0t0  550 /dev/media2
+python3 7227 michomanoly14892   31u   CHR  238,4      0t0  583 /dev/media4
+✅ No processes using media devices
+
+Step 6: Testing camera access...
+
+ℹ️ Testing camera with libcamera-hello...
+Available cameras
+-----------------
+0 : imx477 [4056x3040 12-bit] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SBGGR10_CSI2P' : 1332x990 [30.00 fps - (65535, 65535)/65535x65535 crop]
+           'SBGGR12_CSI2P' : 2028x1080 [30.00 fps - (65535, 65535)/65535x65535 crop]
+                             2028x1520 [30.00 fps - (65535, 65535)/65535x65535 crop]
+                             4056x3040 [30.00 fps - (65535, 65535)/65535x65535 crop]
+
+1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+
+✅ Camera test successful
+
+Step 7: Restarting EZREC services...
+
+ℹ️ Starting recorder.service...
+ℹ️ Starting video_worker.service...
+ℹ️ Starting system_status.service...
+ℹ️ Starting log_collector.service...
+ℹ️ Starting health_api.service...
+
+Step 8: Checking service status...
+
+✅ recorder.service: ACTIVE
+✅ video_worker.service: ACTIVE
+✅ system_status.service: ACTIVE
+✅ log_collector.service: ACTIVE
+✅ health_api.service: ACTIVE
+
+🎉 Camera fix completed!
+
+📋 Next steps:
+1. Check if camera is working: sudo python3 test_camera.py
+2. Monitor logs: sudo journalctl -u recorder.service -f
+3. Check for any remaining issues
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check if camera is now working
+sudo python3 test_camera.py
+
+# Check service status
+sudo systemctl status recorder.service
+sudo systemctl status video_worker.service
+sudo systemctl status system_status.service
+sudo systemctl status log_collector.service
+sudo systemctl status health_api.service
+python3: can't open file '/home/michomanoly14892/EZREC-BACKEND-2/test_camera.py': [Errno 2] No such file or directory
+● recorder.service - EZREC Recorder
+     Loaded: loaded (/etc/systemd/system/recorder.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-07-23 22:42:40 EDT; 1min 22s ago
+    Process: 7282 ExecStartPre=/bin/bash -c for dev in /dev/video*; do fuser -k "$dev" || true; done (code=exited, status=0/SUCCESS)
+   Main PID: 7316 (python3)
+      Tasks: 3 (limit: 9577)
+        CPU: 1.077s
+     CGroup: /system.slice/recorder.service
+             └─7316 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/113: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/114: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/115: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/116: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/117: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/118: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/119: Permission denied
+Jul 23 22:42:40 raspberrypi bash[7315]: Cannot stat file /proc/7227/fd/120: Permission denied
+Jul 23 22:42:41 raspberrypi python3[7316]: INFO:__main__:📡 Recorder started [Timezone: America/New_York]
+Jul 23 22:42:41 raspberrypi python3[7316]: INFO:__main__:📄 Watching bookings cache: /opt/ezrec-backend/api/local_data/bookings.json
+● video_worker.service - EZREC Video Processor
+     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-07-23 22:42:42 EDT; 1min 20s ago
+   Main PID: 7329 (python3)
+      Tasks: 1 (limit: 9577)
+        CPU: 802ms
+     CGroup: /system.slice/video_worker.service
+             └─7329 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
+Jul 23 22:43:43 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-22
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-19
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-15
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-21
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-16
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-23
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-18
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-20
+Jul 23 22:43:58 raspberrypi python3[7329]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
+● system_status.service - EZREC System Status
+     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-07-23 22:42:44 EDT; 1min 18s ago
+   Main PID: 7336 (python3)
+      Tasks: 2 (limit: 9577)
+        CPU: 838ms
+     CGroup: /system.slice/system_status.service
+             └─7336 /opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
+
+Jul 23 22:43:51 raspberrypi system_status[7336]: 2025-07-23 22:43:51,955 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:53 raspberrypi system_status[7336]: 2025-07-23 22:43:53,068 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:54 raspberrypi system_status[7336]: 2025-07-23 22:43:54,192 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:55 raspberrypi system_status[7336]: 2025-07-23 22:43:55,302 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:56 raspberrypi system_status[7336]: 2025-07-23 22:43:56,402 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:57 raspberrypi system_status[7336]: 2025-07-23 22:43:57,505 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:58 raspberrypi system_status[7336]: 2025-07-23 22:43:58,598 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:43:59 raspberrypi system_status[7336]: 2025-07-23 22:43:59,693 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:44:00 raspberrypi system_status[7336]: 2025-07-23 22:44:00,808 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+Jul 23 22:44:01 raspberrypi system_status[7336]: 2025-07-23 22:44:01,902 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
+● log_collector.service - EZREC Log Collector
+     Loaded: loaded (/etc/systemd/system/log_collector.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-07-23 22:42:46 EDT; 1min 16s ago
+   Main PID: 7342 (python3)
+      Tasks: 1 (limit: 9577)
+        CPU: 2.242s
+     CGroup: /system.slice/log_collector.service
+             └─7342 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/log_collector.py
+
+Jul 23 22:42:46 raspberrypi systemd[1]: Started log_collector.service - EZREC Log Collector.
+Jul 23 22:42:46 raspberrypi python3[7342]: 2025-07-23 22:42:46,886 - INFO - Log Collector Service started
+Jul 23 22:42:47 raspberrypi python3[7342]: 2025-07-23 22:42:47,250 - INFO - HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/storage/v1/bucket "HTTP/2 200 OK"
+Jul 23 22:42:47 raspberrypi python3[7342]: 2025-07-23 22:42:47,372 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/storage/v1/bucket "HTTP/2 400 Bad Request"
+Jul 23 22:42:47 raspberrypi python3[7342]: 2025-07-23 22:42:47,373 - ERROR - Failed to ensure log bucket: {'statusCode': 403, 'error': Unauthorized, 'message': new row violates row-level security policy}
+Jul 23 22:42:49 raspberrypi python3[7342]: 2025-07-23 22:42:49,986 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/storage/v1/object/logs/pi-001/20250723_224247_logs.zip "HTTP/2 200 OK"
+Jul 23 22:42:49 raspberrypi python3[7342]: 2025-07-23 22:42:49,986 - INFO - Uploaded log archive to logs/pi-001/20250723_224247_logs.zip
+● health_api.service - EZREC Health API
+     Loaded: loaded (/etc/systemd/system/health_api.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2025-07-23 22:42:48 EDT; 1min 14s ago
+   Main PID: 7348 (python3)
+      Tasks: 1 (limit: 9577)
+        CPU: 192ms
+     CGroup: /system.slice/health_api.service
+             └─7348 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/health_api.py
+
+Jul 23 22:42:48 raspberrypi systemd[1]: Started health_api.service - EZREC Health API.
+Jul 23 22:42:48 raspberrypi python3[7348]:  * Serving Flask app 'health_api'
+Jul 23 22:42:48 raspberrypi python3[7348]:  * Debug mode: off
+Jul 23 22:42:48 raspberrypi python3[7348]: WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+Jul 23 22:42:48 raspberrypi python3[7348]:  * Running on all addresses (0.0.0.0)
+Jul 23 22:42:48 raspberrypi python3[7348]:  * Running on http://127.0.0.1:8080
+Jul 23 22:42:48 raspberrypi python3[7348]:  * Running on http://192.168.86.36:8080
+Jul 23 22:42:48 raspberrypi python3[7348]: Press CTRL+C to quit
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+
+sudo reboot
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./fix_camera_issue.sh 
+🔧 EZREC Camera Fix Script
+==========================
+
+Step 1: Finding all processes using camera devices...
+
+📷 Processes using video devices:
+COMMAND PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 834 michomanoly14892   18u   CHR  81,32      0t0  781 /dev/video12
+python3 834 michomanoly14892   19u   CHR  81,35      0t0  784 /dev/video15
+python3 834 michomanoly14892   20u   CHR  81,34      0t0  783 /dev/video14
+python3 834 michomanoly14892   21u   CHR  81,29      0t0  778 /dev/video9
+python3 834 michomanoly14892   22u   CHR   81,0      0t0  534 /dev/video20
+python3 834 michomanoly14892   23u   CHR   81,3      0t0  538 /dev/video23
+python3 834 michomanoly14892   24u   CHR   81,4      0t0  539 /dev/video24
+python3 834 michomanoly14892   25u   CHR   81,7      0t0  542 /dev/video27
+python3 834 michomanoly14892   26u   CHR   81,1      0t0  536 /dev/video21
+python3 834 michomanoly14892   27u   CHR   81,5      0t0  540 /dev/video25
+python3 834 michomanoly14892   28u   CHR   81,2      0t0  537 /dev/video22
+python3 834 michomanoly14892   29u   CHR   81,6      0t0  541 /dev/video26
+python3 834 michomanoly14892   37u   CHR  81,21      0t0  752 /dev/video4
+python3 834 michomanoly14892   38u   CHR  81,24      0t0  755 /dev/video7
+python3 834 michomanoly14892   39u   CHR  81,23      0t0  754 /dev/video6
+python3 834 michomanoly14892   40u   CHR  81,18      0t0  749 /dev/video1
+python3 834 michomanoly14892   41u   CHR   81,8      0t0  544 /dev/video28
+python3 834 michomanoly14892   42u   CHR  81,12      0t0  549 /dev/video31
+python3 834 michomanoly14892   43u   CHR  81,13      0t0  550 /dev/video32
+python3 834 michomanoly14892   44u   CHR  81,16      0t0  553 /dev/video35
+python3 834 michomanoly14892   45u   CHR  81,10      0t0  545 /dev/video29
+python3 834 michomanoly14892   46u   CHR  81,14      0t0  551 /dev/video33
+python3 834 michomanoly14892   47u   CHR  81,11      0t0  547 /dev/video30
+python3 834 michomanoly14892   48u   CHR  81,15      0t0  552 /dev/video34
+No processes found using video devices
+
+📹 Processes using media devices:
+COMMAND PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 834 michomanoly14892   11uW  CHR  238,0      0t0  535 /dev/media0
+python3 834 michomanoly14892   12uW  CHR  238,1      0t0  543 /dev/media1
+python3 834 michomanoly14892   30u   CHR  238,4      0t0  558 /dev/media4
+python3 834 michomanoly14892   31u   CHR  238,3      0t0  554 /dev/media3
+No processes found using media devices
+
+🐍 Python processes:
+michoma+     834 13.3  2.5 1405840 212784 ?      SLsl 22:44   0:08 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/camera_streamer.py
+michoma+     837  2.8  2.4 692800 205840 ?       SLsl 22:44   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
+michoma+     838  0.1  0.1  21856 11840 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 monitor.py
+michoma+     839  0.3  0.3  40928 30640 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/health_api.py
+michoma+     840  1.0  0.5  60368 47584 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/log_collector.py
+michoma+     844  0.1  0.1  22240 12512 ?        Ss   22:44   0:00 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/status_updater.py
+michoma+     846  1.5  0.9  92992 79296 ?        Ss   22:44   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+michoma+     892  1.7  2.0 652896 166928 ?       SLsl 22:44   0:01 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+michoma+    1314  1.2  0.5  61840 48624 ?        Ss   22:44   0:00 /opt/ezrec-backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
+
+Step 2: Stopping all EZREC services...
+
+ℹ️ Stopping recorder.service...
+ℹ️ Stopping video_worker.service...
+ℹ️ Stopping system_status.service...
+ℹ️ Stopping log_collector.service...
+ℹ️ Stopping health_api.service...
+
+Step 3: Killing all camera-related processes...
+
+ℹ️ Killing processes using video devices...
+   834  2113ℹ️ Killing processes using media devices...
+ℹ️ Killing Python processes...
+
+Step 4: Waiting for processes to terminate...
+
+Step 5: Verifying camera is free...
+
+📷 Video devices status:
+crw-rw----+ 1 root video 81, 17 Jul 23 22:44 /dev/video0
+crw-rw----+ 1 root video 81, 18 Jul 23 22:44 /dev/video1
+crw-rw----+ 1 root video 81, 30 Jul 23 22:44 /dev/video10
+crw-rw----+ 1 root video 81, 31 Jul 23 22:44 /dev/video11
+crw-rw----+ 1 root video 81, 32 Jul 23 22:44 /dev/video12
+crw-rw----+ 1 root video 81, 33 Jul 23 22:44 /dev/video13
+crw-rw----+ 1 root video 81, 34 Jul 23 22:44 /dev/video14
+crw-rw----+ 1 root video 81, 35 Jul 23 22:44 /dev/video15
+crw-rw----+ 1 root video 81,  9 Jul 23 22:44 /dev/video19
+crw-rw----+ 1 root video 81, 19 Jul 23 22:44 /dev/video2
+crw-rw----+ 1 root video 81,  0 Jul 23 22:44 /dev/video20
+crw-rw----+ 1 root video 81,  1 Jul 23 22:44 /dev/video21
+crw-rw----+ 1 root video 81,  2 Jul 23 22:44 /dev/video22
+crw-rw----+ 1 root video 81,  3 Jul 23 22:44 /dev/video23
+crw-rw----+ 1 root video 81,  4 Jul 23 22:44 /dev/video24
+crw-rw----+ 1 root video 81,  5 Jul 23 22:44 /dev/video25
+crw-rw----+ 1 root video 81,  6 Jul 23 22:44 /dev/video26
+crw-rw----+ 1 root video 81,  7 Jul 23 22:44 /dev/video27
+crw-rw----+ 1 root video 81,  8 Jul 23 22:44 /dev/video28
+crw-rw----+ 1 root video 81, 10 Jul 23 22:44 /dev/video29
+crw-rw----+ 1 root video 81, 20 Jul 23 22:44 /dev/video3
+crw-rw----+ 1 root video 81, 11 Jul 23 22:44 /dev/video30
+crw-rw----+ 1 root video 81, 12 Jul 23 22:44 /dev/video31
+crw-rw----+ 1 root video 81, 13 Jul 23 22:44 /dev/video32
+crw-rw----+ 1 root video 81, 14 Jul 23 22:44 /dev/video33
+crw-rw----+ 1 root video 81, 15 Jul 23 22:44 /dev/video34
+crw-rw----+ 1 root video 81, 16 Jul 23 22:44 /dev/video35
+crw-rw----+ 1 root video 81, 21 Jul 23 22:44 /dev/video4
+crw-rw----+ 1 root video 81, 22 Jul 23 22:44 /dev/video5
+crw-rw----+ 1 root video 81, 23 Jul 23 22:44 /dev/video6
+crw-rw----+ 1 root video 81, 24 Jul 23 22:44 /dev/video7
+crw-rw----+ 1 root video 81, 28 Jul 23 22:44 /dev/video8
+crw-rw----+ 1 root video 81, 29 Jul 23 22:44 /dev/video9
+
+📹 Media devices status:
+crw-rw----+ 1 root video 238, 0 Jul 23 22:44 /dev/media0
+crw-rw----+ 1 root video 238, 1 Jul 23 22:44 /dev/media1
+crw-rw----+ 1 root video 238, 2 Jul 23 22:44 /dev/media2
+crw-rw----+ 1 root video 238, 3 Jul 23 22:44 /dev/media3
+crw-rw----+ 1 root video 238, 4 Jul 23 22:44 /dev/media4
+
+🔍 Processes using video devices (should be empty):
+COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 2158 michomanoly14892   18u   CHR  81,32      0t0  781 /dev/video12
+python3 2158 michomanoly14892   19u   CHR  81,35      0t0  784 /dev/video15
+python3 2158 michomanoly14892   20u   CHR  81,34      0t0  783 /dev/video14
+python3 2158 michomanoly14892   21u   CHR  81,29      0t0  778 /dev/video9
+python3 2158 michomanoly14892   22u   CHR   81,0      0t0  534 /dev/video20
+python3 2158 michomanoly14892   23u   CHR   81,3      0t0  538 /dev/video23
+python3 2158 michomanoly14892   24u   CHR   81,4      0t0  539 /dev/video24
+python3 2158 michomanoly14892   25u   CHR   81,7      0t0  542 /dev/video27
+python3 2158 michomanoly14892   26u   CHR   81,1      0t0  536 /dev/video21
+python3 2158 michomanoly14892   27u   CHR   81,5      0t0  540 /dev/video25
+python3 2158 michomanoly14892   28u   CHR   81,2      0t0  537 /dev/video22
+python3 2158 michomanoly14892   29u   CHR   81,6      0t0  541 /dev/video26
+python3 2158 michomanoly14892   37u   CHR  81,21      0t0  752 /dev/video4
+python3 2158 michomanoly14892   38u   CHR  81,24      0t0  755 /dev/video7
+python3 2158 michomanoly14892   39u   CHR  81,23      0t0  754 /dev/video6
+python3 2158 michomanoly14892   40u   CHR  81,18      0t0  749 /dev/video1
+python3 2158 michomanoly14892   41u   CHR   81,8      0t0  544 /dev/video28
+python3 2158 michomanoly14892   42u   CHR  81,12      0t0  549 /dev/video31
+python3 2158 michomanoly14892   43u   CHR  81,13      0t0  550 /dev/video32
+python3 2158 michomanoly14892   44u   CHR  81,16      0t0  553 /dev/video35
+python3 2158 michomanoly14892   45u   CHR  81,10      0t0  545 /dev/video29
+python3 2158 michomanoly14892   46u   CHR  81,14      0t0  551 /dev/video33
+python3 2158 michomanoly14892   47u   CHR  81,11      0t0  547 /dev/video30
+python3 2158 michomanoly14892   48u   CHR  81,15      0t0  552 /dev/video34
+✅ No processes using video devices
+
+🔍 Processes using media devices (should be empty):
+COMMAND  PID             USER   FD   TYPE DEVICE SIZE/OFF NODE NAME
+python3 2158 michomanoly14892   11uW  CHR  238,0      0t0  535 /dev/media0
+python3 2158 michomanoly14892   12uW  CHR  238,1      0t0  543 /dev/media1
+python3 2158 michomanoly14892   30u   CHR  238,4      0t0  558 /dev/media4
+python3 2158 michomanoly14892   31u   CHR  238,3      0t0  554 /dev/media3
+✅ No processes using media devices
+
+Step 6: Testing camera access...
+
+ℹ️ Testing camera with libcamera-hello...
+Available cameras
+-----------------
+0 : imx477 [4056x3040 12-bit] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SBGGR10_CSI2P' : 1332x990 [30.00 fps - (65535, 65535)/65535x65535 crop]
+           'SBGGR12_CSI2P' : 2028x1080 [30.00 fps - (65535, 65535)/65535x65535 crop]
+                             2028x1520 [30.00 fps - (65535, 65535)/65535x65535 crop]
+                             4056x3040 [30.00 fps - (65535, 65535)/65535x65535 crop]
+
+1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+
+✅ Camera test successful
+
+Step 7: Restarting EZREC services...
+
+ℹ️ Starting recorder.service...
+ℹ️ Starting video_worker.service...
+ℹ️ Starting system_status.service...
+ℹ️ Starting log_collector.service...
+ℹ️ Starting health_api.service...
+
+Step 8: Checking service status...
+
+✅ recorder.service: ACTIVE
+✅ video_worker.service: ACTIVE
+✅ system_status.service: ACTIVE
+✅ log_collector.service: ACTIVE
+✅ health_api.service: ACTIVE
+
+🎉 Camera fix completed!
+
+📋 Next steps:
+1. Check if camera is working: sudo python3 test_camera.py
+2. Monitor logs: sudo journalctl -u recorder.service -f
+3. Check for any remaining issues
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
