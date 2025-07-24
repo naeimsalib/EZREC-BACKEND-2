@@ -51,42 +51,76 @@ def kill_camera_processes():
     except Exception as e:
         logger.error(f"Error killing camera processes: {e}")
 
+def safe_init_camera(camera_serial, camera_name, retries=3, delay=3):
+    """Initialize a camera with specific serial number"""
+    for i in range(retries):
+        try:
+            camera = Picamera2()
+            
+            # Configure camera with specific serial
+            camera_info = camera.camera_properties
+            if 'SerialNumber' in camera_info and camera_info['SerialNumber'] != camera_serial:
+                camera.close()
+                raise RuntimeError(f"Camera serial mismatch for {camera_name}. Expected: {camera_serial}, Got: {camera_info['SerialNumber']}")
+            
+            logger.info(f"✅ Initialized {camera_name} camera with serial: {camera_serial}")
+            return camera
+            
+        except RuntimeError as e:
+            if "Camera __init__ sequence did not complete" in str(e):
+                logger.warning(f"⚠️ {camera_name} camera busy (try {i+1}/{retries})... retrying in {delay}s")
+                time.sleep(delay)
+            else:
+                raise
+    raise RuntimeError(f"❌ {camera_name} camera failed to initialize after multiple attempts")
+
 def test_dual_camera():
     """Test both cameras by opening them simultaneously."""
     logger.info("Testing dual camera setup...")
-    
+
     try:
         from picamera2 import Picamera2
-        
-        # Test camera 0
+
+        # Test camera 0 with specific serial
         logger.info(f"📷 Testing {CAMERA_0_NAME} camera (Serial: {CAMERA_0_SERIAL})...")
-        camera0 = Picamera2()
+        camera0 = safe_init_camera(CAMERA_0_SERIAL, CAMERA_0_NAME)
+        
+        # Configure camera 0
         config0 = camera0.create_preview_configuration()
         camera0.configure(config0)
+        
+        # Start camera 0
         camera0.start()
         logger.info(f"✅ {CAMERA_0_NAME} camera opened successfully")
-        
-        # Test camera 1
+
+        # Test camera 1 with specific serial
         logger.info(f"📷 Testing {CAMERA_1_NAME} camera (Serial: {CAMERA_1_SERIAL})...")
-        camera1 = Picamera2()
+        camera1 = safe_init_camera(CAMERA_1_SERIAL, CAMERA_1_NAME)
+        
+        # Configure camera 1
         config1 = camera1.create_preview_configuration()
         camera1.configure(config1)
+        
+        # Start camera 1
         camera1.start()
         logger.info(f"✅ {CAMERA_1_NAME} camera opened successfully")
-        
+
         # Both cameras are now active
         logger.info("🎬 Both cameras are active! Waiting 5 seconds...")
         time.sleep(5)
-        
-        # Close cameras
-        camera0.stop()
-        camera0.close()
+
+        # Close cameras in reverse order
         camera1.stop()
         camera1.close()
+        logger.info(f"✅ {CAMERA_1_NAME} camera closed")
         
+        camera0.stop()
+        camera0.close()
+        logger.info(f"✅ {CAMERA_0_NAME} camera closed")
+
         logger.info("✅ Dual camera test successful and cameras properly released")
         return True
-        
+
     except Exception as e:
         logger.error(f"❌ Dual camera test failed: {e}")
         return False
@@ -94,15 +128,15 @@ def test_dual_camera():
 def test_merge_functionality():
     """Test video merging functionality."""
     logger.info("Testing video merge functionality...")
-    
+
     # Create test video files (if they don't exist)
     test_dir = Path("/tmp/dual_camera_test")
     test_dir.mkdir(exist_ok=True)
-    
+
     video1 = test_dir / "test_video1.mp4"
     video2 = test_dir / "test_video2.mp4"
     merged = test_dir / "test_merged.mp4"
-    
+
     # Create simple test videos using FFmpeg
     try:
         # Create a 5-second test video for camera 1
@@ -110,15 +144,15 @@ def test_merge_functionality():
             'ffmpeg', '-y', '-f', 'lavfi', '-i', 'testsrc=duration=5:size=640x480:rate=30',
             '-c:v', 'libx264', '-preset', 'ultrafast', str(video1)
         ], capture_output=True, check=True)
-        
+
         # Create a 5-second test video for camera 2
         subprocess.run([
             'ffmpeg', '-y', '-f', 'lavfi', '-i', 'testsrc2=duration=5:size=640x480:rate=30',
             '-c:v', 'libx264', '-preset', 'ultrafast', str(video2)
         ], capture_output=True, check=True)
-        
+
         logger.info("✅ Created test video files")
-        
+
         # Test side-by-side merge
         logger.info("Testing side-by-side merge...")
         result = subprocess.run([
@@ -132,7 +166,7 @@ def test_merge_functionality():
             '-preset', 'ultrafast',
             str(merged)
         ], capture_output=True, text=True, timeout=60)
-        
+
         if result.returncode == 0 and merged.exists():
             logger.info("✅ Side-by-side merge test successful")
             # Clean up test files
@@ -144,7 +178,7 @@ def test_merge_functionality():
         else:
             logger.error(f"❌ Merge test failed: {result.stderr}")
             return False
-            
+
     except Exception as e:
         logger.error(f"❌ Error testing merge functionality: {e}")
         return False
@@ -161,7 +195,7 @@ def restart_services():
         try:
             subprocess.run(["sudo", "systemctl", "restart", service], check=True)
             time.sleep(2)
-            result = subprocess.run(["sudo", "systemctl", "is-active", service], 
+            result = subprocess.run(["sudo", "systemctl", "is-active", service],
                                  capture_output=True, text=True)
             if result.stdout.strip() == "active":
                 logger.info(f"✅ Started {service}")
@@ -174,26 +208,26 @@ def main():
     logger.info("🎬 Starting dual camera test sequence...")
     logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
     logger.info(f"📷 Camera 1: {CAMERA_1_NAME} (Serial: {CAMERA_1_SERIAL})")
-    
+
     # 1. Stop all services
     stop_services()
-    
+
     # 2. Kill any remaining camera processes
     kill_camera_processes()
-    
+
     # 3. Test dual camera functionality
     if not test_dual_camera():
         logger.error("❌ Dual camera test failed! Check camera connections and permissions.")
         sys.exit(1)
-    
+
     # 4. Test merge functionality
     if not test_merge_functionality():
         logger.error("❌ Merge functionality test failed! Check FFmpeg installation.")
         sys.exit(1)
-    
+
     # 5. Restart services
     restart_services()
-    
+
     logger.info("✨ Dual camera test sequence completed!")
     logger.info("📝 Check service logs for any issues:")
     logger.info("   sudo journalctl -u dual_recorder.service -f")
