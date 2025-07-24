@@ -205,6 +205,11 @@ class RecordingSession:
                 else:
                     logger.warning("⚠️ Recording file not found after stop.")
 
+                # Remove lock file to allow video worker to process
+                if self.lockfile.exists():
+                    self.lockfile.unlink()
+                    logger.info(f"🔓 Removed lock file: {self.lockfile}")
+
                 # Save metadata file
                 try:
                     metadata_path = self.final_filepath.with_suffix(".json")
