@@ -285,7 +285,19 @@ class DualRecordingSession:
     def __init__(self, booking):
         self.booking = booking
         self.date_folder = RECORDINGS_DIR / datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
-        self.date_folder.mkdir(parents=True, exist_ok=True)
+        
+        # 🔧 Add better error handling for directory creation
+        try:
+            self.date_folder.mkdir(parents=True, exist_ok=True)
+            logger.info(f"✅ Created/verified recordings directory: {self.date_folder}")
+        except PermissionError as e:
+            logger.error(f"❌ Permission denied creating {self.date_folder}: {e}")
+            logger.error(f"🔧 Fix: Run: sudo chown -R michomanoly14892:video {RECORDINGS_DIR}")
+            logger.error(f"🔧 Then: sudo chmod -R 775 {RECORDINGS_DIR}")
+            raise
+        except Exception as e:
+            logger.error(f"❌ Failed to create recordings directory {self.date_folder}: {e}")
+            raise
         start_dt = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
         end_dt = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
         self.filename_base = f"{start_dt.strftime('%H%M%S')}-{end_dt.strftime('%H%M%S')}"
@@ -527,6 +539,22 @@ def main():
     logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
     logger.info(f"📷 Camera 1: {CAMERA_1_NAME} (Serial: {CAMERA_1_SERIAL})")
     logger.info(f"🎬 Merge method: {MERGE_METHOD}")
+    
+    # 🔧 Verify recordings directory permissions
+    try:
+        RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
+        test_file = RECORDINGS_DIR / "test_write.tmp"
+        test_file.touch()
+        test_file.unlink()
+        logger.info(f"✅ Recordings directory is writable: {RECORDINGS_DIR}")
+    except PermissionError as e:
+        logger.error(f"❌ Permission denied accessing recordings directory: {RECORDINGS_DIR}")
+        logger.error(f"🔧 Fix: Run: sudo chown -R michomanoly14892:video {RECORDINGS_DIR}")
+        logger.error(f"🔧 Then: sudo chmod -R 775 {RECORDINGS_DIR}")
+        sys.exit(1)
+    except Exception as e:
+        logger.error(f"❌ Failed to access recordings directory: {RECORDINGS_DIR} - {e}")
+        sys.exit(1)
     
     # Verify camera serials are set
     if not CAMERA_0_SERIAL or CAMERA_0_SERIAL == "auto":
