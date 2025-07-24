@@ -124,6 +124,18 @@ LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
 MAIN_LOGO_WIDTH = int(os.getenv('MAIN_LOGO_WIDTH', str(LOGO_WIDTH)))
 MAIN_LOGO_HEIGHT = int(os.getenv('MAIN_LOGO_HEIGHT', str(LOGO_HEIGHT)))
 
+# Add a simple file validation function that doesn't require FFmpeg
+def is_file_readable(file: Path) -> bool:
+    """Simple check if file exists and has reasonable size"""
+    try:
+        if not file.exists():
+            return False
+        size = file.stat().st_size
+        # File should be at least 100KB and not empty
+        return size > 100 * 1024
+    except Exception:
+        return False
+
 def get_duration(file: Path) -> float:
     try:
         result = subprocess.run([
@@ -336,16 +348,6 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 return False
     
     # Add a simple file validation function that doesn't require FFmpeg
-    def is_file_readable(file: Path) -> bool:
-        """Simple check if file exists and has reasonable size"""
-        try:
-            if not file.exists():
-                return False
-            size = file.stat().st_size
-            # File should be at least 100KB and not empty
-            return size > 100 * 1024
-        except Exception:
-            return False
     def is_valid_image(file: Path):
         try:
             from PIL import Image
