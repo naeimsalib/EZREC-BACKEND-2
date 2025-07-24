@@ -162,14 +162,27 @@ import os
 import sys
 import time
 import signal
+import logging
 from pathlib import Path
 from dotenv import load_dotenv
+
+# Set up logging for this camera script
+log_file = f"/tmp/{{camera_name.lower()}}_camera_debug.log"
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s [%(levelname)s] %(message)s',
+    handlers=[
+        logging.FileHandler(log_file),
+        logging.StreamHandler(sys.stdout)
+    ]
+)
+logger = logging.getLogger(f"{{camera_name.lower()}}_camera")
 
 try:
     from picamera2 import Picamera2
     from picamera2.encoders import H264Encoder
 except ImportError as e:
-    print(f"❌ Picamera2 not available: {{e}}")
+    logger.error(f"❌ Picamera2 not available: {{e}}")
     sys.exit(1)
 
 # Load environment
@@ -193,14 +206,16 @@ def main():
     camera_serial = "{camera_serial}"
     output_file = "{output_file}"
     
-    print(f"📷 Starting {camera_name} camera recording (Serial: {{camera_serial}})")
-    print(f"📁 Output file: {{output_file}}")
+    logger.info(f"📷 Starting {camera_name} camera recording (Serial: {{camera_serial}})")
+    logger.info(f"📁 Output file: {{output_file}}")
+    logger.info(f"📝 Debug log: {{log_file}}")
     
     try:
         # Initialize camera with retry logic
-        print(f"🔧 Initializing camera with serial: {{camera_serial}}")
+        logger.info(f"🔧 Initializing camera with serial: {{camera_serial}}")
         
         # Kill any existing camera processes that might be using the device
+        logger.info("🔪 Killing any existing camera processes...")
         os.system("sudo fuser -k /dev/video* 2>/dev/null || true")
         time.sleep(2)
         
@@ -221,22 +236,22 @@ def main():
                     }}
                 )
                 
-                print(f"⚙️ Configuring camera...")
+                logger.info(f"⚙️ Configuring camera...")
                 camera.configure(config)
                 camera.start()
                 
-                print(f"✅ Camera initialized successfully on attempt {{attempt + 1}}")
+                logger.info(f"✅ Camera initialized successfully on attempt {{attempt + 1}}")
                 break
                 
             except Exception as e:
-                print(f"⚠️ Camera initialization attempt {{attempt + 1}} failed: {{e}}")
+                logger.warning(f"⚠️ Camera initialization attempt {{attempt + 1}} failed: {{e}}")
                 if camera:
                     try:
                         camera.close()
                     except:
                         pass
                 if attempt < 2:
-                    print(f"🔄 Retrying in 3 seconds...")
+                    logger.info(f"🔄 Retrying in 3 seconds...")
                     time.sleep(3)
                 else:
                     raise Exception(f"Failed to initialize camera after 3 attempts: {{e}}")
@@ -250,11 +265,11 @@ def main():
         )
         
         # Start recording
-        print(f"🎥 Starting recording to: {{output_file}}")
+        logger.info(f"🎥 Starting recording to: {{output_file}}")
         camera.start_recording(encoder, str(output_file))
         time.sleep(1.0)
         
-        print(f"✅ {camera_name} camera recording started")
+        logger.info(f"✅ {camera_name} camera recording started")
         
         # Keep recording until interrupted
         while True:
@@ -263,12 +278,12 @@ def main():
             if Path(output_file).exists():
                 file_size = Path(output_file).stat().st_size
                 if file_size > 0:
-                    print(f"📹 Recording in progress: {{file_size}} bytes written")
+                    logger.info(f"📹 Recording in progress: {{file_size}} bytes written")
             
     except Exception as e:
-        print(f"❌ Error in {camera_name} camera: {{e}}")
+        logger.error(f"❌ Error in {camera_name} camera: {{e}}")
         import traceback
-        print(f"📋 Traceback: {{traceback.format_exc()}}")
+        logger.error(f"📋 Traceback: {{traceback.format_exc()}}")
         sys.exit(1)
 
 if __name__ == "__main__":
@@ -363,6 +378,13 @@ class DualRecordingSession:
             
             logger.info(f"✅ Camera 0 process started successfully")
             
+            # Check if first camera file is being created
+            time.sleep(2.0)  # Give camera time to start writing
+            if self.camera0_file.exists():
+                logger.info(f"✅ {CAMERA_0_NAME} camera file created: {self.camera0_file.stat().st_size} bytes")
+            else:
+                logger.warning(f"⚠️ {CAMERA_0_NAME} camera file not found after 7s")
+            
             # Wait additional time before starting second camera
             time.sleep(3.0)
             
@@ -392,6 +414,13 @@ class DualRecordingSession:
                 return False
             
             logger.info(f"✅ Camera 1 process started successfully")
+            
+            # Check if second camera file is being created
+            time.sleep(2.0)  # Give camera time to start writing
+            if self.camera1_file.exists():
+                logger.info(f"✅ {CAMERA_1_NAME} camera file created: {self.camera1_file.stat().st_size} bytes")
+            else:
+                logger.warning(f"⚠️ {CAMERA_1_NAME} camera file not found after 7s")
             
             # Final check that both processes are running
             if self.camera0_process.poll() is None and self.camera1_process.poll() is None:
