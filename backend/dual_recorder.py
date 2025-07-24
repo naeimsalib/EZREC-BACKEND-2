@@ -167,6 +167,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Set up logging for this camera script
+camera_name = "{camera_name}"
 log_file = f"/tmp/{{camera_name.lower()}}_camera_debug.log"
 logging.basicConfig(
     level=logging.DEBUG,
@@ -206,7 +207,7 @@ def main():
     camera_serial = "{camera_serial}"
     output_file = "{output_file}"
     
-    logger.info(f"📷 Starting {camera_name} camera recording (Serial: {{camera_serial}})")
+    logger.info(f"📷 Starting {{camera_name}} camera recording (Serial: {{camera_serial}})")
     logger.info(f"📁 Output file: {{output_file}}")
     logger.info(f"📝 Debug log: {{log_file}}")
     
@@ -269,7 +270,7 @@ def main():
         camera.start_recording(encoder, str(output_file))
         time.sleep(1.0)
         
-        logger.info(f"✅ {camera_name} camera recording started")
+        logger.info(f"✅ {{camera_name}} camera recording started")
         
         # Keep recording until interrupted
         while True:
@@ -281,7 +282,7 @@ def main():
                     logger.info(f"📹 Recording in progress: {{file_size}} bytes written")
             
     except Exception as e:
-        logger.error(f"❌ Error in {camera_name} camera: {{e}}")
+        logger.error(f"❌ Error in {{camera_name}} camera: {{e}}")
         import traceback
         logger.error(f"📋 Traceback: {{traceback.format_exc()}}")
         sys.exit(1)
@@ -290,7 +291,7 @@ if __name__ == "__main__":
     main()
 '''
     
-    script_path = Path(f"/tmp/camera_{camera_name}_recorder.py")
+    script_path = Path(f"/tmp/camera_{camera_name.lower()}_recorder.py")
     logger.info(f"📝 Writing script to: {script_path}")
     
     with open(script_path, 'w') as f:
