@@ -100,7 +100,7 @@ sudo rm -f "$API_DIR/local_data/bookings.json" "$API_DIR/local_data/status.json"
 
 # Fix permissions for bookings.json file to prevent permission errors
 echo "🔧 Fixing permissions for bookings.json file..."
-sudo chown root:root "$API_DIR/local_data/bookings.json" 2>/dev/null || true
+sudo chown "$USER:$USER" "$API_DIR/local_data/bookings.json" 2>/dev/null || true
 sudo chmod 644 "$API_DIR/local_data/bookings.json" 2>/dev/null || true
 
 # Clean up any temporary files
@@ -141,7 +141,7 @@ fi
 #------------------------------#
 echo "📁 Setting up directories..."
 sudo mkdir -p "$API_DIR/local_data" "$LOG_DIR"
-sudo chown -R root:root "$PROJECT_DIR"
+sudo chown -R "$USER:$USER" "$PROJECT_DIR"
 sudo chmod -R 755 "$PROJECT_DIR"
 sudo chmod 755 "$API_DIR/local_data"
 sudo chmod 755 "$LOG_DIR"
@@ -149,7 +149,7 @@ sudo chmod 755 "$LOG_DIR"
 # Ensure proper permissions for bookings.json file
 echo "🔧 Setting up proper permissions for bookings.json..."
 sudo touch "$API_DIR/local_data/bookings.json" 2>/dev/null || true
-sudo chown root:root "$API_DIR/local_data/bookings.json"
+sudo chown "$USER:$USER" "$API_DIR/local_data/bookings.json"
 sudo chmod 644 "$API_DIR/local_data/bookings.json"
 
 #------------------------------#
@@ -162,7 +162,7 @@ python3 -m venv --system-site-packages "$VENV_DIR"
 "$VENV_DIR/bin/pip" install fastapi uvicorn psutil requests boto3 python-dotenv pytz python-dateutil supabase
 "$VENV_DIR/bin/pip" install 'pydantic[email]'
 "$VENV_DIR/bin/pip" install opencv-python picamera2
-sudo chown -R root:root "$VENV_DIR"
+sudo chown -R "$USER:$USER" "$VENV_DIR"
 
 #------------------------------#
 # 5. SYNC PROJECT FILES
@@ -336,7 +336,7 @@ fi
 #------------------------------#
 echo "⚖️ Fixing log permissions..."
 sudo mkdir -p "$LOG_DIR"
-sudo chown root:root "$LOG_DIR"
+sudo chown "$USER:$USER" "$LOG_DIR"
 chmod 755 "$LOG_DIR"
 
 #------------------------------#
@@ -628,8 +628,9 @@ fi
 # 12.5 FINAL PERMISSION FIXES #
 #------------------------------#
 echo "🔧 Applying final permission fixes..."
-# Ensure API directory and files are owned by root
-sudo chown -R root:root "$API_DIR/local_data"
+# Change ownership to root for API service compatibility
+sudo chown -R root:root "$PROJECT_DIR"
+sudo chmod -R 755 "$PROJECT_DIR"
 sudo chmod 755 "$API_DIR/local_data"
 sudo chmod 644 "$API_DIR/local_data/bookings.json"
 
@@ -722,7 +723,7 @@ echo "   ls -la $PROJECT_DIR/recordings/                # Check recordings"
 echo "   ls -la $LOG_DIR/                               # Check logs"
 echo ""
 echo "7. 🔄 PERMISSION FIXES (if needed):"
-echo "   sudo chown root:root $API_DIR/local_data/bookings.json"
+echo "   sudo chown $USER:$USER $API_DIR/local_data/bookings.json"
 echo "   sudo chmod 644 $API_DIR/local_data/bookings.json"
 echo ""
 echo "8. 📊 SYSTEM MONITORING:"
