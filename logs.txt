@@ -1,9 +1,406 @@
-michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # Stop dual recorder
-sudo systemctl stop dual_recorder.service
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
+remote: Enumerating objects: 9, done.
+remote: Counting objects: 100% (9/9), done.
+remote: Compressing objects: 100% (2/2), done.
+remote: Total 5 (delta 3), reused 5 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (5/5), 26.18 KiB | 623.00 KiB/s, done.
+From https://github.com/naeimsalib/EZREC-BACKEND-2
+   f33657c..cec9800  main       -> origin/main
+Updating f33657c..cec9800
+Fast-forward
+ logs.txt                 | 429 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++------------------------------------------------------------------------------------------------------------------
+ systemd/recorder.service |   5 +--
+ 2 files changed, 176 insertions(+), 258 deletions(-)
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ ./deployment.sh 
+🚀 Starting EZREC Deployment as user 'michomanoly14892' with tunnel name 'ezrec-tunnel'...
+🧹 Cleaning up old recordings, uploads, and logs...
+🧹 Deep cleaning all recordings, processed videos, media cache, and state files...
+🛑 Stopping all EZREC services for clean deployment...
+🔪 Killing any remaining EZREC Python processes...
+🗑️ Removing all recordings and related files...
+🗑️ Removing all processed videos...
+🗑️ Removing media cache...
+🗑️ Removing state files...
+🗑️ Removing API cache files...
+🔧 Fixing permissions for bookings.json file...
+🗑️ Removing temporary files...
+🗑️ Cleaning old log files...
+🔄 Resetting booking cache...
+✅ All recordings, processed videos, media cache, and state files cleaned.
+✅ All EZREC services stopped and processes killed.
+🔄 Refreshing user media cache for main user...
+INFO:httpx:HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/2 200 OK"
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro-video/intro.mp4?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=y7kQaxU2oBV%2FzLLDYy22LSqW53o%3D&Expires=1753341037 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4 ...
+Exists after download: True
+File size: 1332881 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo/logo.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=%2FxK%2F2jBf1ymvSEPLhwIP4CxmdZI%3D&Expires=1753341037 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png ...
+Exists after download: True
+File size: 59105 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo1/logo1.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=ovLZgseUCooVnkjymJ61YtDTmuw%3D&Expires=1753341037 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png ...
+Exists after download: True
+File size: 149947 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo2/logo2.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=xQ9FXEIxFpHZcJy9n3Zkxz0mF%2Fg%3D&Expires=1753341037 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png ...
+Exists after download: True
+File size: 137038 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo3/logo3.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=NjglL8B%2BkhSTCWaXcrCHxlDgfo8%3D&Expires=1753341037 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png ...
+Exists after download: True
+File size: 788138 bytes
+User media cache directory contents:
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png
+📁 Setting up directories...
+🔧 Setting up proper permissions for bookings.json...
+🐍 Setting up virtual environment...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: pip in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (23.0.1)
+Collecting pip
+  Using cached pip-25.1.1-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 23.0.1
+    Uninstalling pip-23.0.1:
+      Successfully uninstalled pip-23.0.1
+Successfully installed pip-25.1.1
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Collecting fastapi
+  Using cached fastapi-0.116.1-py3-none-any.whl.metadata (28 kB)
+Collecting uvicorn
+  Using cached uvicorn-0.35.0-py3-none-any.whl.metadata (6.5 kB)
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+Requirement already satisfied: requests in /home/michomanoly14892/.local/lib/python3.11/site-packages (2.31.0)
+Collecting boto3
+  Using cached boto3-1.39.12-py3-none-any.whl.metadata (6.7 kB)
+Requirement already satisfied: python-dotenv in /home/michomanoly14892/.local/lib/python3.11/site-packages (1.0.0)
+Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (2022.7.1)
+Requirement already satisfied: python-dateutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (2.9.0.post0)
+Requirement already satisfied: supabase in /usr/local/lib/python3.11/dist-packages (2.16.0)
+Collecting starlette<0.48.0,>=0.40.0 (from fastapi)
+  Using cached starlette-0.47.2-py3-none-any.whl.metadata (6.2 kB)
+Requirement already satisfied: pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from fastapi) (2.11.7)
+Requirement already satisfied: typing-extensions>=4.8.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from fastapi) (4.14.0)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (0.4.1)
+Requirement already satisfied: anyio<5,>=3.6.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from starlette<0.48.0,>=0.40.0->fastapi) (4.9.0)
+Requirement already satisfied: idna>=2.8 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi) (3.10)
+Requirement already satisfied: sniffio>=1.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi) (1.3.1)
+Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (from uvicorn) (8.1.3)
+Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.11/dist-packages (from uvicorn) (0.16.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in /usr/lib/python3/dist-packages (from requests) (3.0.1)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (from requests) (1.26.12)
+Requirement already satisfied: certifi>=2017.4.17 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from requests) (2025.6.15)
+Collecting botocore<1.40.0,>=1.39.12 (from boto3)
+  Using cached botocore-1.39.12-py3-none-any.whl.metadata (5.7 kB)
+Collecting jmespath<2.0.0,>=0.7.1 (from boto3)
+  Using cached https://www.piwheels.org/simple/jmespath/jmespath-1.0.1-py3-none-any.whl (20 kB)
+Collecting s3transfer<0.14.0,>=0.13.0 (from boto3)
+  Using cached s3transfer-0.13.1-py3-none-any.whl.metadata (1.7 kB)
+Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil) (1.17.0)
+Requirement already satisfied: gotrue<3.0.0,>=2.11.0 in /usr/local/lib/python3.11/dist-packages (from supabase) (2.12.2)
+Requirement already satisfied: httpx<0.29,>=0.26 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.28.1)
+Requirement already satisfied: postgrest<1.2,>0.19 in /usr/local/lib/python3.11/dist-packages (from supabase) (1.1.1)
+Requirement already satisfied: realtime<2.6.0,>=2.4.0 in /usr/local/lib/python3.11/dist-packages (from supabase) (2.5.3)
+Requirement already satisfied: storage3<0.13,>=0.10 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.12.0)
+Requirement already satisfied: supafunc<0.11,>=0.9 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.10.1)
+Requirement already satisfied: pyjwt<3.0.0,>=2.10.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue<3.0.0,>=2.11.0->supabase) (2.10.1)
+Requirement already satisfied: pytest-mock<4.0.0,>=3.14.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue<3.0.0,>=2.11.0->supabase) (3.14.1)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<0.29,>=0.26->supabase) (1.0.9)
+Requirement already satisfied: h2<5,>=3 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (4.2.0)
+Requirement already satisfied: hyperframe<7,>=6.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (6.1.0)
+Requirement already satisfied: hpack<5,>=4.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (4.1.0)
+Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from postgrest<1.2,>0.19->supabase) (2.1.0)
+Requirement already satisfied: packaging in /home/michomanoly14892/.local/lib/python3.11/site-packages (from deprecation<3.0.0,>=2.1.0->postgrest<1.2,>0.19->supabase) (25.0)
+Requirement already satisfied: pytest>=6.2.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (8.4.1)
+Requirement already satisfied: websockets<16,>=11 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime<2.6.0,>=2.4.0->supabase) (12.0)
+Requirement already satisfied: strenum<0.5.0,>=0.4.15 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from supafunc<0.11,>=0.9->supabase) (0.4.15)
+Requirement already satisfied: iniconfig>=1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (2.1.0)
+Requirement already satisfied: pluggy<2,>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in /usr/lib/python3/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (2.14.0)
+Using cached fastapi-0.116.1-py3-none-any.whl (95 kB)
+Using cached starlette-0.47.2-py3-none-any.whl (72 kB)
+Using cached uvicorn-0.35.0-py3-none-any.whl (66 kB)
+Using cached boto3-1.39.12-py3-none-any.whl (139 kB)
+Using cached botocore-1.39.12-py3-none-any.whl (13.9 MB)
+Using cached s3transfer-0.13.1-py3-none-any.whl (85 kB)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+Installing collected packages: uvicorn, jmespath, starlette, botocore, s3transfer, fastapi, boto3
+Successfully installed boto3-1.39.12 botocore-1.39.12 fastapi-0.116.1 jmespath-1.0.1 s3transfer-0.13.1 starlette-0.47.2 uvicorn-0.35.0
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: pydantic[email] in /home/michomanoly14892/.local/lib/python3.11/site-packages (2.11.7)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (2.33.2)
+Requirement already satisfied: typing-extensions>=4.12.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (4.14.0)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic[email]) (0.4.1)
+Collecting email-validator>=2.0.0 (from pydantic[email])
+  Using cached https://www.piwheels.org/simple/email-validator/email_validator-2.2.0-py3-none-any.whl (33 kB)
+Collecting dnspython>=2.0.0 (from email-validator>=2.0.0->pydantic[email])
+  Using cached https://www.piwheels.org/simple/dnspython/dnspython-2.7.0-py3-none-any.whl (313 kB)
+Requirement already satisfied: idna>=2.0.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from email-validator>=2.0.0->pydantic[email]) (3.10)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+Installing collected packages: dnspython, email-validator
+Successfully installed dnspython-2.7.0 email-validator-2.2.0
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: opencv-python in /home/michomanoly14892/.local/lib/python3.11/site-packages (4.11.0.86)
+Requirement already satisfied: picamera2 in /usr/lib/python3/dist-packages (0.3.28)
+Requirement already satisfied: numpy>=1.21.2 in /usr/lib/python3/dist-packages (from opencv-python) (1.24.2)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[DEBUG] DEV_DIR=/home/michomanoly14892/EZREC-BACKEND-2
+[DEBUG] PROJECT_DIR=/opt/ezrec-backend
+-rw-r--r-- 1 michomanoly14892 michomanoly14892 1271 Jul 21 01:14 /home/michomanoly14892/EZREC-BACKEND-2/backend/refresh_user_media.py
+\U0001F4E6 Syncing updated project files...
+sending incremental file list
+./
+logs.txt
+api/
+systemd/
+systemd/recorder.service
 
-# Edit the .env file to disable dual camera mode
-sudo nano /opt/ezrec-backend/.env
-michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # Start the regular single camera recorder
+sent 28,797 bytes  received 191 bytes  57,976.00 bytes/sec
+total size is 1,429,201  speedup is 49.30
+🔄 Refreshing user media cache for main user...
+INFO:httpx:HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/2 200 OK"
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro-video/intro.mp4?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=nPxttbN6De%2B2mW6gtClYJtABcWs%3D&Expires=1753341059 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4 ...
+Exists after download: True
+File size: 1332881 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo/logo.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=WXvsS77RZr%2Ff%2BSXSKiH0FFOrtvA%3D&Expires=1753341059 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png ...
+Exists after download: True
+File size: 59105 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo1/logo1.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=bDGMq4xuhlcKcW7Y%2FbFUOaE9xug%3D&Expires=1753341059 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png ...
+Exists after download: True
+File size: 149947 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo2/logo2.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=Fx0R0IQ0C10HMONJRB8HZoLiFjw%3D&Expires=1753341059 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png ...
+Exists after download: True
+File size: 137038 bytes
+Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo3/logo3.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=stV2c40bKlJUsFJmbceFoe5mEe8%3D&Expires=1753341059 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png ...
+Exists after download: True
+File size: 788138 bytes
+User media cache directory contents:
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png
+ - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png
+📷 Detecting cameras automatically...
+🔍 Running camera detection...
+📋 Camera detection output:
+Available cameras
+-----------------
+0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+
+1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+✅ Found 2 camera(s) with serials: 80000 88000
+📷 Dual cameras detected: 80000, 88000
+✅ Camera detection successful
+📝 Updating .env file with detected camera serials...
+✅ Dual camera mode enabled with merge method: side_by_side
+📝 Camera configuration updated in .env file
+🖼️ Downloading main EZREC logo from S3...
+download: s3://ezrec-user-media/main_ezrec_logo.png to ../../../opt/ezrec-backend/main_ezrec_logo.png
+📦 Installing backend requirements.txt dependencies...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: python-dotenv in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 1)) (1.0.0)
+Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 2)) (2022.7.1)
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 3)) (5.9.5)
+Requirement already satisfied: supabase in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 4)) (2.16.0)
+Requirement already satisfied: gotrue in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.12.2)
+Requirement already satisfied: httpx in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (0.28.1)
+Requirement already satisfied: postgrest in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 7)) (1.1.1)
+Requirement already satisfied: realtime in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 8)) (2.5.3)
+Requirement already satisfied: storage3 in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 9)) (0.12.0)
+Requirement already satisfied: supafunc in /usr/local/lib/python3.11/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 10)) (0.10.1)
+Requirement already satisfied: picamera2 in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 11)) (0.3.28)
+Requirement already satisfied: ffmpeg-python in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 12)) (0.2.0)
+Requirement already satisfied: Flask in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 13)) (2.2.2)
+Requirement already satisfied: Pillow in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 14)) (9.4.0)
+Requirement already satisfied: numpy in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 15)) (1.24.2)
+Requirement already satisfied: requests in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 16)) (2.31.0)
+Requirement already satisfied: boto3 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (1.39.12)
+Requirement already satisfied: fastapi in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 18)) (0.116.1)
+Requirement already satisfied: uvicorn in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 19)) (0.35.0)
+Requirement already satisfied: opencv-python in /home/michomanoly14892/.local/lib/python3.11/site-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 20)) (4.11.0.86)
+Requirement already satisfied: speedtest-cli in /usr/lib/python3/dist-packages (from -r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 21)) (2.1.3)
+Requirement already satisfied: pydantic<3,>=1.10 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.11.7)
+Requirement already satisfied: pyjwt<3.0.0,>=2.10.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.10.1)
+Requirement already satisfied: pytest-mock<4.0.0,>=3.14.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (3.14.1)
+Requirement already satisfied: anyio in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (4.9.0)
+Requirement already satisfied: certifi in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (2025.6.15)
+Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (1.0.9)
+Requirement already satisfied: idna in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (3.10)
+Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from postgrest->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 7)) (2.1.0)
+Requirement already satisfied: typing-extensions<5.0.0,>=4.14.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 8)) (4.14.0)
+Requirement already satisfied: websockets<16,>=11 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 8)) (12.0)
+Requirement already satisfied: python-dateutil<3.0.0,>=2.8.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from storage3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 9)) (2.9.0.post0)
+Requirement already satisfied: strenum<0.5.0,>=0.4.15 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from supafunc->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 10)) (0.4.15)
+Requirement already satisfied: packaging in /home/michomanoly14892/.local/lib/python3.11/site-packages (from deprecation<3.0.0,>=2.1.0->postgrest->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 7)) (25.0)
+Requirement already satisfied: h11>=0.16 in /usr/local/lib/python3.11/dist-packages (from httpcore==1.*->httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (0.16.0)
+Requirement already satisfied: h2<5,>=3 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx[http2]<0.29,>=0.26->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (4.2.0)
+Requirement already satisfied: hyperframe<7,>=6.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (6.1.0)
+Requirement already satisfied: hpack<5,>=4.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (4.1.0)
+Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (0.4.1)
+Requirement already satisfied: pytest>=6.2.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (8.4.1)
+Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.8.2->storage3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 9)) (1.17.0)
+Requirement already satisfied: future in /home/michomanoly14892/.local/lib/python3.11/site-packages (from ffmpeg-python->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 12)) (1.0.0)
+Requirement already satisfied: charset-normalizer<4,>=2 in /usr/lib/python3/dist-packages (from requests->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 16)) (3.0.1)
+Requirement already satisfied: urllib3<3,>=1.21.1 in /usr/lib/python3/dist-packages (from requests->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 16)) (1.26.12)
+Requirement already satisfied: botocore<1.40.0,>=1.39.12 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from boto3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (1.39.12)
+Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from boto3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (1.0.1)
+Requirement already satisfied: s3transfer<0.14.0,>=0.13.0 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from boto3->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 17)) (0.13.1)
+Requirement already satisfied: starlette<0.48.0,>=0.40.0 in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (from fastapi->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 18)) (0.47.2)
+Requirement already satisfied: sniffio>=1.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from anyio->httpx->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 6)) (1.3.1)
+Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (from uvicorn->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 19)) (8.1.3)
+Requirement already satisfied: iniconfig>=1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.1.0)
+Requirement already satisfied: pluggy<2,>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (1.6.0)
+Requirement already satisfied: pygments>=2.7.2 in /usr/lib/python3/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue->-r /home/michomanoly14892/EZREC-BACKEND-2/requirements.txt (line 5)) (2.14.0)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+⚖️ Fixing log permissions...
+⚙️ Setting up systemd services...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+✅ Copied status_updater.py to /opt/ezrec-backend
+● status_updater.service - EZREC System Status Updater
+     Loaded: loaded (/etc/systemd/system/status_updater.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2025-07-24 02:11:03 EDT; 17ms ago
+   Main PID: 38203 (python3)
+      Tasks: 1 (limit: 9577)
+        CPU: 13ms
+     CGroup: /system.slice/status_updater.service
+             └─38203 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/status_updater.py
+
+Jul 24 02:11:03 raspberrypi systemd[1]: Started status_updater.service - EZREC System Status Updater.
+✅ cloudflared is already installed
+🛠️ Increasing UDP buffer size for cloudflared...
+✅ UDP buffer already configured
+🔁 Enabling and starting services...
+🎬 Starting dual camera recorder...
+🚀 Starting EZREC services...
+Starting system_status.service...
+✅ system_status.service started successfully
+Starting log_collector.service...
+✅ log_collector.service started successfully
+Starting health_api.service...
+✅ health_api.service started successfully
+Starting dual_recorder.service...
+✅ dual_recorder.service started successfully
+Starting video_worker.service...
+✅ video_worker.service started successfully
+🌐 Starting cloudflared tunnel...
+✅ cloudflared started successfully
+
+🎉 EZREC deployed successfully!
+
+📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org
+🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f
+📹 Dual recorder logs: sudo journalctl -u dual_recorder.service -f
+🎞️ Video logs:     sudo journalctl -u video_worker.service -f
+🌐 Tunnel logs:    sudo journalctl -u cloudflared -f
+📁 Project files:  /opt/ezrec-backend
+📁 API entry:      /opt/ezrec-backend/api/api_server.py
+📃 Logs dir:       /opt/ezrec-backend/logs
+
+📷 Camera Configuration:
+   Mode: Dual Camera
+   Camera 0 Serial: 80000
+   Camera 1 Serial: 88000
+   Merge Method: side_by_side
+side_by_side
+
+⚠️  IMPORTANT: Make sure to create and configure /opt/ezrec-backend/.env file
+    Use env.example as a template and add your credentials
+
+🚀 NEXT STEPS AFTER DEPLOYMENT:
+================================
+
+1. 📝 CREATE TEST BOOKING:
+date: extra operand ‘+"%Y-%m-%dT%H:%M:%SZ"’
+Try 'date --help' for more information.
+   echo '["id": "test-001", "start_time": ""2025-07-24T06:11:19Z"", "end_time": "", "status": "active", "user_id": "YOUR_USER_ID", "camera_id": "YOUR_CAMERA_ID"}]' | sudo tee /opt/ezrec-backend/api/local_data/bookings.json
+
+2. 📊 MONITOR SERVICES:
+   sudo journalctl -u dual_recorder.service -f    # Watch dual camera recording
+   sudo journalctl -u video_worker.service -f     # Watch video processing
+   sudo journalctl -u system_status.service -f    # Watch system status
+
+3. 🔧 TROUBLESHOOTING COMMANDS:
+   sudo systemctl status dual_recorder.service     # Check service status
+   sudo systemctl restart dual_recorder.service    # Restart if needed
+   ls -la /opt/ezrec-backend/recordings/2025-07-24/  # Check recordings
+   vcgencmd measure_temp                           # Check temperature
+   df -h                                           # Check disk space
+
+4. 📷 CAMERA TESTING:
+   cd /opt/ezrec-backend/backend
+   python3 detect_cameras.py                       # Test camera detection
+   python3 test_dual_camera.py                     # Test dual camera setup
+
+5. 🌐 NETWORK TESTING:
+   curl http://localhost:8000/status               # Test API locally
+   curl https://api.ezrec.org/status              # Test API via tunnel
+
+6. 📁 CHECK FILES:
+   ls -la /opt/ezrec-backend/api/local_data/                    # Check booking cache
+   ls -la /opt/ezrec-backend/recordings/                # Check recordings
+   ls -la /opt/ezrec-backend/logs/                               # Check logs
+
+7. 🔄 PERMISSION FIXES (if needed):
+   sudo chown michomanoly14892:michomanoly14892 /opt/ezrec-backend/api/local_data/bookings.json
+   sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json
+
+8. 📊 SYSTEM MONITORING:
+   htop                                           # Monitor system resources
+   sudo journalctl -f                             # Monitor all logs
+   sudo systemctl list-units --type=service | grep ezrec  # List all EZREC services
+
+✅ Your dual camera EZREC system is now ready for production use!
+🎬 Both cameras will record simultaneously and merge into one video
+📡 Videos will be automatically processed and uploaded to S3
+🌐 API is available at https://api.ezrec.org
+\n🎥 Video encoder set to: h264_v4l2m2m (see .env)
+✅ main_ezrec_logo.png already present.
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Stop all services
+sudo systemctl stop recorder.service
+sudo systemctl stop dual_recorder.service
+sudo systemctl stop video_worker.service
+
+# Kill any camera processes
+sudo fuser -k /dev/video0 2>/dev/null || true
+sudo fuser -k /dev/video1 2>/dev/null || true
+sleep 2
+
+# Remove old dual camera files
+sudo rm -f /opt/ezrec-backend/recordings/2025-07-24/*_left.mp4
+sudo rm -f /opt/ezrec-backend/recordings/2025-07-24/*_right.mp4
+sudo rm -f /opt/ezrec-backend/recordings/2025-07-24/*.lock
+sudo rm -f /opt/ezrec-backend/recordings/2025-07-24/*.done
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Copy the fixed service file
+sudo cp ~/EZREC-BACKEND-2/systemd/recorder.service /etc/systemd/system/
+
+# Reload systemd
+sudo systemctl daemon-reload
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Start the recorder service
 sudo systemctl start recorder.service
 
 # Check status
@@ -13,43 +410,49 @@ sudo systemctl status recorder.service
 sudo journalctl -u recorder.service -f
 ● recorder.service - EZREC Single Camera Recorder
      Loaded: loaded (/etc/systemd/system/recorder.service; disabled; preset: enabled)
-     Active: active (running) since Thu 2025-07-24 01:54:32 EDT; 19ms ago
-    Process: 33187 ExecStartPre=/bin/bash -c for dev in /dev/video*; do fuser -k "$dev" || true; done (code=exited, status=0/SUCCESS)
-   Main PID: 33221 (python3)
+     Active: active (running) since Thu 2025-07-24 02:11:59 EDT; 19ms ago
+    Process: 38658 ExecStartPre=/bin/bash -c for dev in /dev/video*; do fuser -k "$dev" || true; done (code=exited, status=0/SUCCESS)
+   Main PID: 38692 (python3)
       Tasks: 1 (limit: 9577)
         CPU: 208ms
      CGroup: /system.slice/recorder.service
-             └─33221 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
+             └─38692 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/recorder.py
 
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/8: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/9: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/0: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/1: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/2: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/255: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/0: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/1: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/2: Permission denied
-Jul 24 01:54:32 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/8: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31547/fd/9: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/0: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/1: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/2: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/31741/fd/255: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/0: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/1: Permission denied
-Jul 24 01:54:32 raspberrypi bash[33220]: Cannot stat file /proc/33091/fd/2: Permission denied
-Jul 24 01:54:32 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
-Jul 24 01:54:33 raspberrypi python3[33221]: INFO:__main__:📡 Recorder started [Timezone: America/New_York]
-Jul 24 01:54:33 raspberrypi python3[33221]: INFO:__main__:📄 Watching bookings cache: /opt/ezrec-backend/api/local_data/bookings.json
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/0: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/1: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/2: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/3: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/4: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/5: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38309/fd/0: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38309/fd/1: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38309/fd/2: Permission denied
+Jul 24 02:11:59 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/0: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/1: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/2: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/3: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/4: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38275/fd/5: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38309/fd/0: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38309/fd/1: Permission denied
+Jul 24 02:11:59 raspberrypi bash[38679]: Cannot stat file /proc/38309/fd/2: Permission denied
+Jul 24 02:11:59 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
+Jul 24 02:11:59 raspberrypi systemd[1]: recorder.service: Main process exited, code=exited, status=1/FAILURE
+Jul 24 02:11:59 raspberrypi systemd[1]: recorder.service: Failed with result 'exit-code'.
+Jul 24 02:12:04 raspberrypi systemd[1]: recorder.service: Scheduled restart job, restart counter is at 1.
+Jul 24 02:12:04 raspberrypi systemd[1]: Stopped recorder.service - EZREC Single Camera Recorder.
+Jul 24 02:12:04 raspberrypi systemd[1]: Starting recorder.service - EZREC Single Camera Recorder...
+Jul 24 02:12:05 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
+Jul 24 02:12:05 raspberrypi systemd[1]: recorder.service: Main process exited, code=exited, status=1/FAILURE
+Jul 24 02:12:05 raspberrypi systemd[1]: recorder.service: Failed with result 'exit-code'.
 ^C
-michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ # Create a test booking
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a test booking
 echo '[
   {
-    "id": "test-single-001",
+    "id": "test-single-fix-2",
     "start_time": "'$(date -u +"%Y-%m-%dT%H:%M:%SZ")'",
-    "end_time": "'$(date -u -d "+3 minutes" +"%Y-%m-%dT%H:%M:%SZ")'",
+    "end_time": "'$(date -u -d "+2 minutes" +"%Y-%m-%dT%H:%M:%SZ")'",
     "status": "active",
     "user_id": "65aa2e2a-e463-424d-b88f-0724bb0bea3a",
     "camera_id": "pi-001"
@@ -57,134 +460,34 @@ echo '[
 ]' | sudo tee /opt/ezrec-backend/api/local_data/bookings.json
 [
   {
-    "id": "test-single-001",
-    "start_time": "2025-07-24T05:54:43Z",
-    "end_time": "2025-07-24T05:57:43Z",
+    "id": "test-single-fix-2",
+    "start_time": "2025-07-24T06:12:08Z",
+    "end_time": "2025-07-24T06:14:08Z",
     "status": "active",
     "user_id": "65aa2e2a-e463-424d-b88f-0724bb0bea3a",
     "camera_id": "pi-001"
   }
 ]
-michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ sudo journalctl -u recorder.service -f
-Jul 24 01:54:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera now open.
-Jul 24 01:54:46 raspberrypi python3[33221]: INFO:__main__:✅ Initialized default camera
-Jul 24 01:54:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera configuration has been adjusted!
-Jul 24 01:54:46 raspberrypi python3[33221]: [3:10:16.901129765] [33221]  INFO Camera camera.cpp:1205 configuring streams: (0) 2028x1080-YUV420 (1) 2028x1080-BGGR_PISP_COMP1
-Jul 24 01:54:46 raspberrypi python3[33221]: [3:10:16.901230654] [33259]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1080-SBGGR12_1X12 - Selected CFE format: 2028x1080-PC1B
-Jul 24 01:54:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Configuration successful!
-Jul 24 01:55:03 raspberrypi systemd-journald[311]: [🡕] Suppressed 10 messages from recorder.service
-Jul 24 01:55:03 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:03.186474-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:06 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:06.190858-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:09 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:09.191299-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:12 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:12.191717-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:15 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:15.192141-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:18 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:18.192569-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:21 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:21.193166-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:24 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:24.194711-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:27 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:27.195091-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:30 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:30.195515-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:33 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:33.196316-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:36 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:36.196689-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:39 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:39.197222-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:42 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:42.197755-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:45 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:45.198201-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:48 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:48.198732-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:51 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:51.199200-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:54 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:54.199603-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:55:57 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:55:57.200049-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:00 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:00.200878-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:03 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:03.201763-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:06 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:06.202254-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:09 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:09.202721-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:12 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:12.203127-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:15 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:15.203524-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:18 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:18.204118-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:21 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:21.204849-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:24 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:24.205277-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:27 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:27.205758-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:30 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:30.206172-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:33 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:33.206591-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:36 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:36.209759-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:39 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:39.210502-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:42 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:42.213041-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:45 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:45.213475-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:48 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:48.213866-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:51 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:51.214838-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:54 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:54.215495-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:56:57 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:56:57.216133-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:00 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:00.216654-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:03 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:03.217526-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:06 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:06.217946-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:09 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:09.218374-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:12 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:12.220960-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:15 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:15.221806-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:18 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:18.222250-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:21 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:21.222686-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:24 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:24.223175-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:27 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:27.224175-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:30 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:30.224710-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:33 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:33.225341-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:36 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:36.225995-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:39 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:39.226460-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:42 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:42.226904-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: False, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Now: 2025-07-24T01:57:45.227327-04:00, Booking end: 2025-07-24T01:57:43-04:00, Should stop: True, Session started: 2025-07-24T01:54:47.541756-04:00
-Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Stopping session: now=2025-07-24 01:57:45.227327-04:00, end_time=2025-07-24 01:57:43-04:00, elapsed=177.685571s
-Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:🛑 Stopping recording session
-Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Stopping camera recording...
-Jul 24 01:57:45 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera stopped
-Jul 24 01:57:45 raspberrypi python3[33221]: INFO:__main__:Waiting for recording to finalize...
-Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:Stopping camera...
-Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:Closing camera...
-Jul 24 01:57:46 raspberrypi python3[33221]: INFO:picamera2.picamera2:Camera closed successfully.
-Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:⏹️ Stopped recording: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.mp4
-Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:Recorded file size: 1553689 bytes
-Jul 24 01:57:46 raspberrypi python3[33221]: WARNING:__main__:⚠️ MP4 file validation failed:
-Jul 24 01:57:46 raspberrypi python3[33221]: INFO:__main__:🔧 Attempting to repair corrupted MP4 file...
-Jul 24 01:57:47 raspberrypi python3[33221]: ERROR:__main__:❌ Failed to repair MP4 file: ffmpeg version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2000-2024 the FFmpeg developers
-Jul 24 01:57:47 raspberrypi python3[33221]:   built with gcc 12 (Debian 12.2.0-14)
-Jul 24 01:57:47 raspberrypi python3[33221]:   configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
-Jul 24 01:57:47 raspberrypi python3[33221]:   WARNING: library configuration mismatch
-Jul 24 01:57:47 raspberrypi python3[33221]:   avcodec     configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared --enable-version3 --disable-doc --disable-programs --enable-libaribb24 --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libtesseract --enable-libvo_amrwbenc --enable-libsmbclient
-Jul 24 01:57:47 raspberrypi python3[33221]:   libavutil      57. 28.100 / 57. 28.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libavcodec     59. 37.100 / 59. 37.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libavformat    59. 27.100 / 59. 27.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libavdevice    59.  7.100 / 59.  7.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libavfilter     8. 44.100 /  8. 44.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libswscale      6.  7.100 /  6.  7.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libswresample   4.  7.100 /  4.  7.100
-Jul 24 01:57:47 raspberrypi python3[33221]:   libpostproc    56.  6.100 / 56.  6.100
-Jul 24 01:57:47 raspberrypi python3[33221]: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.mp4.backup: Invalid data found when processing input
-Jul 24 01:57:47 raspberrypi python3[33221]: WARNING:__main__:⚠️ Could not repair MP4 file, but will still process it
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:⚠️ Marked corrupted video for processing (video worker will handle): /opt/ezrec-backend/recordings/2025-07-24/015443-015743.done
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:🔓 Removed lock file: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.lock
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:📝 Metadata saved to: /opt/ezrec-backend/recordings/2025-07-24/015443-015743.json
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:booking_utils:🔄 Updating Supabase booking test-single-001 to status 'RecordingFinished'
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:httpx:HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.test-single-001 "HTTP/2 200 OK"
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:booking_utils:📄 Updated local cache for booking test-single-001 to status 'RecordingFinished'
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:__main__:📡 Updated booking status to RecordingFinished for booking ID: test-single-001
-Jul 24 01:57:47 raspberrypi python3[33221]: INFO:httpx:HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/cameras?id=eq.pi-001 "HTTP/2 200 OK"
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # After recording completes, check the video file
+ls -la /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/
 
-michomanoly14892@raspberrypi:/opt/ezrec-backend/backend $ sudo journalctl -u video_worker.service -f
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Checking 014242-014742_left.mp4: done=False, completed=False, lock=False, meta=False
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Checking 015443-015743.mp4: done=True, completed=False, lock=False, meta=True
-Jul 24 01:57:53 raspberrypi python3[33091]: ERROR:video_worker:❌ Error validating video 015443-015743.mp4: name 'is_file_readable' is not defined
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Checking 014700-014800_left.mp4: done=False, completed=False, lock=False, meta=False
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-21
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-16
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-23
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-18
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-20
-Jul 24 01:57:53 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-22
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-19
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-15
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-24
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Checking 014242-014742_left.mp4: done=False, completed=False, lock=False, meta=False
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Checking 015443-015743.mp4: done=True, completed=True, lock=False, meta=True
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Checking 014700-014800_left.mp4: done=False, completed=False, lock=False, meta=False
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-21
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-16
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-23
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-18
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-20
-Jul 24 01:58:09 raspberrypi python3[33091]: INFO:video_worker:Scanning directory: /opt/ezrec-backend/recordings/2025-07-17
+# Test the video file (should be named without _left suffix)
+ffprobe /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/*.mp4 2>&1
+total 8
+drwxr-xr-x  2 michomanoly14892 michomanoly14892 4096 Jul 24 02:10 .
+drwxr-xr-x 12 michomanoly14892 michomanoly14892 4096 Jul 24 00:57 ..
+ffprobe version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2007-2024 the FFmpeg developers
+  built with gcc 12 (Debian 12.2.0-14)
+  configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
+  WARNING: library configuration mismatch
+  avcodec     configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared --enable-version3 --disable-doc --disable-programs --enable-libaribb24 --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libtesseract --enable-libvo_amrwbenc --enable-libsmbclient
+  libavutil      57. 28.100 / 57. 28.100
+  libavcodec     59. 37.100 / 59. 37.100
+  libavformat    59. 27.100 / 59. 27.100
+  libavdevice    59.  7.100 / 59.  7.100
+  libavfilter     8. 44.100 /  8. 44.100
+  libswscale      6.  7.100 /  6.  7.100
+  libswresample   4.  7.100 /  4.  7.100
+  libpostproc    56.  6.100 / 56.  6.100
+/opt/ezrec-backend/recordings/2025-07-24/*.mp4: No such file or directory
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
