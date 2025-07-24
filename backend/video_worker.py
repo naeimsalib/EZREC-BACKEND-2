@@ -334,6 +334,18 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 if backup_path.exists():
                     backup_path.rename(file)
                 return False
+    
+    # Add a simple file validation function that doesn't require FFmpeg
+    def is_file_readable(file: Path) -> bool:
+        """Simple check if file exists and has reasonable size"""
+        try:
+            if not file.exists():
+                return False
+            size = file.stat().st_size
+            # File should be at least 100KB and not empty
+            return size > 100 * 1024
+        except Exception:
+            return False
     def is_valid_image(file: Path):
         try:
             from PIL import Image
@@ -720,6 +732,30 @@ def main():
                 meta_path = raw_file.with_suffix(".json")
                 log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, meta={meta_path.exists()}")
                 if not done.exists() or completed.exists() or lock.exists():
+                    continue
+                
+                # Check if this file has been processed too many times (prevent infinite loops)
+                lock.touch()
+                try:
+                    # First do a simple file check
+                    if not is_file_readable(raw_file):
+                        log.error(f"❌ Video file {raw_file.name} is not readable or too small. Skipping.")
+                        completed.touch()
+                        lock.unlink()
+                        continue
+                    
+                    # Try to validate the video file with FFmpeg
+                    if not is_valid_video(raw_file):
+                        log.error(f"❌ Video file {raw_file.name} is corrupted and cannot be processed. Skipping.")
+                        # Create a .completed file to prevent infinite loops
+                        completed.touch()
+                        lock.unlink()
+                        continue
+                except Exception as e:
+                    log.error(f"❌ Error validating video {raw_file.name}: {e}")
+                    # Create a .completed file to prevent infinite loops
+                    completed.touch()
+                    lock.unlink()
                     continue
                 lock.touch()
                 if not meta_path.exists():
