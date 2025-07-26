@@ -1,48 +1,80 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./deployment.sh
-🚀 Starting EZREC Deployment as user 'root' with tunnel name 'ezrec-tunnel'...
-🧹 Cleaning up old recordings, uploads, and logs...
-🧹 Deep cleaning all recordings, processed videos, media cache, and state files...
-🛑 Stopping all EZREC services for clean deployment...
-🔪 Killing any remaining EZREC Python processes...
-🗑️ Removing all recordings and related files...
-🗑️ Removing all processed videos...
-🗑️ Removing media cache...
-🗑️ Removing state files...
-🗑️ Removing API cache files...
-🔧 Fixing permissions for bookings.json file...
-🗑️ Removing temporary files...
-🗑️ Cleaning old log files...
-🔄 Resetting booking cache...
-✅ All recordings, processed videos, media cache, and state files cleaned.
-✅ All EZREC services stopped and processes killed.
-🔄 Refreshing user media cache for main user...
-INFO:httpx:HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/2 200 OK"
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro-video/intro.mp4?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=TCuo0geh2gL8KimNuZFNBru8Hlk%3D&Expires=1753368899 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4 ...
-Exists after download: True
-File size: 1332881 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo/logo.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=%2Bisd9Mw2b5w1LEXVjFFsvFR6B9A%3D&Expires=1753368899 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png ...
-Exists after download: True
-File size: 59105 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo1/logo1.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=7nKBZd6MrIDAVw0Z1xnz98S2Tps%3D&Expires=1753368899 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png ...
-Exists after download: True
-File size: 149947 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo2/logo2.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=svM016gx0ce4Wf5lXIrQD5Tchgc%3D&Expires=1753368899 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png ...
-Exists after download: True
-File size: 137038 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo3/logo3.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=X8CDTXDyDMoGwuzTYM7R2tsKopc%3D&Expires=1753368899 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png ...
-Exists after download: True
-File size: 788138 bytes
-User media cache directory contents:
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png
-📁 Setting up directories...
-🔧 Setting up proper permissions for bookings.json...
-🐍 Setting up virtual environment...
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git stash
+Saved working directory and index state WIP on main: 2a1d5d1 fix: Add missing methods and comprehensive fix script for deployment issues
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
+Updating 2a1d5d1..6ebad33
+Fast-forward
+ deployment.sh | 938 +++++++++++++++++++++++++++++++++++++++++------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 1 file changed, 188 insertions(+), 750 deletions(-)
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ chmod +x deployment.sh
+sudo ./deployment.sh
+🚀 EZREC Backend Deployment Script
+==================================
+🛑 Stopping all existing services...
+🔪 Killing remaining processes...
+🧹 Cleaning up old installation...
+📁 Copying project files...
+🔧 Checking and installing required tools...
+✅ FFmpeg is available
+✅ FFprobe is available
+✅ v4l2-ctl is available
+✅ Picamera2 is available
+📦 Installing additional dependencies...
+Hit:1 http://deb.debian.org/debian bookworm InRelease
+Hit:2 http://deb.debian.org/debian-security bookworm-security InRelease
+Hit:3 http://deb.debian.org/debian bookworm-updates InRelease
+Hit:4 http://archive.raspberrypi.com/debian bookworm InRelease
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+python3-requests is already the newest version (2.28.1+dfsg-1).
+python3-requests set to manually installed.
+python3-psutil is already the newest version (5.9.4-1+b1).
+python3-dotenv is already the newest version (0.21.0-1).
+python3-dotenv set to manually installed.
+The following packages were automatically installed and are no longer required:
+  libbasicusageenvironment1 libgroupsock8 liblivemedia77 python3-v4l2
+Use 'sudo apt autoremove' to remove them.
+The following additional packages will be installed:
+  python3-botocore python3-dateutil python3-jmespath python3-s3transfer
+The following NEW packages will be installed:
+  python3-boto3 python3-botocore python3-dateutil python3-jmespath python3-s3transfer
+0 upgraded, 5 newly installed, 0 to remove and 13 not upgraded.
+Need to get 5,841 kB of archives.
+After this operation, 82.8 MB of additional disk space will be used.
+Get:1 http://deb.debian.org/debian bookworm/main arm64 python3-dateutil all 2.8.2-2 [78.3 kB]
+Get:2 http://deb.debian.org/debian bookworm/main arm64 python3-jmespath all 1.0.1-1 [21.1 kB]
+Get:3 http://deb.debian.org/debian bookworm/main arm64 python3-botocore all 1.29.27+repack-1 [5,502 kB]
+Get:4 http://deb.debian.org/debian bookworm/main arm64 python3-s3transfer all 0.6.0-1 [53.0 kB]
+Get:5 http://deb.debian.org/debian bookworm/main arm64 python3-boto3 all 1.26.27+dfsg-1 [187 kB]
+Fetched 5,841 kB in 1s (9,588 kB/s)    
+Selecting previously unselected package python3-dateutil.
+(Reading database ... 162119 files and directories currently installed.)
+Preparing to unpack .../python3-dateutil_2.8.2-2_all.deb ...
+Unpacking python3-dateutil (2.8.2-2) ...
+Selecting previously unselected package python3-jmespath.
+Preparing to unpack .../python3-jmespath_1.0.1-1_all.deb ...
+Unpacking python3-jmespath (1.0.1-1) ...
+Selecting previously unselected package python3-botocore.
+Preparing to unpack .../python3-botocore_1.29.27+repack-1_all.deb ...
+Unpacking python3-botocore (1.29.27+repack-1) ...
+Selecting previously unselected package python3-s3transfer.
+Preparing to unpack .../python3-s3transfer_0.6.0-1_all.deb ...
+Unpacking python3-s3transfer (0.6.0-1) ...
+Selecting previously unselected package python3-boto3.
+Preparing to unpack .../python3-boto3_1.26.27+dfsg-1_all.deb ...
+Unpacking python3-boto3 (1.26.27+dfsg-1) ...
+Setting up python3-jmespath (1.0.1-1) ...
+Setting up python3-dateutil (2.8.2-2) ...
+Setting up python3-botocore (1.29.27+repack-1) ...
+Setting up python3-s3transfer (0.6.0-1) ...
+Setting up python3-boto3 (1.26.27+dfsg-1) ...
+📁 Creating required directories...
+🐍 Fixing Python path issues...
+🐍 Setting up Python virtual environment...
+📦 Installing Python dependencies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: pip in /opt/ezrec-backend/api/venv/lib/python3.11/site-packages (23.0.1)
+Requirement already satisfied: pip in ./venv/lib/python3.11/site-packages (23.0.1)
 Collecting pip
   Using cached pip-25.1.1-py3-none-any.whl (1.8 MB)
 Installing collected packages: pip
@@ -53,311 +85,138 @@ Installing collected packages: pip
 Successfully installed pip-25.1.1
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting fastapi
-  Downloading fastapi-0.116.1-py3-none-any.whl.metadata (28 kB)
+  Using cached fastapi-0.116.1-py3-none-any.whl.metadata (28 kB)
 Collecting uvicorn
   Using cached uvicorn-0.35.0-py3-none-any.whl.metadata (6.5 kB)
-Requirement already satisfied: psutil in /usr/lib/python3/dist-packages (5.9.4)
-Requirement already satisfied: requests in /usr/lib/python3/dist-packages (2.28.1)
-Collecting boto3
-  Downloading boto3-1.39.12-py3-none-any.whl.metadata (6.7 kB)
-Requirement already satisfied: python-dotenv in /usr/lib/python3/dist-packages (0.21.0)
-Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (2022.7.1)
-Requirement already satisfied: python-dateutil in /usr/local/lib/python3.11/dist-packages (2.9.0.post0)
-Requirement already satisfied: supabase in /usr/local/lib/python3.11/dist-packages (2.16.0)
+Collecting python-multipart
+  Downloading https://www.piwheels.org/simple/python-multipart/python_multipart-0.0.20-py3-none-any.whl (24 kB)
+Collecting jinja2
+  Downloading https://www.piwheels.org/simple/jinja2/jinja2-3.1.6-py3-none-any.whl (134 kB)
 Collecting starlette<0.48.0,>=0.40.0 (from fastapi)
-  Downloading starlette-0.47.2-py3-none-any.whl.metadata (6.2 kB)
-Requirement already satisfied: pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4 in /usr/local/lib/python3.11/dist-packages (from fastapi) (2.11.7)
-Requirement already satisfied: typing-extensions>=4.8.0 in /usr/local/lib/python3.11/dist-packages (from fastapi) (4.14.0)
-Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.11/dist-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (0.7.0)
-Requirement already satisfied: pydantic-core==2.33.2 in /usr/local/lib/python3.11/dist-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (2.33.2)
-Requirement already satisfied: typing-inspection>=0.4.0 in /usr/local/lib/python3.11/dist-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi) (0.4.1)
-Requirement already satisfied: anyio<5,>=3.6.2 in /usr/local/lib/python3.11/dist-packages (from starlette<0.48.0,>=0.40.0->fastapi) (4.9.0)
-Requirement already satisfied: idna>=2.8 in /usr/local/lib/python3.11/dist-packages (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi) (3.10)
-Requirement already satisfied: sniffio>=1.1 in /usr/local/lib/python3.11/dist-packages (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi) (1.3.1)
-Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (from uvicorn) (8.1.3)
-Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.11/dist-packages (from uvicorn) (0.16.0)
-Collecting botocore<1.40.0,>=1.39.12 (from boto3)
-  Downloading botocore-1.39.12-py3-none-any.whl.metadata (5.7 kB)
+  Using cached starlette-0.47.2-py3-none-any.whl.metadata (6.2 kB)
+Collecting pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4 (from fastapi)
+  Using cached pydantic-2.11.7-py3-none-any.whl.metadata (67 kB)
+Collecting typing-extensions>=4.8.0 (from fastapi)
+  Downloading typing_extensions-4.14.1-py3-none-any.whl.metadata (3.0 kB)
+Collecting annotated-types>=0.6.0 (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi)
+  Using cached https://www.piwheels.org/simple/annotated-types/annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Collecting pydantic-core==2.33.2 (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi)
+  Using cached pydantic_core-2.33.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.8 kB)
+Collecting typing-inspection>=0.4.0 (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi)
+  Using cached typing_inspection-0.4.1-py3-none-any.whl.metadata (2.6 kB)
+Collecting anyio<5,>=3.6.2 (from starlette<0.48.0,>=0.40.0->fastapi)
+  Using cached https://www.piwheels.org/simple/anyio/anyio-4.9.0-py3-none-any.whl (100 kB)
+Collecting idna>=2.8 (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi)
+  Using cached https://www.piwheels.org/simple/idna/idna-3.10-py3-none-any.whl (70 kB)
+Collecting sniffio>=1.1 (from anyio<5,>=3.6.2->starlette<0.48.0,>=0.40.0->fastapi)
+  Using cached https://www.piwheels.org/simple/sniffio/sniffio-1.3.1-py3-none-any.whl (10 kB)
+Collecting click>=7.0 (from uvicorn)
+  Using cached click-8.2.1-py3-none-any.whl.metadata (2.5 kB)
+Collecting h11>=0.8 (from uvicorn)
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting MarkupSafe>=2.0 (from jinja2)
+  Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (4.0 kB)
+Using cached fastapi-0.116.1-py3-none-any.whl (95 kB)
+Using cached pydantic-2.11.7-py3-none-any.whl (444 kB)
+Using cached pydantic_core-2.33.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (1.9 MB)
+Using cached starlette-0.47.2-py3-none-any.whl (72 kB)
+Using cached uvicorn-0.35.0-py3-none-any.whl (66 kB)
+Using cached click-8.2.1-py3-none-any.whl (102 kB)
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading MarkupSafe-3.0.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (23 kB)
+Downloading typing_extensions-4.14.1-py3-none-any.whl (43 kB)
+Using cached typing_inspection-0.4.1-py3-none-any.whl (14 kB)
+Installing collected packages: typing-extensions, sniffio, python-multipart, MarkupSafe, idna, h11, click, annotated-types, uvicorn, typing-inspection, pydantic-core, jinja2, anyio, starlette, pydantic, fastapi
+Successfully installed MarkupSafe-3.0.2 annotated-types-0.7.0 anyio-4.9.0 click-8.2.1 fastapi-0.116.1 h11-0.16.0 idna-3.10 jinja2-3.1.6 pydantic-2.11.7 pydantic-core-2.33.2 python-multipart-0.0.20 sniffio-1.3.1 starlette-0.47.2 typing-extensions-4.14.1 typing-inspection-0.4.1 uvicorn-0.35.0
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Collecting supabase
+  Downloading supabase-2.17.0-py3-none-any.whl.metadata (11 kB)
+Collecting boto3
+  Downloading boto3-1.39.14-py3-none-any.whl.metadata (6.7 kB)
+Collecting python-dotenv
+  Downloading python_dotenv-1.1.1-py3-none-any.whl.metadata (24 kB)
+Collecting requests
+  Using cached requests-2.32.4-py3-none-any.whl.metadata (4.9 kB)
+Collecting psutil
+  Using cached psutil-7.0.0-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (22 kB)
+Collecting gotrue==2.12.3 (from supabase)
+  Downloading gotrue-2.12.3-py3-none-any.whl.metadata (6.5 kB)
+Collecting httpx<0.29,>=0.26 (from supabase)
+  Downloading https://www.piwheels.org/simple/httpx/httpx-0.28.1-py3-none-any.whl (73 kB)
+Collecting postgrest==1.1.1 (from supabase)
+  Downloading postgrest-1.1.1-py3-none-any.whl.metadata (3.5 kB)
+Collecting realtime==2.6.0 (from supabase)
+  Downloading realtime-2.6.0-py3-none-any.whl.metadata (6.6 kB)
+Collecting storage3==0.12.0 (from supabase)
+  Downloading storage3-0.12.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting supafunc==0.10.1 (from supabase)
+  Downloading supafunc-0.10.1-py3-none-any.whl.metadata (1.2 kB)
+Requirement already satisfied: pydantic<3,>=1.10 in ./venv/lib/python3.11/site-packages (from gotrue==2.12.3->supabase) (2.11.7)
+Collecting pyjwt<3.0.0,>=2.10.1 (from gotrue==2.12.3->supabase)
+  Downloading https://www.piwheels.org/simple/pyjwt/PyJWT-2.10.1-py3-none-any.whl (22 kB)
+Collecting deprecation<3.0.0,>=2.1.0 (from postgrest==1.1.1->supabase)
+  Downloading https://www.piwheels.org/simple/deprecation/deprecation-2.1.0-py2.py3-none-any.whl (11 kB)
+Requirement already satisfied: typing-extensions>=4.14.0 in ./venv/lib/python3.11/site-packages (from realtime==2.6.0->supabase) (4.14.1)
+Collecting websockets<16,>=11 (from realtime==2.6.0->supabase)
+  Downloading websockets-15.0.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (6.8 kB)
+Collecting python-dateutil<3.0.0,>=2.8.2 (from storage3==0.12.0->supabase)
+  Using cached https://www.piwheels.org/simple/python-dateutil/python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Collecting strenum<0.5.0,>=0.4.15 (from supafunc==0.10.1->supabase)
+  Downloading https://www.piwheels.org/simple/strenum/StrEnum-0.4.15-py3-none-any.whl (8.9 kB)
+Collecting packaging (from deprecation<3.0.0,>=2.1.0->postgrest==1.1.1->supabase)
+  Downloading packaging-25.0-py3-none-any.whl.metadata (3.3 kB)
+Requirement already satisfied: anyio in ./venv/lib/python3.11/site-packages (from httpx<0.29,>=0.26->supabase) (4.9.0)
+Collecting certifi (from httpx<0.29,>=0.26->supabase)
+  Downloading certifi-2025.7.14-py3-none-any.whl.metadata (2.4 kB)
+Collecting httpcore==1.* (from httpx<0.29,>=0.26->supabase)
+  Downloading httpcore-1.0.9-py3-none-any.whl.metadata (21 kB)
+Requirement already satisfied: idna in ./venv/lib/python3.11/site-packages (from httpx<0.29,>=0.26->supabase) (3.10)
+Requirement already satisfied: h11>=0.16 in ./venv/lib/python3.11/site-packages (from httpcore==1.*->httpx<0.29,>=0.26->supabase) (0.16.0)
+Collecting h2<5,>=3 (from httpx[http2]<0.29,>=0.26->gotrue==2.12.3->supabase)
+  Downloading https://www.piwheels.org/simple/h2/h2-4.2.0-py3-none-any.whl (60 kB)
+Collecting hyperframe<7,>=6.1 (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue==2.12.3->supabase)
+  Downloading https://www.piwheels.org/simple/hyperframe/hyperframe-6.1.0-py3-none-any.whl (13 kB)
+Collecting hpack<5,>=4.1 (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue==2.12.3->supabase)
+  Downloading https://www.piwheels.org/simple/hpack/hpack-4.1.0-py3-none-any.whl (34 kB)
+Requirement already satisfied: annotated-types>=0.6.0 in ./venv/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue==2.12.3->supabase) (0.7.0)
+Requirement already satisfied: pydantic-core==2.33.2 in ./venv/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue==2.12.3->supabase) (2.33.2)
+Requirement already satisfied: typing-inspection>=0.4.0 in ./venv/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue==2.12.3->supabase) (0.4.1)
+Collecting six>=1.5 (from python-dateutil<3.0.0,>=2.8.2->storage3==0.12.0->supabase)
+  Using cached https://www.piwheels.org/simple/six/six-1.17.0-py2.py3-none-any.whl (11 kB)
+Collecting botocore<1.40.0,>=1.39.14 (from boto3)
+  Downloading botocore-1.39.14-py3-none-any.whl.metadata (5.7 kB)
 Collecting jmespath<2.0.0,>=0.7.1 (from boto3)
   Using cached https://www.piwheels.org/simple/jmespath/jmespath-1.0.1-py3-none-any.whl (20 kB)
 Collecting s3transfer<0.14.0,>=0.13.0 (from boto3)
-  Downloading s3transfer-0.13.1-py3-none-any.whl.metadata (1.7 kB)
-Requirement already satisfied: urllib3!=2.2.0,<3,>=1.25.4 in /usr/lib/python3/dist-packages (from botocore<1.40.0,>=1.39.12->boto3) (1.26.12)
-Requirement already satisfied: six>=1.5 in /usr/local/lib/python3.11/dist-packages (from python-dateutil) (1.17.0)
-Requirement already satisfied: gotrue<3.0.0,>=2.11.0 in /usr/local/lib/python3.11/dist-packages (from supabase) (2.12.2)
-Requirement already satisfied: httpx<0.29,>=0.26 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.28.1)
-Requirement already satisfied: postgrest<1.2,>0.19 in /usr/local/lib/python3.11/dist-packages (from supabase) (1.1.1)
-Requirement already satisfied: realtime<2.6.0,>=2.4.0 in /usr/local/lib/python3.11/dist-packages (from supabase) (2.5.3)
-Requirement already satisfied: storage3<0.13,>=0.10 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.12.0)
-Requirement already satisfied: supafunc<0.11,>=0.9 in /usr/local/lib/python3.11/dist-packages (from supabase) (0.10.1)
-Requirement already satisfied: pyjwt<3.0.0,>=2.10.1 in /usr/local/lib/python3.11/dist-packages (from gotrue<3.0.0,>=2.11.0->supabase) (2.10.1)
-Requirement already satisfied: pytest-mock<4.0.0,>=3.14.0 in /usr/local/lib/python3.11/dist-packages (from gotrue<3.0.0,>=2.11.0->supabase) (3.14.1)
-Requirement already satisfied: certifi in /usr/local/lib/python3.11/dist-packages (from httpx<0.29,>=0.26->supabase) (2025.6.15)
-Requirement already satisfied: httpcore==1.* in /usr/local/lib/python3.11/dist-packages (from httpx<0.29,>=0.26->supabase) (1.0.9)
-Requirement already satisfied: h2<5,>=3 in /usr/local/lib/python3.11/dist-packages (from httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (4.2.0)
-Requirement already satisfied: hyperframe<7,>=6.1 in /usr/local/lib/python3.11/dist-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (6.1.0)
-Requirement already satisfied: hpack<5,>=4.1 in /usr/local/lib/python3.11/dist-packages (from h2<5,>=3->httpx[http2]<0.29,>=0.26->gotrue<3.0.0,>=2.11.0->supabase) (4.1.0)
-Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in /usr/local/lib/python3.11/dist-packages (from postgrest<1.2,>0.19->supabase) (2.1.0)
-Requirement already satisfied: packaging in /usr/local/lib/python3.11/dist-packages (from deprecation<3.0.0,>=2.1.0->postgrest<1.2,>0.19->supabase) (25.0)
-Requirement already satisfied: pytest>=6.2.5 in /usr/local/lib/python3.11/dist-packages (from pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (8.4.1)
-Requirement already satisfied: websockets<16,>=11 in /usr/local/lib/python3.11/dist-packages (from realtime<2.6.0,>=2.4.0->supabase) (12.0)
-Requirement already satisfied: strenum<0.5.0,>=0.4.15 in /usr/local/lib/python3.11/dist-packages (from supafunc<0.11,>=0.9->supabase) (0.4.15)
-Requirement already satisfied: iniconfig>=1 in /usr/local/lib/python3.11/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (2.1.0)
-Requirement already satisfied: pluggy<2,>=1.5 in /usr/local/lib/python3.11/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (1.6.0)
-Requirement already satisfied: pygments>=2.7.2 in /usr/lib/python3/dist-packages (from pytest>=6.2.5->pytest-mock<4.0.0,>=3.14.0->gotrue<3.0.0,>=2.11.0->supabase) (2.14.0)
-Downloading fastapi-0.116.1-py3-none-any.whl (95 kB)
-Downloading starlette-0.47.2-py3-none-any.whl (72 kB)
-Using cached uvicorn-0.35.0-py3-none-any.whl (66 kB)
-Downloading boto3-1.39.12-py3-none-any.whl (139 kB)
-Downloading botocore-1.39.12-py3-none-any.whl (13.9 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.9/13.9 MB 4.0 MB/s eta 0:00:00
-Downloading s3transfer-0.13.1-py3-none-any.whl (85 kB)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-Installing collected packages: uvicorn, jmespath, starlette, botocore, s3transfer, fastapi, boto3
-Successfully installed boto3-1.39.12 botocore-1.39.12 fastapi-0.116.1 jmespath-1.0.1 s3transfer-0.13.1 starlette-0.47.2 uvicorn-0.35.0
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: pydantic[email] in /usr/local/lib/python3.11/dist-packages (2.11.7)
-Requirement already satisfied: annotated-types>=0.6.0 in /usr/local/lib/python3.11/dist-packages (from pydantic[email]) (0.7.0)
-Requirement already satisfied: pydantic-core==2.33.2 in /usr/local/lib/python3.11/dist-packages (from pydantic[email]) (2.33.2)
-Requirement already satisfied: typing-extensions>=4.12.2 in /usr/local/lib/python3.11/dist-packages (from pydantic[email]) (4.14.0)
-Requirement already satisfied: typing-inspection>=0.4.0 in /usr/local/lib/python3.11/dist-packages (from pydantic[email]) (0.4.1)
-Collecting email-validator>=2.0.0 (from pydantic[email])
-  Downloading https://www.piwheels.org/simple/email-validator/email_validator-2.2.0-py3-none-any.whl (33 kB)
-Collecting dnspython>=2.0.0 (from email-validator>=2.0.0->pydantic[email])
-  Downloading https://www.piwheels.org/simple/dnspython/dnspython-2.7.0-py3-none-any.whl (313 kB)
-Requirement already satisfied: idna>=2.0.0 in /usr/local/lib/python3.11/dist-packages (from email-validator>=2.0.0->pydantic[email]) (3.10)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-Installing collected packages: dnspython, email-validator
-Successfully installed dnspython-2.7.0 email-validator-2.2.0
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: opencv-python in /usr/local/lib/python3.11/dist-packages (4.11.0.86)
-Requirement already satisfied: picamera2 in /usr/lib/python3/dist-packages (0.3.28)
-Requirement already satisfied: numpy>=1.21.2 in /usr/lib/python3/dist-packages (from opencv-python) (1.24.2)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[DEBUG] DEV_DIR=/home/root/EZREC-BACKEND-2
-[DEBUG] PROJECT_DIR=/opt/ezrec-backend
-ls: cannot access '/home/root/EZREC-BACKEND-2/backend/refresh_user_media.py': No such file or directory
-[DEBUG] refresh_user_media.py not found in DEV_DIR/backend
-\U0001F4E6 Syncing updated project files...
-⚠️ Development directory not found: /home/root/EZREC-BACKEND-2
-🔄 Refreshing user media cache for main user...
-INFO:httpx:HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/2 200 OK"
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro-video/intro.mp4?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=CK6M07%2BPWpIpLZqWFqWLh6P2Sv8%3D&Expires=1753368925 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4 ...
-Exists after download: True
-File size: 1332881 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo/logo.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=srBLuj534zrCKMFcl%2FfeUvxYNMs%3D&Expires=1753368925 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png ...
-Exists after download: True
-File size: 59105 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo1/logo1.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=H%2BPunhvIaq7dsmOE%2BtaegTuEWE8%3D&Expires=1753368925 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png ...
-Exists after download: True
-File size: 149947 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo2/logo2.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=VM44WrQfBTf28cCfd%2BK2TObIkS4%3D&Expires=1753368925 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png ...
-Exists after download: True
-File size: 137038 bytes
-Downloading https://ezrec-user-media.s3.amazonaws.com/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor-logo3/logo3.png?AWSAccessKeyId=AKIASQKGNZ52DMP2SDSP&Signature=cfUazOT3bpGAJhw%2FtqPXrJdbGSM%3D&Expires=1753368925 to /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png ...
-Exists after download: True
-File size: 788138 bytes
-User media cache directory contents:
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/intro.mp4
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo1.png
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo2.png
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/sponsor_logo3.png
- - /opt/ezrec-backend/media_cache/65aa2e2a-e463-424d-b88f-0724bb0bea3a/logo.png
-📷 Detecting cameras automatically...
-🔍 Running camera detection...
-📋 Camera detection output:
-Available cameras
------------------
-0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
-    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
-           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
-                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
-                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
-
-1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
-    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
-           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
-                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
-                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
-✅ Found 2 camera(s) with serials: 80000 88000
-📷 Dual cameras detected: 80000, 88000
-✅ Camera detection successful
-📝 Updating .env file with detected camera serials...
-✅ Dual camera mode enabled with merge method: side_by_side
-📝 Camera configuration updated in .env file
-🖼️ Downloading main EZREC logo from S3...
-download: s3://ezrec-user-media/main_ezrec_logo.png to ../../../opt/ezrec-backend/main_ezrec_logo.png
-📦 Installing backend requirements.txt dependencies...
-⚠️ Warning: requirements.txt not found at /home/root/EZREC-BACKEND-2/requirements.txt
-⚖️ Fixing log permissions...
-⚙️ Setting up systemd services...
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: psutil in /usr/lib/python3/dist-packages (5.9.4)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-❌ status_updater.py not found in /home/root/EZREC-BACKEND-2/backend. Please check your source.
-● status_updater.service - EZREC System Status Updater
-     Loaded: loaded (/etc/systemd/system/status_updater.service; enabled; preset: enabled)
-     Active: active (running) since Thu 2025-07-24 09:55:29 EDT; 24ms ago
-   Main PID: 259350 (python3)
-      Tasks: 1 (limit: 9577)
-        CPU: 16ms
-     CGroup: /system.slice/status_updater.service
-             └─259350 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/status_updater.py
-
-Jul 24 09:55:29 raspberrypi systemd[1]: Started status_updater.service - EZREC System Status Updater.
-✅ cloudflared is already installed
-🛠️ Increasing UDP buffer size for cloudflared...
-✅ UDP buffer already configured
-🔁 Enabling and starting services...
-🎬 Starting dual camera recorder...
-🚀 Starting EZREC services...
-Starting system_status.service...
-✅ system_status.service started successfully
-Starting log_collector.service...
-✅ log_collector.service started successfully
-Starting health_api.service...
-✅ health_api.service started successfully
-Starting dual_recorder.service...
-✅ dual_recorder.service started successfully
-Starting video_worker.service...
-✅ video_worker.service started successfully
-🌐 Starting cloudflared tunnel...
-✅ cloudflared started successfully
-
-🎉 EZREC deployed successfully!
-
-📡 API running:    http://<Pi-IP>:8000 or https://api.ezrec.org
-🩺 Monitor logs:   sudo journalctl -u ezrec-monitor -f
-📹 Dual recorder logs: sudo journalctl -u dual_recorder.service -f
-🎞️ Video logs:     sudo journalctl -u video_worker.service -f
-🌐 Tunnel logs:    sudo journalctl -u cloudflared -f
-📁 Project files:  /opt/ezrec-backend
-📁 API entry:      /opt/ezrec-backend/api/api_server.py
-📃 Logs dir:       /opt/ezrec-backend/logs
-
-📷 Camera Configuration:
-   Mode: Dual Camera
-   Camera 0 Serial: 80000
-   Camera 1 Serial: 88000
-   Merge Method: side_by_side
-side_by_side
-
-⚠️  IMPORTANT: Make sure to create and configure /opt/ezrec-backend/.env file
-    Use env.example as a template and add your credentials
-
-🚀 NEXT STEPS AFTER DEPLOYMENT:
-================================
-
-1. 📝 CREATE TEST BOOKING:
-date: extra operand ‘+"%Y-%m-%dT%H:%M:%SZ"’
-Try 'date --help' for more information.
-   echo '["id": "test-001", "start_time": ""2025-07-24T13:55:45Z"", "end_time": "", "status": "active", "user_id": "YOUR_USER_ID", "camera_id": "YOUR_CAMERA_ID"}]' | sudo tee /opt/ezrec-backend/api/local_data/bookings.json
-
-2. 📊 MONITOR SERVICES:
-   sudo journalctl -u dual_recorder.service -f    # Watch dual camera recording
-   sudo journalctl -u video_worker.service -f     # Watch video processing
-   sudo journalctl -u system_status.service -f    # Watch system status
-
-3. 🔧 TROUBLESHOOTING COMMANDS:
-   sudo systemctl status dual_recorder.service     # Check service status
-   sudo systemctl restart dual_recorder.service    # Restart if needed
-   ls -la /opt/ezrec-backend/recordings/2025-07-24/  # Check recordings
-   vcgencmd measure_temp                           # Check temperature
-   df -h                                           # Check disk space
-
-4. 📷 CAMERA TESTING:
-   cd /opt/ezrec-backend/backend
-   python3 detect_cameras.py                       # Test camera detection
-   python3 test_dual_camera.py                     # Test dual camera setup
-
-5. 🌐 NETWORK TESTING:
-   curl http://localhost:8000/status               # Test API locally
-   curl https://api.ezrec.org/status              # Test API via tunnel
-
-6. 📁 CHECK FILES:
-   ls -la /opt/ezrec-backend/api/local_data/                    # Check booking cache
-   ls -la /opt/ezrec-backend/recordings/                # Check recordings
-   ls -la /opt/ezrec-backend/logs/                               # Check logs
-
-7. 🔄 PERMISSION FIXES (if needed):
-   sudo chown root:root /opt/ezrec-backend/api/local_data/bookings.json
-   sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json
-
-8. 📊 SYSTEM MONITORING:
-   htop                                           # Monitor system resources
-   sudo journalctl -f                             # Monitor all logs
-   sudo systemctl list-units --type=service | grep ezrec  # List all EZREC services
-
-✅ Your dual camera EZREC system is now ready for production use!
-🎬 Both cameras will record simultaneously and merge into one video
-📡 Videos will be automatically processed and uploaded to S3
-🌐 API is available at https://api.ezrec.org
-2025-07-24T13:55:46Z ERR Cannot determine default origin certificate path. No file cert.pem in [~/.cloudflared ~/.cloudflare-warp ~/cloudflare-warp /etc/cloudflared /usr/local/etc/cloudflared]. You need to specify the origin certificate path by specifying the origincert option in the configuration file, or set TUNNEL_ORIGIN_CERT environment variable originCertPath=
-Error locating origin cert: client didn't specify origincert path
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ systemctl status recorder.service
-systemctl status video_worker.service
-systemctl status system_status.service
-systemctl status ezrec-api.service
-○ recorder.service - EZREC Single Camera Recorder
-     Loaded: loaded (/etc/systemd/system/recorder.service; disabled; preset: enabled)
-     Active: inactive (dead)
-
-Jul 24 09:54:53 raspberrypi bash[258895]: Cannot stat file /proc/38309/fd/1: Permission denied
-Jul 24 09:54:53 raspberrypi bash[258895]: Cannot stat file /proc/38309/fd/2: Permission denied
-Jul 24 09:54:53 raspberrypi bash[258895]: Cannot stat file /proc/38309/fd/3: Permission denied
-Jul 24 09:54:53 raspberrypi bash[258895]: Cannot stat file /proc/38309/fd/4: Permission denied
-Jul 24 09:54:53 raspberrypi bash[258895]: Cannot stat file /proc/38340/fd/0: Permission denied
-Jul 24 09:54:53 raspberrypi bash[258895]: Cannot stat file /proc/38340/fd/1: Permission denied
-Jul 24 09:54:53 raspberrypi systemd[1]: Started recorder.service - EZREC Single Camera Recorder.
-Jul 24 09:54:53 raspberrypi systemd[1]: recorder.service: Main process exited, code=exited, status=1/FAILURE
-Jul 24 09:54:53 raspberrypi systemd[1]: recorder.service: Failed with result 'exit-code'.
-Jul 24 09:54:57 raspberrypi systemd[1]: Stopped recorder.service - EZREC Single Camera Recorder.
-● video_worker.service - EZREC Video Processor
-     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
-     Active: active (running) since Thu 2025-07-24 09:55:41 EDT; 16s ago
-   Main PID: 259602 (python3)
-      Tasks: 1 (limit: 9577)
-        CPU: 675ms
-     CGroup: /system.slice/video_worker.service
-             └─259602 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
-
-Jul 24 09:55:41 raspberrypi systemd[1]: Started video_worker.service - EZREC Video Processor.
-Jul 24 09:55:42 raspberrypi python3[259602]: INFO:video_worker:Video worker started and entering main loop
-● system_status.service - EZREC System Status Service
-     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
-     Active: active (running) since Thu 2025-07-24 09:55:29 EDT; 28s ago
-   Main PID: 259423 (python3)
-      Tasks: 2 (limit: 9577)
-        CPU: 587ms
-     CGroup: /system.slice/system_status.service
-             └─259423 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
-
-Jul 24 09:55:47 raspberrypi python3[259423]: 2025-07-24 09:55:47,426 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:48 raspberrypi python3[259423]: 2025-07-24 09:55:48,535 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:49 raspberrypi python3[259423]: 2025-07-24 09:55:49,626 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:50 raspberrypi python3[259423]: 2025-07-24 09:55:50,737 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:51 raspberrypi python3[259423]: 2025-07-24 09:55:51,837 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:52 raspberrypi python3[259423]: 2025-07-24 09:55:52,930 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:54 raspberrypi python3[259423]: 2025-07-24 09:55:54,027 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:55 raspberrypi python3[259423]: 2025-07-24 09:55:55,116 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:56 raspberrypi python3[259423]: 2025-07-24 09:55:56,219 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-Jul 24 09:55:57 raspberrypi python3[259423]: 2025-07-24 09:55:57,320 - INFO - HTTP Request: POST https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/system_status?on_conflict=camera_id "HTTP/2 200 OK"
-● ezrec-api.service - EZREC FastAPI Backend
-     Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
-     Active: active (running) since Wed 2025-07-23 23:04:23 EDT; 10h ago
-   Main PID: 5420 (uvicorn)
-      Tasks: 4 (limit: 9577)
-        CPU: 29.439s
-     CGroup: /system.slice/ezrec-api.service
-             └─5420 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
-
-Notice: journal has been rotated since unit was started, output may be incomplete.
+  Using cached s3transfer-0.13.1-py3-none-any.whl.metadata (1.7 kB)
+Collecting urllib3!=2.2.0,<3,>=1.25.4 (from botocore<1.40.0,>=1.39.14->boto3)
+  Using cached urllib3-2.5.0-py3-none-any.whl.metadata (6.5 kB)
+WARNING: Retrying (Retry(total=4, connect=None, read=None, redirect=None, status=None)) after connection broken by 'ProtocolError('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))': /simple/charset-normalizer/
+Collecting charset_normalizer<4,>=2 (from requests)
+  Using cached charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (35 kB)
+Requirement already satisfied: sniffio>=1.1 in ./venv/lib/python3.11/site-packages (from anyio->httpx<0.29,>=0.26->supabase) (1.3.1)
+Downloading supabase-2.17.0-py3-none-any.whl (17 kB)
+Downloading gotrue-2.12.3-py3-none-any.whl (44 kB)
+Downloading postgrest-1.1.1-py3-none-any.whl (22 kB)
+Downloading realtime-2.6.0-py3-none-any.whl (21 kB)
+Downloading storage3-0.12.0-py3-none-any.whl (18 kB)
+Downloading supafunc-0.10.1-py3-none-any.whl (8.0 kB)
+Downloading httpcore-1.0.9-py3-none-any.whl (78 kB)
+Downloading websockets-15.0.1-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (182 kB)
+Downloading boto3-1.39.14-py3-none-any.whl (139 kB)
+Downloading botocore-1.39.14-py3-none-any.whl (13.9 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 13.9/13.9 MB 10.5 MB/s eta 0:00:00
+Using cached s3transfer-0.13.1-py3-none-any.whl (85 kB)
+Using cached urllib3-2.5.0-py3-none-any.whl (129 kB)
+Downloading python_dotenv-1.1.1-py3-none-any.whl (20 kB)
+Using cached requests-2.32.4-py3-none-any.whl (64 kB)
+Using cached charset_normalizer-3.4.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (142 kB)
+Using cached psutil-7.0.0-cp36-abi3-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (279 kB)
+Downloading certifi-2025.7.14-py3-none-any.whl (162 kB)
+Downloading packaging-25.0-py3-none-any.whl (66 kB)
+Installing collected packages: strenum, websockets, urllib3, six, python-dotenv, pyjwt, psutil, packaging, jmespath, hyperframe, hpack, charset_normalizer, certifi, requests, python-dateutil, httpcore, h2, deprecation, realtime, httpx, botocore, s3transfer, supafunc, storage3, postgrest, gotrue, boto3, supabase
+Successfully installed boto3-1.39.14 botocore-1.39.14 certifi-2025.7.14 charset_normalizer-3.4.2 deprecation-2.1.0 gotrue-2.12.3 h2-4.2.0 hpack-4.1.0 httpcore-1.0.9 httpx-0.28.1 hyperframe-6.1.0 jmespath-1.0.1 packaging-25.0 postgrest-1.1.1 psutil-7.0.0 pyjwt-2.10.1 python-dateutil-2.9.0.post0 python-dotenv-1.1.1 realtime-2.6.0 requests-2.32.4 s3transfer-0.13.1 six-1.17.0 storage3-0.12.0 strenum-0.4.15 supabase-2.17.0 supafunc-0.10.1 urllib3-2.5.0 websockets-15.0.1
+⚙️ Setting up environment configuration...
+📝 Creating .env file from template...
+cp: cannot stat 'env.example': No such file or directory
 michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
