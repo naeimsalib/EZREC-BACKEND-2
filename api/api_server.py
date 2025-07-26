@@ -1120,3 +1120,182 @@ def get_booking_stats():
     except Exception as e:
         logger.error(f"Error getting booking stats: {e}")
         return {"stats": {}, "error": str(e)}
+
+@app.get("/health")
+def health_check():
+    """Comprehensive system health check endpoint"""
+    try:
+        import psutil
+        import shutil
+        
+        health_data = {
+            "timestamp": datetime.now().isoformat(),
+            "status": "healthy",
+            "system": {},
+            "cameras": {},
+            "services": {},
+            "warnings": []
+        }
+        
+        # System metrics
+        try:
+            cpu_percent = psutil.cpu_percent(interval=1)
+            memory = psutil.virtual_memory()
+            disk = shutil.disk_usage("/opt/ezrec-backend")
+            disk_used_percent = (disk.used / disk.total) * 100
+            
+            health_data["system"] = {
+                "cpu_percent": cpu_percent,
+                "memory_percent": memory.percent,
+                "disk_used_percent": round(disk_used_percent, 1),
+                "disk_free_gb": round(disk.free / (1024**3), 1),
+                "uptime_seconds": time.time() - psutil.boot_time()
+            }
+            
+            # Check for high resource usage
+            if cpu_percent > 80:
+                health_data["warnings"].append(f"High CPU usage: {cpu_percent:.1f}%")
+                health_data["status"] = "degraded"
+            
+            if memory.percent > 85:
+                health_data["warnings"].append(f"High memory usage: {memory.percent:.1f}%")
+                health_data["status"] = "degraded"
+            
+            if disk_used_percent > 90:
+                health_data["warnings"].append(f"Low disk space: {disk_used_percent:.1f}% used")
+                health_data["status"] = "degraded"
+                
+        except Exception as e:
+            health_data["system"]["error"] = str(e)
+            health_data["status"] = "error"
+        
+        # Temperature check (Raspberry Pi specific)
+        try:
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                temp = float(f.read().strip()) / 1000
+                health_data["system"]["temperature_c"] = temp
+                
+                if temp > 70:
+                    health_data["warnings"].append(f"High temperature: {temp:.1f}°C")
+                    health_data["status"] = "degraded"
+        except:
+            health_data["system"]["temperature_c"] = "unknown"
+        
+        # Camera devices check
+        try:
+            import subprocess
+            result = subprocess.run(['v4l2-ctl', '--list-devices'], 
+                                  capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                devices = []
+                for line in result.stdout.split('\n'):
+                    if '/dev/video' in line:
+                        device = line.strip().split()[0]
+                        devices.append(device)
+                
+                health_data["cameras"] = {
+                    "devices": devices,
+                    "count": len(devices),
+                    "status": "available" if len(devices) >= 2 else "insufficient"
+                }
+                
+                if len(devices) < 2:
+                    health_data["warnings"].append(f"Only {len(devices)} camera device(s) found")
+                    health_data["status"] = "degraded"
+                    
+            else:
+                health_data["cameras"] = {
+                    "error": "v4l2-ctl failed",
+                    "status": "error"
+                }
+                health_data["status"] = "error"
+                
+        except Exception as e:
+            health_data["cameras"] = {
+                "error": str(e),
+                "status": "error"
+            }
+            health_data["status"] = "error"
+        
+        # Service status check
+        try:
+            import subprocess
+            services = ["dual_recorder", "video_worker", "system_status", "ezrec-api"]
+            service_status = {}
+            
+            for service in services:
+                try:
+                    result = subprocess.run(['systemctl', 'is-active', f'{service}.service'], 
+                                          capture_output=True, text=True, timeout=5)
+                    status = result.stdout.strip()
+                    service_status[service] = status
+                    
+                    if status != "active":
+                        health_data["warnings"].append(f"Service {service} is {status}")
+                        health_data["status"] = "degraded"
+                        
+                except Exception:
+                    service_status[service] = "unknown"
+            
+            health_data["services"] = service_status
+            
+        except Exception as e:
+            health_data["services"] = {"error": str(e)}
+        
+        # Recording status check
+        try:
+            status_file = Path("/opt/ezrec-backend/status.json")
+            if status_file.exists():
+                with open(status_file) as f:
+                    status_data = json.load(f)
+                    health_data["recording"] = {
+                        "is_recording": status_data.get("is_recording", False),
+                        "last_update": status_data.get("last_update", "unknown")
+                    }
+            else:
+                health_data["recording"] = {"status": "no_status_file"}
+        except Exception as e:
+            health_data["recording"] = {"error": str(e)}
+        
+        # FFmpeg availability check
+        try:
+            result = subprocess.run(['ffmpeg', '-version'], 
+                                  capture_output=True, text=True, timeout=10)
+            health_data["ffmpeg"] = {
+                "available": result.returncode == 0,
+                "version": result.stdout.split('\n')[0] if result.returncode == 0 else "unknown"
+            }
+            
+            if result.returncode != 0:
+                health_data["warnings"].append("FFmpeg not available")
+                health_data["status"] = "error"
+                
+        except Exception as e:
+            health_data["ffmpeg"] = {"error": str(e), "available": False}
+            health_data["status"] = "error"
+        
+        # Network connectivity check
+        try:
+            result = subprocess.run(['ping', '-c', '1', '8.8.8.8'], 
+                                  capture_output=True, text=True, timeout=5)
+            health_data["network"] = {
+                "internet": result.returncode == 0,
+                "status": "connected" if result.returncode == 0 else "disconnected"
+            }
+            
+            if result.returncode != 0:
+                health_data["warnings"].append("No internet connectivity")
+                health_data["status"] = "degraded"
+                
+        except Exception as e:
+            health_data["network"] = {"error": str(e), "internet": False}
+        
+        return health_data
+        
+    except Exception as e:
+        return {
+            "timestamp": datetime.now().isoformat(),
+            "status": "error",
+            "error": str(e)
+        }

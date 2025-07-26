@@ -942,40 +942,38 @@ def validate_camera_setup():
         logger.error(f"❌ Camera validation failed: {e}")
         return False
 
-def monitor_system_health():
-    """Monitor system health and log warnings for potential issues"""
+def run_camera_health_check():
+    """Run comprehensive camera health check before recording"""
     try:
-        import psutil
+        logger.info("🔍 Running camera health check...")
         
-        # Check CPU usage
-        cpu_percent = psutil.cpu_percent(interval=1)
-        if cpu_percent > 80:
-            logger.warning(f"⚠️ High CPU usage: {cpu_percent:.1f}%")
-        
-        # Check memory usage
-        memory = psutil.virtual_memory()
-        if memory.percent > 85:
-            logger.warning(f"⚠️ High memory usage: {memory.percent:.1f}%")
-        
-        # Check disk space
-        disk = psutil.disk_usage("/opt/ezrec-backend")
-        disk_percent = (disk.used / disk.total) * 100
-        if disk_percent > 90:
-            logger.warning(f"⚠️ Low disk space: {disk_percent:.1f}% used")
-        
-        # Check temperature (Raspberry Pi specific)
+        # Import camera health checker
         try:
-            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
-                temp = float(f.read().strip()) / 1000
-                if temp > 70:
-                    logger.warning(f"⚠️ High temperature: {temp:.1f}°C")
-        except:
-            pass  # Temperature monitoring not available
-        
-        return True
-        
+            from camera_health_check import CameraHealthChecker
+            checker = CameraHealthChecker()
+            
+            # Run health check
+            success = checker.run_full_health_check({
+                "camera_0": CAMERA_0_SERIAL,
+                "camera_1": CAMERA_1_SERIAL
+            })
+            
+            if success:
+                logger.info("✅ Camera health check passed")
+                return True
+            else:
+                logger.error("❌ Camera health check failed")
+                return False
+                
+        except ImportError:
+            logger.warning("⚠️ Camera health checker not available, skipping health check")
+            return True  # Continue without health check
+        except Exception as e:
+            logger.error(f"❌ Camera health check error: {e}")
+            return False
+            
     except Exception as e:
-        logger.error(f"❌ Error monitoring system health: {e}")
+        logger.error(f"❌ Error running camera health check: {e}")
         return False
 
 def main():
@@ -985,6 +983,11 @@ def main():
     logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
     logger.info(f"📷 Camera 1: {CAMERA_1_NAME} (Serial: {CAMERA_1_SERIAL})")
     logger.info(f"🎬 Merge method: {MERGE_METHOD}")
+    
+    # Run camera health check before starting
+    if not run_camera_health_check():
+        logger.error("❌ Camera health check failed. Exiting.")
+        sys.exit(1)
     
     # Validate camera setup
     if not validate_camera_setup():
