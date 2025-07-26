@@ -160,7 +160,44 @@ fi
 echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
-# 8. FIX PERMISSIONS AND OWNERSHIP
+# 8. SETUP ENVIRONMENT CONFIGURATION
+#------------------------------#
+echo "⚙️ Setting up environment configuration..."
+
+# Create .env file from template if it doesn't exist
+if [ ! -f "/opt/ezrec-backend/.env" ]; then
+    echo "📝 Creating .env file from template..."
+    if [ -f "/opt/ezrec-backend/env.example" ]; then
+        sudo cp /opt/ezrec-backend/env.example /opt/ezrec-backend/.env
+        echo "✅ .env file created from template"
+    else
+        echo "⚠️ env.example not found, creating basic .env file..."
+        sudo tee /opt/ezrec-backend/.env > /dev/null << 'EOF'
+# EZREC Backend Configuration
+# Add your Supabase and AWS credentials here
+
+# Supabase Configuration
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID=your_aws_access_key_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
+AWS_DEFAULT_REGION=us-east-1
+S3_BUCKET_NAME=your_s3_bucket_name_here
+
+# Recording Configuration
+RECORDING_DURATION=300
+VIDEO_QUALITY=high
+EOF
+        echo "✅ Basic .env file created"
+    fi
+else
+    echo "✅ .env file already exists (user-managed)"
+fi
+
+#------------------------------#
+# 9. FIX PERMISSIONS AND OWNERSHIP
 #------------------------------#
 echo "🔐 Fixing permissions and ownership..."
 sudo chown -R root:root /opt/ezrec-backend
@@ -168,7 +205,7 @@ sudo chmod -R 755 /opt/ezrec-backend
 sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
 
 #------------------------------#
-# 9. CREATE SYSTEMD SERVICE FILES
+# 10. CREATE SYSTEMD SERVICE FILES
 #------------------------------#
 echo "⚙️ Creating systemd service files..."
 
@@ -257,13 +294,13 @@ WantedBy=multi-user.target
 EOF
 
 #------------------------------#
-# 10. RELOAD SYSTEMD
+# 11. RELOAD SYSTEMD
 #------------------------------#
 echo "🔄 Reloading systemd..."
 sudo systemctl daemon-reload
 
 #------------------------------#
-# 11. TEST BASIC FUNCTIONALITY
+# 12. TEST BASIC FUNCTIONALITY
 #------------------------------#
 echo "🧪 Testing basic functionality..."
 
@@ -313,7 +350,7 @@ for package in fastapi supabase psutil boto3; do
 done
 
 #------------------------------#
-# 12. SETUP CRON JOBS
+# 13. SETUP CRON JOBS
 #------------------------------#
 echo "⏰ Setting up cron jobs..."
 sudo tee /etc/cron.d/ezrec-maintenance > /dev/null << 'EOF'
@@ -328,7 +365,7 @@ sudo tee /etc/cron.d/ezrec-maintenance > /dev/null << 'EOF'
 EOF
 
 #------------------------------#
-# 13. ENABLE AND START SERVICES
+# 14. ENABLE AND START SERVICES
 #------------------------------#
 echo "🚀 Enabling and starting services..."
 sudo systemctl enable dual_recorder.service
@@ -345,7 +382,7 @@ sleep 3
 sudo systemctl start dual_recorder.service
 
 #------------------------------#
-# 14. CHECK SERVICE STATUS
+# 15. CHECK SERVICE STATUS
 #------------------------------#
 echo "📊 Checking service status..."
 sudo systemctl status dual_recorder.service --no-pager -l
@@ -377,7 +414,7 @@ else
 fi
 
 #------------------------------#
-# 15. TEST API ENDPOINT
+# 16. TEST API ENDPOINT
 #------------------------------#
 echo "🌐 Testing API endpoint..."
 sleep 5
@@ -389,7 +426,7 @@ else
 fi
 
 #------------------------------#
-# 16. RUN SYSTEM READINESS TEST
+# 17. RUN SYSTEM READINESS TEST
 #------------------------------#
 echo "🔍 Running system readiness test..."
 cd /opt/ezrec-backend
@@ -400,7 +437,7 @@ else
 fi
 
 #------------------------------#
-# 17. FINAL SETUP COMPLETION
+# 18. FINAL SETUP COMPLETION
 #------------------------------#
 echo ""
 echo "🎉 EZREC Backend Deployment Completed!"
