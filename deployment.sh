@@ -84,7 +84,8 @@ check_and_install_tools() {
     # Install additional dependencies
     echo "📦 Installing additional dependencies..."
     sudo apt-get update
-    sudo apt-get install -y python3-requests python3-psutil python3-boto3 python3-dotenv
+    sudo apt-get install -y python3-requests python3-psutil python3-boto3 python3-dotenv build-essential
+    sudo apt autoremove -y
 }
 
 check_and_install_tools
@@ -140,16 +141,14 @@ cd /opt/ezrec-backend/api
 
 # Install dependencies with proper ownership
 echo "🔧 Installing Python packages..."
-venv/bin/pip install fastapi uvicorn python-multipart jinja2
-venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy opencv-python-headless email-validator
+sudo -u $CURRENT_USER venv/bin/pip install fastapi uvicorn python-multipart jinja2
+sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy opencv-python-headless email-validator
 
 # Install picamera2 in virtual environment (CRITICAL FIX)
 echo "📷 Installing picamera2 in virtual environment..."
 if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
     echo "🔧 Installing picamera2..."
-    # Fix permissions before installing
-    sudo chown -R $CURRENT_USER:$CURRENT_USER venv
-    venv/bin/pip install picamera2
+    sudo -u $CURRENT_USER venv/bin/pip install picamera2
     if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ picamera2 installed successfully in virtual environment"
     else
@@ -199,11 +198,20 @@ else
 fi
 
 #------------------------------#
-# 9. FIX PERMISSIONS AND OWNERSHIP
+# 9. CREATE DEDICATED USER AND FIX PERMISSIONS
 #------------------------------#
-echo "🔐 Fixing permissions and ownership..."
-# Keep virtual environment owned by user for pip operations
-sudo chown -R root:root /opt/ezrec-backend
+echo "🔐 Creating dedicated user and fixing permissions..."
+
+# Create dedicated user for services
+if ! id "ezrec" &>/dev/null; then
+    echo "👤 Creating dedicated ezrec user..."
+    sudo useradd -r -s /bin/false -d /opt/ezrec-backend ezrec
+else
+    echo "✅ ezrec user already exists"
+fi
+
+# Set proper ownership
+sudo chown -R ezrec:ezrec /opt/ezrec-backend
 sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv
 sudo chmod -R 755 /opt/ezrec-backend
 sudo chmod -R 755 /opt/ezrec-backend/api/venv
@@ -222,7 +230,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+User=ezrec
+Group=ezrec
 WorkingDirectory=/opt/ezrec-backend
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
@@ -230,6 +239,11 @@ Restart=on-failure
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+PrivateTmp=true
+CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_RAWIO
 
 [Install]
 WantedBy=multi-user.target
@@ -243,7 +257,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+User=ezrec
+Group=ezrec
 WorkingDirectory=/opt/ezrec-backend
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
@@ -251,6 +266,10 @@ Restart=on-failure
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
@@ -264,7 +283,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+User=ezrec
+Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/api
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
@@ -272,6 +292,10 @@ Restart=on-failure
 RestartSec=10
 StandardOutput=journal
 StandardError=journal
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
@@ -285,7 +309,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=root
+User=ezrec
+Group=ezrec
 WorkingDirectory=/opt/ezrec-backend
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
@@ -293,6 +318,10 @@ Restart=on-failure
 RestartSec=30
 StandardOutput=journal
 StandardError=journal
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+PrivateTmp=true
 
 [Install]
 WantedBy=multi-user.target
@@ -336,9 +365,7 @@ if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2; print('✅ Pica
 else
     echo "❌ Picamera2 import failed in virtual environment"
     echo "🔧 Attempting to fix picamera2 installation..."
-    # Fix permissions before reinstalling
-    sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv
-    /opt/ezrec-backend/api/venv/bin/pip install --force-reinstall picamera2
+    sudo -u $CURRENT_USER /opt/ezrec-backend/api/venv/bin/pip install --force-reinstall picamera2
     if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ Picamera2 fixed and working"
     else
@@ -360,6 +387,8 @@ done
 # 13. SETUP CRON JOBS
 #------------------------------#
 echo "⏰ Setting up cron jobs..."
+# Remove existing cron jobs to avoid duplicates
+sudo rm -f /etc/cron.d/ezrec-maintenance
 sudo tee /etc/cron.d/ezrec-maintenance > /dev/null << 'EOF'
 # Daily cleanup at 3 AM
 0 3 * * * root /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/cleanup_old_data.py --recordings-days 7 --logs-days 14 --processed-days 3 --temp-days 1 --cache-days 30 --bookings-days 90 >> /opt/ezrec-backend/logs/cleanup_cron.log 2>&1
@@ -392,13 +421,17 @@ sudo systemctl start dual_recorder.service
 # 15. CHECK SERVICE STATUS
 #------------------------------#
 echo "📊 Checking service status..."
-sudo systemctl status dual_recorder.service --no-pager -l
-echo ""
-sudo systemctl status video_worker.service --no-pager -l
-echo ""
-sudo systemctl status ezrec-api.service --no-pager -l
-echo ""
-sudo systemctl status system_status.service --no-pager -l
+services=("dual_recorder.service" "video_worker.service" "ezrec-api.service" "system_status.service")
+
+for service in "${services[@]}"; do
+    echo "--- $service ---"
+    if sudo systemctl status "$service" --no-pager -l 2>/dev/null; then
+        echo "✅ $service status retrieved successfully"
+    else
+        echo "⚠️ Could not retrieve $service status (use: sudo journalctl -u $service)"
+    fi
+    echo ""
+done
 
 # Validate all services are running
 echo "🔍 Validating all services are running..."
