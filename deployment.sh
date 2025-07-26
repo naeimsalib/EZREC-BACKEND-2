@@ -27,14 +27,16 @@ sudo pkill -f "api_server.py" 2>/dev/null || true
 # 2. CLEANUP OLD INSTALLATION
 #------------------------------#
 echo "🧹 Cleaning up old installation..."
-sudo rm -rf /opt/ezrec-backend
+# DO NOT REMOVE .env FILE! (User-managed)
+sudo find /opt/ezrec-backend -mindepth 1 ! -name '.env' -exec rm -rf {} +
 sudo mkdir -p /opt/ezrec-backend
 
 #------------------------------#
 # 3. COPY PROJECT FILES
 #------------------------------#
 echo "📁 Copying project files..."
-sudo cp -r . /opt/ezrec-backend/
+# DO NOT OVERWRITE .env FILE! (User-managed)
+sudo rsync -a --exclude='.env' ./ /opt/ezrec-backend/
 sudo chown -R root:root /opt/ezrec-backend
 sudo chmod -R 755 /opt/ezrec-backend
 
