@@ -125,7 +125,8 @@ sudo python3 -m venv venv
 
 # Fix ownership to current user so pip can install packages
 echo "🔐 Fixing virtual environment ownership..."
-sudo chown -R $SUDO_USER:$SUDO_USER venv
+sudo chown -R michomanoly14892:michomanoly14892 venv
+sudo chmod -R 755 venv
 
 # Install Python dependencies
 echo "📦 Installing Python dependencies..."
