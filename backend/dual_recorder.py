@@ -109,9 +109,9 @@ def set_is_recording(value: bool):
         logger.error(f"❌ Failed to update recording status: {e}")
 
 def detect_cameras():
-    """Detect available cameras using CameraManager"""
+    """Detect available cameras using CameraManager and return camera indices"""
     try:
-        from picamera2 import CameraManager
+        from picamera2 import CameraManager, Picamera2
         
         manager = CameraManager()
         cameras = manager.cameras
@@ -123,13 +123,13 @@ def detect_cameras():
             return None, None
         
         # Get camera properties to match serials
-        camera_0 = None
-        camera_1 = None
+        camera_0_index = None
+        camera_1_index = None
         
-        for i, camera in enumerate(cameras):
+        for i in range(len(cameras)):
             try:
                 # Create temporary Picamera2 instance to get properties
-                temp_cam = camera.create_camera()
+                temp_cam = Picamera2(index=i)
                 props = temp_cam.camera_properties
                 temp_cam.close()
                 
@@ -137,24 +137,24 @@ def detect_cameras():
                 logger.info(f"📷 Camera {i}: Serial {serial}")
                 
                 if serial == CAMERA_0_SERIAL:
-                    camera_0 = camera
-                    logger.info(f"✅ Matched Camera 0 ({CAMERA_0_NAME}) to camera {i}")
+                    camera_0_index = i
+                    logger.info(f"✅ Matched Camera 0 ({CAMERA_0_NAME}) to camera index {i}")
                 elif serial == CAMERA_1_SERIAL:
-                    camera_1 = camera
-                    logger.info(f"✅ Matched Camera 1 ({CAMERA_1_NAME}) to camera {i}")
+                    camera_1_index = i
+                    logger.info(f"✅ Matched Camera 1 ({CAMERA_1_NAME}) to camera index {i}")
                     
             except Exception as e:
                 logger.error(f"❌ Error getting properties for camera {i}: {e}")
         
-        if camera_0 and camera_1:
+        if camera_0_index is not None and camera_1_index is not None:
             logger.info("✅ Both cameras detected and matched to serials")
-            return camera_0, camera_1
+            return camera_0_index, camera_1_index
         else:
             logger.warning("⚠️ Could not match cameras to configured serials")
             # Fallback: use first two cameras
             if len(cameras) >= 2:
                 logger.info("🔄 Using first two cameras as fallback")
-                return cameras[0], cameras[1]
+                return 0, 1
             else:
                 logger.error("❌ Not enough cameras available")
                 return None, None
@@ -169,8 +169,8 @@ def detect_cameras():
 class CameraRecorder:
     """Thread-safe camera recorder for a single camera"""
     
-    def __init__(self, camera, camera_name, output_path):
-        self.camera = camera
+    def __init__(self, camera_index, camera_name, output_path):
+        self.camera_index = camera_index
         self.camera_name = camera_name
         self.output_path = output_path
         self.picamera2 = None
@@ -211,10 +211,10 @@ class CameraRecorder:
     def initialize_camera(self):
         """Initialize the camera with proper configuration"""
         try:
-            self.logger.info(f"🔧 Initializing {self.camera_name} camera")
+            self.logger.info(f"🔧 Initializing {self.camera_name} camera (index: {self.camera_index})")
             
-            # Create Picamera2 instance from camera
-            self.picamera2 = self.camera.create_camera()
+            # Create Picamera2 instance using camera index
+            self.picamera2 = Picamera2(index=self.camera_index)
             
             # Configure camera
             config = self.picamera2.create_video_configuration(
@@ -401,14 +401,14 @@ class DualRecordingSession:
             logger.info(f"🎬 Starting dual camera recording session: {self.filename_base}")
             
             # Detect cameras
-            camera0, camera1 = detect_cameras()
-            if not camera0 or not camera1:
+            camera0_index, camera1_index = detect_cameras()
+            if camera0_index is None or camera1_index is None:
                 logger.error("❌ Failed to detect cameras")
                 return False
             
             # Create camera recorders
-            self.camera0_recorder = CameraRecorder(camera0, CAMERA_0_NAME, self.camera0_file)
-            self.camera1_recorder = CameraRecorder(camera1, CAMERA_1_NAME, self.camera1_file)
+            self.camera0_recorder = CameraRecorder(camera0_index, CAMERA_0_NAME, self.camera0_file)
+            self.camera1_recorder = CameraRecorder(camera1_index, CAMERA_1_NAME, self.camera1_file)
             
             # Start recording on both cameras
             logger.info("🎥 Starting camera recordings...")
@@ -595,6 +595,64 @@ def load_bookings():
     except Exception:
         return []
 
+def validate_camera_setup():
+    """Validate camera setup and return detailed information"""
+    try:
+        from picamera2 import CameraManager, Picamera2
+        
+        logger.info("🔍 Validating camera setup...")
+        
+        # Check CameraManager
+        manager = CameraManager()
+        cameras = manager.cameras
+        logger.info(f"📷 CameraManager reports {len(cameras)} camera(s)")
+        
+        if len(cameras) < 2:
+            logger.error(f"❌ Only {len(cameras)} camera(s) detected. Need at least 2 for dual recording.")
+            return False
+        
+        # Test each camera individually
+        for i in range(len(cameras)):
+            try:
+                logger.info(f"🔧 Testing camera {i}...")
+                camera = Picamera2(index=i)
+                
+                # Get camera properties
+                props = camera.camera_properties
+                serial = props.get('SerialNumber', f'unknown_{i}')
+                logger.info(f"📷 Camera {i}: Serial {serial}")
+                
+                # Test basic configuration
+                config = camera.create_video_configuration(
+                    main={"size": (1920, 1080), "format": "YUV420"}
+                )
+                camera.configure(config)
+                camera.start()
+                camera.stop()
+                camera.close()
+                
+                logger.info(f"✅ Camera {i} is working correctly")
+                
+            except Exception as e:
+                logger.error(f"❌ Camera {i} test failed: {e}")
+                return False
+        
+        # Check environment variables
+        logger.info(f"🔧 Environment configuration:")
+        logger.info(f"   CAMERA_0_SERIAL: {CAMERA_0_SERIAL}")
+        logger.info(f"   CAMERA_1_SERIAL: {CAMERA_1_SERIAL}")
+        logger.info(f"   CAMERA_0_NAME: {CAMERA_0_NAME}")
+        logger.info(f"   CAMERA_1_NAME: {CAMERA_1_NAME}")
+        
+        return True
+        
+    except ImportError as e:
+        logger.error(f"❌ Picamera2 not available: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"❌ Camera validation failed: {e}")
+        return False
+
 def main():
     """Main application loop"""
     logger.info(f"📡 Dual Recorder started [Timezone: {TIMEZONE_NAME}]")
@@ -602,6 +660,11 @@ def main():
     logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
     logger.info(f"📷 Camera 1: {CAMERA_1_NAME} (Serial: {CAMERA_1_SERIAL})")
     logger.info(f"🎬 Merge method: {MERGE_METHOD}")
+    
+    # Validate camera setup
+    if not validate_camera_setup():
+        logger.error("❌ Camera setup validation failed. Exiting.")
+        sys.exit(1)
     
     # Verify recordings directory permissions
     try:
