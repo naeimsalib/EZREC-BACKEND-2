@@ -432,3 +432,45 @@ flowchart TD
 ---
 
 **Made with ❤️ for automated video recording on Raspberry Pi**
+
+## 🚀 Dual Camera Merging (New Standard)
+
+**As of July 2025, all dual camera merging is handled by [`backend/enhanced_merge.py`](backend/enhanced_merge.py).**
+
+- Uses robust retry logic (up to 3 attempts)
+- Validates input and output files
+- Logs all merge attempts and errors
+- Creates marker files for downstream processing:
+  - `.merged` after successful merge
+  - `.merge_error` if all retries fail
+- Only triggers upload if merge is successful
+
+**Do not use legacy FFmpeg merge logic. Always use `merge_videos_with_retry(...)` from `enhanced_merge.py`.**
+
+---
+
+## 🎬 Recording Lifecycle & Status Markers
+
+Each recording passes through the following lifecycle, tracked by marker files:
+
+| Marker File         | Meaning                                 |
+|--------------------|-----------------------------------------|
+| `.lock`            | Recording or processing in progress      |
+| `.done`            | Recording completed, ready for processing|
+| `.merged`          | Dual camera merge successful             |
+| `.merge_error`     | Merge failed after all retries           |
+| `.completed`       | Video processed and uploaded             |
+| `.error`           | Fatal error (corrupt, missing, etc)      |
+
+**Lifecycle Example:**
+1. `.lock` created when recording starts
+2. `.done` created when recording finishes
+3. `.merged` created after successful merge (dual camera)
+4. `.completed` created after upload
+5. `.merge_error` or `.error` created if a step fails
+
+**Cleanup:**
+- Marker and partial files are cleaned up by `cleanup_old_data.py` (see CRON jobs)
+- Files <1MB or with `.error`/`.merge_error` are deleted after X days
+
+---
