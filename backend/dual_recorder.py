@@ -64,6 +64,7 @@ CAMERA_0_NAME = os.getenv('CAMERA_0_NAME', 'left')
 CAMERA_1_NAME = os.getenv('CAMERA_1_NAME', 'right')
 DUAL_CAMERA_MODE = os.getenv('DUAL_CAMERA_MODE', 'true').lower() == 'true'
 MERGE_METHOD = os.getenv('MERGE_METHOD', 'side_by_side')
+AUTO_UPLOAD = os.getenv('AUTO_UPLOAD', 'false').lower() == 'true'
 
 # Avoid double processes
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
@@ -74,11 +75,34 @@ for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     except Exception:
         continue
 
-# Set up logging
+def setup_rotating_logger(log_file: Path, max_bytes: int = 10*1024*1024, backup_count: int = 5):
+    """Set up a rotating file handler for logging"""
+    from logging.handlers import RotatingFileHandler
+    
+    # Create log directory if it doesn't exist
+    log_file.parent.mkdir(parents=True, exist_ok=True)
+    
+    # Create rotating file handler
+    rotating_handler = RotatingFileHandler(
+        log_file, 
+        maxBytes=max_bytes, 
+        backupCount=backup_count
+    )
+    
+    # Set formatter
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    rotating_handler.setFormatter(formatter)
+    
+    return rotating_handler
+
+# Set up logging with rotation
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
-    handlers=[logging.FileHandler(LOG_FILE), logging.StreamHandler()]
+    handlers=[
+        setup_rotating_logger(LOG_FILE),
+        logging.StreamHandler()
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -312,9 +336,30 @@ class CameraRecorder:
         except Exception as e:
             self.logger.error(f"❌ Error stopping {self.camera_name} camera: {e}")
 
+def has_audio_stream(video_path: Path) -> bool:
+    """Check if a video file has an audio stream using ffprobe"""
+    try:
+        result = subprocess.run([
+            'ffprobe', '-v', 'error', '-select_streams', 'a',
+            '-show_entries', 'stream=codec_type', '-of', 'default=noprint_wrappers=1:nokey=1',
+            str(video_path)
+        ], capture_output=True, text=True, timeout=10)
+        return result.returncode == 0 and result.stdout.strip()
+    except Exception:
+        return False
+
 def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method: str = 'side_by_side'):
     """Merge two video files using FFmpeg"""
     try:
+        # Validate merge method
+        if method not in ["side_by_side", "stacked"]:
+            logger.warning(f"⚠️ Unknown MERGE_METHOD '{method}', defaulting to side_by_side")
+            method = "side_by_side"
+        
+        # Check for audio streams
+        has_audio1 = has_audio_stream(video1_path)
+        has_audio2 = has_audio_stream(video2_path)
+        
         if method == 'side_by_side':
             # Side-by-side merge
             cmd = [
@@ -322,13 +367,24 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 '-i', str(video1_path),
                 '-i', str(video2_path),
                 '-filter_complex', '[0:v][1:v]hstack=inputs=2[v]',
-                '-map', '[v]',
-                '-map', '0:a',
+                '-map', '[v]'
+            ]
+            
+            # Handle audio - use audio from first video if available, otherwise no audio
+            if has_audio1:
+                cmd.extend(['-map', '0:a'])
+            elif has_audio2:
+                cmd.extend(['-map', '1:a'])
+            else:
+                cmd.extend(['-an'])  # No audio
+                
+            cmd.extend([
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
                 str(output_path)
-            ]
+            ])
+            
         elif method == 'stacked':
             # Top-bottom merge
             cmd = [
@@ -336,17 +392,26 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 '-i', str(video1_path),
                 '-i', str(video2_path),
                 '-filter_complex', '[0:v][1:v]vstack=inputs=2[v]',
-                '-map', '[v]',
-                '-map', '0:a',
+                '-map', '[v]'
+            ]
+            
+            # Handle audio - use audio from first video if available, otherwise no audio
+            if has_audio1:
+                cmd.extend(['-map', '0:a'])
+            elif has_audio2:
+                cmd.extend(['-map', '1:a'])
+            else:
+                cmd.extend(['-an'])  # No audio
+                
+            cmd.extend([
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
                 str(output_path)
-            ]
-        else:
-            raise ValueError(f"Unknown merge method: {method}")
+            ])
 
         logger.info(f"🎬 Merging videos using {method} method...")
+        logger.info(f"🔊 Audio streams - Video 1: {'Yes' if has_audio1 else 'No'}, Video 2: {'Yes' if has_audio2 else 'No'}")
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         
         if result.returncode == 0 and output_path.exists():
@@ -492,12 +557,16 @@ class DualRecordingSession:
                 if merge_videos(self.camera0_file, self.camera1_file, self.merged_file, MERGE_METHOD):
                     logger.info(f"✅ Successfully created merged video: {self.merged_file}")
                     
+                    # Save metadata first
+                    metadata = self.save_metadata()
+                    
+                    # Trigger auto-upload if enabled
+                    if metadata:
+                        trigger_upload(self.merged_file, metadata)
+                    
                     # Create .done marker for video worker
                     done_marker = self.merged_file.with_suffix('.done')
                     done_marker.touch()
-                    
-                    # Save metadata
-                    self.save_metadata()
                     
                     # Clean up individual camera files
                     self.camera0_file.unlink(missing_ok=True)
@@ -533,7 +602,7 @@ class DualRecordingSession:
             logger.error(f"❌ Error stopping dual recording: {e}")
 
     def save_metadata(self):
-        """Save metadata for the merged recording"""
+        """Save metadata for the merged recording and return the metadata dict"""
         try:
             metadata_path = self.merged_file.with_suffix(".json")
             metadata = {
@@ -554,8 +623,54 @@ class DualRecordingSession:
             with open(metadata_path, "w") as f:
                 json.dump(metadata, f, indent=2)
             logger.info(f"📝 Metadata saved to: {metadata_path}")
+            return metadata
         except Exception as e:
             logger.error(f"❌ Failed to save metadata: {e}")
+            return None
+
+def trigger_upload(merged_file: Path, metadata: dict):
+    """Trigger immediate upload of the merged video file"""
+    try:
+        if not AUTO_UPLOAD:
+            logger.info("📤 Auto-upload disabled, skipping immediate upload")
+            return True
+            
+        logger.info("📤 Auto-upload enabled, triggering immediate upload...")
+        
+        # Import upload functionality from video_worker
+        try:
+            from video_worker import upload_file_chunked, insert_video_metadata
+        except ImportError:
+            logger.warning("⚠️ video_worker module not available, skipping auto-upload")
+            return True
+        
+        # Generate S3 key
+        user_id = metadata.get("user_id")
+        date_str = datetime.now(LOCAL_TZ).strftime("%Y-%m-%d")
+        s3_key = f"{user_id}/{date_str}/{merged_file.name}"
+        
+        # Upload to S3
+        s3_url = upload_file_chunked(merged_file, s3_key)
+        if s3_url:
+            # Update metadata with upload info
+            metadata["video_url"] = s3_url
+            metadata["uploaded_at"] = datetime.now(LOCAL_TZ).isoformat()
+            metadata["storage_path"] = s3_key
+            
+            # Insert into database
+            if insert_video_metadata(metadata):
+                logger.info(f"✅ Auto-upload completed successfully: {s3_url}")
+                return True
+            else:
+                logger.error("❌ Failed to insert video metadata")
+                return False
+        else:
+            logger.error("❌ Failed to upload video to S3")
+            return False
+            
+    except Exception as e:
+        logger.error(f"❌ Auto-upload error: {e}")
+        return False
 
 def handle_exit(sig, frame):
     """Handle graceful shutdown"""
@@ -572,7 +687,7 @@ signal.signal(signal.SIGINT, handle_exit)
 signal.signal(signal.SIGTERM, handle_exit)
 
 def get_active_booking(bookings):
-    """Get the currently active booking"""
+    """Get the currently active booking with overlap protection"""
     now = datetime.now(LOCAL_TZ)
     for booking in bookings:
         try:
@@ -701,17 +816,20 @@ def main():
             
             if current_session:
                 end_time = parser.isoparse(current_session.booking["end_time"]).astimezone(LOCAL_TZ)
-                if now > end_time:
+                # Add overlap protection: only stop if end time has passed AND session is active
+                if now > end_time and current_session.active:
                     logger.info(f"🛑 Booking ended, stopping recording")
                     current_session.stop()
                     current_session = None
                     
             if not current_session and active_booking:
-                logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
-                current_session = DualRecordingSession(active_booking)
-                if not current_session.start():
-                    logger.error(f"❌ Failed to start recording session")
-                    current_session = None
+                # Additional overlap protection: ensure no active session before starting new one
+                if current_session is None or not current_session.active:
+                    logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
+                    current_session = DualRecordingSession(active_booking)
+                    if not current_session.start():
+                        logger.error(f"❌ Failed to start recording session")
+                        current_session = None
                     
         except Exception as e:
             logger.error(f"❌ Error in main loop: {e}")

@@ -1,29 +1,49 @@
 [Unit]
-Description=EZREC Dual Camera Recorder
+Description=EZREC Dual Camera Recorder Service
 After=network.target
 Wants=network.target
+Requires=ezrec-api.service
 
 [Service]
 Type=simple
 User=michomanoly14892
 Group=video
-WorkingDirectory=/opt/ezrec-backend/backend
-Environment=PYTHONPATH=/opt/ezrec-backend/backend:/opt/ezrec-backend/api
+WorkingDirectory=/opt/ezrec-backend
+
+# Environment variables
+Environment=PYTHONPATH=/opt/ezrec-backend
+Environment=PYTHONUNBUFFERED=1
+
+# Executable
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+# Restart policy
 Restart=always
 RestartSec=10
-StandardOutput=journal
-StandardError=journal
 
-# Camera device access
-ExecStartPre=/bin/bash -c 'for dev in /dev/video*; do fuser -k "$dev" 2>/dev/null || true; done'
-ExecStartPre=/bin/sleep 2
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
 
 # Security settings
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
-ReadWritePaths=/opt/ezrec-backend/recordings /opt/ezrec-backend/logs /opt/ezrec-backend/api/local_data /opt/ezrec-backend/status.json
+ProtectHome=true
+ReadWritePaths=/opt/ezrec-backend/recordings /opt/ezrec-backend/logs /opt/ezrec-backend/api/local_data /tmp
+
+# Camera device access
+SupplementaryGroups=video
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=dual-recorder
+
+# Kill mode
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=30
 
 [Install]
 WantedBy=multi-user.target 
