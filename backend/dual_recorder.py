@@ -1142,7 +1142,12 @@ def main():
                 # Periodic health monitoring
                 current_time = time.time()
                 if current_time - last_health_check >= health_check_interval:
-                    monitor_system_health()
+                    # Simple health check - log system status
+                    try:
+                        disk_usage = psutil.disk_usage('/')
+                        logger.info(f"📊 Health check - Disk usage: {disk_usage.percent:.1f}% used, {disk_usage.free / (1024**3):.1f} GB free")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Health check failed: {e}")
                     last_health_check = current_time
                 
                 bookings = load_bookings()
