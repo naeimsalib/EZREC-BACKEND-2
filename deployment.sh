@@ -124,19 +124,7 @@ pip install fastapi uvicorn python-multipart jinja2
 pip install supabase boto3 python-dotenv requests psutil
 
 #------------------------------#
-# 8. SETUP ENVIRONMENT FILE
-#------------------------------#
-echo "⚙️ Setting up environment configuration..."
-if [ ! -f /opt/ezrec-backend/.env ]; then
-    echo "📝 Creating .env file from template..."
-    sudo cp env.example /opt/ezrec-backend/.env
-    echo "⚠️ Please edit /opt/ezrec-backend/.env with your actual credentials"
-else
-    echo "✅ .env file already exists"
-fi
-
-#------------------------------#
-# 9. FIX PERMISSIONS AND OWNERSHIP
+# 8. FIX PERMISSIONS AND OWNERSHIP
 #------------------------------#
 echo "🔐 Fixing permissions and ownership..."
 sudo chown -R root:root /opt/ezrec-backend
@@ -144,7 +132,7 @@ sudo chmod -R 755 /opt/ezrec-backend
 sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
 
 #------------------------------#
-# 10. CREATE SYSTEMD SERVICE FILES
+# 9. CREATE SYSTEMD SERVICE FILES
 #------------------------------#
 echo "⚙️ Creating systemd service files..."
 
@@ -212,13 +200,13 @@ WantedBy=multi-user.target
 EOF
 
 #------------------------------#
-# 11. RELOAD SYSTEMD
+# 10. RELOAD SYSTEMD
 #------------------------------#
 echo "🔄 Reloading systemd..."
 sudo systemctl daemon-reload
 
 #------------------------------#
-# 12. TEST BASIC FUNCTIONALITY
+# 11. TEST BASIC FUNCTIONALITY
 #------------------------------#
 echo "🧪 Testing basic functionality..."
 
@@ -248,7 +236,7 @@ else
 fi
 
 #------------------------------#
-# 13. SETUP CRON JOBS
+# 12. SETUP CRON JOBS
 #------------------------------#
 echo "⏰ Setting up cron jobs..."
 sudo tee /etc/cron.d/ezrec-maintenance > /dev/null << 'EOF'
@@ -263,7 +251,7 @@ sudo tee /etc/cron.d/ezrec-maintenance > /dev/null << 'EOF'
 EOF
 
 #------------------------------#
-# 14. ENABLE AND START SERVICES
+# 13. ENABLE AND START SERVICES
 #------------------------------#
 echo "🚀 Enabling and starting services..."
 sudo systemctl enable dual_recorder.service
@@ -277,7 +265,7 @@ sleep 3
 sudo systemctl start dual_recorder.service
 
 #------------------------------#
-# 15. CHECK SERVICE STATUS
+# 14. CHECK SERVICE STATUS
 #------------------------------#
 echo "📊 Checking service status..."
 sudo systemctl status dual_recorder.service --no-pager -l
@@ -287,7 +275,7 @@ echo ""
 sudo systemctl status ezrec-api.service --no-pager -l
 
 #------------------------------#
-# 16. TEST API ENDPOINT
+# 15. TEST API ENDPOINT
 #------------------------------#
 echo "🌐 Testing API endpoint..."
 sleep 5
@@ -299,7 +287,7 @@ else
 fi
 
 #------------------------------#
-# 17. RUN SYSTEM READINESS TEST
+# 16. RUN SYSTEM READINESS TEST
 #------------------------------#
 echo "🔍 Running system readiness test..."
 cd /opt/ezrec-backend
@@ -310,14 +298,14 @@ else
 fi
 
 #------------------------------#
-# 18. FINAL SETUP COMPLETION
+# 17. FINAL SETUP COMPLETION
 #------------------------------#
 echo ""
 echo "🎉 EZREC Backend Deployment Completed!"
 echo "======================================"
 echo ""
 echo "📋 Next Steps:"
-echo "1. Edit /opt/ezrec-backend/.env with your credentials"
+echo "1. Create and configure /opt/ezrec-backend/.env with your credentials"
 echo "2. Create a test booking to verify everything works"
 echo "3. Monitor logs: sudo journalctl -u dual_recorder.service -f"
 echo ""
