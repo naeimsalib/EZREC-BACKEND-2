@@ -112,16 +112,42 @@ sudo touch api/__init__.py
 #------------------------------#
 echo "🐍 Setting up Python virtual environment..."
 cd /opt/ezrec-backend/api
+
+# Remove existing venv if it exists and has permission issues
+if [ -d "venv" ]; then
+    echo "🧹 Removing existing virtual environment..."
+    sudo rm -rf venv
+fi
+
+# Create new virtual environment
+echo "📦 Creating new virtual environment..."
 sudo python3 -m venv venv
+
+# Fix ownership and permissions
+echo "🔐 Fixing virtual environment permissions..."
 sudo chown -R root:root venv
 sudo chmod -R 755 venv
 
 # Install Python dependencies
 echo "📦 Installing Python dependencies..."
-source venv/bin/activate
-pip install --upgrade pip
-pip install fastapi uvicorn python-multipart jinja2
-pip install supabase boto3 python-dotenv requests psutil
+cd /opt/ezrec-backend/api
+
+# Try to activate and install dependencies
+if source venv/bin/activate; then
+    pip install --upgrade pip
+    pip install fastapi uvicorn python-multipart jinja2
+    pip install supabase boto3 python-dotenv requests psutil
+    echo "✅ Python dependencies installed successfully"
+else
+    echo "❌ Failed to activate virtual environment"
+    echo "🔧 Trying alternative approach..."
+    
+    # Try installing with sudo
+    sudo venv/bin/pip install --upgrade pip
+    sudo venv/bin/pip install fastapi uvicorn python-multipart jinja2
+    sudo venv/bin/pip install supabase boto3 python-dotenv requests psutil
+    echo "✅ Python dependencies installed with sudo"
+fi
 
 #------------------------------#
 # 8. FIX PERMISSIONS AND OWNERSHIP
