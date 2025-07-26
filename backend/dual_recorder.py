@@ -203,6 +203,8 @@ class CameraRecorder:
         self.thread = None
         self.error = None
         self.success = False
+        self.retry_count = 0
+        self.max_retries = 3
         
         # Set up logging for this camera
         self.log_file = f"/tmp/{camera_name.lower()}_camera_debug.log"
@@ -233,46 +235,63 @@ class CameraRecorder:
         return logger
     
     def initialize_camera(self):
-        """Initialize the camera with proper configuration"""
-        try:
-            self.logger.info(f"🔧 Initializing {self.camera_name} camera (index: {self.camera_index})")
-            
-            # Create Picamera2 instance using camera index
-            self.picamera2 = Picamera2(index=self.camera_index)
-            
-            # Configure camera
-            config = self.picamera2.create_video_configuration(
-                main={"size": (1920, 1080), "format": "YUV420"},
-                controls={
-                    "FrameDurationLimits": (33333, 1000000),
-                    "ExposureTime": 33333,
-                    "AnalogueGain": 1.0,
-                    "NoiseReductionMode": 0
-                }
-            )
-            
-            self.picamera2.configure(config)
-            self.picamera2.start()
-            
-            # Create encoder
-            from picamera2.encoders import H264Encoder
-            self.encoder = H264Encoder(
-                bitrate=6000000,
-                repeat=False,
-                iperiod=30,
-                qp=25
-            )
-            
-            self.logger.info(f"✅ {self.camera_name} camera initialized successfully")
-            return True
-            
-        except Exception as e:
-            self.error = str(e)
-            self.logger.error(f"❌ {self.camera_name} camera initialization failed: {e}")
-            return False
+        """Initialize the camera with proper configuration and retry logic"""
+        for attempt in range(self.max_retries):
+            try:
+                self.logger.info(f"🔧 Initializing {self.camera_name} camera (index: {self.camera_index}, attempt: {attempt + 1}/{self.max_retries})")
+                
+                # Create Picamera2 instance using camera index
+                self.picamera2 = Picamera2(index=self.camera_index)
+                
+                # Configure camera
+                config = self.picamera2.create_video_configuration(
+                    main={"size": (1920, 1080), "format": "YUV420"},
+                    controls={
+                        "FrameDurationLimits": (33333, 1000000),
+                        "ExposureTime": 33333,
+                        "AnalogueGain": 1.0,
+                        "NoiseReductionMode": 0
+                    }
+                )
+                
+                self.picamera2.configure(config)
+                self.picamera2.start()
+                
+                # Create encoder
+                from picamera2.encoders import H264Encoder
+                self.encoder = H264Encoder(
+                    bitrate=6000000,
+                    repeat=False,
+                    iperiod=30,
+                    qp=25
+                )
+                
+                self.logger.info(f"✅ {self.camera_name} camera initialized successfully")
+                return True
+                
+            except Exception as e:
+                self.error = str(e)
+                self.logger.error(f"❌ {self.camera_name} camera initialization failed (attempt {attempt + 1}): {e}")
+                
+                # Clean up failed attempt
+                if self.picamera2:
+                    try:
+                        self.picamera2.close()
+                        self.picamera2 = None
+                    except:
+                        pass
+                
+                # Wait before retry (exponential backoff)
+                if attempt < self.max_retries - 1:
+                    wait_time = 2 ** attempt
+                    self.logger.info(f"⏳ Waiting {wait_time}s before retry...")
+                    time.sleep(wait_time)
+        
+        self.logger.error(f"❌ {self.camera_name} camera failed to initialize after {self.max_retries} attempts")
+        return False
     
     def start_recording(self):
-        """Start recording in a separate thread"""
+        """Start recording in a separate thread with health monitoring"""
         if self.thread and self.thread.is_alive():
             self.logger.warning(f"⚠️ {self.camera_name} camera already recording")
             return False
@@ -280,12 +299,21 @@ class CameraRecorder:
         self.thread = threading.Thread(target=self._record_loop)
         self.thread.daemon = True
         self.thread.start()
+        
+        # Wait a moment and check if thread started successfully
+        time.sleep(0.5)
+        if not self.thread.is_alive():
+            self.logger.error(f"❌ {self.camera_name} camera thread failed to start")
+            return False
+        
+        self.logger.info(f"✅ {self.camera_name} camera recording thread started successfully")
         return True
     
     def _record_loop(self):
-        """Main recording loop"""
+        """Main recording loop with enhanced error handling"""
         try:
             if not self.initialize_camera():
+                self.logger.error(f"❌ {self.camera_name} camera initialization failed, cannot record")
                 return
             
             self.logger.info(f"🎥 Starting {self.camera_name} camera recording")
@@ -294,14 +322,25 @@ class CameraRecorder:
             # Start recording
             self.picamera2.start_recording(self.encoder, str(self.output_path))
             
-            # Keep recording until stopped
+            # Keep recording until stopped with health monitoring
+            last_log_time = time.time()
             while self.recording:
                 time.sleep(1)
+                
                 # Log progress every 10 seconds
-                if int(time.time()) % 10 == 0:
+                current_time = time.time()
+                if current_time - last_log_time >= 10:
                     if self.output_path.exists():
                         size = self.output_path.stat().st_size
                         self.logger.info(f"📹 {self.camera_name} recording: {size} bytes")
+                        last_log_time = current_time
+                    else:
+                        self.logger.warning(f"⚠️ {self.camera_name} recording file not found")
+                
+                # Check if thread is still healthy
+                if not self.thread or not self.thread.is_alive():
+                    self.logger.error(f"❌ {self.camera_name} recording thread died unexpectedly")
+                    break
             
         except Exception as e:
             self.error = str(e)
@@ -310,10 +349,12 @@ class CameraRecorder:
             self.stop_recording_internal()
     
     def stop_recording(self):
-        """Stop recording"""
+        """Stop recording with timeout"""
         self.recording = False
         if self.thread:
-            self.thread.join(timeout=10)
+            self.thread.join(timeout=15)  # Increased timeout for graceful shutdown
+            if self.thread.is_alive():
+                self.logger.warning(f"⚠️ {self.camera_name} camera thread did not stop gracefully")
     
     def stop_recording_internal(self):
         """Internal method to stop recording"""
@@ -449,6 +490,11 @@ class DualRecordingSession:
         end_dt = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
         self.filename_base = f"{start_dt.strftime('%H%M%S')}-{end_dt.strftime('%H%M%S')}"
         
+        # Enhanced file naming with user and camera IDs for traceability
+        user_id = booking.get("user_id", "unknown")
+        camera_id = booking.get("camera_id", "unknown")
+        self.filename_base = f"{self.filename_base}_{user_id}_{camera_id}"
+        
         # File paths
         self.camera0_file = self.date_folder / f"{self.filename_base}_{CAMERA_0_NAME}.mp4"
         self.camera1_file = self.date_folder / f"{self.filename_base}_{CAMERA_1_NAME}.mp4"
@@ -461,7 +507,7 @@ class DualRecordingSession:
         self.recording_start_time = None
 
     def start(self):
-        """Start dual camera recording"""
+        """Start dual camera recording with enhanced error handling"""
         try:
             logger.info(f"🎬 Starting dual camera recording session: {self.filename_base}")
             
@@ -475,21 +521,48 @@ class DualRecordingSession:
             self.camera0_recorder = CameraRecorder(camera0_index, CAMERA_0_NAME, self.camera0_file)
             self.camera1_recorder = CameraRecorder(camera1_index, CAMERA_1_NAME, self.camera1_file)
             
-            # Start recording on both cameras
+            # Start recording on both cameras with individual error handling
             logger.info("🎥 Starting camera recordings...")
             
-            if not self.camera0_recorder.start_recording():
-                logger.error("❌ Failed to start camera 0 recording")
+            cam0_started = self.camera0_recorder.start_recording()
+            cam1_started = self.camera1_recorder.start_recording()
+            
+            # Handle partial success scenarios
+            if not cam0_started and not cam1_started:
+                logger.error("❌ Both cameras failed to start recording")
                 return False
             
-            if not self.camera1_recorder.start_recording():
-                logger.error("❌ Failed to start camera 1 recording")
-                self.camera0_recorder.stop_recording()
+            if not cam0_started:
+                logger.warning("⚠️ Camera 0 failed to start, continuing with Camera 1 only")
+                self.camera0_recorder = None
+            
+            if not cam1_started:
+                logger.warning("⚠️ Camera 1 failed to start, continuing with Camera 0 only")
+                self.camera1_recorder = None
+            
+            # Wait a moment and check thread health
+            time.sleep(2)
+            
+            active_cameras = 0
+            if self.camera0_recorder and self.camera0_recorder.thread and self.camera0_recorder.thread.is_alive():
+                active_cameras += 1
+                logger.info("✅ Camera 0 recording thread is healthy")
+            else:
+                logger.warning("⚠️ Camera 0 recording thread is not healthy")
+            
+            if self.camera1_recorder and self.camera1_recorder.thread and self.camera1_recorder.thread.is_alive():
+                active_cameras += 1
+                logger.info("✅ Camera 1 recording thread is healthy")
+            else:
+                logger.warning("⚠️ Camera 1 recording thread is not healthy")
+            
+            if active_cameras == 0:
+                logger.error("❌ No camera recording threads are healthy")
                 return False
             
             self.active = True
             self.recording_start_time = datetime.now(LOCAL_TZ)
-            logger.info("✅ Dual camera recording started successfully")
+            logger.info(f"✅ Dual camera recording started successfully with {active_cameras} active camera(s)")
             
             # Update booking status
             try:
@@ -768,8 +841,44 @@ def validate_camera_setup():
         logger.error(f"❌ Camera validation failed: {e}")
         return False
 
+def monitor_system_health():
+    """Monitor system health and log warnings for potential issues"""
+    try:
+        import psutil
+        
+        # Check CPU usage
+        cpu_percent = psutil.cpu_percent(interval=1)
+        if cpu_percent > 80:
+            logger.warning(f"⚠️ High CPU usage: {cpu_percent:.1f}%")
+        
+        # Check memory usage
+        memory = psutil.virtual_memory()
+        if memory.percent > 85:
+            logger.warning(f"⚠️ High memory usage: {memory.percent:.1f}%")
+        
+        # Check disk space
+        disk = psutil.disk_usage("/opt/ezrec-backend")
+        disk_percent = (disk.used / disk.total) * 100
+        if disk_percent > 90:
+            logger.warning(f"⚠️ Low disk space: {disk_percent:.1f}% used")
+        
+        # Check temperature (Raspberry Pi specific)
+        try:
+            with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+                temp = float(f.read().strip()) / 1000
+                if temp > 70:
+                    logger.warning(f"⚠️ High temperature: {temp:.1f}°C")
+        except:
+            pass  # Temperature monitoring not available
+        
+        return True
+        
+    except Exception as e:
+        logger.error(f"❌ Error monitoring system health: {e}")
+        return False
+
 def main():
-    """Main application loop"""
+    """Main application loop with graceful exit handling"""
     logger.info(f"📡 Dual Recorder started [Timezone: {TIMEZONE_NAME}]")
     logger.info(f"📄 Watching bookings cache: {BOOKING_CACHE_FILE}")
     logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
@@ -807,36 +916,70 @@ def main():
     logger.info("✅ Camera configuration verified")
     
     current_session = None
+    last_health_check = time.time()
+    health_check_interval = 300  # Check health every 5 minutes
     
-    while True:
-        try:
-            bookings = load_bookings()
-            now = datetime.now(LOCAL_TZ)
-            active_booking = get_active_booking(bookings)
-            
-            if current_session:
-                end_time = parser.isoparse(current_session.booking["end_time"]).astimezone(LOCAL_TZ)
-                # Add overlap protection: only stop if end time has passed AND session is active
-                if now > end_time and current_session.active:
-                    logger.info(f"🛑 Booking ended, stopping recording")
-                    current_session.stop()
-                    current_session = None
-                    
-            if not current_session and active_booking:
-                # Additional overlap protection: ensure no active session before starting new one
-                if current_session is None or not current_session.active:
-                    logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
-                    current_session = DualRecordingSession(active_booking)
-                    if not current_session.start():
-                        logger.error(f"❌ Failed to start recording session")
+    try:
+        while True:
+            try:
+                # Periodic health monitoring
+                current_time = time.time()
+                if current_time - last_health_check >= health_check_interval:
+                    monitor_system_health()
+                    last_health_check = current_time
+                
+                bookings = load_bookings()
+                now = datetime.now(LOCAL_TZ)
+                active_booking = get_active_booking(bookings)
+                
+                if current_session:
+                    end_time = parser.isoparse(current_session.booking["end_time"]).astimezone(LOCAL_TZ)
+                    # Add overlap protection: only stop if end time has passed AND session is active
+                    if now > end_time and current_session.active:
+                        logger.info(f"🛑 Booking ended, stopping recording")
+                        current_session.stop()
                         current_session = None
-                    
-        except Exception as e:
-            logger.error(f"❌ Error in main loop: {e}")
-            import traceback
-            logger.error(f"📋 Traceback: {traceback.format_exc()}")
+                        
+                if not current_session and active_booking:
+                    # Additional overlap protection: ensure no active session before starting new one
+                    if current_session is None or not current_session.active:
+                        logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
+                        current_session = DualRecordingSession(active_booking)
+                        if not current_session.start():
+                            logger.error(f"❌ Failed to start recording session")
+                            current_session = None
+                        
+            except Exception as e:
+                logger.error(f"❌ Error in main loop: {e}")
+                import traceback
+                logger.error(f"📋 Traceback: {traceback.format_exc()}")
+                
+            time.sleep(CHECK_INTERVAL)
             
-        time.sleep(CHECK_INTERVAL)
+    except KeyboardInterrupt:
+        logger.info("🛑 Received keyboard interrupt")
+    except Exception as e:
+        logger.error(f"❌ Unexpected error in main loop: {e}")
+        import traceback
+        logger.error(f"📋 Traceback: {traceback.format_exc()}")
+    finally:
+        # Ensure graceful cleanup
+        logger.info("🛑 Performing graceful shutdown...")
+        if current_session and current_session.active:
+            logger.info("🛑 Stopping active recording before exit...")
+            try:
+                current_session.stop()
+            except Exception as e:
+                logger.error(f"❌ Error stopping recording during exit: {e}")
+        
+        # Update final status
+        try:
+            set_is_recording(False)
+            logger.info("✅ Shutdown completed successfully")
+        except Exception as e:
+            logger.error(f"❌ Error during final status update: {e}")
+        
+        sys.exit(0)
 
 if __name__ == "__main__":
     main() 
