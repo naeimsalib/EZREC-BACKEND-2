@@ -50,6 +50,15 @@ class CameraHealthChecker:
                 logging.FileHandler('/opt/ezrec-backend/logs/camera_health.log')
             ]
         )
+        
+        # Reduce verbosity for console output
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(logging.WARNING)
+        formatter = logging.Formatter('%(levelname)s: %(message)s')
+        console_handler.setFormatter(formatter)
+        
+        # Add to root logger
+        logging.getLogger().addHandler(console_handler)
     
     def check_v4l2_devices(self) -> List[str]:
         """Check available v4l2 devices"""
