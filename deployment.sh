@@ -34,6 +34,50 @@ for cmd in "${required_cmds[@]}"; do
 done
 
 #------------------------------#
+# 1.5 CHECK AND INSTALL REQUIRED TOOLS
+#------------------------------#
+echo "🔧 Checking required tools..."
+check_and_install_tools() {
+    # Check FFmpeg
+    if ! command -v ffmpeg &> /dev/null; then
+        echo "❌ FFmpeg not found. Installing..."
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+    else
+        echo "✅ FFmpeg is available"
+    fi
+    
+    # Check FFprobe
+    if ! command -v ffprobe &> /dev/null; then
+        echo "❌ FFprobe not found. Installing..."
+        sudo apt-get update
+        sudo apt-get install -y ffmpeg
+    else
+        echo "✅ FFprobe is available"
+    fi
+    
+    # Check v4l2-ctl
+    if ! command -v v4l2-ctl &> /dev/null; then
+        echo "❌ v4l2-ctl not found. Installing..."
+        sudo apt-get update
+        sudo apt-get install -y v4l-utils
+    else
+        echo "✅ v4l2-ctl is available"
+    fi
+    
+    # Check Python dependencies
+    if ! python3 -c "import picamera2" &> /dev/null; then
+        echo "❌ Picamera2 not found. Installing..."
+        sudo apt-get update
+        sudo apt-get install -y python3-picamera2
+    else
+        echo "✅ Picamera2 is available"
+    fi
+}
+
+check_and_install_tools
+
+#------------------------------#
 # 2. LOCK FOR SAFETY
 #------------------------------#
 if [ -f "$LOCK_FILE" ]; then
