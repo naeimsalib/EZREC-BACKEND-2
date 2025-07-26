@@ -123,9 +123,13 @@ fi
 echo "📦 Creating new virtual environment..."
 sudo python3 -m venv venv
 
+# Get the current user who ran sudo
+CURRENT_USER=${SUDO_USER:-$USER}
+echo "🔐 Setting virtual environment ownership to user: $CURRENT_USER"
+
 # Fix ownership to current user so pip can install packages
 echo "🔐 Fixing virtual environment ownership..."
-sudo chown -R michomanoly14892:michomanoly14892 venv
+sudo chown -R $CURRENT_USER:$CURRENT_USER venv
 sudo chmod -R 755 venv
 
 # Install Python dependencies
