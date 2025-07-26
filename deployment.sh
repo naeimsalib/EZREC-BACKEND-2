@@ -404,18 +404,45 @@ EOF
 # 14. ENABLE AND START SERVICES
 #------------------------------#
 echo "🚀 Enabling and starting services..."
+
+# Add ezrec user to video group for camera access
+echo "📹 Adding ezrec user to video group for camera access..."
+sudo usermod -a -G video ezrec
+
+# Enable all services
 sudo systemctl enable dual_recorder.service
 sudo systemctl enable video_worker.service
 sudo systemctl enable ezrec-api.service
 sudo systemctl enable system_status.service
 
-sudo systemctl start ezrec-api.service
-sleep 3
-sudo systemctl start video_worker.service
-sleep 3
-sudo systemctl start system_status.service
-sleep 3
-sudo systemctl start dual_recorder.service
+# Validate critical files exist before starting services
+echo "🔍 Validating critical files..."
+critical_files=(
+    "/opt/ezrec-backend/backend/dual_recorder.py"
+    "/opt/ezrec-backend/backend/video_worker.py"
+    "/opt/ezrec-backend/backend/system_status.py"
+    "/opt/ezrec-backend/api/api_server.py"
+    "/opt/ezrec-backend/backend/enhanced_merge.py"
+)
+
+missing_files=false
+for file in "${critical_files[@]}"; do
+    if [ ! -f "$file" ]; then
+        echo "❌ Critical file missing: $file"
+        missing_files=true
+    else
+        echo "✅ Found: $file"
+    fi
+done
+
+if [ "$missing_files" = true ]; then
+    echo "⚠️ Some critical files are missing. Deployment may fail."
+    echo "Continuing anyway, but check the file paths above."
+fi
+
+# Restart all services (safer than individual starts)
+echo "🔄 Restarting all services..."
+sudo systemctl restart dual_recorder.service video_worker.service ezrec-api.service system_status.service
 
 #------------------------------#
 # 15. CHECK SERVICE STATUS
@@ -479,9 +506,13 @@ fi
 #------------------------------#
 # 18. FINAL SETUP COMPLETION
 #------------------------------#
+DEPLOYMENT_TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 echo ""
 echo "🎉 EZREC Backend Deployment Completed!"
 echo "======================================"
+echo "📅 Deployment Time: $DEPLOYMENT_TIMESTAMP"
+echo "👤 Service User: ezrec"
+echo "🔐 Security: Hardened systemd services with minimal privileges"
 echo ""
 echo "📋 Next Steps:"
 echo "1. Create and configure /opt/ezrec-backend/.env with your credentials"
@@ -498,5 +529,8 @@ echo "   - Check status: sudo systemctl status dual_recorder.service"
 echo "   - View logs: sudo journalctl -u dual_recorder.service -f"
 echo "   - Restart services: sudo systemctl restart dual_recorder.service"
 echo "   - Test system: sudo python3 test_system_readiness.py"
+echo ""
+echo "📝 Tip: To log this deployment, run:"
+echo "   ./deployment.sh | tee ezrec_deploy_\$(date +%Y%m%d_%H%M%S).log"
 echo ""
 echo "✅ Deployment completed successfully!"
