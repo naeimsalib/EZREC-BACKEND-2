@@ -377,6 +377,22 @@ class CameraRecorder:
         except Exception as e:
             self.logger.error(f"❌ Error stopping {self.camera_name} camera: {e}")
 
+    def _get_video_info(self, video_path: Path) -> dict:
+        """Get video information using ffprobe"""
+        try:
+            result = subprocess.run([
+                'ffprobe', '-v', 'quiet', '-print_format', 'json',
+                '-show_format', '-show_streams', str(video_path)
+            ], capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {}
+        except Exception as e:
+            self.logger.warning(f"⚠️ Error getting video info for {video_path}: {e}")
+            return {}
+
 # Import enhanced merge functionality
 try:
     from enhanced_merge import merge_videos_with_retry, MergeResult
@@ -965,16 +981,113 @@ def run_camera_health_check():
                 logger.error("❌ Camera health check failed")
                 return False
                 
-        except ImportError:
-            logger.warning("⚠️ Camera health checker not available, skipping health check")
-            return True  # Continue without health check
+        except ImportError as e:
+            logger.warning(f"⚠️ Camera health checker not available: {e}")
+            logger.info("🔄 Skipping health check, proceeding with basic validation")
+            return validate_camera_setup()
         except Exception as e:
             logger.error(f"❌ Camera health check error: {e}")
-            return False
+            logger.info("🔄 Falling back to basic camera validation")
+            return validate_camera_setup()
             
     except Exception as e:
         logger.error(f"❌ Error running camera health check: {e}")
-        return False
+        return validate_camera_setup()
+
+def _create_merge_command(video1_path: Path, video2_path: Path, 
+                        output_path: Path, method: str = 'side_by_side') -> list:
+    """Create FFmpeg merge command with timestamp overlay for debugging"""
+    
+    # Get video info for optimal settings
+    def get_video_info(video_path: Path) -> dict:
+        try:
+            result = subprocess.run([
+                'ffprobe', '-v', 'quiet', '-print_format', 'json',
+                '-show_format', '-show_streams', str(video_path)
+            ], capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0:
+                return json.loads(result.stdout)
+            else:
+                return {}
+        except Exception:
+            return {}
+    
+    info1 = get_video_info(video1_path)
+    info2 = get_video_info(video2_path)
+    
+    # Determine optimal resolution and bitrate
+    width1 = height1 = width2 = height2 = 1920
+    if info1.get('streams'):
+        stream1 = info1['streams'][0]
+        width1 = int(stream1.get('width', 1920))
+        height1 = int(stream1.get('height', 1080))
+    
+    if info2.get('streams'):
+        stream2 = info2['streams'][0]
+        width2 = int(stream2.get('width', 1920))
+        height2 = int(stream2.get('height', 1080))
+    
+    # Use the larger dimensions for output
+    output_width = max(width1, width2)
+    output_height = max(height1, height2)
+    
+    # Calculate bitrate (higher for dual camera)
+    target_bitrate = "8000k"  # 8 Mbps for dual camera
+    
+    if method == 'side_by_side':
+        # Side-by-side merge with timestamp overlay for debugging
+        filter_complex = (
+            f'[0:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
+            f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
+            f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
+            f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
+            f'[v1][v2]hstack=inputs=2:shortest=1[v]'
+        )
+        output_width *= 2  # Double width for side-by-side
+    elif method == 'stacked':
+        # Top-bottom merge with timestamp overlay
+        filter_complex = (
+            f'[0:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
+            f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
+            f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
+            f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
+            f'[v1][v2]vstack=inputs=2:shortest=1[v]'
+        )
+        output_height *= 2  # Double height for stacked
+    else:
+        # Default to side-by-side with timestamp overlay
+        filter_complex = (
+            f'[0:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
+            f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
+            f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
+            f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
+            f'[v1][v2]hstack=inputs=2:shortest=1[v]'
+        )
+        output_width *= 2
+    
+    cmd = [
+        'ffmpeg', '-y',  # Overwrite output file
+        '-i', str(video1_path),
+        '-i', str(video2_path),
+        '-filter_complex', filter_complex,
+        '-map', '[v]',
+        '-an',  # No audio to avoid errors
+        '-c:v', 'libx264',
+        '-preset', 'ultrafast',  # Fast encoding
+        '-crf', '23',  # Good quality
+        '-b:v', target_bitrate,
+        '-maxrate', target_bitrate,
+        '-bufsize', '16000k',
+        '-pix_fmt', 'yuv420p',  # Ensure compatibility
+        '-movflags', '+faststart',  # Optimize for streaming
+        '-metadata', f'merge_method={method}',
+        '-metadata', f'camera1={video1_path.name}',
+        '-metadata', f'camera2={video2_path.name}',
+        str(output_path)
+    ]
+    
+    return cmd
 
 def main():
     """Main application loop with graceful exit handling"""
