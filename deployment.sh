@@ -132,22 +132,11 @@ sudo chmod -R 755 venv
 echo "📦 Installing Python dependencies..."
 cd /opt/ezrec-backend/api
 
-# Try to activate and install dependencies
-if source venv/bin/activate; then
-    pip install --upgrade pip
-    pip install fastapi uvicorn python-multipart jinja2
-    pip install supabase boto3 python-dotenv requests psutil
-    echo "✅ Python dependencies installed successfully"
-else
-    echo "❌ Failed to activate virtual environment"
-    echo "🔧 Trying alternative approach..."
-    
-    # Try installing with sudo
-    sudo venv/bin/pip install --upgrade pip
-    sudo venv/bin/pip install fastapi uvicorn python-multipart jinja2
-    sudo venv/bin/pip install supabase boto3 python-dotenv requests psutil
-    echo "✅ Python dependencies installed with sudo"
-fi
+# Install dependencies directly with sudo to avoid permission issues
+echo "🔧 Installing Python packages with sudo..."
+sudo venv/bin/pip install fastapi uvicorn python-multipart jinja2
+sudo venv/bin/pip install supabase boto3 python-dotenv requests psutil
+echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
 # 8. FIX PERMISSIONS AND OWNERSHIP
