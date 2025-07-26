@@ -385,6 +385,30 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             logger.warning(f"⚠️ Unknown MERGE_METHOD '{method}', defaulting to side_by_side")
             method = "side_by_side"
         
+        # Log file sizes before merge for debugging
+        if video1_path.exists():
+            size1 = video1_path.stat().st_size
+            logger.info(f"📊 {video1_path.name}: {size1:,} bytes")
+        else:
+            logger.error(f"❌ {video1_path.name} does not exist")
+            return False
+            
+        if video2_path.exists():
+            size2 = video2_path.stat().st_size
+            logger.info(f"📊 {video2_path.name}: {size2:,} bytes")
+        else:
+            logger.error(f"❌ {video2_path.name} does not exist")
+            return False
+        
+        # Validate minimum file sizes (500KB each)
+        min_size = 500 * 1024  # 500KB
+        if size1 < min_size:
+            logger.error(f"❌ {video1_path.name} too small: {size1:,} bytes (min: {min_size:,})")
+            return False
+        if size2 < min_size:
+            logger.error(f"❌ {video2_path.name} too small: {size2:,} bytes (min: {min_size:,})")
+            return False
+        
         if method == 'side_by_side':
             # Side-by-side merge (horizontal stack)
             cmd = [
@@ -397,6 +421,7 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
+                '-movflags', '+faststart',  # ✅ Ensure proper MP4 moov atom
                 str(output_path)
             ]
         elif method == 'stacked':
@@ -411,6 +436,7 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
+                '-movflags', '+faststart',  # ✅ Ensure proper MP4 moov atom
                 str(output_path)
             ]
 
@@ -421,8 +447,31 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
         
         if result.returncode == 0 and output_path.exists():
             file_size = output_path.stat().st_size
-            logger.info(f"✅ Successfully merged videos: {output_path} ({file_size} bytes)")
-            return True
+            logger.info(f"✅ Successfully merged videos: {output_path} ({file_size:,} bytes)")
+            
+            # ✅ Validate merged file size (should be reasonable)
+            min_merged_size = 1024 * 1024  # 1MB minimum
+            if file_size < min_merged_size:
+                logger.warning(f"⚠️ Merged file seems small: {file_size:,} bytes (expected >{min_merged_size:,})")
+            
+            # ✅ Validate MP4 structure with ffprobe
+            try:
+                validate_result = subprocess.run([
+                    'ffprobe', '-v', 'error', '-select_streams', 'v:0',
+                    '-show_entries', 'stream=codec_name,width,height', '-of', 'json',
+                    str(output_path)
+                ], capture_output=True, text=True, timeout=30)
+                
+                if validate_result.returncode == 0:
+                    logger.info(f"✅ Merged video validation passed")
+                    return True
+                else:
+                    logger.error(f"❌ Merged video validation failed: {validate_result.stderr}")
+                    return False
+                    
+            except Exception as e:
+                logger.error(f"❌ Error validating merged video: {e}")
+                return False
         else:
             logger.error(f"❌ Failed to merge videos (exit code {result.returncode})")
             logger.error(f"🔧 FFmpeg stderr:\n{result.stderr}")
@@ -600,23 +649,49 @@ class DualRecordingSession:
                 if merge_videos(self.camera0_file, self.camera1_file, self.merged_file, MERGE_METHOD):
                     logger.info(f"✅ Successfully created merged video: {self.merged_file}")
                     
-                    # Save metadata first
-                    metadata = self.save_metadata()
-                    
-                    # Trigger auto-upload if enabled
-                    if metadata:
-                        trigger_upload(self.merged_file, metadata)
-                    
-                    # Create .done marker for video worker
-                    done_marker = self.merged_file.with_suffix('.done')
-                    done_marker.touch()
-                    
-                    # Clean up individual camera files
-                    self.camera0_file.unlink(missing_ok=True)
-                    self.camera1_file.unlink(missing_ok=True)
-                    
+                    # ✅ Validate merged file before creating .done marker
+                    if self.merged_file.exists():
+                        merged_size = self.merged_file.stat().st_size
+                        logger.info(f"📊 Merged file size: {merged_size:,} bytes")
+                        
+                        # Ensure merged file is substantial (>1MB)
+                        if merged_size > 1024 * 1024:
+                            # Save metadata first
+                            metadata = self.save_metadata()
+                            
+                            # Trigger auto-upload if enabled
+                            if metadata:
+                                trigger_upload(self.merged_file, metadata)
+                            
+                            # ✅ Create .done marker only after validation
+                            done_marker = self.merged_file.with_suffix('.done')
+                            done_marker.touch()
+                            logger.info(f"✅ Created .done marker: {done_marker}")
+                            
+                            # Clean up individual camera files
+                            self.camera0_file.unlink(missing_ok=True)
+                            self.camera1_file.unlink(missing_ok=True)
+                            logger.info("✅ Cleaned up individual camera files")
+                            
+                        else:
+                            logger.error(f"❌ Merged file too small: {merged_size:,} bytes. Not creating .done marker.")
+                            # Create error marker to prevent infinite retries
+                            error_marker = self.merged_file.with_suffix('.error')
+                            error_marker.touch()
+                            logger.error("🔧 Created .error marker due to small merged file")
+                    else:
+                        logger.error("❌ Merged file not found after successful merge")
+                        # Create error marker to prevent infinite retries
+                        error_marker = self.merged_file.with_suffix('.error')
+                        error_marker.touch()
+                        logger.error("🔧 Created .error marker due to missing merged file")
+                        
                 else:
                     logger.error("❌ Failed to merge videos")
+                    # Create error marker to prevent infinite retries
+                    error_marker = self.merged_file.with_suffix('.error')
+                    error_marker.touch()
+                    logger.error("🔧 Created .error marker due to merge failure")
             else:
                 logger.warning("⚠️ One or both camera recordings failed")
                 # Create error marker to prevent infinite retries
