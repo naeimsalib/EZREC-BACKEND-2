@@ -20,6 +20,7 @@ import pytz
 from dotenv import load_dotenv
 from supabase import create_client
 import socket
+from enhanced_merge import merge_videos_with_retry, MergeResult
 
 # ✅ Fix the import path for booking_utils.py
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
@@ -316,6 +317,8 @@ def process_dual_camera_video(raw_file: Path, user_id: str, date_dir: Path) -> P
     cam1_file = date_dir / f"{base_name}_cam1.mp4"
     cam2_file = date_dir / f"{base_name}_cam2.mp4"
     merged_file = date_dir / f"{base_name}_merged.mp4"
+    merged_marker = merged_file.with_suffix(".merged")
+    merge_error_marker = merged_file.with_suffix(".merge_error")
     
     # Check if we have both camera files
     has_cam1 = cam1_file.exists() and is_file_readable(cam1_file)
@@ -354,59 +357,30 @@ def process_dual_camera_video(raw_file: Path, user_id: str, date_dir: Path) -> P
     # Check if merged file already exists
     if merged_file.exists():
         log.info(f"✅ Merged file already exists: {merged_file}")
-        # Process the merged file
+        if merged_marker.exists():
+            log.info(f"✅ .merged marker exists. Proceeding to process merged file.")
+            return process_single_video(merged_file, user_id, date_dir)
+        elif merge_error_marker.exists():
+            log.error(f"❌ Previous merge failed. Skipping.")
+            return None
+        # If neither marker, treat as legacy and process
         return process_single_video(merged_file, user_id, date_dir)
     
-    # Merge the two camera videos side-by-side
-    log.info(f"🎬 Merging dual camera videos side-by-side...")
-    
+    # --- ENHANCED MERGE LOGIC ---
+    log.info(f"🎬 Merging dual camera videos using enhanced_merge.py...")
     try:
-        # Calculate target dimensions for each camera (half width, full height)
-        target_width = width // 2
-        target_height = height
-        
-        # FFmpeg command to merge videos side-by-side
-        merge_cmd = [
-            "ffmpeg", "-y",
-            "-i", str(cam1_file),
-            "-i", str(cam2_file),
-            "-filter_complex", f"[0:v]scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:color=black[cam1];[1:v]scale={target_width}:{target_height}:force_original_aspect_ratio=decrease,pad={target_width}:{target_height}:(ow-iw)/2:(oh-ih)/2:color=black[cam2];[cam1][cam2]hstack=inputs=2",
-            "-c:v", "libx264",
-            "-preset", "ultrafast",
-            "-crf", "28",
-            "-pix_fmt", "yuv420p",
-            str(merged_file)
-        ]
-        
-        log.info(f"🔧 FFmpeg merge command: {' '.join(merge_cmd)}")
-        
-        start_time = time.time()
-        result = subprocess.run(merge_cmd, capture_output=True, text=True, timeout=600)
-        end_time = time.time()
-        
-        if result.returncode == 0 and merged_file.exists():
-            merge_time = end_time - start_time
-            file_size = merged_file.stat().st_size
-            log.info(f"✅ Dual camera merge completed in {merge_time:.1f}s")
-            log.info(f"📊 Merged file size: {file_size} bytes")
-            
-            # Validate the merged file
-            if is_file_readable(merged_file):
-                log.info(f"✅ Merged file validation passed")
-                # Process the merged file with overlays and intro
-                return process_single_video(merged_file, user_id, date_dir)
-            else:
-                log.error(f"❌ Merged file validation failed")
-                return None
+        merge_result = merge_videos_with_retry(cam1_file, cam2_file, merged_file, method='side_by_side', max_retries=3)
+        if merge_result.success:
+            log.info(f"✅ Enhanced merge successful: {merged_file} ({merge_result.file_size:,} bytes)")
+            merged_marker.touch()
+            return process_single_video(merged_file, user_id, date_dir)
         else:
-            log.error(f"❌ FFmpeg merge failed: {result.stderr}")
+            log.error(f"❌ Enhanced merge failed: {merge_result.error_message}")
+            merge_error_marker.touch()
             return None
-            
-    except subprocess.TimeoutExpired:
-        log.error("❌ FFmpeg merge timed out after 10 minutes")
-        return None
     except Exception as e:
-        log.error(f"❌ Error during dual camera merge: {e}")
+        log.error(f"❌ Exception during enhanced merge: {e}")
+        merge_error_marker.touch()
         return None
 
 def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
