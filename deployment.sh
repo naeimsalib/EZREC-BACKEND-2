@@ -123,19 +123,18 @@ fi
 echo "📦 Creating new virtual environment..."
 sudo python3 -m venv venv
 
-# Fix ownership and permissions
-echo "🔐 Fixing virtual environment permissions..."
-sudo chown -R root:root venv
-sudo chmod -R 755 venv
+# Fix ownership to current user so pip can install packages
+echo "🔐 Fixing virtual environment ownership..."
+sudo chown -R $SUDO_USER:$SUDO_USER venv
 
 # Install Python dependencies
 echo "📦 Installing Python dependencies..."
 cd /opt/ezrec-backend/api
 
-# Install dependencies directly with sudo to avoid permission issues
-echo "🔧 Installing Python packages with sudo..."
-sudo venv/bin/pip install fastapi uvicorn python-multipart jinja2
-sudo venv/bin/pip install supabase boto3 python-dotenv requests psutil
+# Install dependencies with proper ownership
+echo "🔧 Installing Python packages..."
+venv/bin/pip install fastapi uvicorn python-multipart jinja2
+venv/bin/pip install supabase boto3 python-dotenv requests psutil
 echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
