@@ -142,6 +142,21 @@ cd /opt/ezrec-backend/api
 echo "🔧 Installing Python packages..."
 venv/bin/pip install fastapi uvicorn python-multipart jinja2
 venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy opencv-python-headless email-validator
+
+# Install picamera2 in virtual environment (CRITICAL FIX)
+echo "📷 Installing picamera2 in virtual environment..."
+if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
+    echo "🔧 Installing picamera2..."
+    venv/bin/pip install picamera2
+    if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
+        echo "✅ picamera2 installed successfully in virtual environment"
+    else
+        echo "⚠️ picamera2 installation may have failed, but continuing..."
+    fi
+else
+    echo "✅ picamera2 already available in virtual environment"
+fi
+
 echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
@@ -220,6 +235,27 @@ StandardError=journal
 WantedBy=multi-user.target
 EOF
 
+# Create system_status service (FIX for API degraded status)
+sudo tee /etc/systemd/system/system_status.service > /dev/null << 'EOF'
+[Unit]
+Description=EZREC System Status Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/ezrec-backend
+Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
+Restart=on-failure
+RestartSec=30
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
 #------------------------------#
 # 10. RELOAD SYSTEMD
 #------------------------------#
@@ -250,11 +286,31 @@ fi
 # Test Python imports
 echo "🐍 Testing Python imports..."
 cd /opt/ezrec-backend/backend
-if python3 -c "import picamera2; print('✅ Picamera2 imported successfully')" 2>/dev/null; then
-    echo "✅ Picamera2 is working"
+
+# Test picamera2 in virtual environment (CRITICAL)
+echo "📷 Testing picamera2 in virtual environment..."
+if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2; print('✅ Picamera2 imported successfully')" 2>/dev/null; then
+    echo "✅ Picamera2 is working in virtual environment"
 else
-    echo "❌ Picamera2 import failed"
+    echo "❌ Picamera2 import failed in virtual environment"
+    echo "🔧 Attempting to fix picamera2 installation..."
+    /opt/ezrec-backend/api/venv/bin/pip install --force-reinstall picamera2
+    if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2" 2>/dev/null; then
+        echo "✅ Picamera2 fixed and working"
+    else
+        echo "⚠️ Picamera2 still not working - this may cause recording issues"
+    fi
 fi
+
+# Test other critical packages
+echo "🔧 Testing other critical packages..."
+for package in fastapi supabase psutil boto3; do
+    if /opt/ezrec-backend/api/venv/bin/python3 -c "import $package" 2>/dev/null; then
+        echo "✅ $package is working"
+    else
+        echo "❌ $package import failed"
+    fi
+done
 
 #------------------------------#
 # 12. SETUP CRON JOBS
@@ -278,10 +334,13 @@ echo "🚀 Enabling and starting services..."
 sudo systemctl enable dual_recorder.service
 sudo systemctl enable video_worker.service
 sudo systemctl enable ezrec-api.service
+sudo systemctl enable system_status.service
 
 sudo systemctl start ezrec-api.service
 sleep 3
 sudo systemctl start video_worker.service
+sleep 3
+sudo systemctl start system_status.service
 sleep 3
 sudo systemctl start dual_recorder.service
 
@@ -294,6 +353,28 @@ echo ""
 sudo systemctl status video_worker.service --no-pager -l
 echo ""
 sudo systemctl status ezrec-api.service --no-pager -l
+echo ""
+sudo systemctl status system_status.service --no-pager -l
+
+# Validate all services are running
+echo "🔍 Validating all services are running..."
+services=("dual_recorder.service" "video_worker.service" "ezrec-api.service" "system_status.service")
+all_running=true
+
+for service in "${services[@]}"; do
+    if systemctl is-active --quiet "$service"; then
+        echo "✅ $service is running"
+    else
+        echo "❌ $service is not running"
+        all_running=false
+    fi
+done
+
+if [ "$all_running" = true ]; then
+    echo "🎉 All services are running successfully!"
+else
+    echo "⚠️ Some services failed to start. Check the status above."
+fi
 
 #------------------------------#
 # 15. TEST API ENDPOINT
