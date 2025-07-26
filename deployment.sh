@@ -147,6 +147,8 @@ venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy ope
 echo "📷 Installing picamera2 in virtual environment..."
 if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
     echo "🔧 Installing picamera2..."
+    # Fix permissions before installing
+    sudo chown -R $CURRENT_USER:$CURRENT_USER venv
     venv/bin/pip install picamera2
     if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ picamera2 installed successfully in virtual environment"
@@ -200,8 +202,11 @@ fi
 # 9. FIX PERMISSIONS AND OWNERSHIP
 #------------------------------#
 echo "🔐 Fixing permissions and ownership..."
+# Keep virtual environment owned by user for pip operations
 sudo chown -R root:root /opt/ezrec-backend
+sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv
 sudo chmod -R 755 /opt/ezrec-backend
+sudo chmod -R 755 /opt/ezrec-backend/api/venv
 sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
 
 #------------------------------#
@@ -331,6 +336,8 @@ if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2; print('✅ Pica
 else
     echo "❌ Picamera2 import failed in virtual environment"
     echo "🔧 Attempting to fix picamera2 installation..."
+    # Fix permissions before reinstalling
+    sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv
     /opt/ezrec-backend/api/venv/bin/pip install --force-reinstall picamera2
     if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ Picamera2 fixed and working"
