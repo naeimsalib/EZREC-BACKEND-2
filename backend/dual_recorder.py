@@ -1099,13 +1099,13 @@ def main():
     
     # Run camera health check before starting
     if not run_camera_health_check():
-        logger.error("❌ Camera health check failed. Exiting.")
-        sys.exit(1)
+        logger.warning("⚠️ Camera health check failed, but continuing anyway...")
+        logger.info("🔄 Will attempt to detect cameras during recording")
     
     # Validate camera setup
     if not validate_camera_setup():
-        logger.error("❌ Camera setup validation failed. Exiting.")
-        sys.exit(1)
+        logger.warning("⚠️ Camera setup validation failed, but continuing anyway...")
+        logger.info("🔄 Will attempt to detect cameras during recording")
     
     # Verify recordings directory permissions
     try:
