@@ -385,21 +385,81 @@ def has_audio_stream(video_path: Path) -> bool:
             '-show_entries', 'stream=codec_type', '-of', 'default=noprint_wrappers=1:nokey=1',
             str(video_path)
         ], capture_output=True, text=True, timeout=10)
-        return result.returncode == 0 and result.stdout.strip()
-    except Exception:
+        
+        if result.returncode == 0:
+            audio_streams = result.stdout.strip()
+            has_audio = bool(audio_streams)
+            logger.debug(f"🔊 Audio detection for {video_path.name}: {'Yes' if has_audio else 'No'}")
+            return has_audio
+        else:
+            logger.debug(f"🔊 Audio detection failed for {video_path.name}: {result.stderr}")
+            return False
+            
+    except subprocess.TimeoutExpired:
+        logger.warning(f"⚠️ Audio detection timed out for {video_path.name}")
+        return False
+    except Exception as e:
+        logger.debug(f"🔊 Audio detection error for {video_path.name}: {e}")
         return False
 
+def test_audio_detection():
+    """Test audio detection functionality"""
+    logger.info("🔊 Testing audio detection functionality...")
+    
+    # Test with a known video file if available
+    test_video = None
+    for date_dir in RECORDINGS_DIR.glob("*/"):
+        for video_file in date_dir.glob("*.mp4"):
+            if video_file.exists() and video_file.stat().st_size > 1024*1024:  # > 1MB
+                test_video = video_file
+                break
+        if test_video:
+            break
+    
+    if test_video:
+        logger.info(f"🔊 Testing audio detection with: {test_video.name}")
+        has_audio = has_audio_stream(test_video)
+        logger.info(f"🔊 Result: {'Has audio' if has_audio else 'No audio'}")
+        
+        # Also test ffprobe directly
+        try:
+            result = subprocess.run([
+                'ffprobe', '-v', 'error', '-select_streams', 'a',
+                '-show_entries', 'stream=codec_name', '-of', 'default=noprint_wrappers=1:nokey=1',
+                str(test_video)
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                audio_codecs = result.stdout.strip()
+                if audio_codecs:
+                    logger.info(f"🔊 Audio codec(s): {audio_codecs}")
+                else:
+                    logger.info("🔊 No audio codecs found")
+            else:
+                logger.info("🔊 FFprobe audio detection failed")
+                
+        except Exception as e:
+            logger.warning(f"⚠️ FFprobe audio test failed: {e}")
+    else:
+        logger.info("🔊 No test video found for audio detection testing")
+    
+    logger.info("🔊 Audio detection test completed")
+
 def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method: str = 'side_by_side'):
-    """Merge two video files using FFmpeg"""
+    """Merge two video files using FFmpeg with proper audio handling"""
     try:
         # Validate merge method
         if method not in ["side_by_side", "stacked"]:
             logger.warning(f"⚠️ Unknown MERGE_METHOD '{method}', defaulting to side_by_side")
             method = "side_by_side"
         
-        # Check for audio streams
+        # Check for audio streams in both videos
         has_audio1 = has_audio_stream(video1_path)
         has_audio2 = has_audio_stream(video2_path)
+        
+        logger.info(f"🔊 Audio stream detection:")
+        logger.info(f"   Video 1 ({video1_path.name}): {'Yes' if has_audio1 else 'No'}")
+        logger.info(f"   Video 2 ({video2_path.name}): {'Yes' if has_audio2 else 'No'}")
         
         if method == 'side_by_side':
             # Side-by-side merge
@@ -414,10 +474,13 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             # Handle audio - use audio from first video if available, otherwise no audio
             if has_audio1:
                 cmd.extend(['-map', '0:a'])
+                logger.info("🔊 Using audio from video 1")
             elif has_audio2:
                 cmd.extend(['-map', '1:a'])
+                logger.info("🔊 Using audio from video 2")
             else:
                 cmd.extend(['-an'])  # No audio
+                logger.info("🔊 No audio streams detected, creating silent video")
                 
             cmd.extend([
                 '-c:v', 'libx264',
@@ -439,10 +502,13 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             # Handle audio - use audio from first video if available, otherwise no audio
             if has_audio1:
                 cmd.extend(['-map', '0:a'])
+                logger.info("🔊 Using audio from video 1")
             elif has_audio2:
                 cmd.extend(['-map', '1:a'])
+                logger.info("🔊 Using audio from video 2")
             else:
                 cmd.extend(['-an'])  # No audio
+                logger.info("🔊 No audio streams detected, creating silent video")
                 
             cmd.extend([
                 '-c:v', 'libx264',
@@ -452,16 +518,24 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             ])
 
         logger.info(f"🎬 Merging videos using {method} method...")
-        logger.info(f"🔊 Audio streams - Video 1: {'Yes' if has_audio1 else 'No'}, Video 2: {'Yes' if has_audio2 else 'No'}")
+        logger.info(f"🔧 FFmpeg command: {' '.join(cmd)}")
+        
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
         
         if result.returncode == 0 and output_path.exists():
-            logger.info(f"✅ Successfully merged videos: {output_path}")
+            file_size = output_path.stat().st_size
+            logger.info(f"✅ Successfully merged videos: {output_path} ({file_size} bytes)")
             return True
         else:
-            logger.error(f"❌ Failed to merge videos: {result.stderr}")
+            logger.error(f"❌ Failed to merge videos")
+            logger.error(f"🔧 FFmpeg return code: {result.returncode}")
+            logger.error(f"🔧 FFmpeg stderr:\n{result.stderr}")
+            logger.error(f"🔧 FFmpeg stdout:\n{result.stdout}")
             return False
             
+    except subprocess.TimeoutExpired:
+        logger.error("❌ FFmpeg merge timed out after 5 minutes")
+        return False
     except Exception as e:
         logger.error(f"❌ Error merging videos: {e}")
         return False
@@ -884,6 +958,9 @@ def main():
     logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
     logger.info(f"📷 Camera 1: {CAMERA_1_NAME} (Serial: {CAMERA_1_SERIAL})")
     logger.info(f"🎬 Merge method: {MERGE_METHOD}")
+    
+    # Test audio detection functionality
+    test_audio_detection()
     
     # Validate camera setup
     if not validate_camera_setup():
