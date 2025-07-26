@@ -377,8 +377,38 @@ class CameraRecorder:
         except Exception as e:
             self.logger.error(f"❌ Error stopping {self.camera_name} camera: {e}")
 
+# Import enhanced merge functionality
+try:
+    from enhanced_merge import merge_videos_with_retry, MergeResult
+    ENHANCED_MERGE = True
+    logger.info("✅ Using enhanced merge functionality")
+except ImportError:
+    ENHANCED_MERGE = False
+    logger.warning("⚠️ Enhanced merge not available, using legacy merge")
+
 def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method: str = 'side_by_side'):
-    """Merge two video files using FFmpeg safely without assuming audio streams"""
+    """Merge two video files using enhanced merge with retry logic"""
+    
+    if ENHANCED_MERGE:
+        # Use enhanced merge with retry logic
+        try:
+            logger.info(f"🎬 Using enhanced merge for {video1_path.name} and {video2_path.name}")
+            result = merge_videos_with_retry(video1_path, video2_path, output_path, method, max_retries=3)
+            
+            if result.success:
+                logger.info(f"✅ Enhanced merge successful: {result.file_size:,} bytes")
+                if result.duration:
+                    logger.info(f"🎬 Video duration: {result.duration:.2f} seconds")
+                return True
+            else:
+                logger.error(f"❌ Enhanced merge failed: {result.error_message}")
+                return False
+                
+        except Exception as e:
+            logger.error(f"❌ Enhanced merge error: {e}")
+            # Fall back to legacy merge
+    
+    # Legacy merge method (fallback)
     try:
         # Validate merge method
         if method not in ["side_by_side", "stacked"]:
@@ -440,7 +470,7 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 str(output_path)
             ]
 
-        logger.info(f"🎬 Merging videos using {method} method...")
+        logger.info(f"🎬 Merging videos using legacy {method} method...")
         logger.info(f"🔧 FFmpeg command: {' '.join(cmd)}")
         
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
@@ -804,8 +834,28 @@ def handle_exit(sig, frame):
 signal.signal(signal.SIGINT, handle_exit)
 signal.signal(signal.SIGTERM, handle_exit)
 
+# Import enhanced booking manager
+try:
+    from booking_manager import BookingManager, BookingStatus, CameraStatus
+    ENHANCED_BOOKING_MANAGER = True
+    logger.info("✅ Using enhanced booking manager")
+except ImportError:
+    ENHANCED_BOOKING_MANAGER = False
+    logger.warning("⚠️ Enhanced booking manager not available, using legacy mode")
+
 def get_active_booking(bookings):
     """Get the currently active booking with overlap protection"""
+    if ENHANCED_BOOKING_MANAGER:
+        # Use enhanced booking manager
+        try:
+            manager = BookingManager(BOOKING_CACHE_FILE, USER_ID, CAMERA_ID)
+            active_booking = manager.get_active_booking()
+            if active_booking:
+                return active_booking.__dict__
+        except Exception as e:
+            logger.error(f"❌ Error getting active booking from enhanced manager: {e}")
+    
+    # Fallback to legacy method
     now = datetime.now(LOCAL_TZ)
     for booking in bookings:
         try:
@@ -824,7 +874,13 @@ def load_bookings():
     try:
         with open(BOOKING_CACHE_FILE, 'r') as f:
             data = json.load(f)
-            return data if isinstance(data, list) else []
+            # Handle both old and new formats
+            if isinstance(data, list):
+                return data
+            elif isinstance(data, dict) and 'bookings' in data:
+                return data['bookings']
+            else:
+                return []
     except Exception:
         return []
 

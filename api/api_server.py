@@ -961,7 +961,16 @@ def get_next_booking():
         return {"start_time": None}
     try:
         with open(bookings_file) as f:
-            bookings = json.load(f)
+            data = json.load(f)
+        
+        # Handle both old and new booking formats
+        if isinstance(data, list):
+            bookings = data
+        elif isinstance(data, dict) and 'bookings' in data:
+            bookings = data['bookings']
+        else:
+            return {"start_time": None}
+        
         # Find the next booking with start_time > now
         next_b = None
         for b in bookings:
@@ -983,3 +992,131 @@ def get_next_booking():
         }
     except Exception:
         return {"start_time": None}
+
+@app.get("/recording-logs")
+def get_recording_logs(limit: int = 10):
+    """Get recent recording logs and status"""
+    try:
+        logs = []
+        
+        # Get recent recordings
+        recordings_dir = Path("/opt/ezrec-backend/recordings")
+        if recordings_dir.exists():
+            for date_dir in sorted(recordings_dir.glob("*"), reverse=True)[:3]:
+                if date_dir.is_dir():
+                    recordings = list(date_dir.glob("*.mp4"))
+                    for recording in sorted(recordings, key=lambda x: x.stat().st_mtime, reverse=True)[:limit//3]:
+                        try:
+                            stat = recording.stat()
+                            metadata_file = recording.with_suffix(".json")
+                            metadata = {}
+                            
+                            if metadata_file.exists():
+                                with open(metadata_file) as f:
+                                    metadata = json.load(f)
+                            
+                            logs.append({
+                                "type": "recording",
+                                "filename": recording.name,
+                                "date": date_dir.name,
+                                "size_mb": round(stat.st_size / (1024*1024), 2),
+                                "created": datetime.fromtimestamp(stat.st_mtime).isoformat(),
+                                "booking_id": metadata.get("booking_id"),
+                                "user_id": metadata.get("user_id"),
+                                "status": "completed" if recording.with_suffix(".done").exists() else "processing"
+                            })
+                        except Exception as e:
+                            logger.warning(f"Error processing recording {recording}: {e}")
+        
+        # Get recent log entries
+        log_file = Path("/opt/ezrec-backend/logs/dual_recorder.log")
+        if log_file.exists():
+            try:
+                with open(log_file, 'r') as f:
+                    lines = f.readlines()
+                    recent_lines = lines[-100:]  # Last 100 lines
+                    
+                    for line in recent_lines[-limit//2:]:
+                        if any(keyword in line for keyword in ["ERROR", "WARNING", "INFO", "Recording", "Merge"]):
+                            logs.append({
+                                "type": "log",
+                                "message": line.strip(),
+                                "timestamp": line[:19] if len(line) > 19 else "unknown"
+                            })
+            except Exception as e:
+                logger.warning(f"Error reading log file: {e}")
+        
+        # Sort by timestamp (most recent first)
+        logs.sort(key=lambda x: x.get("created", x.get("timestamp", "")), reverse=True)
+        
+        return {
+            "logs": logs[:limit],
+            "total": len(logs),
+            "timestamp": datetime.now().isoformat()
+        }
+        
+    except Exception as e:
+        logger.error(f"Error getting recording logs: {e}")
+        return {"logs": [], "total": 0, "error": str(e)}
+
+@app.get("/booking-stats")
+def get_booking_stats():
+    """Get booking statistics"""
+    try:
+        bookings_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+        if not bookings_file.exists():
+            return {"stats": {}, "error": "No bookings file found"}
+        
+        with open(bookings_file) as f:
+            data = json.load(f)
+        
+        # Handle both old and new booking formats
+        if isinstance(data, list):
+            bookings = data
+        elif isinstance(data, dict) and 'bookings' in data:
+            bookings = data['bookings']
+        else:
+            return {"stats": {}, "error": "Invalid booking format"}
+        
+        # Calculate statistics
+        total_bookings = len(bookings)
+        today = datetime.now().date()
+        
+        today_bookings = 0
+        completed_bookings = 0
+        failed_bookings = 0
+        recording_bookings = 0
+        
+        for booking in bookings:
+            try:
+                # Count today's bookings
+                start_time = datetime.fromisoformat(booking["start_time"].replace('Z', '+00:00'))
+                if start_time.date() == today:
+                    today_bookings += 1
+                
+                # Count by status
+                status = booking.get("status", "unknown")
+                if status == "completed":
+                    completed_bookings += 1
+                elif status == "failed":
+                    failed_bookings += 1
+                elif status == "recording":
+                    recording_bookings += 1
+                    
+            except Exception:
+                continue
+        
+        stats = {
+            "total_bookings": total_bookings,
+            "today_bookings": today_bookings,
+            "completed_bookings": completed_bookings,
+            "failed_bookings": failed_bookings,
+            "recording_bookings": recording_bookings,
+            "success_rate": round((completed_bookings / total_bookings * 100), 1) if total_bookings > 0 else 0
+        }
+        
+        return {"stats": stats, "timestamp": datetime.now().isoformat()}
+        
+    except Exception as e:
+        logger.error(f"Error getting booking stats: {e}")
+        return {"stats": {}, "error": str(e)}
