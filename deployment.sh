@@ -141,7 +141,7 @@ cd /opt/ezrec-backend/api
 # Install dependencies with proper ownership
 echo "🔧 Installing Python packages..."
 venv/bin/pip install fastapi uvicorn python-multipart jinja2
-venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy
+venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy opencv-python-headless
 echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
