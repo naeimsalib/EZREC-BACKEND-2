@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 EZREC Dual Camera Recorder - Clean Architecture
-- Uses CameraManager for reliable camera detection
+- Uses direct camera detection for reliable camera access
 - Records from both cameras simultaneously using threads
 - Merges recordings using FFmpeg
 - Robust error handling and logging
@@ -133,52 +133,58 @@ def set_is_recording(value: bool):
         logger.error(f"❌ Failed to update recording status: {e}")
 
 def detect_cameras():
-    """Detect available cameras using CameraManager and return camera indices"""
+    """Detect available cameras by trying to access them directly and return camera indices"""
     try:
-        from picamera2 import CameraManager, Picamera2
+        from picamera2 import Picamera2
         
-        manager = CameraManager()
-        cameras = manager.cameras
+        logger.info("🔍 Detecting cameras by direct access...")
         
-        logger.info(f"🔍 Detected {len(cameras)} camera(s)")
+        # Try to detect cameras by attempting to create Picamera2 instances
+        max_cameras = 4  # Try up to 4 camera indices
+        available_cameras = []
         
-        if len(cameras) < 2:
-            logger.warning(f"⚠️ Only {len(cameras)} camera(s) detected. Need at least 2 for dual recording.")
-            return None, None
-        
-        # Get camera properties to match serials
-        camera_0_index = None
-        camera_1_index = None
-        
-        for i in range(len(cameras)):
+        for i in range(max_cameras):
             try:
-                # Create temporary Picamera2 instance to get properties
+                # Try to create a Picamera2 instance
                 temp_cam = Picamera2(index=i)
                 props = temp_cam.camera_properties
                 temp_cam.close()
                 
                 serial = props.get('SerialNumber', f'unknown_{i}')
                 logger.info(f"📷 Camera {i}: Serial {serial}")
+                available_cameras.append((i, serial))
                 
-                if serial == CAMERA_0_SERIAL:
-                    camera_0_index = i
-                    logger.info(f"✅ Matched Camera 0 ({CAMERA_0_NAME}) to camera index {i}")
-                elif serial == CAMERA_1_SERIAL:
-                    camera_1_index = i
-                    logger.info(f"✅ Matched Camera 1 ({CAMERA_1_NAME}) to camera index {i}")
-                    
             except Exception as e:
-                logger.error(f"❌ Error getting properties for camera {i}: {e}")
+                logger.debug(f"Camera {i} not available: {e}")
+                continue
+        
+        logger.info(f"🔍 Found {len(available_cameras)} camera(s)")
+        
+        if len(available_cameras) < 2:
+            logger.warning(f"⚠️ Only {len(available_cameras)} camera(s) detected. Need at least 2 for dual recording.")
+            return None, None
+        
+        # Try to match cameras to configured serials
+        camera_0_index = None
+        camera_1_index = None
+        
+        for index, serial in available_cameras:
+            if serial == CAMERA_0_SERIAL:
+                camera_0_index = index
+                logger.info(f"✅ Matched Camera 0 ({CAMERA_0_NAME}) to camera index {index}")
+            elif serial == CAMERA_1_SERIAL:
+                camera_1_index = index
+                logger.info(f"✅ Matched Camera 1 ({CAMERA_1_NAME}) to camera index {index}")
         
         if camera_0_index is not None and camera_1_index is not None:
             logger.info("✅ Both cameras detected and matched to serials")
             return camera_0_index, camera_1_index
         else:
             logger.warning("⚠️ Could not match cameras to configured serials")
-            # Fallback: use first two cameras
-            if len(cameras) >= 2:
+            # Fallback: use first two available cameras
+            if len(available_cameras) >= 2:
                 logger.info("🔄 Using first two cameras as fallback")
-                return 0, 1
+                return available_cameras[0][0], available_cameras[1][0]
             else:
                 logger.error("❌ Not enough cameras available")
                 return None, None
@@ -903,29 +909,40 @@ def load_bookings():
 def validate_camera_setup():
     """Validate camera setup and return detailed information"""
     try:
-        from picamera2 import CameraManager, Picamera2
+        from picamera2 import Picamera2
         
         logger.info("🔍 Validating camera setup...")
         
-        # Check CameraManager
-        manager = CameraManager()
-        cameras = manager.cameras
-        logger.info(f"📷 CameraManager reports {len(cameras)} camera(s)")
+        # Try to detect cameras by attempting to create Picamera2 instances
+        max_cameras = 4  # Try up to 4 camera indices
+        available_cameras = []
         
-        if len(cameras) < 2:
-            logger.error(f"❌ Only {len(cameras)} camera(s) detected. Need at least 2 for dual recording.")
-            return False
-        
-        # Test each camera individually
-        for i in range(len(cameras)):
+        for i in range(max_cameras):
             try:
-                logger.info(f"🔧 Testing camera {i}...")
-                camera = Picamera2(index=i)
+                # Try to create a Picamera2 instance
+                temp_cam = Picamera2(index=i)
+                props = temp_cam.camera_properties
+                temp_cam.close()
                 
-                # Get camera properties
-                props = camera.camera_properties
                 serial = props.get('SerialNumber', f'unknown_{i}')
                 logger.info(f"📷 Camera {i}: Serial {serial}")
+                available_cameras.append((i, serial))
+                
+            except Exception as e:
+                logger.debug(f"Camera {i} not available: {e}")
+                continue
+        
+        logger.info(f"📷 Found {len(available_cameras)} camera(s)")
+        
+        if len(available_cameras) < 2:
+            logger.error(f"❌ Only {len(available_cameras)} camera(s) detected. Need at least 2 for dual recording.")
+            return False
+        
+        # Test each available camera individually
+        for index, serial in available_cameras:
+            try:
+                logger.info(f"🔧 Testing camera {index}...")
+                camera = Picamera2(index=index)
                 
                 # Test basic configuration
                 config = camera.create_video_configuration(
@@ -936,10 +953,10 @@ def validate_camera_setup():
                 camera.stop()
                 camera.close()
                 
-                logger.info(f"✅ Camera {i} is working correctly")
+                logger.info(f"✅ Camera {index} (Serial: {serial}) is working correctly")
                 
             except Exception as e:
-                logger.error(f"❌ Camera {i} test failed: {e}")
+                logger.error(f"❌ Camera {index} test failed: {e}")
                 return False
         
         # Check environment variables
