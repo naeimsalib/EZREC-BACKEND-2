@@ -15,6 +15,11 @@ def test_extract_booking_id():
     # Import the function
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
+    # Create a temporary log file
+    import tempfile
+    temp_log_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.log')
+    temp_log_file.close()
+    
     # Temporarily redirect logging to avoid permission issues
     import logging
     original_handlers = logging.getLogger().handlers[:]
@@ -26,7 +31,7 @@ def test_extract_booking_id():
     original_log_file = None
     if hasattr(sys.modules.get('video_worker', None), 'LOG_FILE'):
         original_log_file = sys.modules['video_worker'].LOG_FILE
-        sys.modules['video_worker'].LOG_FILE = '/tmp/test_video_worker.log'
+        sys.modules['video_worker'].LOG_FILE = temp_log_file.name
     
     try:
         from video_worker import extract_booking_id_from_filename
@@ -67,6 +72,12 @@ def test_extract_booking_id():
         # Restore original LOG_FILE path
         if original_log_file and hasattr(sys.modules.get('video_worker', None), 'LOG_FILE'):
             sys.modules['video_worker'].LOG_FILE = original_log_file
+        
+        # Clean up temporary log file
+        try:
+            os.unlink(temp_log_file.name)
+        except:
+            pass
 
 def test_system_status_import():
     """Test that system_status.py can be imported"""

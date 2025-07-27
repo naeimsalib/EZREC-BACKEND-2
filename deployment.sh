@@ -28,7 +28,7 @@ sudo pkill -f "api_server.py" 2>/dev/null || true
 #------------------------------#
 echo "🧹 Cleaning up old installation..."
 # DO NOT REMOVE .env FILE! (User-managed)
-sudo find /opt/ezrec-backend -mindepth 1 ! -name '.env' -exec rm -rf {} +
+sudo find /opt/ezrec-backend -mindepth 1 ! -name '.env' -exec rm -rf {} + 2>/dev/null || true
 sudo mkdir -p /opt/ezrec-backend
 
 #------------------------------#
@@ -139,9 +139,9 @@ if [ -d "venv" ]; then
     sudo rm -rf venv
 fi
 
-# Create new virtual environment
-echo "📦 Creating new virtual environment..."
-sudo python3 -m venv venv
+# Create new virtual environment with system-site-packages for picamera2
+echo "📦 Creating new virtual environment with system-site-packages..."
+sudo python3 -m venv --system-site-packages venv
 
 # Get the current user who ran sudo
 CURRENT_USER=${SUDO_USER:-$USER}
@@ -161,51 +161,21 @@ echo "🔧 Installing Python packages..."
 sudo -u $CURRENT_USER venv/bin/pip install fastapi uvicorn python-multipart jinja2
 sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy opencv-python-headless email-validator
 
-# Install picamera2 in virtual environment (CRITICAL FIX)
-echo "📷 Installing picamera2 in virtual environment..."
-if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
-    echo "🔧 Installing picamera2..."
-    sudo -u $CURRENT_USER venv/bin/pip install picamera2 || { echo "❌ Failed to install picamera2"; exit 1; }
-    
-    # Fix libcamera import issue
-    echo "🔧 Fixing libcamera import issue..."
-    if [ -d "/usr/lib/python3/dist-packages" ]; then
-        # Find and link libcamera modules
-        sudo find /usr/lib/python3/dist-packages -name "libcamera*" -type d | while read -r libcamera_dir; do
-            target_name=$(basename "$libcamera_dir")
-            target_path="venv/lib/python3.11/site-packages/$target_name"
-            if [ ! -L "$target_path" ] && [ ! -d "$target_path" ]; then
-                sudo ln -sf "$libcamera_dir" "$target_path" || true
-                echo "🔗 Linked $libcamera_dir to $target_path"
-            fi
-        done
-        
-        # Also try to link any libcamera files
-        sudo find /usr/lib/python3/dist-packages -name "libcamera*" -type f | while read -r libcamera_file; do
-            target_name=$(basename "$libcamera_file")
-            target_path="venv/lib/python3.11/site-packages/$target_name"
-            if [ ! -L "$target_path" ] && [ ! -f "$target_path" ]; then
-                sudo ln -sf "$libcamera_file" "$target_path" || true
-                echo "🔗 Linked $libcamera_file to $target_path"
-            fi
-        done
-    fi
-    
-    # Also try to install libcamera via apt if available
-    if command -v apt-get &> /dev/null; then
-        echo "🔧 Installing system-wide libcamera packages..."
-        sudo apt-get update
-        sudo apt-get install -y python3-libcamera python3-picamera2 || true
-    fi
-    
-    if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
-        echo "✅ picamera2 installed successfully in virtual environment"
-    else
-        echo "⚠️ picamera2 installation may have failed, but continuing..."
-        echo "🔧 This is normal on some Raspberry Pi configurations"
-    fi
+# Install picamera2 system packages (CRITICAL FIX)
+echo "📷 Installing picamera2 system packages..."
+if command -v apt-get &> /dev/null; then
+    echo "🔧 Installing system-wide picamera2 packages..."
+    sudo apt-get update
+    sudo apt-get install -y python3-libcamera python3-picamera2 || true
+fi
+
+# Test picamera2 import
+if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
+    echo "✅ picamera2 available in virtual environment"
 else
-    echo "✅ picamera2 already available in virtual environment"
+    echo "⚠️ picamera2 not available in virtual environment"
+    echo "🔧 This is normal on some Raspberry Pi configurations"
+    echo "🔧 The system will use alternative camera detection methods"
 fi
 
 echo "✅ Python dependencies installed successfully"

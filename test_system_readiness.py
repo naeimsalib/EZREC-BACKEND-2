@@ -70,7 +70,7 @@ def test_api_endpoint():
 
 def test_environment():
     """Test environment variables"""
-    required_vars = ['SUPABASE_URL', 'SUPABASE_KEY', 'USER_ID', 'CAMERA_ID']
+    required_vars = ['SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'USER_ID', 'CAMERA_ID']
     missing = []
     
     for var in required_vars:
@@ -123,6 +123,20 @@ def test_services():
         except Exception as e:
             print(f"❌ Service {service}: Error ({e})")
             failed.append(service)
+    
+    # Check system_status.timer (one-shot service)
+    try:
+        result = subprocess.run(['systemctl', 'is-active', 'system_status.timer'], 
+                              capture_output=True, text=True, timeout=5)
+        status = result.stdout.strip()
+        if status == 'active':
+            print(f"✅ Service system_status: Timer Active")
+        else:
+            print(f"❌ Service system_status: Timer {status}")
+            failed.append('system_status')
+    except Exception as e:
+        print(f"❌ Service system_status: Error ({e})")
+        failed.append('system_status')
     
     return len(failed) == 0
 

@@ -256,45 +256,13 @@ class SystemStatusMonitor:
     def check_ffmpeg(self):
         """Check if FFmpeg is available"""
         try:
-            # Try to find ffmpeg in PATH with more comprehensive search
-            ffmpeg_path = None
-            ffprobe_path = None
+            # Use shutil.which to find ffmpeg and ffprobe with fallbacks
+            import shutil
             
-            # Common paths to check
-            search_paths = [
-                "/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/opt/ffmpeg/bin/ffmpeg",
-                "ffmpeg", "/usr/bin/ffprobe", "/usr/local/bin/ffprobe", "ffprobe"
-            ]
+            ffmpeg_path = shutil.which("ffmpeg") or "/usr/bin/ffmpeg"
+            ffprobe_path = shutil.which("ffprobe") or "/usr/bin/ffprobe"
             
-            # Find ffmpeg
-            for path in search_paths:
-                if "ffprobe" not in path:  # Only check ffmpeg paths
-                    try:
-                        result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
-                        if result.returncode == 0:
-                            ffmpeg_path = path
-                            break
-                    except:
-                        continue
-            
-            # Find ffprobe
-            for path in search_paths:
-                if "ffprobe" in path:  # Only check ffprobe paths
-                    try:
-                        result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
-                        if result.returncode == 0:
-                            ffprobe_path = path
-                            break
-                    except:
-                        continue
-            
-            if not ffmpeg_path:
-                return {
-                    "status": "error",
-                    "available": False,
-                    "error": "FFmpeg not found in PATH"
-                }
-            
+            # Verify ffmpeg works
             result = subprocess.run(
                 [ffmpeg_path, "-version"],
                 capture_output=True,
