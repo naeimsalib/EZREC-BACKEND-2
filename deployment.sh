@@ -447,6 +447,19 @@ if [ "$missing_files" = true ]; then
     echo "Continuing anyway, but check the file paths above."
 fi
 
+#------------------------------#
+# 14.5. CLEANUP BROKEN RECORDING JOBS
+#------------------------------#
+echo "🧹 Cleaning up broken recording jobs..."
+find /opt/ezrec-backend/recordings -type f \( -name "*.done" -o -name "*.meta" -o -name "*.lock" -o -name "*.error" -o -name "*.completed" \) | while read -r marker; do
+  base="${marker%.*}"
+  if [ ! -f "${base}.mp4" ]; then
+    echo "❌ Found orphan marker file: $marker (no .mp4 found). Removing..."
+    rm -f "$marker"
+  fi
+done
+echo "✅ Cleanup completed"
+
 # Restart all services (safer than individual starts)
 echo "🔄 Restarting all services..."
 sudo systemctl restart dual_recorder.service video_worker.service ezrec-api.service system_status.service

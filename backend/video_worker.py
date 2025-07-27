@@ -29,6 +29,26 @@ if API_DIR not in sys.path:
 
 from booking_utils import update_booking_status
 
+def update_supabase_status(booking_id: str, status: str):
+    """Update booking status in Supabase for skipped or failed jobs"""
+    try:
+        update_booking_status(booking_id, status)
+        log.info(f"📡 Updated booking {booking_id} status to {status}")
+    except Exception as e:
+        log.error(f"❌ Failed to update booking {booking_id} status: {e}")
+
+def extract_booking_id_from_filename(filename: str) -> str:
+    """Extract booking ID from filename (e.g., '143000_user123_cam456_merged.mp4' -> 'user123_cam456')"""
+    try:
+        # Remove extension and split by underscore
+        parts = filename.replace('.mp4', '').split('_')
+        if len(parts) >= 3:
+            # Return user_id_camera_id format
+            return f"{parts[1]}_{parts[2]}"
+        return filename.replace('.mp4', '')
+    except Exception:
+        return filename.replace('.mp4', '')
+
 # Load environment variables
 load_dotenv("/opt/ezrec-backend/.env", override=True)
 
@@ -910,13 +930,76 @@ def is_valid_video(file: Path):
         log.error(f"Video validation failed for {file}: {e}")
         return False
 
+def cleanup_orphaned_markers():
+    """Clean up orphaned marker files at startup"""
+    log.info("🧹 Running startup cleanup of orphaned marker files...")
+    cleaned_count = 0
+    
+    for date_dir in RECORDINGS_DIR.glob("*/"):
+        for marker_file in date_dir.glob("*.done"):
+            base_path = str(marker_file).replace(".done", "")
+            mp4_file = Path(base_path + ".mp4")
+            
+            if not mp4_file.exists():
+                log.warning(f"🚫 Startup cleanup: Found orphaned .done marker: {marker_file.name}")
+                
+                # Try to extract booking ID and update Supabase status
+                try:
+                    booking_id = extract_booking_id_from_filename(marker_file.name)
+                    update_supabase_status(booking_id, "SkippedMissingFile")
+                except Exception as e:
+                    log.warning(f"⚠️ Could not update Supabase status for {marker_file.name}: {e}")
+                
+                # Clean up all related marker files
+                for ext in [".done", ".meta", ".lock", ".error", ".completed"]:
+                    stale_marker = Path(base_path + ext)
+                    if stale_marker.exists():
+                        stale_marker.unlink()
+                        log.info(f"🧹 Startup cleanup: Removed {stale_marker.name}")
+                        cleaned_count += 1
+    
+    if cleaned_count > 0:
+        log.info(f"✅ Startup cleanup completed: removed {cleaned_count} orphaned marker files")
+    else:
+        log.info("✅ Startup cleanup: no orphaned marker files found")
+
 def main():
     log.info("Video worker started and entering main loop")
+    
+    # Run startup cleanup
+    cleanup_orphaned_markers()
+    
     while True:
         retry_pending_uploads()
         cleanup_old_files() # Run cleanup at the start of each interval
         for date_dir in RECORDINGS_DIR.glob("*/"):
             log.info(f"Scanning directory: {date_dir}")
+            
+            # First, clean up orphaned marker files (markers without .mp4 files)
+            for marker_file in date_dir.glob("*.done"):
+                base_path = str(marker_file).replace(".done", "")
+                mp4_file = Path(base_path + ".mp4")
+                
+                if not mp4_file.exists():
+                    log.warning(f"🚫 Found orphaned .done marker: {marker_file.name} (no matching .mp4 file)")
+                    
+                    # Try to extract booking ID and update Supabase status
+                    try:
+                        booking_id = extract_booking_id_from_filename(marker_file.name)
+                        update_supabase_status(booking_id, "SkippedMissingFile")
+                    except Exception as e:
+                        log.warning(f"⚠️ Could not update Supabase status for {marker_file.name}: {e}")
+                    
+                    # Clean up all related marker files
+                    for ext in [".done", ".meta", ".lock", ".error", ".completed"]:
+                        stale_marker = Path(base_path + ext)
+                        if stale_marker.exists():
+                            stale_marker.unlink()
+                            log.info(f"🧹 Removed stale marker file: {stale_marker.name}")
+                    
+                    continue
+            
+            # Now process valid .mp4 files
             for raw_file in date_dir.glob("*.mp4"):
                 done = raw_file.with_suffix(".done")
                 completed = raw_file.with_suffix(".completed")
