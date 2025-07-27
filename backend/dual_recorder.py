@@ -150,10 +150,16 @@ def detect_cameras():
             try:
                 # Try to create a Picamera2 instance
                 temp_cam = Picamera2(index=i)
-                props = temp_cam.camera_properties
-                temp_cam.close()
                 
-                serial = props.get('SerialNumber', f'unknown_{i}')
+                # Try to get camera properties safely
+                try:
+                    props = temp_cam.camera_properties
+                    serial = props.get('SerialNumber', f'unknown_{i}')
+                except AttributeError:
+                    # Fallback if camera_properties is not available
+                    serial = f'unknown_{i}'
+                
+                temp_cam.close()
                 logger.info(f"📷 Camera {i}: Serial {serial}")
                 available_cameras.append((i, serial))
                 
@@ -937,10 +943,16 @@ def validate_camera_setup():
             try:
                 # Try to create a Picamera2 instance
                 temp_cam = Picamera2(index=i)
-                props = temp_cam.camera_properties
-                temp_cam.close()
                 
-                serial = props.get('SerialNumber', f'unknown_{i}')
+                # Try to get camera properties safely
+                try:
+                    props = temp_cam.camera_properties
+                    serial = props.get('SerialNumber', f'unknown_{i}')
+                except AttributeError:
+                    # Fallback if camera_properties is not available
+                    serial = f'unknown_{i}'
+                
+                temp_cam.close()
                 logger.info(f"📷 Camera {i}: Serial {serial}")
                 available_cameras.append((i, serial))
                 

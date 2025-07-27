@@ -199,7 +199,17 @@ if [ ! -f "/opt/ezrec-backend/.env" ]; then
 
 # Supabase Configuration
 SUPABASE_URL=your_supabase_url_here
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# Camera Configuration
+USER_ID=your_user_id_here
+CAMERA_ID=your_camera_id_here
+
+# Camera Hardware Configuration
+CAMERA_0_SERIAL=your_camera_0_serial_here
+CAMERA_1_SERIAL=your_camera_1_serial_here
+CAMERA_0_NAME=Camera0
+CAMERA_1_NAME=Camera1
 
 # AWS S3 Configuration
 AWS_ACCESS_KEY_ID=your_aws_access_key_here
@@ -212,6 +222,8 @@ RECORDING_DURATION=300
 VIDEO_QUALITY=high
 EOF
         echo "✅ Basic .env file created"
+        echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
+        echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
     fi
 else
     echo "✅ .env file already exists (user-managed)"

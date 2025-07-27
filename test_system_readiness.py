@@ -17,7 +17,11 @@ from pathlib import Path
 def test_command(command, description):
     """Test if a command is available"""
     try:
-        result = subprocess.run([command, '--version'], 
+        # Try to find the command with shutil.which first
+        import shutil
+        command_path = shutil.which(command) or f"/usr/bin/{command}"
+        
+        result = subprocess.run([command_path, '--version'], 
                               capture_output=True, text=True, timeout=10)
         if result.returncode == 0:
             print(f"✅ {description}: Available")

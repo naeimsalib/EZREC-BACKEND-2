@@ -12,11 +12,14 @@ def test_extract_booking_id():
     """Test the extract_booking_id_from_filename function"""
     print("🧪 Testing extract_booking_id_from_filename...")
     
+    # Import required modules
+    import os
+    import tempfile
+    
     # Import the function
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
     # Create a temporary log file
-    import tempfile
     temp_log_file = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.log')
     temp_log_file.close()
     
@@ -27,7 +30,6 @@ def test_extract_booking_id():
     logging.basicConfig(level=logging.ERROR, format='%(message)s')
     
     # Temporarily modify the LOG_FILE path to avoid permission issues
-    import os
     original_log_file = None
     if hasattr(sys.modules.get('video_worker', None), 'LOG_FILE'):
         original_log_file = sys.modules['video_worker'].LOG_FILE
