@@ -166,6 +166,17 @@ echo "📷 Installing picamera2 in virtual environment..."
 if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
     echo "🔧 Installing picamera2..."
     sudo -u $CURRENT_USER venv/bin/pip install picamera2 || { echo "❌ Failed to install picamera2"; exit 1; }
+    
+    # Fix libcamera import issue
+    echo "🔧 Fixing libcamera import issue..."
+    if [ -d "/usr/lib/python3/dist-packages" ]; then
+        sudo find /usr/lib/python3/dist-packages -name "libcamera*" -type d | while read -r libcamera_dir; do
+            if [ ! -L "venv/lib/python3.11/site-packages/$(basename "$libcamera_dir")" ]; then
+                sudo ln -sf "$libcamera_dir" "venv/lib/python3.11/site-packages/$(basename "$libcamera_dir")" || true
+            fi
+        done
+    fi
+    
     if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ picamera2 installed successfully in virtual environment"
     else
@@ -373,6 +384,15 @@ if command -v ffmpeg &> /dev/null; then
     echo "✅ FFmpeg is available"
 else
     echo "❌ FFmpeg not found"
+    echo "🔧 Installing FFmpeg..."
+    sudo apt-get update
+    sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFmpeg"; exit 1; }
+    if command -v ffmpeg &> /dev/null; then
+        echo "✅ FFmpeg installed successfully"
+    else
+        echo "❌ FFmpeg installation failed"
+        exit 1
+    fi
 fi
 
 # Test v4l2-ctl
@@ -506,7 +526,19 @@ if [ -f "logrotate.conf" ]; then
         echo "⚠️ Log rotation configured but validation failed"
     fi
 else
-    echo "⚠️ logrotate.conf not found, skipping log rotation setup"
+    echo "⚠️ logrotate.conf not found, creating basic logrotate config..."
+    sudo tee /etc/logrotate.d/ezrec-backend > /dev/null << 'EOF'
+/opt/ezrec-backend/logs/*.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 644 ezrec ezrec
+}
+EOF
+    echo "✅ Basic log rotation configured"
 fi
 
 # Restart all services (safer than individual starts)

@@ -65,8 +65,7 @@ class SystemStatusMonitor:
         self.services = [
             "dual_recorder.service",
             "video_worker.service", 
-            "ezrec-api.service",
-            "system_status.service"
+            "ezrec-api.service"
         ]
         
     def check_disk_space(self):
@@ -245,8 +244,26 @@ class SystemStatusMonitor:
     def check_ffmpeg(self):
         """Check if FFmpeg is available"""
         try:
+            # Try to find ffmpeg in PATH
+            ffmpeg_path = None
+            for path in ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "ffmpeg"]:
+                try:
+                    result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
+                    if result.returncode == 0:
+                        ffmpeg_path = path
+                        break
+                except:
+                    continue
+            
+            if not ffmpeg_path:
+                return {
+                    "status": "error",
+                    "available": False,
+                    "error": "FFmpeg not found in PATH"
+                }
+            
             result = subprocess.run(
-                ["ffmpeg", "-version"],
+                [ffmpeg_path, "-version"],
                 capture_output=True,
                 text=True,
                 timeout=10
@@ -444,20 +461,25 @@ class SystemStatusMonitor:
                 except (ValueError, IOError):
                     pass
             
-            # Update camera status in Supabase
-            supabase.table(STATUS_TABLE).update({
+            # Update camera status in Supabase (only basic fields that exist)
+            update_data = {
                 'status': report["overall_status"],
                 'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                'system_info': json.dumps(report["system_info"]),
-                'disk_usage': report["disk_space"]["usage_percent"],
-                'memory_usage': report["memory_usage"]["usage_percent"],
-                'cpu_usage': report["cpu_usage"]["usage_percent"],
-                'active_services': len([s for s in report["services"].values() if s.get("active", False)]),
-                'total_services': len(report["services"]),
-                'camera_count': report["camera_availability"].get("camera_count", 0),
-                'critical_issues': report["critical_issues"],
-                'warnings': report["warnings"]
-            }).eq('id', self.camera_id).execute()
+            }
+            
+            # Try to add additional fields if they exist in the database
+            try:
+                update_data.update({
+                    'system_info': json.dumps(report["system_info"]),
+                    'disk_usage': report["disk_space"]["usage_percent"],
+                    'memory_usage': report["memory_usage"]["usage_percent"],
+                    'cpu_usage': report["cpu_usage"]["usage_percent"],
+                    'camera_count': report["camera_availability"].get("camera_count", 0),
+                })
+            except Exception as e:
+                logger.debug(f"Some database columns not available: {e}")
+            
+            supabase.table(STATUS_TABLE).update(update_data).eq('id', self.camera_id).execute()
             
             # Update last update timestamp
             last_update_file.write_text(str(current_time))

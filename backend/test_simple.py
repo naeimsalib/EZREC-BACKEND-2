@@ -15,6 +15,12 @@ def test_extract_booking_id():
     # Import the function
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
+    # Temporarily redirect logging to avoid permission issues
+    import logging
+    original_handlers = logging.getLogger().handlers[:]
+    logging.getLogger().handlers.clear()
+    logging.basicConfig(level=logging.ERROR, format='%(message)s')
+    
     try:
         from video_worker import extract_booking_id_from_filename
         
@@ -45,6 +51,11 @@ def test_extract_booking_id():
     except Exception as e:
         print(f"❌ Error testing extract_booking_id_from_filename: {e}")
         return False
+    finally:
+        # Restore original logging configuration
+        logging.getLogger().handlers.clear()
+        for handler in original_handlers:
+            logging.getLogger().addHandler(handler)
 
 def test_system_status_import():
     """Test that system_status.py can be imported"""
