@@ -35,6 +35,10 @@ if missing_vars:
     print(f"❌ Missing required environment variables: {missing_vars}")
     sys.exit(1)
 
+# Optional configuration
+STATUS_TABLE = os.getenv("STATUS_TABLE", "cameras")
+SUPABASE_RATE_LIMIT_SECONDS = int(os.getenv("SUPABASE_RATE_LIMIT_SECONDS", "300"))  # 5 minutes
+
 # Initialize Supabase client
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
@@ -117,7 +121,7 @@ class SystemStatusMonitor:
             return {"status": "error", "error": str(e)}
     
     def check_services(self):
-        """Check systemd service status"""
+        """Check systemd service status (optimized to avoid duplicate subprocess calls)"""
         service_status = {}
         
         for service in self.services:
@@ -135,8 +139,8 @@ class SystemStatusMonitor:
                     "status": "active" if is_active else "inactive"
                 }
                 
-                # Get additional service info
-                if is_active:
+                # Only get PID for active services (optional optimization)
+                if is_active and os.getenv("INCLUDE_SERVICE_PIDS", "false").lower() == "true":
                     try:
                         status_result = subprocess.run(
                             ["systemctl", "status", service, "--no-pager"],
@@ -425,10 +429,23 @@ class SystemStatusMonitor:
             logger.error(f"❌ Error saving status locally: {e}")
     
     def update_supabase_status(self, report):
-        """Update status in Supabase"""
+        """Update status in Supabase with rate limiting"""
         try:
+            # Check if we should update (rate limiting)
+            last_update_file = Path("/tmp/ezrec_status_last_update")
+            current_time = time.time()
+            
+            if last_update_file.exists():
+                try:
+                    last_update = float(last_update_file.read_text().strip())
+                    if current_time - last_update < SUPABASE_RATE_LIMIT_SECONDS:
+                        logger.debug("⏳ Rate limiting: skipping Supabase update")
+                        return
+                except (ValueError, IOError):
+                    pass
+            
             # Update camera status in Supabase
-            supabase.table('cameras').update({
+            supabase.table(STATUS_TABLE).update({
                 'status': report["overall_status"],
                 'last_seen': datetime.now(LOCAL_TZ).isoformat(),
                 'system_info': json.dumps(report["system_info"]),
@@ -442,6 +459,8 @@ class SystemStatusMonitor:
                 'warnings': report["warnings"]
             }).eq('id', self.camera_id).execute()
             
+            # Update last update timestamp
+            last_update_file.write_text(str(current_time))
             logger.info(f"📡 Status updated in Supabase for camera {self.camera_id}")
         except Exception as e:
             logger.error(f"❌ Error updating Supabase status: {e}")

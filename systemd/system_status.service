@@ -1,0 +1,19 @@
+[Unit]
+Description=EZREC System Status Monitor
+After=network.target
+Type=oneshot
+RemainAfterExit=no
+
+[Service]
+Type=oneshot
+User=ezrec
+Group=ezrec
+WorkingDirectory=/opt/ezrec-backend/backend
+Environment=PATH=/opt/ezrec-backend/api/venv/bin
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target 

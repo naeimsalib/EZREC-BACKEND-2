@@ -148,11 +148,12 @@ sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests
 echo "📷 Installing picamera2 in virtual environment..."
 if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
     echo "🔧 Installing picamera2..."
-    sudo -u $CURRENT_USER venv/bin/pip install picamera2
+    sudo -u $CURRENT_USER venv/bin/pip install picamera2 || { echo "❌ Failed to install picamera2"; exit 1; }
     if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ picamera2 installed successfully in virtual environment"
     else
-        echo "⚠️ picamera2 installation may have failed, but continuing..."
+        echo "❌ picamera2 installation failed"
+        exit 1
     fi
 else
     echo "✅ picamera2 already available in virtual environment"
@@ -417,10 +418,11 @@ sudo systemctl reset-failed ezrec-api.service 2>/dev/null || true
 sudo systemctl reset-failed system_status.service 2>/dev/null || true
 
 # Enable all services
-sudo systemctl enable dual_recorder.service
-sudo systemctl enable video_worker.service
-sudo systemctl enable ezrec-api.service
-sudo systemctl enable system_status.service
+sudo systemctl enable dual_recorder.service || { echo "❌ Failed to enable dual_recorder.service"; exit 1; }
+sudo systemctl enable video_worker.service || { echo "❌ Failed to enable video_worker.service"; exit 1; }
+sudo systemctl enable ezrec-api.service || { echo "❌ Failed to enable ezrec-api.service"; exit 1; }
+sudo systemctl enable system_status.service || { echo "❌ Failed to enable system_status.service"; exit 1; }
+sudo systemctl enable system_status.timer || { echo "❌ Failed to enable system_status.timer"; exit 1; }
 
 # Validate critical files exist before starting services
 echo "🔍 Validating critical files..."
@@ -465,9 +467,15 @@ echo "✅ Cleanup completed"
 #------------------------------#
 echo "📝 Setting up log rotation..."
 if [ -f "logrotate.conf" ]; then
-    sudo cp logrotate.conf /etc/logrotate.d/ezrec-backend
-    sudo chmod 644 /etc/logrotate.d/ezrec-backend
-    echo "✅ Log rotation configured"
+    sudo cp logrotate.conf /etc/logrotate.d/ezrec-backend || { echo "❌ Failed to copy logrotate config"; exit 1; }
+    sudo chmod 644 /etc/logrotate.d/ezrec-backend || { echo "❌ Failed to set logrotate permissions"; exit 1; }
+    
+    # Test the logrotate configuration
+    if sudo logrotate --debug /etc/logrotate.d/ezrec-backend > /dev/null 2>&1; then
+        echo "✅ Log rotation configured and validated"
+    else
+        echo "⚠️ Log rotation configured but validation failed"
+    fi
 else
     echo "⚠️ logrotate.conf not found, skipping log rotation setup"
 fi

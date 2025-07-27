@@ -22,6 +22,15 @@ from supabase import create_client
 import socket
 from enhanced_merge import merge_videos_with_retry, MergeResult
 
+# Try to import file locking library, fallback to simple file-based locking
+try:
+    import portalocker
+    HAS_PORTALOCKER = True
+except ImportError:
+    HAS_PORTALOCKER = False
+    log = logging.getLogger("video_worker")
+    log.warning("⚠️ portalocker not available, using simple file-based locking")
+
 # ✅ Fix the import path for booking_utils.py
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
 if API_DIR not in sys.path:
@@ -48,6 +57,45 @@ def extract_booking_id_from_filename(filename: str) -> str:
         return filename.replace('.mp4', '')
     except Exception:
         return filename.replace('.mp4', '')
+
+def acquire_file_lock(lock_path: Path, timeout: int = 30) -> bool:
+    """Acquire a file lock using portalocker or fallback to simple file-based locking"""
+    if HAS_PORTALOCKER:
+        try:
+            with open(lock_path, 'w') as f:
+                portalocker.lock(f, portalocker.LOCK_EX | portalocker.LOCK_NB)
+                return True
+        except portalocker.LockException:
+            return False
+        except Exception as e:
+            log.warning(f"⚠️ Portalocker failed, falling back to simple locking: {e}")
+            return acquire_simple_lock(lock_path, timeout)
+    else:
+        return acquire_simple_lock(lock_path, timeout)
+
+def acquire_simple_lock(lock_path: Path, timeout: int = 30) -> bool:
+    """Simple file-based locking with timeout"""
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        try:
+            # Try to create the lock file atomically
+            lock_path.touch(exist_ok=False)
+            return True
+        except FileExistsError:
+            # Lock file exists, wait a bit and try again
+            time.sleep(0.1)
+        except Exception as e:
+            log.error(f"❌ Error acquiring lock: {e}")
+            return False
+    return False
+
+def release_file_lock(lock_path: Path):
+    """Release a file lock"""
+    try:
+        if lock_path.exists():
+            lock_path.unlink()
+    except Exception as e:
+        log.error(f"❌ Error releasing lock: {e}")
 
 # Load environment variables
 load_dotenv("/opt/ezrec-backend/.env", override=True)
@@ -1016,14 +1064,16 @@ def main():
                         if not done.exists() or completed.exists() or lock.exists() or error.exists():
                             continue
                         
-                        # Check if this file has been processed too many times (prevent infinite loops)
-                        lock.touch()
+                        # Acquire file lock to prevent race conditions
+                        if not acquire_file_lock(lock, timeout=30):
+                            log.warning(f"⚠️ Could not acquire lock for {raw_file.name}, skipping")
+                            continue
+                        
                         try:
                             # First do a simple file check
                             if not is_file_readable(raw_file):
                                 log.error(f"❌ Video file {raw_file.name} is not readable or too small. Skipping.")
                                 completed.touch()
-                                lock.unlink()
                                 continue
                             
                             # Try to validate the video file with FFmpeg
@@ -1031,17 +1081,14 @@ def main():
                                 log.error(f"❌ Video file {raw_file.name} is corrupted and cannot be processed. Skipping.")
                                 # Create a .completed file to prevent infinite loops
                                 completed.touch()
-                                lock.unlink()
                                 continue
                         except Exception as e:
                             log.error(f"❌ Error validating video {raw_file.name}: {e}")
                             # Create a .completed file to prevent infinite loops
                             completed.touch()
-                            lock.unlink()
                             continue
-                        lock.touch()
+                        
                         if not meta_path.exists():
-                            lock.unlink()
                             continue
                         try:
                             with open(meta_path) as f:
@@ -1102,17 +1149,16 @@ def main():
                                             log.error(f"❌ Error updating booking status: {e}")
                                     else:
                                         log.error(f"❌ Failed to insert video metadata for {raw_file.name}")
-                                        lock.unlink()
                                 else:
                                     log.warning(f"⚠️ No internet connection, adding to pending uploads: {raw_file.name}")
                                     add_pending_upload(final_file, s3_key, meta)
-                                    lock.unlink()
                             else:
                                 log.error(f"❌ Failed to process video {raw_file.name}")
-                                lock.unlink()
                         except Exception as e:
                             log.error(f"❌ Error processing video {raw_file.name}: {e}")
-                            lock.unlink()
+                        finally:
+                            # Always release the lock
+                            release_file_lock(lock)
                     except Exception as e:
                         log.error(f"❌ Error in video processing loop for {raw_file.name}: {e}")
                         continue
