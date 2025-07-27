@@ -57,6 +57,21 @@ class EnhancedVideoMerger:
         except Exception:
             return False
     
+    def is_valid_mp4(self, file_path: Path) -> bool:
+        """Check if input file is a valid MP4 before FFmpeg processing"""
+        try:
+            result = subprocess.run(
+                ["ffprobe", "-v", "error", "-show_entries", "format=duration", 
+                 "-of", "default=noprint_wrappers=1:nokey=1", str(file_path)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=30
+            )
+            return result.returncode == 0
+        except Exception as e:
+            self.logger.error(f"Error validating mp4 {file_path}: {e}")
+            return False
+    
     def _validate_input_files(self, video1_path: Path, video2_path: Path) -> Tuple[bool, str]:
         """Validate input video files"""
         try:
@@ -76,8 +91,11 @@ class EnhancedVideoMerger:
             if size2 < min_size:
                 return False, f"Video 2 too small: {size2} bytes (min: {min_size})"
             
-            # Validate video files with ffprobe
+            # Validate video files with enhanced MP4 validation
             for i, video_path in enumerate([video1_path, video2_path], 1):
+                if not self.is_valid_mp4(video_path):
+                    return False, f"Video {i} is not a valid MP4 file: {video_path}"
+                
                 try:
                     result = subprocess.run([
                         'ffprobe', '-v', 'error', '-select_streams', 'v:0',

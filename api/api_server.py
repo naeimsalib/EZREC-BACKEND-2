@@ -251,9 +251,51 @@ def get_bookings():
 def post_bookings(bookings: List[Booking]):
     try:
         logger.info(f"📥 Received {len(bookings)} bookings via POST")
-        for b in bookings:
-            logger.info(f"➡️ Booking: {b.dict()}")
+        
+        # Validate each booking
+        for booking in bookings:
+            logger.info(f"➡️ Validating booking: {booking.dict()}")
+            
+            # Parse booking times
+            try:
+                start_time = datetime.fromisoformat(booking.start_time.replace('Z', '+00:00'))
+                end_time = datetime.fromisoformat(booking.end_time.replace('Z', '+00:00'))
+            except ValueError as e:
+                raise HTTPException(status_code=400, detail=f"Invalid booking time format: {e}")
+            
+            # Check if booking ends in the past
+            now = datetime.now(timezone.utc)
+            if end_time <= now:
+                raise HTTPException(status_code=400, detail="Booking ends in the past")
+            
+            # Check if start time is after end time
+            if start_time >= end_time:
+                raise HTTPException(status_code=400, detail="Invalid booking times: start must be before end")
+            
+            # Check for overlapping bookings
+            existing = []
+            if BOOKINGS_FILE.exists():
+                try:
+                    existing = json.loads(BOOKINGS_FILE.read_text())
+                except Exception as e:
+                    logger.warning(f"Could not read existing bookings: {e}")
+            
+            for existing_booking in existing:
+                try:
+                    existing_start = datetime.fromisoformat(existing_booking['start_time'].replace('Z', '+00:00'))
+                    existing_end = datetime.fromisoformat(existing_booking['end_time'].replace('Z', '+00:00'))
+                    
+                    # Check for overlap (not (booking.end <= existing.start or booking.start >= existing.end))
+                    if not (end_time <= existing_start or start_time >= existing_end):
+                        raise HTTPException(
+                            status_code=409, 
+                            detail=f"Booking overlaps with existing booking {existing_booking.get('id', 'unknown')}"
+                        )
+                except (KeyError, ValueError) as e:
+                    logger.warning(f"Error parsing existing booking: {e}")
+                    continue
 
+        # All validations passed, save bookings
         existing = []
         if BOOKINGS_FILE.exists():
             try:
@@ -266,6 +308,8 @@ def post_bookings(bookings: List[Booking]):
         BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
 
         return {"message": "Bookings saved", "count": len(bookings)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Error saving bookings: {e}")
         raise HTTPException(status_code=500, detail="Failed to save bookings")

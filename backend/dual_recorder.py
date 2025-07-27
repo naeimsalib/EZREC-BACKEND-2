@@ -23,6 +23,9 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 
+# Timezone configuration
+TIMEZONE = pytz.timezone("America/New_York")  # Adjust as needed
+
 # 🔧 Ensure API utils can be imported
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
 if API_DIR not in sys.path:
@@ -39,7 +42,7 @@ else:
     sys.exit(1)
 
 # Environment variables
-TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "UTC"
+TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "America/New_York"
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
 REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
@@ -358,9 +361,22 @@ class CameraRecorder:
         """Stop recording with timeout"""
         self.recording = False
         if self.thread:
-            self.thread.join(timeout=15)  # Increased timeout for graceful shutdown
+            # Wait for thread to finish with timeout
+            self.thread.join(timeout=30)  # Increased timeout for graceful shutdown
+            
             if self.thread.is_alive():
-                self.logger.warning(f"⚠️ {self.camera_name} camera thread did not stop gracefully")
+                self.logger.warning(f"⚠️ {self.camera_name} camera thread did not stop gracefully within timeout")
+                # Force stop the camera hardware
+                try:
+                    if self.picamera2:
+                        self.picamera2.stop_recording()
+                        self.picamera2.stop()
+                        self.picamera2.close()
+                        self.picamera2 = None
+                except Exception as e:
+                    self.logger.error(f"❌ Error force-stopping {self.camera_name} camera: {e}")
+            else:
+                self.logger.info(f"✅ {self.camera_name} camera thread stopped gracefully")
     
     def stop_recording_internal(self):
         """Internal method to stop recording"""

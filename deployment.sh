@@ -409,6 +409,13 @@ echo "🚀 Enabling and starting services..."
 echo "📹 Adding ezrec user to video group for camera access..."
 sudo usermod -a -G video ezrec
 
+# Reset failed services before enabling
+echo "🔄 Resetting failed services..."
+sudo systemctl reset-failed dual_recorder.service 2>/dev/null || true
+sudo systemctl reset-failed video_worker.service 2>/dev/null || true
+sudo systemctl reset-failed ezrec-api.service 2>/dev/null || true
+sudo systemctl reset-failed system_status.service 2>/dev/null || true
+
 # Enable all services
 sudo systemctl enable dual_recorder.service
 sudo systemctl enable video_worker.service
@@ -504,7 +511,48 @@ else
 fi
 
 #------------------------------#
-# 18. FINAL SETUP COMPLETION
+# 18. ENHANCED HEALTH CHECK
+#------------------------------#
+echo "🔍 Verifying system services..."
+echo "📊 Service Status Summary:"
+echo "=========================="
+
+# Check each service individually
+services=("dual_recorder.service" "video_worker.service" "ezrec-api.service" "system_status.service")
+for service in "${services[@]}"; do
+    if sudo systemctl is-active --quiet "$service"; then
+        echo "✅ $service: ACTIVE"
+    else
+        echo "❌ $service: INACTIVE"
+    fi
+done
+
+echo ""
+echo "🌐 API Connectivity Test:"
+if curl -s http://localhost:8000/health > /dev/null; then
+    echo "✅ API is reachable at http://localhost:8000"
+    # Try to get detailed health info
+    if command -v jq > /dev/null; then
+        echo "📊 API Health Details:"
+        curl -s http://localhost:8000/health | jq '.status, .warnings' 2>/dev/null || echo "   Health check completed"
+    fi
+else
+    echo "❌ API not reachable at http://localhost:8000"
+fi
+
+echo ""
+echo "📁 Critical Directory Check:"
+critical_dirs=("/opt/ezrec-backend/logs" "/opt/ezrec-backend/recordings" "/opt/ezrec-backend/api")
+for dir in "${critical_dirs[@]}"; do
+    if [ -d "$dir" ]; then
+        echo "✅ $dir: EXISTS"
+    else
+        echo "❌ $dir: MISSING"
+    fi
+done
+
+#------------------------------#
+# 19. FINAL SETUP COMPLETION
 #------------------------------#
 DEPLOYMENT_TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
 echo ""
