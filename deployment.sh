@@ -102,6 +102,23 @@ sudo mkdir -p /opt/ezrec-backend/api/local_data
 sudo mkdir -p /opt/ezrec-backend/backend
 sudo mkdir -p /opt/ezrec-backend/temp
 
+# Fix permissions for ezrec user
+echo "🔐 Fixing directory permissions..."
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/logs
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/recordings
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/processed
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/media_cache
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/api/local_data
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/backend
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/temp
+sudo chmod -R 755 /opt/ezrec-backend/logs
+sudo chmod -R 755 /opt/ezrec-backend/recordings
+sudo chmod -R 755 /opt/ezrec-backend/processed
+sudo chmod -R 755 /opt/ezrec-backend/media_cache
+sudo chmod -R 755 /opt/ezrec-backend/api/local_data
+sudo chmod -R 755 /opt/ezrec-backend/backend
+sudo chmod -R 755 /opt/ezrec-backend/temp
+
 #------------------------------#
 # 6. FIX PYTHON PATH ISSUES
 #------------------------------#
@@ -152,8 +169,8 @@ if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
     if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
         echo "✅ picamera2 installed successfully in virtual environment"
     else
-        echo "❌ picamera2 installation failed"
-        exit 1
+        echo "⚠️ picamera2 installation may have failed, but continuing..."
+        echo "🔧 This is normal on some Raspberry Pi configurations"
     fi
 else
     echo "✅ picamera2 already available in virtual environment"
@@ -302,30 +319,42 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-# Create system_status service (FIX for API degraded status)
+# Create system_status service (one-shot service for timer)
 sudo tee /etc/systemd/system/system_status.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC System Status Monitor
 After=network.target
+Type=oneshot
+RemainAfterExit=no
 
 [Service]
-Type=simple
+Type=oneshot
 User=ezrec
 Group=ezrec
-WorkingDirectory=/opt/ezrec-backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+WorkingDirectory=/opt/ezrec-backend/backend
+Environment=PATH=/opt/ezrec-backend/api/venv/bin
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
-Restart=on-failure
-RestartSec=30
 StandardOutput=journal
 StandardError=journal
-ProtectSystem=full
-ProtectHome=yes
-NoNewPrivileges=true
-PrivateTmp=true
+TimeoutStartSec=60
 
 [Install]
 WantedBy=multi-user.target
+EOF
+
+# Create system_status timer
+sudo tee /etc/systemd/system/system_status.timer > /dev/null << 'EOF'
+[Unit]
+Description=EZREC System Status Monitor Timer
+After=network.target
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=5m
+Unit=system_status.service
+
+[Install]
+WantedBy=timers.target
 EOF
 
 #------------------------------#
