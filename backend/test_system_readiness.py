@@ -19,35 +19,18 @@ def test_command(command, description):
     try:
         # Try to find the command with shutil.which first
         import shutil
+        command_path = shutil.which(command) or f"/usr/bin/{command}"
         
-        # Try multiple possible paths
-        possible_paths = [
-            shutil.which(command),
-            f"/usr/bin/{command}",
-            f"/usr/local/bin/{command}",
-            command
-        ]
-        
-        command_path = None
-        for path in possible_paths:
-            if path:
-                try:
-                    result = subprocess.run([path, "--version"], 
-                                          capture_output=True, text=True, timeout=5)
-                    if result.returncode == 0:
-                        command_path = path
-                        break
-                except:
-                    continue
-        
-        if command_path:
-            print(f"✅ {description}: Available at {command_path}")
+        result = subprocess.run([command_path, '--version'], 
+                              capture_output=True, text=True, timeout=10)
+        if result.returncode == 0:
+            print(f"✅ {description}: Available")
             return True
         else:
-            print(f"❌ {description}: Not found")
+            print(f"❌ {description}: Failed")
             return False
     except Exception as e:
-        print(f"❌ {description}: Error ({e})")
+        print(f"❌ {description}: Not found ({e})")
         return False
 
 def test_camera_devices():

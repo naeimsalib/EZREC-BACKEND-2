@@ -574,6 +574,7 @@ fi
 # Restart all services (safer than individual starts)
 echo "🔄 Restarting all services..."
 sudo systemctl restart dual_recorder.service video_worker.service ezrec-api.service system_status.service
+sudo systemctl start system_status.timer || { echo "❌ Failed to start system_status.timer"; exit 1; }
 
 #------------------------------#
 # 15. CHECK SERVICE STATUS

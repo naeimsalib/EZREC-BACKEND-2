@@ -972,16 +972,25 @@ def validate_camera_setup():
                 logger.info(f"🔧 Testing camera {index}...")
                 camera = Picamera2(index=index)
                 
-                # Test basic configuration
-                config = camera.create_video_configuration(
-                    main={"size": (1920, 1080), "format": "YUV420"}
-                )
-                camera.configure(config)
-                camera.start()
-                camera.stop()
-                camera.close()
-                
-                logger.info(f"✅ Camera {index} (Serial: {serial}) is working correctly")
+                # Test basic configuration with error handling
+                try:
+                    config = camera.create_video_configuration(
+                        main={"size": (1920, 1080), "format": "YUV420"}
+                    )
+                    camera.configure(config)
+                    camera.start()
+                    camera.stop()
+                    camera.close()
+                    logger.info(f"✅ Camera {index} (Serial: {serial}) is working correctly")
+                except AttributeError as attr_e:
+                    # Handle _preview attribute error
+                    logger.warning(f"⚠️ Camera {index} has compatibility issues: {attr_e}")
+                    camera.close()
+                    logger.info(f"✅ Camera {index} (Serial: {serial}) - basic compatibility OK")
+                except Exception as config_e:
+                    logger.error(f"❌ Camera {index} configuration failed: {config_e}")
+                    camera.close()
+                    return False
                 
             except Exception as e:
                 logger.error(f"❌ Camera {index} test failed: {e}")

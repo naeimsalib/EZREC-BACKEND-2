@@ -12,10 +12,6 @@ def test_extract_booking_id():
     """Test the extract_booking_id_from_filename function"""
     print("🧪 Testing extract_booking_id_from_filename...")
     
-    # Import required modules
-    import os
-    import tempfile
-    
     # Import the function
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
     
@@ -34,6 +30,12 @@ def test_extract_booking_id():
     if hasattr(sys.modules.get('video_worker', None), 'LOG_FILE'):
         original_log_file = sys.modules['video_worker'].LOG_FILE
         sys.modules['video_worker'].LOG_FILE = temp_log_file.name
+    else:
+        # Create a mock video_worker module if it doesn't exist
+        import types
+        mock_video_worker = types.ModuleType('video_worker')
+        mock_video_worker.LOG_FILE = temp_log_file.name
+        sys.modules['video_worker'] = mock_video_worker
     
     try:
         from video_worker import extract_booking_id_from_filename
