@@ -451,7 +451,7 @@ fi
 # 14.5. CLEANUP BROKEN RECORDING JOBS
 #------------------------------#
 echo "🧹 Cleaning up broken recording jobs..."
-find /opt/ezrec-backend/recordings -type f \( -name "*.done" -o -name "*.meta" -o -name "*.lock" -o -name "*.error" -o -name "*.completed" \) | while read -r marker; do
+find /opt/ezrec-backend/recordings -type f \( -name "*.done" -o -name "*.meta" -o -name "*.lock" -o -name "*.error" -o -name "*.completed" -o -name "*.merge_error" \) | while read -r marker; do
   base="${marker%.*}"
   if [ ! -f "${base}.mp4" ]; then
     echo "❌ Found orphan marker file: $marker (no .mp4 found). Removing..."
@@ -459,6 +459,18 @@ find /opt/ezrec-backend/recordings -type f \( -name "*.done" -o -name "*.meta" -
   fi
 done
 echo "✅ Cleanup completed"
+
+#------------------------------#
+# 14.6. SETUP LOG ROTATION
+#------------------------------#
+echo "📝 Setting up log rotation..."
+if [ -f "logrotate.conf" ]; then
+    sudo cp logrotate.conf /etc/logrotate.d/ezrec-backend
+    sudo chmod 644 /etc/logrotate.d/ezrec-backend
+    echo "✅ Log rotation configured"
+else
+    echo "⚠️ logrotate.conf not found, skipping log rotation setup"
+fi
 
 # Restart all services (safer than individual starts)
 echo "🔄 Restarting all services..."

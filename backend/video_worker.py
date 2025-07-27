@@ -973,136 +973,153 @@ def main():
         retry_pending_uploads()
         cleanup_old_files() # Run cleanup at the start of each interval
         for date_dir in RECORDINGS_DIR.glob("*/"):
-            log.info(f"Scanning directory: {date_dir}")
-            
-            # First, clean up orphaned marker files (markers without .mp4 files)
-            for marker_file in date_dir.glob("*.done"):
-                base_path = str(marker_file).replace(".done", "")
-                mp4_file = Path(base_path + ".mp4")
+            try:
+                log.info(f"Scanning directory: {date_dir}")
                 
-                if not mp4_file.exists():
-                    log.warning(f"🚫 Found orphaned .done marker: {marker_file.name} (no matching .mp4 file)")
-                    
-                    # Try to extract booking ID and update Supabase status
+                # First, clean up orphaned marker files (markers without .mp4 files)
+                for marker_file in date_dir.glob("*.done"):
                     try:
-                        booking_id = extract_booking_id_from_filename(marker_file.name)
-                        update_supabase_status(booking_id, "SkippedMissingFile")
+                        base_path = str(marker_file).replace(".done", "")
+                        mp4_file = Path(base_path + ".mp4")
+                        
+                        if not mp4_file.exists():
+                            log.warning(f"🚫 Found orphaned .done marker: {marker_file.name} (no matching .mp4 file)")
+                            
+                            # Try to extract booking ID and update Supabase status
+                            try:
+                                booking_id = extract_booking_id_from_filename(marker_file.name)
+                                update_supabase_status(booking_id, "SkippedMissingFile")
+                            except Exception as e:
+                                log.warning(f"⚠️ Could not update Supabase status for {marker_file.name}: {e}")
+                            
+                            # Clean up all related marker files
+                            for ext in [".done", ".meta", ".lock", ".error", ".completed", ".merge_error"]:
+                                stale_marker = Path(base_path + ext)
+                                if stale_marker.exists():
+                                    stale_marker.unlink()
+                                    log.info(f"🧹 Removed stale marker file: {stale_marker.name}")
+                            
+                            continue
                     except Exception as e:
-                        log.warning(f"⚠️ Could not update Supabase status for {marker_file.name}: {e}")
-                    
-                    # Clean up all related marker files
-                    for ext in [".done", ".meta", ".lock", ".error", ".completed"]:
-                        stale_marker = Path(base_path + ext)
-                        if stale_marker.exists():
-                            stale_marker.unlink()
-                            log.info(f"🧹 Removed stale marker file: {stale_marker.name}")
-                    
-                    continue
-            
-            # Now process valid .mp4 files
-            for raw_file in date_dir.glob("*.mp4"):
-                done = raw_file.with_suffix(".done")
-                completed = raw_file.with_suffix(".completed")
-                lock = raw_file.with_suffix(".lock")
-                error = raw_file.with_suffix(".error")
-                meta_path = raw_file.with_suffix(".json")
-                log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, error={error.exists()}, meta={meta_path.exists()}")
-                if not done.exists() or completed.exists() or lock.exists() or error.exists():
-                    continue
+                        log.error(f"❌ Error processing orphaned marker {marker_file.name}: {e}")
+                        continue
                 
-                # Check if this file has been processed too many times (prevent infinite loops)
-                lock.touch()
-                try:
-                    # First do a simple file check
-                    if not is_file_readable(raw_file):
-                        log.error(f"❌ Video file {raw_file.name} is not readable or too small. Skipping.")
-                        completed.touch()
-                        lock.unlink()
-                        continue
-                    
-                    # Try to validate the video file with FFmpeg
-                    if not is_valid_video(raw_file):
-                        log.error(f"❌ Video file {raw_file.name} is corrupted and cannot be processed. Skipping.")
-                        # Create a .completed file to prevent infinite loops
-                        completed.touch()
-                        lock.unlink()
-                        continue
-                except Exception as e:
-                    log.error(f"❌ Error validating video {raw_file.name}: {e}")
-                    # Create a .completed file to prevent infinite loops
-                    completed.touch()
-                    lock.unlink()
-                    continue
-                lock.touch()
-                if not meta_path.exists():
-                    lock.unlink()
-                    continue
-                try:
-                    with open(meta_path) as f:
-                        meta = json.load(f)
-                    user_id = meta["user_id"]
-                    booking_id = meta["booking_id"]
-                    update_booking_status(booking_id, "Processing")
-                    final_file = process_video(raw_file, user_id, date_dir)
-                    if final_file:
-                        update_booking_status(booking_id, "Uploading")
-                        s3_key = f"{user_id}/{date_dir.name}/{final_file.name}"
-                        payload = {
-                            "user_id": user_id,
-                            "video_url": None,  # Will be set after upload
-                            "date": date_dir.name,
-                            "recording_id": raw_file.stem,  # Ensure this is always set
-                            "duration_seconds": int(get_duration(raw_file)),
-                            "uploaded_at": None,
-                            "filename": final_file.name,
-                            "storage_path": s3_key,
-                            "booking_id": booking_id  # Include booking_id
-                        }
-                        if is_internet_available():
-                            s3_url = upload_file_chunked(final_file, s3_key)
-                            if s3_url:
-                                payload["video_url"] = s3_url
-                                payload["uploaded_at"] = datetime.now(LOCAL_TZ).isoformat()
-                            if insert_video_metadata(payload):
-                                update_booking_status(booking_id, "Uploaded")
+                # Now process valid .mp4 files
+                for raw_file in date_dir.glob("*.mp4"):
+                    try:
+                        done = raw_file.with_suffix(".done")
+                        completed = raw_file.with_suffix(".completed")
+                        lock = raw_file.with_suffix(".lock")
+                        error = raw_file.with_suffix(".error")
+                        meta_path = raw_file.with_suffix(".json")
+                        log.info(f"Checking {raw_file.name}: done={done.exists()}, completed={completed.exists()}, lock={lock.exists()}, error={error.exists()}, meta={meta_path.exists()}")
+                        if not done.exists() or completed.exists() or lock.exists() or error.exists():
+                            continue
+                        
+                        # Check if this file has been processed too many times (prevent infinite loops)
+                        lock.touch()
+                        try:
+                            # First do a simple file check
+                            if not is_file_readable(raw_file):
+                                log.error(f"❌ Video file {raw_file.name} is not readable or too small. Skipping.")
                                 completed.touch()
-                                try:
-                                    os.remove(raw_file)
-                                except Exception:
-                                    pass
-                                try:
-                                    os.remove(final_file)
-                                except Exception:
-                                    pass
-                                try:
-                                    os.remove(done)
-                                except Exception:
-                                    pass
-                                try:
-                                    os.remove(meta_path)
-                                except Exception:
-                                    pass
-                                try:
-                                    update_booking_status(booking_id, "Completed")
-                                    cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
-                                    if cache_file.exists():
-                                        with open(cache_file, 'r') as f:
-                                            bookings = json.load(f)
-                                        bookings = [b for b in bookings if b.get('id') != booking_id]
-                                        with open(cache_file, 'w') as f:
-                                            json.dump(bookings, f, indent=2)
-                                        log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
-                                except Exception as e:
-                                    log.error(f"Error removing booking from cache in video_worker: {e}")
+                                lock.unlink()
                                 continue
-                        # If no internet, add to pending uploads
-                        add_pending_upload(final_file, s3_key, payload)
-                        log.info(f"No internet. Added {final_file} to pending uploads queue.")
-                except Exception as e:
-                    log.error(f"Processing error: {e}")
-                finally:
-                    if lock.exists():
-                        lock.unlink()
+                            
+                            # Try to validate the video file with FFmpeg
+                            if not is_valid_video(raw_file):
+                                log.error(f"❌ Video file {raw_file.name} is corrupted and cannot be processed. Skipping.")
+                                # Create a .completed file to prevent infinite loops
+                                completed.touch()
+                                lock.unlink()
+                                continue
+                        except Exception as e:
+                            log.error(f"❌ Error validating video {raw_file.name}: {e}")
+                            # Create a .completed file to prevent infinite loops
+                            completed.touch()
+                            lock.unlink()
+                            continue
+                        lock.touch()
+                        if not meta_path.exists():
+                            lock.unlink()
+                            continue
+                        try:
+                            with open(meta_path) as f:
+                                meta = json.load(f)
+                            user_id = meta["user_id"]
+                            booking_id = meta["booking_id"]
+                            update_booking_status(booking_id, "Processing")
+                            final_file = process_video(raw_file, user_id, date_dir)
+                            if final_file:
+                                update_booking_status(booking_id, "Uploading")
+                                s3_key = f"{user_id}/{date_dir.name}/{final_file.name}"
+                                payload = {
+                                    "user_id": user_id,
+                                    "video_url": None,  # Will be set after upload
+                                    "date": date_dir.name,
+                                    "recording_id": raw_file.stem,  # Ensure this is always set
+                                    "duration_seconds": int(get_duration(raw_file)),
+                                    "uploaded_at": None,
+                                    "filename": final_file.name,
+                                    "storage_path": s3_key,
+                                    "booking_id": booking_id  # Include booking_id
+                                }
+                                if is_internet_available():
+                                    s3_url = upload_file_chunked(final_file, s3_key)
+                                    if s3_url:
+                                        payload["video_url"] = s3_url
+                                        payload["uploaded_at"] = datetime.now(LOCAL_TZ).isoformat()
+                                    if insert_video_metadata(payload):
+                                        update_booking_status(booking_id, "Uploaded")
+                                        completed.touch()
+                                        try:
+                                            os.remove(raw_file)
+                                        except Exception:
+                                            pass
+                                        try:
+                                            os.remove(final_file)
+                                        except Exception:
+                                            pass
+                                        try:
+                                            os.remove(done)
+                                        except Exception:
+                                            pass
+                                        try:
+                                            os.remove(meta_path)
+                                        except Exception:
+                                            pass
+                                        try:
+                                            update_booking_status(booking_id, "Completed")
+                                            cache_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+                                            if cache_file.exists():
+                                                with open(cache_file, 'r') as f:
+                                                    bookings = json.load(f)
+                                                bookings = [b for b in bookings if b.get('id') != booking_id]
+                                                with open(cache_file, 'w') as f:
+                                                    json.dump(bookings, f, indent=2)
+                                                log.info(f"🗑️ Removed completed booking {booking_id} from cache (video_worker)")
+                                        except Exception as e:
+                                            log.error(f"❌ Error updating booking status: {e}")
+                                    else:
+                                        log.error(f"❌ Failed to insert video metadata for {raw_file.name}")
+                                        lock.unlink()
+                                else:
+                                    log.warning(f"⚠️ No internet connection, adding to pending uploads: {raw_file.name}")
+                                    add_pending_upload(final_file, s3_key, meta)
+                                    lock.unlink()
+                            else:
+                                log.error(f"❌ Failed to process video {raw_file.name}")
+                                lock.unlink()
+                        except Exception as e:
+                            log.error(f"❌ Error processing video {raw_file.name}: {e}")
+                            lock.unlink()
+                    except Exception as e:
+                        log.error(f"❌ Error in video processing loop for {raw_file.name}: {e}")
+                        continue
+            except Exception as e:
+                log.error(f"❌ Error processing directory {date_dir}: {e}")
+                continue
+        
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
