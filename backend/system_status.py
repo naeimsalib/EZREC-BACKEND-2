@@ -125,6 +125,7 @@ class SystemStatusMonitor:
         
         for service in self.services:
             try:
+                # Use systemctl is-active with proper error handling
                 result = subprocess.run(
                     ["systemctl", "is-active", service],
                     capture_output=True,
@@ -132,10 +133,21 @@ class SystemStatusMonitor:
                     timeout=10
                 )
                 
-                is_active = result.returncode == 0
+                # Check if the service is actually active
+                is_active = result.returncode == 0 and result.stdout.strip() == "active"
+                
+                # Get more detailed status
+                status_result = subprocess.run(
+                    ["systemctl", "status", service, "--no-pager"],
+                    capture_output=True,
+                    text=True,
+                    timeout=5
+                )
+                
                 service_status[service] = {
                     "active": is_active,
-                    "status": "active" if is_active else "inactive"
+                    "status": result.stdout.strip() if result.returncode == 0 else "inactive",
+                    "detailed_status": "running" if is_active else "not running"
                 }
                 
                 # Only get PID for active services (optional optimization)
@@ -244,16 +256,37 @@ class SystemStatusMonitor:
     def check_ffmpeg(self):
         """Check if FFmpeg is available"""
         try:
-            # Try to find ffmpeg in PATH
+            # Try to find ffmpeg in PATH with more comprehensive search
             ffmpeg_path = None
-            for path in ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "ffmpeg"]:
-                try:
-                    result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
-                    if result.returncode == 0:
-                        ffmpeg_path = path
-                        break
-                except:
-                    continue
+            ffprobe_path = None
+            
+            # Common paths to check
+            search_paths = [
+                "/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/opt/ffmpeg/bin/ffmpeg",
+                "ffmpeg", "/usr/bin/ffprobe", "/usr/local/bin/ffprobe", "ffprobe"
+            ]
+            
+            # Find ffmpeg
+            for path in search_paths:
+                if "ffprobe" not in path:  # Only check ffmpeg paths
+                    try:
+                        result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            ffmpeg_path = path
+                            break
+                    except:
+                        continue
+            
+            # Find ffprobe
+            for path in search_paths:
+                if "ffprobe" in path:  # Only check ffprobe paths
+                    try:
+                        result = subprocess.run([path, "-version"], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0:
+                            ffprobe_path = path
+                            break
+                    except:
+                        continue
             
             if not ffmpeg_path:
                 return {
@@ -467,19 +500,35 @@ class SystemStatusMonitor:
                 'last_seen': datetime.now(LOCAL_TZ).isoformat(),
             }
             
-            # Try to add additional fields if they exist in the database
-            try:
-                update_data.update({
-                    'system_info': json.dumps(report["system_info"]),
-                    'disk_usage': report["disk_space"]["usage_percent"],
-                    'memory_usage': report["memory_usage"]["usage_percent"],
-                    'cpu_usage': report["cpu_usage"]["usage_percent"],
-                    'camera_count': report["camera_availability"].get("camera_count", 0),
-                })
-            except Exception as e:
-                logger.debug(f"Some database columns not available: {e}")
+            # Try to add additional fields one by one to avoid schema issues
+            optional_fields = [
+                ('system_info', json.dumps(report["system_info"])),
+                ('disk_usage', report["disk_space"]["usage_percent"]),
+                ('memory_usage', report["memory_usage"]["usage_percent"]),
+                ('cpu_usage', report["cpu_usage"]["usage_percent"]),
+                ('camera_count', report["camera_availability"].get("camera_count", 0)),
+            ]
             
-            supabase.table(STATUS_TABLE).update(update_data).eq('id', self.camera_id).execute()
+            for field_name, field_value in optional_fields:
+                try:
+                    update_data[field_name] = field_value
+                except Exception as e:
+                    logger.debug(f"Field {field_name} not available in database: {e}")
+            
+            try:
+                supabase.table(STATUS_TABLE).update(update_data).eq('id', self.camera_id).execute()
+            except Exception as e:
+                logger.error(f"❌ Failed to update Supabase: {e}")
+                # Try with just the basic fields
+                try:
+                    basic_data = {
+                        'status': report["overall_status"],
+                        'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+                    }
+                    supabase.table(STATUS_TABLE).update(basic_data).eq('id', self.camera_id).execute()
+                    logger.info("✅ Updated Supabase with basic fields only")
+                except Exception as e2:
+                    logger.error(f"❌ Failed to update Supabase even with basic fields: {e2}")
             
             # Update last update timestamp
             last_update_file.write_text(str(current_time))

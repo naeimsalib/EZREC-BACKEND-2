@@ -170,11 +170,32 @@ if ! venv/bin/python3 -c "import picamera2" 2>/dev/null; then
     # Fix libcamera import issue
     echo "🔧 Fixing libcamera import issue..."
     if [ -d "/usr/lib/python3/dist-packages" ]; then
+        # Find and link libcamera modules
         sudo find /usr/lib/python3/dist-packages -name "libcamera*" -type d | while read -r libcamera_dir; do
-            if [ ! -L "venv/lib/python3.11/site-packages/$(basename "$libcamera_dir")" ]; then
-                sudo ln -sf "$libcamera_dir" "venv/lib/python3.11/site-packages/$(basename "$libcamera_dir")" || true
+            target_name=$(basename "$libcamera_dir")
+            target_path="venv/lib/python3.11/site-packages/$target_name"
+            if [ ! -L "$target_path" ] && [ ! -d "$target_path" ]; then
+                sudo ln -sf "$libcamera_dir" "$target_path" || true
+                echo "🔗 Linked $libcamera_dir to $target_path"
             fi
         done
+        
+        # Also try to link any libcamera files
+        sudo find /usr/lib/python3/dist-packages -name "libcamera*" -type f | while read -r libcamera_file; do
+            target_name=$(basename "$libcamera_file")
+            target_path="venv/lib/python3.11/site-packages/$target_name"
+            if [ ! -L "$target_path" ] && [ ! -f "$target_path" ]; then
+                sudo ln -sf "$libcamera_file" "$target_path" || true
+                echo "🔗 Linked $libcamera_file to $target_path"
+            fi
+        done
+    fi
+    
+    # Also try to install libcamera via apt if available
+    if command -v apt-get &> /dev/null; then
+        echo "🔧 Installing system-wide libcamera packages..."
+        sudo apt-get update
+        sudo apt-get install -y python3-libcamera python3-picamera2 || true
     fi
     
     if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
@@ -382,6 +403,12 @@ echo "🧪 Testing basic functionality..."
 # Test FFmpeg
 if command -v ffmpeg &> /dev/null; then
     echo "✅ FFmpeg is available"
+    # Test FFmpeg functionality
+    if ffmpeg -version &> /dev/null; then
+        echo "✅ FFmpeg is working correctly"
+    else
+        echo "⚠️ FFmpeg found but not working correctly"
+    fi
 else
     echo "❌ FFmpeg not found"
     echo "🔧 Installing FFmpeg..."
@@ -391,6 +418,27 @@ else
         echo "✅ FFmpeg installed successfully"
     else
         echo "❌ FFmpeg installation failed"
+        exit 1
+    fi
+fi
+
+# Test ffprobe
+if command -v ffprobe &> /dev/null; then
+    echo "✅ FFprobe is available"
+    # Test ffprobe functionality
+    if ffprobe -version &> /dev/null; then
+        echo "✅ FFprobe is working correctly"
+    else
+        echo "⚠️ FFprobe found but not working correctly"
+    fi
+else
+    echo "❌ FFprobe not found"
+    echo "🔧 Installing FFprobe..."
+    sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFprobe"; exit 1; }
+    if command -v ffprobe &> /dev/null; then
+        echo "✅ FFprobe installed successfully"
+    else
+        echo "❌ FFprobe installation failed"
         exit 1
     fi
 fi

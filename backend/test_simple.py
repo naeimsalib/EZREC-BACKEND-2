@@ -21,6 +21,13 @@ def test_extract_booking_id():
     logging.getLogger().handlers.clear()
     logging.basicConfig(level=logging.ERROR, format='%(message)s')
     
+    # Temporarily modify the LOG_FILE path to avoid permission issues
+    import os
+    original_log_file = None
+    if hasattr(sys.modules.get('video_worker', None), 'LOG_FILE'):
+        original_log_file = sys.modules['video_worker'].LOG_FILE
+        sys.modules['video_worker'].LOG_FILE = '/tmp/test_video_worker.log'
+    
     try:
         from video_worker import extract_booking_id_from_filename
         
@@ -56,6 +63,10 @@ def test_extract_booking_id():
         logging.getLogger().handlers.clear()
         for handler in original_handlers:
             logging.getLogger().addHandler(handler)
+        
+        # Restore original LOG_FILE path
+        if original_log_file and hasattr(sys.modules.get('video_worker', None), 'LOG_FILE'):
+            sys.modules['video_worker'].LOG_FILE = original_log_file
 
 def test_system_status_import():
     """Test that system_status.py can be imported"""
