@@ -57,6 +57,100 @@ class EnhancedVideoMerger:
         except Exception:
             return False
     
+    def _comprehensive_mp4_validation(self, file_path: Path) -> Tuple[bool, str]:
+        """Comprehensive MP4 validation with detailed error reporting"""
+        try:
+            if not file_path.exists():
+                return False, "File does not exist"
+            
+            # Check file size
+            file_size = file_path.stat().st_size
+            if file_size < 1024:  # Less than 1KB
+                return False, f"File too small: {file_size} bytes"
+            
+            # Check file header (MP4 files should start with 'ftyp')
+            with open(file_path, 'rb') as f:
+                header = f.read(8)
+                if not header.startswith(b'\x00\x00\x00'):
+                    return False, "Invalid MP4 header"
+            
+            # Use ffprobe for detailed validation
+            result = subprocess.run([
+                'ffprobe', '-v', 'error',
+                '-select_streams', 'v:0',
+                '-show_entries', 'stream=codec_name,width,height,duration',
+                '-show_entries', 'format=duration,size',
+                '-of', 'json',
+                str(file_path)
+            ], capture_output=True, text=True, timeout=30)
+            
+            if result.returncode != 0:
+                return False, f"FFprobe validation failed: {result.stderr}"
+            
+            # Parse JSON response
+            try:
+                probe_data = json.loads(result.stdout)
+            except json.JSONDecodeError:
+                return False, "Invalid JSON response from ffprobe"
+            
+            # Check for video streams
+            if 'streams' not in probe_data or not probe_data['streams']:
+                return False, "No video streams found"
+            
+            # Check for format information
+            if 'format' not in probe_data:
+                return False, "No format information found"
+            
+            # Check duration
+            format_info = probe_data['format']
+            if 'duration' in format_info:
+                duration = float(format_info['duration'])
+                if duration < 0.1:  # Less than 0.1 seconds
+                    return False, f"Video too short: {duration:.2f} seconds"
+            
+            return True, "Validation passed"
+            
+        except Exception as e:
+            return False, f"Validation error: {e}"
+
+    def _attempt_mp4_repair(self, video_path: Path) -> bool:
+        """Attempt to repair a potentially corrupted MP4 file"""
+        try:
+            self.logger.info(f"🔧 Attempting to repair MP4 file: {video_path}")
+            
+            # Create backup of original file
+            backup_path = video_path.with_suffix('.backup.mp4')
+            import shutil
+            shutil.copy2(video_path, backup_path)
+            
+            # Try to repair using FFmpeg
+            repair_cmd = [
+                'ffmpeg', '-y',
+                '-i', str(video_path),
+                '-c', 'copy',  # Copy streams without re-encoding
+                '-movflags', '+faststart',  # Optimize for streaming
+                str(video_path.with_suffix('.repaired.mp4'))
+            ]
+            
+            result = subprocess.run(repair_cmd, capture_output=True, text=True, timeout=60)
+            
+            if result.returncode == 0:
+                # Replace original with repaired version
+                video_path.unlink()
+                video_path.with_suffix('.repaired.mp4').rename(video_path)
+                backup_path.unlink()  # Remove backup
+                self.logger.info(f"✅ MP4 repair successful: {video_path}")
+                return True
+            else:
+                # Restore original file
+                backup_path.rename(video_path)
+                self.logger.error(f"❌ MP4 repair failed: {result.stderr}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"❌ MP4 repair error: {e}")
+            return False
+
     def is_valid_mp4(self, file_path: Path) -> bool:
         """Check if input file is a valid MP4 before FFmpeg processing"""
         try:
@@ -67,7 +161,24 @@ class EnhancedVideoMerger:
                 stderr=subprocess.PIPE,
                 timeout=30
             )
-            return result.returncode == 0
+            
+            if result.returncode == 0:
+                return True
+            else:
+                # Try to repair the file if validation fails
+                self.logger.warning(f"⚠️ MP4 validation failed, attempting repair: {file_path}")
+                if self._attempt_mp4_repair(file_path):
+                    # Re-validate after repair
+                    result = subprocess.run(
+                        ["ffprobe", "-v", "error", "-show_entries", "format=duration", 
+                         "-of", "default=noprint_wrappers=1:nokey=1", str(file_path)],
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        timeout=30
+                    )
+                    return result.returncode == 0
+                return False
+                
         except Exception as e:
             self.logger.error(f"Error validating mp4 {file_path}: {e}")
             return False
@@ -91,28 +202,21 @@ class EnhancedVideoMerger:
             if size2 < min_size:
                 return False, f"Video 2 too small: {size2} bytes (min: {min_size})"
             
-            # Validate video files with enhanced MP4 validation
+            # Validate video files with comprehensive validation
             for i, video_path in enumerate([video1_path, video2_path], 1):
-                if not self.is_valid_mp4(video_path):
-                    return False, f"Video {i} is not a valid MP4 file: {video_path}"
-                
-                try:
-                    result = subprocess.run([
-                        'ffprobe', '-v', 'error', '-select_streams', 'v:0',
-                        '-show_entries', 'stream=codec_name,width,height', '-of', 'json',
-                        str(video_path)
-                    ], capture_output=True, text=True, timeout=30)
-                    
-                    if result.returncode != 0:
-                        return False, f"Video {i} validation failed: {result.stderr}"
-                    
-                    # Parse JSON response
-                    probe_data = json.loads(result.stdout)
-                    if 'streams' not in probe_data or not probe_data['streams']:
-                        return False, f"Video {i} has no video streams"
-                        
-                except Exception as e:
-                    return False, f"Video {i} validation error: {e}"
+                valid, error_msg = self._comprehensive_mp4_validation(video_path)
+                if not valid:
+                    # Try to repair the file if validation fails
+                    self.logger.warning(f"⚠️ Video {i} validation failed: {error_msg}")
+                    if self._attempt_mp4_repair(video_path):
+                        # Re-validate after repair
+                        valid, error_msg = self._comprehensive_mp4_validation(video_path)
+                        if not valid:
+                            return False, f"Video {i} repair failed: {error_msg}"
+                        else:
+                            self.logger.info(f"✅ Video {i} repaired successfully")
+                    else:
+                        return False, f"Video {i} is not a valid MP4 file and repair failed: {video_path}"
             
             return True, "Validation passed"
             

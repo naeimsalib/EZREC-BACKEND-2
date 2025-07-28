@@ -303,13 +303,20 @@ class CameraRecorder:
                 self.picamera2.configure(config)
                 self.picamera2.start()
                 
-                # Create encoder
+                # Create encoder with better MP4 compatibility
                 from picamera2.encoders import H264Encoder
                 self.encoder = H264Encoder(
                     bitrate=6000000,
                     repeat=False,
                     iperiod=30,
-                    qp=25
+                    qp=25,
+                    # Add parameters for better MP4 compatibility
+                    profile="baseline",
+                    level="4.1",
+                    # Ensure proper keyframe placement for MP4
+                    keyframe_interval=30,
+                    # Add B-frames for better compression (but may affect compatibility)
+                    b_frames=0
                 )
                 
                 self.logger.info(f"✅ {self.camera_name} camera initialized successfully")
@@ -403,7 +410,8 @@ class CameraRecorder:
             if self.picamera2:
                 if self.recording:
                     self.picamera2.stop_recording()
-                    time.sleep(2)  # Give time for file finalization
+                    # Give more time for proper MP4 finalization
+                    time.sleep(5)  # Increased from 2s to 5s for better MP4 finalization
                 self.picamera2.stop()
                 self.picamera2.close()
                 self.picamera2 = None
@@ -413,7 +421,7 @@ class CameraRecorder:
         
         if self.thread:
             # Wait for thread to finish with timeout
-            self.thread.join(timeout=10)  # Reduced timeout for faster cleanup
+            self.thread.join(timeout=15)  # Increased timeout for better cleanup
             
             if self.thread.is_alive():
                 self.logger.warning(f"⚠️ {self.camera_name} camera thread did not stop gracefully within timeout")
@@ -426,13 +434,48 @@ class CameraRecorder:
             else:
                 self.logger.info(f"✅ {self.camera_name} camera thread stopped gracefully")
         
-        # Final cleanup check
+        # Final cleanup check and MP4 validation
         if self.output_path.exists():
             size = self.output_path.stat().st_size
             self.logger.info(f"✅ {self.camera_name} recording completed: {size} bytes")
-            self.success = True
+            
+            # Validate MP4 file structure
+            if self._validate_mp4_file():
+                self.success = True
+                self.logger.info(f"✅ {self.camera_name} MP4 file validated successfully")
+            else:
+                self.logger.error(f"❌ {self.camera_name} MP4 file validation failed")
+                self.success = False
         else:
             self.logger.error(f"❌ {self.camera_name} recording file not found")
+    
+    def _validate_mp4_file(self):
+        """Validate that the MP4 file is properly finalized"""
+        try:
+            if not self.output_path.exists():
+                return False
+            
+            # Check file size (minimum 100KB)
+            if self.output_path.stat().st_size < 100 * 1024:
+                self.logger.warning(f"⚠️ {self.camera_name} file too small for valid MP4")
+                return False
+            
+            # Use ffprobe to check if it's a valid MP4
+            result = subprocess.run([
+                'ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                '-of', 'default=noprint_wrappers=1:nokey=1', str(self.output_path)
+            ], capture_output=True, text=True, timeout=10)
+            
+            if result.returncode == 0:
+                self.logger.info(f"✅ {self.camera_name} MP4 file is valid")
+                return True
+            else:
+                self.logger.error(f"❌ {self.camera_name} MP4 validation failed: {result.stderr}")
+                return False
+                
+        except Exception as e:
+            self.logger.error(f"❌ {self.camera_name} MP4 validation error: {e}")
+            return False
     
     def stop_recording_internal(self):
         """Internal method to stop recording with enhanced cleanup"""
@@ -440,7 +483,7 @@ class CameraRecorder:
             if self.picamera2:
                 if self.recording:
                     self.picamera2.stop_recording()
-                    time.sleep(2)  # Give time for file finalization
+                    time.sleep(5)  # Increased time for proper MP4 finalization
                 self.picamera2.stop()
                 self.picamera2.close()
                 self.picamera2 = None
@@ -449,7 +492,14 @@ class CameraRecorder:
             if self.output_path.exists():
                 size = self.output_path.stat().st_size
                 self.logger.info(f"✅ {self.camera_name} recording completed: {size} bytes")
-                self.success = True
+                
+                # Validate MP4 file structure
+                if self._validate_mp4_file():
+                    self.success = True
+                    self.logger.info(f"✅ {self.camera_name} MP4 file validated successfully")
+                else:
+                    self.logger.error(f"❌ {self.camera_name} MP4 file validation failed")
+                    self.success = False
             else:
                 self.logger.error(f"❌ {self.camera_name} recording file not found")
                 
