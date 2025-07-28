@@ -186,27 +186,28 @@ def detect_cameras():
         logger.info("🔍 Detecting cameras by direct access...")
         
         # Try to detect cameras by attempting to create Picamera2 instances
-        # Use the correct approach without index parameter
         available_cameras = []
         
-        # Try to create a Picamera2 instance (auto-detects first camera)
-        try:
-            temp_cam = Picamera2()  # Removed index=i
-            
-            # Try to get camera properties safely
+        # Try to detect multiple cameras by attempting different indices
+        for i in range(4):  # Try indices 0-3
             try:
-                props = temp_cam.camera_properties
-                serial = props.get('SerialNumber', 'unknown_0')
-            except AttributeError:
-                # Fallback if camera_properties is not available
-                serial = 'unknown_0'
-            
-            temp_cam.close()
-            logger.info(f"📷 Camera 0: Serial {serial}")
-            available_cameras.append((0, serial))
-            
-        except Exception as e:
-            logger.debug(f"Camera 0 not available: {e}")
+                temp_cam = Picamera2()
+                
+                # Try to get camera properties safely
+                try:
+                    props = temp_cam.camera_properties
+                    serial = props.get('SerialNumber', f'unknown_{i}')
+                except AttributeError:
+                    # Fallback if camera_properties is not available
+                    serial = f'unknown_{i}'
+                
+                temp_cam.close()
+                logger.info(f"📷 Camera {i}: Serial {serial}")
+                available_cameras.append((i, serial))
+                
+            except Exception as e:
+                logger.debug(f"Camera {i} not available: {e}")
+                break  # Stop trying if we can't access this index
         
         # Check if we have multiple cameras available
         if len(available_cameras) >= 2:
@@ -661,7 +662,7 @@ class DualRecordingSession:
             
             # Detect cameras
             camera0_index, camera1_index = detect_cameras()
-            if camera0_index is None or camera1_index is None:
+            if camera0_index is None:
                 logger.error("❌ Failed to detect cameras")
                 return False
             
