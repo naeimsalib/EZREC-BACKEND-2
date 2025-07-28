@@ -159,7 +159,13 @@ cd /opt/ezrec-backend/api
 # Install dependencies with proper ownership
 echo "🔧 Installing Python packages..."
 sudo -u $CURRENT_USER venv/bin/pip install fastapi uvicorn python-multipart jinja2
-sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz numpy opencv-python-headless email-validator
+sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz email-validator
+
+# Fix numpy version conflict before installing opencv
+echo "🔧 Fixing numpy version conflict..."
+sudo -u $CURRENT_USER venv/bin/pip install "numpy<2.3.0" --force-reinstall
+sudo -u $CURRENT_USER venv/bin/pip install opencv-python-headless
+sudo -u $CURRENT_USER venv/bin/pip install numpy --upgrade
 
 # Install picamera2 system packages (CRITICAL FIX)
 echo "📷 Installing picamera2 system packages..."
@@ -191,6 +197,18 @@ if [ ! -f "/opt/ezrec-backend/.env" ]; then
     if [ -f "/opt/ezrec-backend/env.example" ]; then
         sudo cp /opt/ezrec-backend/env.example /opt/ezrec-backend/.env
         echo "✅ .env file created from template"
+        echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
+        echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
+        echo ""
+        echo "📋 Required environment variables:"
+        echo "   SUPABASE_URL=your_supabase_project_url"
+        echo "   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
+        echo "   USER_ID=your_user_id"
+        echo "   CAMERA_ID=your_camera_id"
+        echo "   CAMERA_0_SERIAL=your_first_camera_serial"
+        echo "   CAMERA_1_SERIAL=your_second_camera_serial"
+        echo ""
+        echo "⚠️  The system will not work properly until these are configured!"
     else
         echo "⚠️ env.example not found, creating basic .env file..."
         sudo tee /opt/ezrec-backend/.env > /dev/null << 'EOF'
@@ -224,9 +242,21 @@ EOF
         echo "✅ Basic .env file created"
         echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
         echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
+        echo ""
+        echo "📋 Required environment variables:"
+        echo "   SUPABASE_URL=your_supabase_project_url"
+        echo "   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
+        echo "   USER_ID=your_user_id"
+        echo "   CAMERA_ID=your_camera_id"
+        echo "   CAMERA_0_SERIAL=your_first_camera_serial"
+        echo "   CAMERA_1_SERIAL=your_second_camera_serial"
+        echo ""
+        echo "⚠️  The system will not work properly until these are configured!"
     fi
 else
     echo "✅ .env file already exists (user-managed)"
+    echo "🔧 To update: sudo nano /opt/ezrec-backend/.env"
+    echo "📋 Make sure these variables are set: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, USER_ID, CAMERA_ID"
 fi
 
 #------------------------------#

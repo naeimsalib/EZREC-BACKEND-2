@@ -32,7 +32,12 @@ def test_command(command, description):
         for path in possible_paths:
             if path:
                 try:
-                    result = subprocess.run([path, "--version"], 
+                    # Use --version for most commands, but handle specific cases
+                    version_arg = "--version"
+                    if command in ["ffmpeg", "ffprobe"]:
+                        version_arg = "-version"
+                    
+                    result = subprocess.run([path, version_arg], 
                                           capture_output=True, text=True, timeout=5)
                     if result.returncode == 0:
                         command_path = path

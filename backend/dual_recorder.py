@@ -23,6 +23,48 @@ from datetime import datetime
 from dotenv import load_dotenv
 from supabase import create_client
 
+# Monkey patch Picamera2 to fix _preview attribute error
+try:
+    from picamera2 import Picamera2
+    
+    # Store the original close method
+    original_close = Picamera2.close
+    
+    def safe_close(self):
+        """Safe close method that handles missing _preview attribute"""
+        try:
+            if hasattr(self, '_preview'):
+                return original_close(self)
+            else:
+                # If _preview doesn't exist, just clean up what we can
+                if hasattr(self, '_camera'):
+                    self._camera = None
+                if hasattr(self, '_encoder'):
+                    self._encoder = None
+        except Exception as e:
+            # Silently ignore errors during cleanup
+            pass
+    
+    # Replace the close method
+    Picamera2.close = safe_close
+    
+    # Also patch the __del__ method to be safer
+    original_del = Picamera2.__del__
+    
+    def safe_del(self):
+        """Safe destructor that handles missing attributes"""
+        try:
+            if hasattr(self, '_preview'):
+                return original_del(self)
+        except Exception:
+            # Silently ignore errors during destruction
+            pass
+    
+    Picamera2.__del__ = safe_del
+    
+except ImportError:
+    pass  # Picamera2 not available, continue without it
+
 # Timezone configuration
 TIMEZONE = pytz.timezone("America/New_York")  # Adjust as needed
 
