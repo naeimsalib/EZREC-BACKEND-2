@@ -72,7 +72,7 @@ else:
     sys.exit(1)
 
 # Configuration
-TIMEZONE_NAME = os.getenv("TIMEZONE", "UTC")
+TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE", "UTC")
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 LOG_FILE = "/opt/ezrec-backend/logs/system_status.log"
 STATUS_FILE = "/opt/ezrec-backend/status.json"

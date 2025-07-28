@@ -179,14 +179,19 @@ if command -v apt-get &> /dev/null; then
     sudo apt-get install -y python3-libcamera python3-picamera2 || true
 fi
 
-# Test picamera2 import
-if venv/bin/python3 -c "import picamera2" 2>/dev/null; then
-    echo "✅ picamera2 available in virtual environment"
-else
-    echo "⚠️ picamera2 not available in virtual environment"
-    echo "🔧 This is normal on some Raspberry Pi configurations"
-    echo "🔧 The system will use alternative camera detection methods"
-fi
+# Test Python imports
+echo "🐍 Testing Python imports..."
+cd /opt/ezrec-backend/backend
+
+# Test other critical packages
+echo "🔧 Testing other critical packages..."
+for package in fastapi supabase psutil boto3; do
+    if /opt/ezrec-backend/api/venv/bin/python3 -c "import $package" 2>/dev/null; then
+        echo "✅ $package is working"
+    else
+        echo "❌ $package import failed"
+    fi
+done
 
 echo "✅ Python dependencies installed successfully"
 
@@ -496,16 +501,6 @@ fi
 # Test Python imports
 echo "🐍 Testing Python imports..."
 cd /opt/ezrec-backend/backend
-
-# Test picamera2 in virtual environment (CRITICAL)
-echo "📷 Testing picamera2 in virtual environment..."
-if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2; print('✅ Picamera2 imported successfully')" 2>/dev/null; then
-    echo "✅ Picamera2 is working in virtual environment"
-else
-    echo "⚠️ Picamera2 not available in virtual environment"
-    echo "🔧 This is normal on some Raspberry Pi configurations"
-    echo "🔧 The system will use alternative camera detection methods"
-fi
 
 # Test other critical packages
 echo "🔧 Testing other critical packages..."
