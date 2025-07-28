@@ -282,11 +282,26 @@ def post_bookings(bookings: List[Booking]):
             if BOOKINGS_FILE.exists():
                 try:
                     existing = json.loads(BOOKINGS_FILE.read_text())
+                    # Ensure existing is a list
+                    if not isinstance(existing, list):
+                        logger.warning(f"Existing bookings file contains non-list data: {type(existing)}")
+                        existing = []
                 except Exception as e:
                     logger.warning(f"Could not read existing bookings: {e}")
+                    existing = []
             
             for existing_booking in existing:
                 try:
+                    # Ensure existing_booking is a dictionary
+                    if not isinstance(existing_booking, dict):
+                        logger.warning(f"Skipping non-dictionary booking: {type(existing_booking)}")
+                        continue
+                    
+                    # Check if required fields exist
+                    if 'start_time' not in existing_booking or 'end_time' not in existing_booking:
+                        logger.warning(f"Skipping booking without time fields: {existing_booking.get('id', 'unknown')}")
+                        continue
+                    
                     existing_start = datetime.fromisoformat(existing_booking['start_time'].replace('Z', '+00:00'))
                     existing_end = datetime.fromisoformat(existing_booking['end_time'].replace('Z', '+00:00'))
                     
@@ -306,8 +321,13 @@ def post_bookings(bookings: List[Booking]):
         if BOOKINGS_FILE.exists():
             try:
                 existing = json.loads(BOOKINGS_FILE.read_text())
+                # Ensure existing is a list
+                if not isinstance(existing, list):
+                    logger.warning(f"Existing bookings file contains non-list data: {type(existing)}")
+                    existing = []
             except Exception as e:
                 logger.warning(f"Could not read existing bookings: {e}")
+                existing = []
 
         combined = existing + [b.dict() for b in bookings]
         unique = {b["id"]: b for b in combined}.values()
@@ -331,15 +351,28 @@ def post_bookings(bookings: List[Booking]):
 @app.put("/bookings/{booking_id}")
 def update_booking(booking_id: str, updated_booking: Booking):
     try:
-        bookings = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
+        bookings = []
+        if BOOKINGS_FILE.exists():
+            try:
+                bookings = json.loads(BOOKINGS_FILE.read_text())
+                # Ensure bookings is a list
+                if not isinstance(bookings, list):
+                    logger.warning(f"Bookings file contains non-list data: {type(bookings)}")
+                    bookings = []
+            except Exception as e:
+                logger.error(f"Could not read bookings file: {e}")
+                bookings = []
+        
         updated = False
         for i, b in enumerate(bookings):
-            if b["id"] == booking_id:
+            if isinstance(b, dict) and b.get("id") == booking_id:
                 bookings[i] = updated_booking.dict()
                 updated = True
                 break
+        
         if not updated:
             raise HTTPException(status_code=404, detail="Booking not found")
+        
         BOOKINGS_FILE.write_text(json.dumps(bookings, indent=2))
         return {"status": "updated", "booking": updated_booking}
     except Exception as e:
@@ -349,10 +382,22 @@ def update_booking(booking_id: str, updated_booking: Booking):
 @app.delete("/bookings/{booking_id}")
 def delete_booking(booking_id: str):
     try:
-        bookings = json.loads(BOOKINGS_FILE.read_text()) if BOOKINGS_FILE.exists() else []
-        filtered = [b for b in bookings if b["id"] != booking_id]
+        bookings = []
+        if BOOKINGS_FILE.exists():
+            try:
+                bookings = json.loads(BOOKINGS_FILE.read_text())
+                # Ensure bookings is a list
+                if not isinstance(bookings, list):
+                    logger.warning(f"Bookings file contains non-list data: {type(bookings)}")
+                    bookings = []
+            except Exception as e:
+                logger.error(f"Could not read bookings file: {e}")
+                bookings = []
+        
+        filtered = [b for b in bookings if isinstance(b, dict) and b.get("id") != booking_id]
         if len(filtered) == len(bookings):
             raise HTTPException(status_code=404, detail="Booking not found")
+        
         BOOKINGS_FILE.write_text(json.dumps(filtered, indent=2))
         return {"status": "deleted", "booking_id": booking_id}
     except Exception as e:
