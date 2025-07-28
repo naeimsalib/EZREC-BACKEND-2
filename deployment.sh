@@ -139,9 +139,9 @@ if [ -d "venv" ]; then
     sudo rm -rf venv
 fi
 
-# Create new virtual environment (isolated to avoid dependency conflicts)
-echo "📦 Creating new virtual environment..."
-sudo python3 -m venv venv
+# Create new virtual environment with system site packages for libcamera access
+echo "📦 Creating new virtual environment with system site packages..."
+sudo python3 -m venv venv --system-site-packages
 
 # Get the current user who ran sudo
 CURRENT_USER=${SUDO_USER:-$USER}
