@@ -107,7 +107,7 @@ def test_environment():
         print(f"❌ Environment: Missing {missing}")
         return False
     else:
-        print("✅ Environment: All required variables set")
+        print("✅ Environment: All required variables present")
         return True
 
 def test_directories():

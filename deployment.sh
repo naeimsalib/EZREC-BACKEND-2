@@ -189,11 +189,15 @@ echo "✅ Python dependencies installed successfully"
 #------------------------------#
 # 8. SETUP ENVIRONMENT CONFIGURATION
 #------------------------------#
+# Environment configuration
 echo "⚙️ Setting up environment configuration..."
 
-# Create .env file from template if it doesn't exist
-if [ ! -f "/opt/ezrec-backend/.env" ]; then
-    echo "📝 Creating .env file from template..."
+# Check if .env file exists and has required variables
+ENV_FILE="/opt/ezrec-backend/.env"
+REQUIRED_VARS=("SUPABASE_URL" "SUPABASE_SERVICE_ROLE_KEY" "USER_ID" "CAMERA_ID")
+
+if [ ! -f "$ENV_FILE" ]; then
+    echo "⚠️ .env file not found, creating from template..."
     if [ -f "/opt/ezrec-backend/env.example" ]; then
         sudo cp /opt/ezrec-backend/env.example /opt/ezrec-backend/.env
         echo "✅ .env file created from template"
@@ -212,32 +216,36 @@ if [ ! -f "/opt/ezrec-backend/.env" ]; then
     else
         echo "⚠️ env.example not found, creating basic .env file..."
         sudo tee /opt/ezrec-backend/.env > /dev/null << 'EOF'
-# EZREC Backend Configuration
-# Add your Supabase and AWS credentials here
-
 # Supabase Configuration
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_KEY=your_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+
+# User configuration
+USER_EMAIL=your_email@example.com
+USER_ID=your_user_id
 
 # Camera Configuration
-USER_ID=your_user_id_here
-CAMERA_ID=your_camera_id_here
-
-# Camera Hardware Configuration
-CAMERA_0_SERIAL=your_camera_0_serial_here
-CAMERA_1_SERIAL=your_camera_1_serial_here
-CAMERA_0_NAME=Camera0
-CAMERA_1_NAME=Camera1
-
-# AWS S3 Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
-AWS_DEFAULT_REGION=us-east-1
-S3_BUCKET_NAME=your_s3_bucket_name_here
+CAMERA_ID=your_camera_id
+CAMERA_NAME=your_camera_name
+CAMERA_LOCATION=your_location
+CAMERA_0_SERIAL=your_first_camera_serial
+CAMERA_1_SERIAL=your_second_camera_serial
+DUAL_CAMERA_MODE=true
 
 # Recording Configuration
-RECORDING_DURATION=300
-VIDEO_QUALITY=high
+RECORDING_FPS=30
+LOG_LEVEL=INFO
+MERGE_METHOD=side_by_side
+
+# AWS Configuration (optional)
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_S3_BUCKET=your_s3_bucket
+AWS_REGION=us-east-1
+
+# Timezone
+LOCAL_TIMEZONE=UTC
 EOF
         echo "✅ Basic .env file created"
         echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
@@ -254,7 +262,24 @@ EOF
         echo "⚠️  The system will not work properly until these are configured!"
     fi
 else
-    echo "✅ .env file already exists (user-managed)"
+    echo "✅ .env file already exists"
+    
+    # Check if all required variables are present
+    missing_vars=()
+    for var in "${REQUIRED_VARS[@]}"; do
+        if ! grep -q "^${var}=" "$ENV_FILE"; then
+            missing_vars+=("$var")
+        fi
+    done
+    
+    if [ ${#missing_vars[@]} -eq 0 ]; then
+        echo "✅ All required environment variables are configured"
+    else
+        echo "⚠️ Missing required environment variables: ${missing_vars[*]}"
+        echo "🔧 Please add them to /opt/ezrec-backend/.env"
+        echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
+    fi
+    
     echo "🔧 To update: sudo nano /opt/ezrec-backend/.env"
     echo "📋 Make sure these variables are set: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, USER_ID, CAMERA_ID"
 fi

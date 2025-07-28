@@ -87,7 +87,7 @@ else:
 TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "America/New_York"
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
-REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_KEY", "USER_ID", "CAMERA_ID"]
+REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID"]
 missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
 if missing:
     print(f"❌ Missing required environment variables: {missing}")
@@ -96,7 +96,7 @@ if missing:
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
-SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
 BOOKING_CACHE_FILE = Path('/opt/ezrec-backend/api/local_data/bookings.json')
 RECORDINGS_DIR = Path('/opt/ezrec-backend/recordings/')
 LOG_FILE = Path('/opt/ezrec-backend/logs/dual_recorder.log')
