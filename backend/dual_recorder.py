@@ -185,13 +185,14 @@ def detect_cameras():
         
         logger.info("🔍 Detecting cameras by direct access...")
         
-        # Try to detect cameras by attempting to create Picamera2 instances
+        # Try to detect cameras by attempting to create Picamera2 instances with explicit indices
         available_cameras = []
         
         # Try to detect multiple cameras by attempting different indices
         for i in range(4):  # Try indices 0-3
             try:
-                temp_cam = Picamera2()
+                # Use explicit camera index to properly detect distinct cameras
+                temp_cam = Picamera2(camera_num=i)
                 
                 # Try to get camera properties safely
                 try:
@@ -207,7 +208,8 @@ def detect_cameras():
                 
             except Exception as e:
                 logger.debug(f"Camera {i} not available: {e}")
-                break  # Stop trying if we can't access this index
+                # Continue trying other indices instead of breaking
+                continue
         
         # Check if we have multiple cameras available
         if len(available_cameras) >= 2:
@@ -282,10 +284,10 @@ class CameraRecorder:
         """Initialize the camera with proper configuration and retry logic"""
         for attempt in range(self.max_retries):
             try:
-                self.logger.info(f"🔧 Initializing {self.camera_name} camera (attempt: {attempt + 1}/{self.max_retries})")
+                self.logger.info(f"🔧 Initializing {self.camera_name} camera (index {self.camera_index}, attempt: {attempt + 1}/{self.max_retries})")
                 
-                # Create Picamera2 instance (auto-detects camera)
-                self.picamera2 = Picamera2()
+                # Create Picamera2 instance with explicit camera index
+                self.picamera2 = Picamera2(camera_num=self.camera_index)
                 
                 # Configure camera
                 config = self.picamera2.create_video_configuration(
@@ -1145,7 +1147,7 @@ def validate_camera_setup():
         
         # Try to create a Picamera2 instance (auto-detects first camera)
         try:
-            temp_cam = Picamera2()  # Removed index=i
+            temp_cam = Picamera2(camera_num=0)  # Use explicit camera index
             
             # Try to get camera properties safely
             try:
@@ -1177,7 +1179,7 @@ def validate_camera_setup():
         for index, serial in available_cameras:
             try:
                 logger.info(f"🔧 Testing camera {index}...")
-                camera = Picamera2()  # Removed index=index
+                camera = Picamera2(camera_num=index)  # Use explicit camera index
                 
                 # Test basic configuration with error handling
                 try:
