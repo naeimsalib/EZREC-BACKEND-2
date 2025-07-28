@@ -165,63 +165,56 @@ class SystemStatusMonitor:
             return {"status": "error", "error": str(e)}
     
     def check_services(self):
-        """Check systemd service status (optimized to avoid duplicate subprocess calls)"""
-        service_status = {}
+        """Check if all required services are running"""
+        services = [
+            "dual_recorder.service",
+            "video_worker.service", 
+            "ezrec-api.service"
+        ]
         
-        for service in self.services:
+        service_status = {}
+        inactive_services = []
+        
+        for service in services:
             try:
-                # Use systemctl is-active with proper error handling
                 result = subprocess.run(
-                    ["systemctl", "is-active", service],
+                    ["/bin/systemctl", "is-active", service],
                     capture_output=True,
                     text=True,
                     timeout=10
                 )
                 
-                # Check if the service is actually active
-                is_active = result.returncode == 0 and result.stdout.strip() == "active"
-                
-                # Get more detailed status
-                status_result = subprocess.run(
-                    ["systemctl", "status", service, "--no-pager"],
-                    capture_output=True,
-                    text=True,
-                    timeout=5
-                )
-                
+                is_active = result.returncode == 0
                 service_status[service] = {
                     "active": is_active,
-                    "status": result.stdout.strip() if result.returncode == 0 else "inactive",
-                    "detailed_status": "running" if is_active else "not running"
+                    "status": result.stdout.strip() if is_active else result.stderr.strip()
                 }
                 
-                # Only get PID for active services (optional optimization)
-                if is_active and os.getenv("INCLUDE_SERVICE_PIDS", "false").lower() == "true":
-                    try:
-                        status_result = subprocess.run(
-                            ["systemctl", "status", service, "--no-pager"],
-                            capture_output=True,
-                            text=True,
-                            timeout=10
-                        )
-                        if status_result.returncode == 0:
-                            lines = status_result.stdout.split('\n')
-                            for line in lines:
-                                if 'Main PID:' in line:
-                                    service_status[service]["pid"] = line.split()[-1]
-                                    break
-                    except Exception:
-                        pass
-                        
+                if not is_active:
+                    inactive_services.append(service)
+                    
             except Exception as e:
                 logger.error(f"❌ Error checking service {service}: {e}")
                 service_status[service] = {
                     "active": False,
-                    "status": "error",
                     "error": str(e)
                 }
+                inactive_services.append(service)
         
-        return service_status
+        # Check if system_status.timer is active
+        try:
+            result = subprocess.run(['/bin/systemctl', 'is-active', 'system_status.timer'],
+                                  capture_output=True, text=True, timeout=5)
+            timer_active = result.returncode == 0
+        except Exception as e:
+            logger.error(f"❌ Error checking system_status.timer: {e}")
+            timer_active = False
+            
+        return {
+            "services": service_status,
+            "inactive": inactive_services,
+            "timer_active": timer_active
+        }
     
     def is_capture_device(self, device_path):
         """Check if a video device supports capture"""
@@ -407,76 +400,83 @@ class SystemStatusMonitor:
     
     def generate_health_report(self):
         """Generate comprehensive health report"""
-        logger.info("🔍 Generating system health report...")
-        
-        report = {
-            "system_info": self.get_system_info(),
-            "disk_space": self.check_disk_space(),
-            "memory_usage": self.check_memory_usage(),
-            "cpu_usage": self.check_cpu_usage(),
-            "services": self.check_services(),
-            "camera_availability": self.check_camera_availability(),
-            "api_health": self.check_api_health(),
-            "ffmpeg": self.check_ffmpeg(),
-            "environment": self.check_environment_variables(),
-            "recording_status": self.check_recording_status()
-        }
-        
-        # Determine overall system status
-        critical_issues = []
-        warnings = []
-        
-        # Check for critical issues
-        if report["disk_space"]["status"] == "critical":
-            critical_issues.append("Disk space critical")
-        elif report["disk_space"]["status"] == "warning":
-            warnings.append("Disk space warning")
-        
-        if report["memory_usage"]["status"] == "warning":
-            warnings.append("High memory usage")
-        
-        if report["cpu_usage"]["status"] == "warning":
-            warnings.append("High CPU usage")
-        
-        # Check services
-        inactive_services = []
-        for service_name, service_status in report["services"].items():
-            if not service_status.get("active", False) and "system_status" not in service_name:
-                inactive_services.append(service_name)
-        
-        if inactive_services:
-            critical_issues.append(f"Inactive services: {', '.join(inactive_services)}")
-        
-        # Check camera availability
-        if report["camera_availability"]["status"] == "error":
-            critical_issues.append("Camera system error")
-        elif report["camera_availability"]["status"] == "warning":
-            warnings.append("Insufficient cameras")
-        
-        # Check API health
-        if report["api_health"]["status"] == "error":
-            critical_issues.append("API not responding")
-        
-        # Check FFmpeg
-        if report["ffmpeg"]["status"] == "error":
-            critical_issues.append("FFmpeg not available")
-        
-        # Check environment
-        if report["environment"]["status"] == "error":
-            critical_issues.append("Missing environment variables")
-        
-        # Set overall status
-        if critical_issues:
-            report["overall_status"] = "critical"
-        elif warnings:
-            report["overall_status"] = "warning"
-        else:
-            report["overall_status"] = "healthy"
-        
-        report["critical_issues"] = critical_issues
-        report["warnings"] = warnings
-        
-        return report
+        try:
+            # Check system resources
+            disk_usage = self.check_disk_space()
+            memory_usage = self.check_memory_usage()
+            cpu_usage = self.check_cpu_usage()
+            
+            # Check services
+            service_status = self.check_services()
+            
+            # Check cameras
+            camera_status = self.check_camera_availability()
+            
+            # Check FFmpeg
+            ffmpeg_status = self.check_ffmpeg()
+            
+            # Check environment variables
+            env_status = self.check_environment_variables()
+            
+            # Check recording status
+            recording_status = self.check_recording_status()
+            
+            # Determine overall status
+            critical_issues = []
+            warnings = []
+            
+            # Check for critical issues
+            if disk_usage["usage_percent"] > 90:
+                critical_issues.append(f"High disk usage: {disk_usage['usage_percent']:.1f}%")
+            
+            if memory_usage["usage_percent"] > 90:
+                critical_issues.append(f"High memory usage: {memory_usage['usage_percent']:.1f}%")
+            
+            if not ffmpeg_status["available"]:
+                critical_issues.append("FFmpeg not available")
+            
+            if not env_status["all_set"]:
+                critical_issues.append(f"Missing environment variables: {env_status['missing_vars']}")
+            
+            # Check for inactive services (excluding system_status.service as it's one-shot)
+            inactive = service_status["inactive"]
+            if inactive:
+                critical_issues.append(f"Inactive services: {', '.join(inactive)}")
+            
+            # Check camera warnings
+            if camera_status["camera_count"] < 2:
+                warnings.append("Insufficient cameras")
+            
+            # Determine overall status
+            if critical_issues:
+                overall_status = "critical"
+            elif warnings:
+                overall_status = "warning"
+            else:
+                overall_status = "healthy"
+            
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "overall_status": overall_status,
+                "critical_issues": critical_issues,
+                "warnings": warnings,
+                "disk_usage": disk_usage,
+                "memory_usage": memory_usage,
+                "cpu_usage": cpu_usage,
+                "services": service_status,
+                "cameras": camera_status,
+                "ffmpeg": ffmpeg_status,
+                "environment": env_status,
+                "recording": recording_status
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Error generating health report: {e}")
+            return {
+                "timestamp": datetime.now().isoformat(),
+                "overall_status": "error",
+                "error": str(e)
+            }
     
     def save_status_locally(self, report):
         """Save status report to local file"""
@@ -492,60 +492,58 @@ class SystemStatusMonitor:
             logger.error(f"❌ Error saving status locally: {e}")
     
     def update_supabase_status(self, report):
-        """Update status in Supabase with rate limiting"""
+        """Update camera status in Supabase"""
         try:
-            # Check if we should update (rate limiting)
+            # Rate-limit Supabase updates
+            import time
             last_update_file = Path("/tmp/ezrec_status_last_update")
             current_time = time.time()
             
+            # Only update if more than 30 seconds have passed
             if last_update_file.exists():
-                try:
-                    last_update = float(last_update_file.read_text().strip())
-                    if current_time - last_update < SUPABASE_RATE_LIMIT_SECONDS:
-                        logger.debug("⏳ Rate limiting: skipping Supabase update")
-                        return
-                except (ValueError, IOError):
-                    pass
+                last_update = float(last_update_file.read_text().strip())
+                if current_time - last_update < 30:
+                    return
+                    
+            # Update the last update time
+            last_update_file.write_text(str(current_time))
             
-            # Update camera status in Supabase (only basic fields that exist)
-            update_data = {
-                'status': report["overall_status"],
-                'last_seen': datetime.now(LOCAL_TZ).isoformat(),
+            # Get camera ID from environment
+            camera_id = os.getenv("CAMERA_ID")
+            if not camera_id:
+                logger.warning("⚠️ CAMERA_ID not found in environment")
+                return
+                
+            # Prepare basic status data
+            status_data = {
+                "status": report["overall_status"],
+                "last_updated": report["timestamp"],
+                "disk_usage": report["disk_usage"]["usage_percent"],
+                "memory_usage": report["memory_usage"]["usage_percent"],
+                "cpu_usage": report["cpu_usage"]["usage_percent"]
             }
             
-            # Try to add additional fields one by one to avoid schema issues
-            optional_fields = [
-                ('system_info', json.dumps(report["system_info"])),
-                ('disk_usage', report["disk_space"]["usage_percent"]),
-                ('memory_usage', report["memory_usage"]["usage_percent"]),
-                ('cpu_usage', report["cpu_usage"]["usage_percent"]),
-                ('camera_count', report["camera_availability"].get("camera_count", 0)),
-            ]
-            
-            for field_name, field_value in optional_fields:
-                try:
-                    update_data[field_name] = field_value
-                except Exception as e:
-                    logger.debug(f"Field {field_name} not available in database: {e}")
-            
+            # Try to add optional fields one by one
             try:
-                supabase.table(STATUS_TABLE).update(update_data).eq('id', self.camera_id).execute()
+                if "cameras" in report:
+                    status_data["camera_count"] = report["cameras"].get("camera_count", 0)
             except Exception as e:
-                logger.error(f"❌ Failed to update Supabase: {e}")
-                # Try with just the basic fields
-                try:
-                    basic_data = {
-                        'status': report["overall_status"],
-                        'last_seen': datetime.now(LOCAL_TZ).isoformat(),
-                    }
-                    supabase.table(STATUS_TABLE).update(basic_data).eq('id', self.camera_id).execute()
-                    logger.info("✅ Updated Supabase with basic fields only")
-                except Exception as e2:
-                    logger.error(f"❌ Failed to update Supabase even with basic fields: {e2}")
+                logger.debug(f"Could not add camera_count: {e}")
+                
+            try:
+                if "services" in report and "timer_active" in report["services"]:
+                    status_data["timer_active"] = report["services"]["timer_active"]
+            except Exception as e:
+                logger.debug(f"Could not add timer_active: {e}")
+                
+            # Update Supabase
+            response = self.supabase.table("cameras").update(status_data).eq("id", camera_id).execute()
             
-            # Update last update timestamp
-            last_update_file.write_text(str(current_time))
-            logger.info(f"📡 Status updated in Supabase for camera {self.camera_id}")
+            if hasattr(response, 'data') and response.data:
+                logger.info("✅ Camera status updated in Supabase")
+            else:
+                logger.warning("⚠️ No data returned from Supabase update")
+                
         except Exception as e:
             logger.error(f"❌ Error updating Supabase status: {e}")
     

@@ -27,6 +27,7 @@ def test_command(command, description):
             f"/usr/bin/{command}",
             f"/usr/local/bin/{command}",
             f"/opt/ezrec-backend/api/venv/bin/{command}",
+            f"/bin/{command}",
             command
         ]
         
