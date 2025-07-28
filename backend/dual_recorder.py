@@ -208,26 +208,21 @@ def detect_cameras():
         except Exception as e:
             logger.debug(f"Camera 0 not available: {e}")
         
-        # For dual camera setup, we'll use the same camera twice for testing
-        # In a real dual camera setup, you would have two physical cameras
-        if len(available_cameras) > 0:
-            logger.info(f"📷 Camera 1: Using same camera for dual setup")
-            available_cameras.append((1, available_cameras[0][1]))
-        
-        logger.info(f"🔍 Found {len(available_cameras)} camera(s)")
-        
-        if len(available_cameras) < 2:
-            logger.warning(f"⚠️ Only {len(available_cameras)} camera(s) detected. Need at least 2 for dual recording.")
+        # Check if we have multiple cameras available
+        if len(available_cameras) >= 2:
+            # We have multiple cameras - use them separately
+            camera_0_index = available_cameras[0][0]
+            camera_1_index = available_cameras[1][0]
+            logger.info(f"✅ Using separate cameras: Camera 0 (index {camera_0_index}) and Camera 1 (index {camera_1_index})")
+        elif len(available_cameras) == 1:
+            # Only one camera available - use single camera mode
+            logger.warning(f"⚠️ Only 1 camera detected. Using single camera mode.")
+            camera_0_index = available_cameras[0][0]
+            camera_1_index = None  # No second camera
+            logger.info(f"✅ Single camera mode: Camera 0 (index {camera_0_index})")
+        else:
+            logger.error(f"❌ No cameras detected")
             return None, None
-        
-        # For now, use the first camera for both positions
-        # In a real dual camera setup, you would have two different cameras
-        camera_0_index = 0
-        camera_1_index = 1
-        
-        logger.info(f"✅ Using camera 0 for both positions (testing mode)")
-        logger.info(f"✅ Camera 0 index: {camera_0_index}")
-        logger.info(f"✅ Camera 1 index: {camera_1_index}")
         
         return camera_0_index, camera_1_index
                 
@@ -670,15 +665,19 @@ class DualRecordingSession:
                 logger.error("❌ Failed to detect cameras")
                 return False
             
-            # Create camera recorders
+            # Create camera recorders based on available cameras
             self.camera0_recorder = CameraRecorder(camera0_index, CAMERA_0_NAME, self.camera0_file)
-            self.camera1_recorder = CameraRecorder(camera1_index, CAMERA_1_NAME, self.camera1_file)
             
-            # Start recording on both cameras with individual error handling
-            logger.info("🎥 Starting camera recordings...")
+            if camera1_index is not None:
+                self.camera1_recorder = CameraRecorder(camera1_index, CAMERA_1_NAME, self.camera1_file)
+                logger.info("🎥 Starting dual camera recordings...")
+            else:
+                self.camera1_recorder = None
+                logger.info("🎥 Starting single camera recording...")
             
+            # Start recording on available cameras
             cam0_started = self.camera0_recorder.start_recording()
-            cam1_started = self.camera1_recorder.start_recording()
+            cam1_started = self.camera1_recorder.start_recording() if self.camera1_recorder else False
             
             # Handle partial success scenarios
             if not cam0_started and not cam1_started:
@@ -754,6 +753,8 @@ class DualRecordingSession:
             if self.camera1_recorder:
                 logger.info("🛑 Stopping camera 1 recording...")
                 self.camera1_recorder.stop_recording()
+            else:
+                logger.info("🛑 Single camera mode - only camera 0 was recording")
             
             self.active = False
             
@@ -774,6 +775,10 @@ class DualRecordingSession:
             
             cam0_success = self.camera0_recorder.success if self.camera0_recorder else False
             cam1_success = self.camera1_recorder.success if self.camera1_recorder else False
+            
+            # Determine recording mode
+            dual_camera_mode = self.camera1_recorder is not None
+            logger.info(f"📊 Recording mode: {'Dual camera' if dual_camera_mode else 'Single camera'}")
             
             if self.camera0_file.exists():
                 cam0_size = self.camera0_file.stat().st_size
