@@ -162,10 +162,10 @@ sudo -u $CURRENT_USER venv/bin/pip install fastapi uvicorn python-multipart jinj
 sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz email-validator
 
 # Fix numpy version conflict before installing opencv
-echo "🔧 Fixing numpy version conflict..."
+echo "🔧 Pinning numpy to <2.3.0 for OpenCV compatibility..."
 sudo -u $CURRENT_USER venv/bin/pip install "numpy<2.3.0" --force-reinstall
+echo "🔧 Installing OpenCV headless..."
 sudo -u $CURRENT_USER venv/bin/pip install opencv-python-headless
-sudo -u $CURRENT_USER venv/bin/pip install numpy --upgrade
 
 # Install picamera2 system packages (CRITICAL FIX)
 echo "📷 Installing picamera2 system packages..."

@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-Simple system readiness test
-- Checks basic dependencies
-- Validates camera setup
-- Tests API endpoints
-- Provides clear pass/fail results
+System readiness test for EZREC backend
 """
 
 import os
+from dotenv import load_dotenv
+
+# Load /opt/ezrec-backend/.env so tests see the variables
+load_dotenv("/opt/ezrec-backend/.env", override=True)
+
 import sys
 import subprocess
-import json
 import requests
+import json
 from pathlib import Path
 
 def test_command(command, description):

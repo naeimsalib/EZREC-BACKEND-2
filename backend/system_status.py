@@ -1,26 +1,70 @@
 #!/usr/bin/env python3
 """
 EZREC System Status Monitor
-- Monitors system health and reports status
-- Checks services, disk space, camera availability
-- Reports to Supabase for remote monitoring
+Monitors system health and reports status to Supabase
 """
 
 import os
 import sys
-import time
 import json
 import logging
 import subprocess
 import psutil
 import pytz
-from pathlib import Path
 from datetime import datetime
+from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
 
-# Load environment
-load_dotenv("/opt/ezrec-backend/.env", override=True)
+# Monkey patch Picamera2 to fix _preview attribute error
+try:
+    from picamera2 import Picamera2
+    
+    # Store the original close method
+    original_close = Picamera2.close
+    
+    def safe_close(self):
+        """Safe close method that handles missing _preview attribute"""
+        try:
+            if hasattr(self, '_preview'):
+                return original_close(self)
+            else:
+                # If _preview doesn't exist, just clean up what we can
+                if hasattr(self, '_camera'):
+                    self._camera = None
+                if hasattr(self, '_encoder'):
+                    self._encoder = None
+        except Exception as e:
+            # Silently ignore errors during cleanup
+            pass
+    
+    # Replace the close method
+    Picamera2.close = safe_close
+    
+    # Also patch the __del__ method to be safer
+    original_del = Picamera2.__del__
+    
+    def safe_del(self):
+        """Safe destructor that handles missing attributes"""
+        try:
+            if hasattr(self, '_preview'):
+                return original_del(self)
+        except Exception:
+            # Silently ignore errors during destruction
+            pass
+    
+    Picamera2.__del__ = safe_del
+    
+except ImportError:
+    pass  # Picamera2 not available, continue without it
+
+# Load environment variables
+dotenv_path = "/opt/ezrec-backend/.env"
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
+else:
+    print(f"❌ .env file not found at {dotenv_path}")
+    sys.exit(1)
 
 # Configuration
 TIMEZONE_NAME = os.getenv("TIMEZONE", "UTC")
@@ -178,9 +222,30 @@ class SystemStatusMonitor:
         
         return service_status
     
+    def is_capture_device(self, device_path):
+        """Check if a video device supports capture"""
+        try:
+            result = subprocess.run(
+                ['v4l2-ctl', '--device', device_path, '--all'],
+                capture_output=True, text=True, timeout=5
+            )
+            return 'Video Capture' in result.stdout
+        except Exception:
+            return False
+    
     def check_camera_availability(self):
         """Check if cameras are available"""
         try:
+            # Check for video devices first
+            video_devices = []
+            for i in range(10):  # Check up to 10 video devices
+                device_path = f"/dev/video{i}"
+                if os.path.exists(device_path):
+                    if self.is_capture_device(device_path):
+                        video_devices.append(device_path)
+                    else:
+                        logger.debug(f"Skipping {device_path}: no capture support")
+            
             # Try to import picamera2
             try:
                 from picamera2 import Picamera2
@@ -193,10 +258,11 @@ class SystemStatusMonitor:
                 return {
                     "status": "error",
                     "available": False,
-                    "error": "Picamera2 not available"
+                    "error": "Picamera2 not available",
+                    "video_devices": video_devices
                 }
             
-            # Try to detect cameras
+            # Try to detect cameras using Picamera2
             available_cameras = []
             for i in range(4):  # Check up to 4 camera indices
                 try:
@@ -215,7 +281,8 @@ class SystemStatusMonitor:
                 "status": "healthy" if len(available_cameras) >= 2 else "warning",
                 "available": True,
                 "camera_count": len(available_cameras),
-                "cameras": available_cameras
+                "cameras": available_cameras,
+                "video_devices": video_devices
             }
             
         except Exception as e:
@@ -396,7 +463,7 @@ class SystemStatusMonitor:
         # Check services
         inactive_services = []
         for service_name, service_status in report["services"].items():
-            if not service_status.get("active", False):
+            if not service_status.get("active", False) and "system_status" not in service_name:
                 inactive_services.append(service_name)
         
         if inactive_services:
