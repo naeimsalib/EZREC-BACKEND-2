@@ -110,10 +110,9 @@ class Booking(BaseModel):
     user_id: str
     start_time: str
     end_time: str
-    date: str
+    date: Optional[str] = None
     camera_id: Optional[str] = None
     recording_id: Optional[str] = None
-    booking_id: str
     email: Optional[str] = None
 
 class SystemSettings(BaseModel):
@@ -252,24 +251,30 @@ def post_bookings(bookings: List[Booking]):
     try:
         logger.info(f"📥 Received {len(bookings)} bookings via POST")
         
+        # Ensure the local_data directory exists
+        BOOKINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        
         # Validate each booking
-        for booking in bookings:
-            logger.info(f"➡️ Validating booking: {booking.dict()}")
+        for i, booking in enumerate(bookings):
+            logger.info(f"➡️ Validating booking {i+1}: {booking.dict()}")
             
             # Parse booking times
             try:
                 start_time = datetime.fromisoformat(booking.start_time.replace('Z', '+00:00'))
                 end_time = datetime.fromisoformat(booking.end_time.replace('Z', '+00:00'))
             except ValueError as e:
+                logger.error(f"❌ Invalid booking time format for booking {i+1}: {e}")
                 raise HTTPException(status_code=400, detail=f"Invalid booking time format: {e}")
             
             # Check if booking ends in the past
             now = datetime.now(timezone.utc)
             if end_time <= now:
+                logger.error(f"❌ Booking {i+1} ends in the past: {end_time}")
                 raise HTTPException(status_code=400, detail="Booking ends in the past")
             
             # Check if start time is after end time
             if start_time >= end_time:
+                logger.error(f"❌ Invalid booking times for booking {i+1}: start {start_time} >= end {end_time}")
                 raise HTTPException(status_code=400, detail="Invalid booking times: start must be before end")
             
             # Check for overlapping bookings
@@ -287,6 +292,7 @@ def post_bookings(bookings: List[Booking]):
                     
                     # Check for overlap (not (booking.end <= existing.start or booking.start >= existing.end))
                     if not (end_time <= existing_start or start_time >= existing_end):
+                        logger.error(f"❌ Booking {i+1} overlaps with existing booking {existing_booking.get('id', 'unknown')}")
                         raise HTTPException(
                             status_code=409, 
                             detail=f"Booking overlaps with existing booking {existing_booking.get('id', 'unknown')}"
@@ -305,13 +311,21 @@ def post_bookings(bookings: List[Booking]):
 
         combined = existing + [b.dict() for b in bookings]
         unique = {b["id"]: b for b in combined}.values()
-        BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
+        
+        try:
+            BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
+            logger.info(f"✅ Successfully saved {len(bookings)} bookings to {BOOKINGS_FILE}")
+        except Exception as e:
+            logger.error(f"❌ Failed to write bookings file: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to write bookings file: {e}")
 
         return {"message": "Bookings saved", "count": len(bookings)}
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"❌ Error saving bookings: {e}")
+        logger.error(f"❌ Unexpected error saving bookings: {e}")
+        import traceback
+        logger.error(f"📋 Traceback: {traceback.format_exc()}")
         raise HTTPException(status_code=500, detail="Failed to save bookings")
 
 @app.put("/bookings/{booking_id}")
