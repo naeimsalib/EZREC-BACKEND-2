@@ -80,25 +80,15 @@ def test_extract_booking_id():
             ("", ""),
         ]
         
-        all_passed = True
         for filename, expected in test_cases:
             result = extract_booking_id_from_filename(filename)
-            if result == expected:
-                print(f"✅ {filename} -> {result}")
-            else:
-                print(f"❌ {filename} -> {result} (expected: {expected})")
-                all_passed = False
+            assert result == expected, f"Expected '{expected}' for '{filename}', got '{result}'"
         
-        if all_passed:
-            print("✅ All extract_booking_id_from_filename tests passed!")
-        else:
-            print("❌ Some tests failed!")
-        
-        return all_passed
+        print("✅ All extract_booking_id_from_filename tests passed!")
         
     except Exception as e:
         print(f"❌ Error testing extract_booking_id_from_filename: {e}")
-        return False
+        assert False
     finally:
         # Restore original logging configuration
         logging.getLogger().handlers.clear()
@@ -137,20 +127,14 @@ def test_system_status_import():
         
         # Import the modified version
         sys.path.insert(0, "/tmp")
-        from test_system_status import SystemStatusMonitor
+        import system_status
         
         print("✅ system_status.py can be imported successfully")
-        
-        # Clean up
-        os.unlink("/tmp/test_system_status.py")
-        if os.path.exists("/tmp/test_system_status.log"):
-            os.unlink("/tmp/test_system_status.log")
-        
-        return True
+        assert True
         
     except Exception as e:
         print(f"❌ Error testing system_status import: {e}")
-        return False
+        assert False
 
 def test_basic_imports():
     """Test basic imports"""
@@ -171,15 +155,14 @@ def test_basic_imports():
         
         import supabase
         print("✅ supabase imported successfully")
-        
-        return True
+        assert True
         
     except ImportError as e:
         print(f"❌ Import error: {e}")
-        return False
+        assert False
     except Exception as e:
         print(f"❌ Error testing imports: {e}")
-        return False
+        assert False
 
 def main():
     """Run all tests"""

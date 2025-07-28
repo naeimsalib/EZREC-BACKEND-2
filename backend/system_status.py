@@ -12,10 +12,14 @@ import logging
 import subprocess
 import psutil
 import pytz
+import shutil
 from datetime import datetime
 from pathlib import Path
 from dotenv import load_dotenv
 from supabase import create_client
+
+# Find systemctl path
+SYSTEMCTL = shutil.which("systemctl") or "/bin/systemctl"
 
 # Monkey patch Picamera2 to fix _preview attribute error
 try:
@@ -178,7 +182,7 @@ class SystemStatusMonitor:
         for service in services:
             try:
                 result = subprocess.run(
-                    ["/bin/systemctl", "is-active", service],
+                    [SYSTEMCTL, "is-active", service],
                     capture_output=True,
                     text=True,
                     timeout=10
@@ -203,7 +207,7 @@ class SystemStatusMonitor:
         
         # Check if system_status.timer is active
         try:
-            result = subprocess.run(['/bin/systemctl', 'is-active', 'system_status.timer'],
+            result = subprocess.run([SYSTEMCTL, 'is-active', 'system_status.timer'],
                                   capture_output=True, text=True, timeout=5)
             timer_active = result.returncode == 0
         except Exception as e:
@@ -247,15 +251,8 @@ class SystemStatusMonitor:
 
         # If Picamera2 sees <2 cameras, fallback to v4l2-ctl listing
         if cam_count < 2:
-            try:
-                res = subprocess.run(
-                    ["v4l2-ctl","--list-devices"],
-                    capture_output=True, text=True, timeout=5
-                )
-                devs = [l for l in res.stdout.splitlines() if "/dev/video" in l]
-                cam_count = len(devs)
-            except:
-                cam_count = 0
+            physical_cameras = self.list_physical_cameras()
+            cam_count = len(physical_cameras)
 
         status = "healthy" if cam_count >= 2 else "warning"
         return {
@@ -295,7 +292,6 @@ class SystemStatusMonitor:
         """Check if FFmpeg is available"""
         try:
             # Use shutil.which to find ffmpeg and ffprobe with fallbacks
-            import shutil
             
             ffmpeg_path = shutil.which("ffmpeg") or "/usr/bin/ffmpeg"
             ffprobe_path = shutil.which("ffprobe") or "/usr/bin/ffprobe"
@@ -514,30 +510,14 @@ class SystemStatusMonitor:
                 logger.warning("⚠️ CAMERA_ID not found in environment")
                 return
                 
-            # Prepare basic status data
-            status_data = {
+            # Use only guaranteed columns to avoid schema mismatches
+            basic_data = {
                 "status": report["overall_status"],
-                "last_updated": report["timestamp"],
-                "disk_usage": report["disk_usage"]["usage_percent"],
-                "memory_usage": report["memory_usage"]["usage_percent"],
-                "cpu_usage": report["cpu_usage"]["usage_percent"]
+                "last_updated": report["timestamp"]
             }
             
-            # Try to add optional fields one by one
-            try:
-                if "cameras" in report:
-                    status_data["camera_count"] = report["cameras"].get("camera_count", 0)
-            except Exception as e:
-                logger.debug(f"Could not add camera_count: {e}")
-                
-            try:
-                if "services" in report and "timer_active" in report["services"]:
-                    status_data["timer_active"] = report["services"]["timer_active"]
-            except Exception as e:
-                logger.debug(f"Could not add timer_active: {e}")
-                
             # Update Supabase using the global client
-            response = supabase.table("cameras").update(status_data).eq("id", camera_id).execute()
+            response = supabase.table("cameras").update(basic_data).eq("id", camera_id).execute()
             
             if hasattr(response, 'data') and response.data:
                 logger.info("✅ Camera status updated in Supabase")
@@ -574,6 +554,32 @@ class SystemStatusMonitor:
         except Exception as e:
             logger.error(f"❌ Error during health check: {e}")
             return None
+
+    def list_physical_cameras(self):
+        """Get list of physical camera devices using v4l2-ctl"""
+        try:
+            result = subprocess.run(
+                ["v4l2-ctl", "--list-devices"],
+                capture_output=True, text=True, timeout=5
+            )
+            if result.returncode != 0:
+                return []
+                
+            cameras = []
+            lines = result.stdout.splitlines()
+            for i, line in enumerate(lines):
+                if line.endswith(":"):
+                    # Next lines that start with a tab are nodes
+                    j = i + 1
+                    while j < len(lines) and lines[j].startswith("\t"):
+                        node = lines[j].strip().split()[0]
+                        if node.startswith("/dev/video"):
+                            cameras.append(node)
+                        j += 1
+            return cameras
+        except Exception as e:
+            logger.error(f"❌ Error listing physical cameras: {e}")
+            return []
 
 def main():
     """Main function"""
