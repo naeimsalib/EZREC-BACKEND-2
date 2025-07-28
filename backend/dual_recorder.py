@@ -943,14 +943,39 @@ def get_active_booking(bookings):
     
     # Fallback to legacy method
     now = datetime.now(LOCAL_TZ)
-    for booking in bookings:
+    logger.info(f"🔍 Checking {len(bookings)} bookings at {now.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+    logger.info(f"🔍 Looking for user_id: {USER_ID}, camera_id: {CAMERA_ID}")
+    
+    for i, booking in enumerate(bookings):
         try:
             start_time = parser.isoparse(booking["start_time"]).astimezone(LOCAL_TZ)
             end_time = parser.isoparse(booking["end_time"]).astimezone(LOCAL_TZ)
-        except Exception:
+            booking_user_id = booking.get("user_id")
+            booking_camera_id = booking.get("camera_id")
+            
+            logger.info(f"🔍 Booking {i}: {booking.get('id', 'unknown')}")
+            logger.info(f"   User ID: {booking_user_id} (expected: {USER_ID})")
+            logger.info(f"   Camera ID: {booking_camera_id} (expected: {CAMERA_ID})")
+            logger.info(f"   Start: {start_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            logger.info(f"   End: {end_time.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            logger.info(f"   Now: {now.strftime('%Y-%m-%d %H:%M:%S %Z')}")
+            
+            # Check if booking matches our criteria
+            user_match = booking_user_id == USER_ID
+            camera_match = booking_camera_id == CAMERA_ID
+            time_match = start_time <= now <= end_time
+            
+            logger.info(f"   User match: {user_match}, Camera match: {camera_match}, Time match: {time_match}")
+            
+            if user_match and camera_match and time_match:
+                logger.info(f"✅ Found active booking: {booking.get('id', 'unknown')}")
+                return booking
+                
+        except Exception as e:
+            logger.error(f"❌ Error processing booking {i}: {e}")
             continue
-        if booking.get("user_id") == USER_ID and booking.get("camera_id") == CAMERA_ID and start_time <= now <= end_time:
-            return booking
+    
+    logger.info("❌ No active booking found")
     return None
 
 def load_bookings():
@@ -1248,7 +1273,13 @@ def main():
                 
                 bookings = load_bookings()
                 now = datetime.now(LOCAL_TZ)
+                logger.info(f"📋 Loaded {len(bookings)} bookings from cache")
                 active_booking = get_active_booking(bookings)
+                
+                if active_booking:
+                    logger.info(f"🎯 Active booking found: {active_booking.get('id', 'unknown')}")
+                else:
+                    logger.info("⏳ No active booking found, waiting...")
                 
                 if current_session:
                     end_time = parser.isoparse(current_session.booking["end_time"]).astimezone(LOCAL_TZ)
