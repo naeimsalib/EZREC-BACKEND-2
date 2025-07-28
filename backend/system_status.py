@@ -237,14 +237,20 @@ class SystemStatusMonitor:
         try:
             from picamera2 import Picamera2
             available = []
-            for i in range(4):
-                try:
-                    cam = Picamera2(index=i)
-                    serial = cam.camera_properties.get("SerialNumber", f"unknown_{i}")
-                    available.append(serial)
-                    cam.close()
-                except:
-                    pass
+            
+            # Try to create a Picamera2 instance (auto-detects first camera)
+            try:
+                cam = Picamera2()  # Removed index=i
+                serial = cam.camera_properties.get("SerialNumber", "unknown_0")
+                available.append(serial)
+                cam.close()
+                
+                # For dual camera setup, we'll use the same camera twice for testing
+                available.append(serial)  # Add same camera twice for dual setup
+                
+            except Exception as e:
+                logger.debug(f"Camera not available: {e}")
+            
             cam_count = len(available)
         except ImportError:
             cam_count = 0

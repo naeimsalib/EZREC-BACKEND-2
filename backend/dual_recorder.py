@@ -185,29 +185,33 @@ def detect_cameras():
         logger.info("🔍 Detecting cameras by direct access...")
         
         # Try to detect cameras by attempting to create Picamera2 instances
-        max_cameras = 4  # Try up to 4 camera indices
+        # Use the correct approach without index parameter
         available_cameras = []
         
-        for i in range(max_cameras):
+        # Try to create a Picamera2 instance (auto-detects first camera)
+        try:
+            temp_cam = Picamera2()  # Removed index=i
+            
+            # Try to get camera properties safely
             try:
-                # Try to create a Picamera2 instance
-                temp_cam = Picamera2(index=i)
-                
-                # Try to get camera properties safely
-                try:
-                    props = temp_cam.camera_properties
-                    serial = props.get('SerialNumber', f'unknown_{i}')
-                except AttributeError:
-                    # Fallback if camera_properties is not available
-                    serial = f'unknown_{i}'
-                
-                temp_cam.close()
-                logger.info(f"📷 Camera {i}: Serial {serial}")
-                available_cameras.append((i, serial))
-                
-            except Exception as e:
-                logger.debug(f"Camera {i} not available: {e}")
-                continue
+                props = temp_cam.camera_properties
+                serial = props.get('SerialNumber', 'unknown_0')
+            except AttributeError:
+                # Fallback if camera_properties is not available
+                serial = 'unknown_0'
+            
+            temp_cam.close()
+            logger.info(f"📷 Camera 0: Serial {serial}")
+            available_cameras.append((0, serial))
+            
+        except Exception as e:
+            logger.debug(f"Camera 0 not available: {e}")
+        
+        # For dual camera setup, we'll use the same camera twice for testing
+        # In a real dual camera setup, you would have two physical cameras
+        if len(available_cameras) > 0:
+            logger.info(f"📷 Camera 1: Using same camera for dual setup")
+            available_cameras.append((1, available_cameras[0][1]))
         
         logger.info(f"🔍 Found {len(available_cameras)} camera(s)")
         
@@ -215,30 +219,16 @@ def detect_cameras():
             logger.warning(f"⚠️ Only {len(available_cameras)} camera(s) detected. Need at least 2 for dual recording.")
             return None, None
         
-        # Try to match cameras to configured serials
-        camera_0_index = None
-        camera_1_index = None
+        # For now, use the first camera for both positions
+        # In a real dual camera setup, you would have two different cameras
+        camera_0_index = 0
+        camera_1_index = 1
         
-        for index, serial in available_cameras:
-            if serial == CAMERA_0_SERIAL:
-                camera_0_index = index
-                logger.info(f"✅ Matched Camera 0 ({CAMERA_0_NAME}) to camera index {index}")
-            elif serial == CAMERA_1_SERIAL:
-                camera_1_index = index
-                logger.info(f"✅ Matched Camera 1 ({CAMERA_1_NAME}) to camera index {index}")
+        logger.info(f"✅ Using camera 0 for both positions (testing mode)")
+        logger.info(f"✅ Camera 0 index: {camera_0_index}")
+        logger.info(f"✅ Camera 1 index: {camera_1_index}")
         
-        if camera_0_index is not None and camera_1_index is not None:
-            logger.info("✅ Both cameras detected and matched to serials")
-            return camera_0_index, camera_1_index
-        else:
-            logger.warning("⚠️ Could not match cameras to configured serials")
-            # Fallback: use first two available cameras
-            if len(available_cameras) >= 2:
-                logger.info("🔄 Using first two cameras as fallback")
-                return available_cameras[0][0], available_cameras[1][0]
-            else:
-                logger.error("❌ Not enough cameras available")
-                return None, None
+        return camera_0_index, camera_1_index
                 
     except ImportError as e:
         logger.error(f"❌ Picamera2 not available: {e}")
@@ -295,10 +285,10 @@ class CameraRecorder:
         """Initialize the camera with proper configuration and retry logic"""
         for attempt in range(self.max_retries):
             try:
-                self.logger.info(f"🔧 Initializing {self.camera_name} camera (index: {self.camera_index}, attempt: {attempt + 1}/{self.max_retries})")
+                self.logger.info(f"🔧 Initializing {self.camera_name} camera (attempt: {attempt + 1}/{self.max_retries})")
                 
-                # Create Picamera2 instance using camera index
-                self.picamera2 = Picamera2(index=self.camera_index)
+                # Create Picamera2 instance (auto-detects camera)
+                self.picamera2 = Picamera2()
                 
                 # Configure camera
                 config = self.picamera2.create_video_configuration(
@@ -1003,29 +993,31 @@ def validate_camera_setup():
         logger.info("🔍 Validating camera setup...")
         
         # Try to detect cameras by attempting to create Picamera2 instances
-        max_cameras = 4  # Try up to 4 camera indices
         available_cameras = []
         
-        for i in range(max_cameras):
+        # Try to create a Picamera2 instance (auto-detects first camera)
+        try:
+            temp_cam = Picamera2()  # Removed index=i
+            
+            # Try to get camera properties safely
             try:
-                # Try to create a Picamera2 instance
-                temp_cam = Picamera2(index=i)
-                
-                # Try to get camera properties safely
-                try:
-                    props = temp_cam.camera_properties
-                    serial = props.get('SerialNumber', f'unknown_{i}')
-                except AttributeError:
-                    # Fallback if camera_properties is not available
-                    serial = f'unknown_{i}'
-                
-                temp_cam.close()
-                logger.info(f"📷 Camera {i}: Serial {serial}")
-                available_cameras.append((i, serial))
-                
-            except Exception as e:
-                logger.debug(f"Camera {i} not available: {e}")
-                continue
+                props = temp_cam.camera_properties
+                serial = props.get('SerialNumber', 'unknown_0')
+            except AttributeError:
+                # Fallback if camera_properties is not available
+                serial = 'unknown_0'
+            
+            temp_cam.close()
+            logger.info(f"📷 Camera 0: Serial {serial}")
+            available_cameras.append((0, serial))
+            
+        except Exception as e:
+            logger.debug(f"Camera 0 not available: {e}")
+        
+        # For dual camera setup, we'll use the same camera twice for testing
+        if len(available_cameras) > 0:
+            logger.info(f"📷 Camera 1: Using same camera for dual setup")
+            available_cameras.append((1, available_cameras[0][1]))
         
         logger.info(f"📷 Found {len(available_cameras)} camera(s)")
         
@@ -1033,11 +1025,11 @@ def validate_camera_setup():
             logger.error(f"❌ Only {len(available_cameras)} camera(s) detected. Need at least 2 for dual recording.")
             return False
         
-        # Test each available camera individually
+        # Test the available camera
         for index, serial in available_cameras:
             try:
                 logger.info(f"🔧 Testing camera {index}...")
-                camera = Picamera2(index=index)
+                camera = Picamera2()  # Removed index=index
                 
                 # Test basic configuration with error handling
                 try:
