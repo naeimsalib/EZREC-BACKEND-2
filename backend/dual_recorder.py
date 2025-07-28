@@ -309,14 +309,7 @@ class CameraRecorder:
                     bitrate=6000000,
                     repeat=False,
                     iperiod=30,
-                    qp=25,
-                    # Add parameters for better MP4 compatibility
-                    profile="baseline",
-                    level="4.1",
-                    # Ensure proper keyframe placement for MP4
-                    keyframe_interval=30,
-                    # Add B-frames for better compression (but may affect compatibility)
-                    b_frames=0
+                    qp=25
                 )
                 
                 self.logger.info(f"✅ {self.camera_name} camera initialized successfully")
