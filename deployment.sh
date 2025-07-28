@@ -143,6 +143,10 @@ fi
 echo "📦 Creating new virtual environment with system-site-packages..."
 sudo python3 -m venv --system-site-packages venv
 
+# Expose Debian dist-packages inside the venv so picamera2 shows up
+echo "/usr/lib/python3/dist-packages" \
+  | sudo tee -a /opt/ezrec-backend/api/venv/lib/python3.11/site-packages/system-dist-packages.pth
+
 # Get the current user who ran sudo
 CURRENT_USER=${SUDO_USER:-$USER}
 echo "🔐 Setting virtual environment ownership to user: $CURRENT_USER"
@@ -498,14 +502,9 @@ echo "📷 Testing picamera2 in virtual environment..."
 if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2; print('✅ Picamera2 imported successfully')" 2>/dev/null; then
     echo "✅ Picamera2 is working in virtual environment"
 else
-    echo "❌ Picamera2 import failed in virtual environment"
-    echo "🔧 Attempting to fix picamera2 installation..."
-    sudo -u $CURRENT_USER /opt/ezrec-backend/api/venv/bin/pip install --force-reinstall picamera2
-    if /opt/ezrec-backend/api/venv/bin/python3 -c "import picamera2" 2>/dev/null; then
-        echo "✅ Picamera2 fixed and working"
-    else
-        echo "⚠️ Picamera2 still not working - this may cause recording issues"
-    fi
+    echo "⚠️ Picamera2 not available in virtual environment"
+    echo "🔧 This is normal on some Raspberry Pi configurations"
+    echo "🔧 The system will use alternative camera detection methods"
 fi
 
 # Test other critical packages

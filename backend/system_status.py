@@ -512,8 +512,7 @@ class SystemStatusMonitor:
                 
             # Use only guaranteed columns to avoid schema mismatches
             basic_data = {
-                "status": report["overall_status"],
-                "last_updated": report["timestamp"]
+                "status": report["overall_status"]
             }
             
             # Update Supabase using the global client
