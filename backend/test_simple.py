@@ -45,13 +45,26 @@ def test_extract_booking_id():
             """Mock function for testing"""
             if not filename:
                 return ""
+            
             # Remove extension
-            name = filename.replace('.mp4', '').replace('.done', '').replace('.meta', '')
-            # Extract booking ID (everything after the first underscore)
-            parts = name.split('_')
-            if len(parts) >= 2:
-                return '_'.join(parts[1:])
-            return name
+            base = filename.replace('.mp4', '').replace('.done', '').replace('.meta', '')
+            
+            # Split by underscores
+            parts = base.split('_')
+            
+            # Drop leading all-digits parts
+            while parts and parts[0].isdigit():
+                parts.pop(0)
+            
+            # Drop trailing merge/done/error tags
+            if parts and parts[-1] in {"merged", "done", "error"}:
+                parts.pop(-1)
+            
+            # If we've stripped everything, fall back to the raw base
+            if not parts:
+                return base
+            
+            return "_".join(parts)
         
         # Add to sys.modules for consistency
         import types

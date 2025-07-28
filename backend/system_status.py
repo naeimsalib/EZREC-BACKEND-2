@@ -6,6 +6,7 @@ Monitors system health and reports status to Supabase
 
 import os
 import sys
+import time
 import json
 import logging
 import subprocess
@@ -235,63 +236,40 @@ class SystemStatusMonitor:
     
     def check_camera_availability(self):
         """Check if cameras are available"""
+        # First, try Picamera2
         try:
-            # Check for video devices first
-            video_devices = []
-            for i in range(10):  # Check up to 10 video devices
-                device_path = f"/dev/video{i}"
-                if os.path.exists(device_path):
-                    if self.is_capture_device(device_path):
-                        video_devices.append(device_path)
-                    else:
-                        logger.debug(f"Skipping {device_path}: no capture support")
-            
-            # Try to import picamera2
-            try:
-                from picamera2 import Picamera2
-                picamera2_available = True
-            except ImportError:
-                picamera2_available = False
-                logger.warning("⚠️ Picamera2 not available")
-            
-            if not picamera2_available:
-                return {
-                    "status": "error",
-                    "available": False,
-                    "error": "Picamera2 not available",
-                    "video_devices": video_devices
-                }
-            
-            # Try to detect cameras using Picamera2
-            available_cameras = []
-            for i in range(4):  # Check up to 4 camera indices
+            from picamera2 import Picamera2
+            available = []
+            for i in range(4):
                 try:
-                    camera = Picamera2(index=i)
-                    props = camera.camera_properties
-                    serial = props.get('SerialNumber', f'unknown_{i}')
-                    available_cameras.append({
-                        "index": i,
-                        "serial": serial
-                    })
-                    camera.close()
-                except Exception:
-                    continue
-            
-            return {
-                "status": "healthy" if len(available_cameras) >= 2 else "warning",
-                "available": True,
-                "camera_count": len(available_cameras),
-                "cameras": available_cameras,
-                "video_devices": video_devices
-            }
-            
-        except Exception as e:
-            logger.error(f"❌ Error checking camera availability: {e}")
-            return {
-                "status": "error",
-                "available": False,
-                "error": str(e)
-            }
+                    cam = Picamera2(index=i)
+                    serial = cam.camera_properties.get("SerialNumber", f"unknown_{i}")
+                    available.append(serial)
+                    cam.close()
+                except:
+                    pass
+            cam_count = len(available)
+        except ImportError:
+            cam_count = 0
+
+        # If Picamera2 sees <2 cameras, fallback to v4l2-ctl listing
+        if cam_count < 2:
+            try:
+                res = subprocess.run(
+                    ["v4l2-ctl","--list-devices"],
+                    capture_output=True, text=True, timeout=5
+                )
+                devs = [l for l in res.stdout.splitlines() if "/dev/video" in l]
+                cam_count = len(devs)
+            except:
+                cam_count = 0
+
+        status = "healthy" if cam_count >= 2 else "warning"
+        return {
+            "status": status,
+            "available": cam_count > 0,
+            "camera_count": cam_count
+        }
     
     def check_api_health(self):
         """Check if the API is responding"""

@@ -26,6 +26,7 @@ def test_command(command, description):
             shutil.which(command),
             f"/usr/bin/{command}",
             f"/usr/local/bin/{command}",
+            f"/opt/ezrec-backend/api/venv/bin/{command}",
             command
         ]
         
