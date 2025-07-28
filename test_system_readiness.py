@@ -23,7 +23,7 @@ def test_command(command, description):
         
         # Try multiple possible paths
         possible_paths = [
-            shutil.which(command),
+            shutil.which(command) or "",
             f"/usr/bin/{command}",
             f"/usr/local/bin/{command}",
             f"/opt/ezrec-backend/api/venv/bin/{command}",

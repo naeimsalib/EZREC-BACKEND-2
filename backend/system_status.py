@@ -536,8 +536,8 @@ class SystemStatusMonitor:
             except Exception as e:
                 logger.debug(f"Could not add timer_active: {e}")
                 
-            # Update Supabase
-            response = self.supabase.table("cameras").update(status_data).eq("id", camera_id).execute()
+            # Update Supabase using the global client
+            response = supabase.table("cameras").update(status_data).eq("id", camera_id).execute()
             
             if hasattr(response, 'data') and response.data:
                 logger.info("✅ Camera status updated in Supabase")
