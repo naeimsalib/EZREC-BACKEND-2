@@ -962,7 +962,7 @@ def get_active_booking(bookings):
             
             # Check if booking matches our criteria
             user_match = booking_user_id == USER_ID
-            camera_match = booking_camera_id == CAMERA_ID
+            camera_match = booking_camera_id == CAMERA_ID or booking_camera_id == "pi-001"
             time_match = start_time <= now <= end_time
             
             logger.info(f"   User match: {user_match}, Camera match: {camera_match}, Time match: {time_match}")
