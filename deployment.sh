@@ -171,6 +171,10 @@ sudo -u $CURRENT_USER venv/bin/pip install "numpy<2.3.0" --force-reinstall
 echo "🔧 Installing OpenCV headless..."
 sudo -u $CURRENT_USER venv/bin/pip install opencv-python-headless
 
+# Install Picamera2 & simplejpeg into the venv to avoid numpy.dtype conflicts
+echo "🔧 Installing Picamera2 & simplejpeg into the venv..."
+sudo -u $CURRENT_USER venv/bin/pip install picamera2 simplejpeg --no-cache-dir
+
 # Install picamera2 system packages (CRITICAL FIX)
 echo "📷 Installing picamera2 system packages..."
 if command -v apt-get &> /dev/null; then
@@ -402,15 +406,14 @@ sudo tee /etc/systemd/system/system_status.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC System Status Monitor
 After=network.target
-Type=oneshot
-RemainAfterExit=no
 
 [Service]
 Type=oneshot
+RemainAfterExit=no
 User=ezrec
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin
+Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
 StandardOutput=journal
 StandardError=journal
