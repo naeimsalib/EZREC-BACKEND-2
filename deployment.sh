@@ -139,13 +139,9 @@ if [ -d "venv" ]; then
     sudo rm -rf venv
 fi
 
-# Create new virtual environment with system-site-packages for picamera2
-echo "📦 Creating new virtual environment with system-site-packages..."
-sudo python3 -m venv --system-site-packages venv
-
-# Expose Debian dist-packages inside the venv so picamera2 shows up
-echo "/usr/lib/python3/dist-packages" \
-  | sudo tee -a /opt/ezrec-backend/api/venv/lib/python3.11/site-packages/system-dist-packages.pth
+# Create new virtual environment (isolated to avoid dependency conflicts)
+echo "📦 Creating new virtual environment..."
+sudo python3 -m venv venv
 
 # Get the current user who ran sudo
 CURRENT_USER=${SUDO_USER:-$USER}
@@ -160,28 +156,9 @@ sudo chmod -R 755 venv
 echo "📦 Installing Python dependencies..."
 cd /opt/ezrec-backend/api
 
-# Install dependencies with proper ownership
-echo "🔧 Installing Python packages..."
-sudo -u $CURRENT_USER venv/bin/pip install fastapi uvicorn python-multipart jinja2
-sudo -u $CURRENT_USER venv/bin/pip install supabase boto3 python-dotenv requests psutil pytz email-validator
-
-# Fix numpy version conflict before installing opencv
-echo "🔧 Pinning numpy to <2.3.0 for OpenCV compatibility..."
-sudo -u $CURRENT_USER venv/bin/pip install "numpy<2.3.0" --force-reinstall
-echo "🔧 Installing OpenCV headless..."
-sudo -u $CURRENT_USER venv/bin/pip install opencv-python-headless
-
-# Install Picamera2 & simplejpeg into the venv to avoid numpy.dtype conflicts
-echo "🔧 Installing Picamera2 & simplejpeg into the venv..."
-sudo -u $CURRENT_USER venv/bin/pip install picamera2 simplejpeg --no-cache-dir
-
-# Install picamera2 system packages (CRITICAL FIX)
-echo "📷 Installing picamera2 system packages..."
-if command -v apt-get &> /dev/null; then
-    echo "🔧 Installing system-wide picamera2 packages..."
-    sudo apt-get update
-    sudo apt-get install -y python3-libcamera python3-picamera2 || true
-fi
+# Install dependencies from requirements.txt
+echo "🔧 Installing Python packages from requirements.txt..."
+sudo -u $CURRENT_USER venv/bin/pip install -r /opt/ezrec-backend/requirements.txt
 
 # Test Python imports
 echo "🐍 Testing Python imports..."

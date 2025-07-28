@@ -1,21 +1,33 @@
-python-dotenv
-pytz
-psutil
-supabase
-gotrue
-httpx
-postgrest
-realtime
-storage3
-supafunc
-picamera2
-ffmpeg-python
-Flask
-Pillow
-numpy
-requests
-boto3
-fastapi
-uvicorn
-opencv-python
-speedtest-cli
+# Core web framework
+fastapi==0.116.1
+uvicorn==0.35.0
+python-multipart==0.0.20
+jinja2==3.1.2
+starlette==0.47.2
+
+# Database and API
+supabase==2.16.0
+pyjwt>=2.10.1,<3.0.0
+
+# AWS and cloud services
+boto3==1.39.14
+
+# System utilities
+psutil==5.9.5
+python-dotenv==1.0.0
+requests==2.31.0
+pytz==2025.2
+
+# Data validation
+email-validator==2.2.0
+
+# Computer vision and camera
+opencv-python-headless==4.12.0.88
+picamera2==0.3.30
+simplejpeg==1.8.2
+
+# NumPy (pinned for OpenCV compatibility)
+numpy<2.3.0,>=2.0.0
+
+# Date utilities
+python-dateutil==2.9.0.post0
