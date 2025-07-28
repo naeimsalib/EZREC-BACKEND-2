@@ -5,6 +5,7 @@ EZREC Dual Camera Recorder - Clean Architecture
 - Records from both cameras simultaneously using threads
 - Merges recordings using FFmpeg
 - Robust error handling and logging
+- USER PREFERENCE: Camera must be properly released to prevent stuck processes
 """
 
 import os
@@ -396,28 +397,10 @@ class CameraRecorder:
             self.stop_recording_internal()
     
     def stop_recording(self):
-        """Stop recording with timeout"""
+        """Stop recording with timeout and ensure proper cleanup"""
         self.recording = False
-        if self.thread:
-            # Wait for thread to finish with timeout
-            self.thread.join(timeout=30)  # Increased timeout for graceful shutdown
-            
-            if self.thread.is_alive():
-                self.logger.warning(f"⚠️ {self.camera_name} camera thread did not stop gracefully within timeout")
-                # Force stop the camera hardware
-                try:
-                    if self.picamera2:
-                        self.picamera2.stop_recording()
-                        self.picamera2.stop()
-                        self.picamera2.close()
-                        self.picamera2 = None
-                except Exception as e:
-                    self.logger.error(f"❌ Error force-stopping {self.camera_name} camera: {e}")
-            else:
-                self.logger.info(f"✅ {self.camera_name} camera thread stopped gracefully")
-    
-    def stop_recording_internal(self):
-        """Internal method to stop recording"""
+        
+        # Force stop the camera hardware immediately
         try:
             if self.picamera2:
                 if self.recording:
@@ -426,6 +409,44 @@ class CameraRecorder:
                 self.picamera2.stop()
                 self.picamera2.close()
                 self.picamera2 = None
+                self.logger.info(f"✅ {self.camera_name} camera hardware released")
+        except Exception as e:
+            self.logger.error(f"❌ Error force-stopping {self.camera_name} camera: {e}")
+        
+        if self.thread:
+            # Wait for thread to finish with timeout
+            self.thread.join(timeout=10)  # Reduced timeout for faster cleanup
+            
+            if self.thread.is_alive():
+                self.logger.warning(f"⚠️ {self.camera_name} camera thread did not stop gracefully within timeout")
+                # Force kill the thread if it's still alive
+                try:
+                    import _thread
+                    _thread.interrupt_main()
+                except:
+                    pass
+            else:
+                self.logger.info(f"✅ {self.camera_name} camera thread stopped gracefully")
+        
+        # Final cleanup check
+        if self.output_path.exists():
+            size = self.output_path.stat().st_size
+            self.logger.info(f"✅ {self.camera_name} recording completed: {size} bytes")
+            self.success = True
+        else:
+            self.logger.error(f"❌ {self.camera_name} recording file not found")
+    
+    def stop_recording_internal(self):
+        """Internal method to stop recording with enhanced cleanup"""
+        try:
+            if self.picamera2:
+                if self.recording:
+                    self.picamera2.stop_recording()
+                    time.sleep(2)  # Give time for file finalization
+                self.picamera2.stop()
+                self.picamera2.close()
+                self.picamera2 = None
+                self.logger.info(f"✅ {self.camera_name} camera hardware released")
             
             if self.output_path.exists():
                 size = self.output_path.stat().st_size
@@ -436,6 +457,13 @@ class CameraRecorder:
                 
         except Exception as e:
             self.logger.error(f"❌ Error stopping {self.camera_name} camera: {e}")
+            # Force cleanup even on error
+            try:
+                if self.picamera2:
+                    self.picamera2.close()
+                    self.picamera2 = None
+            except:
+                pass
 
     def _get_video_info(self, video_path: Path) -> dict:
         """Get video information using ffprobe"""
@@ -715,20 +743,31 @@ class DualRecordingSession:
             return False
 
     def stop(self):
-        """Stop dual camera recording"""
+        """Stop dual camera recording with enhanced cleanup"""
         logger.info("🛑 Stopping dual camera recording")
         
         try:
-            # Stop camera recordings
+            # Stop camera recordings with proper cleanup
             if self.camera0_recorder:
+                logger.info("🛑 Stopping camera 0 recording...")
                 self.camera0_recorder.stop_recording()
             if self.camera1_recorder:
+                logger.info("🛑 Stopping camera 1 recording...")
                 self.camera1_recorder.stop_recording()
             
             self.active = False
             
             # Wait for files to be finalized
             time.sleep(3)
+            
+            # Force cleanup any remaining camera resources
+            try:
+                import subprocess
+                # Kill any remaining camera processes
+                subprocess.run(['pkill', '-f', 'picamera2'], capture_output=True, timeout=5)
+                logger.info("✅ Forced cleanup of any remaining camera processes")
+            except Exception as e:
+                logger.warning(f"⚠️ Error during forced cleanup: {e}")
             
             # Check recording results
             logger.info("🔍 Checking camera recording files...")
@@ -981,14 +1020,33 @@ def trigger_upload(merged_file: Path, metadata: dict):
         return False
 
 def handle_exit(sig, frame):
-    """Handle graceful shutdown"""
+    """Handle graceful shutdown with enhanced camera cleanup"""
     logger.info("🛑 Received termination signal. Exiting gracefully.")
+    
+    # Stop active recording session
     if 'current_session' in globals() and current_session and current_session.active:
         logger.info("🛑 Stopping active recording before exit...")
         try:
             current_session.stop()
         except Exception as e:
             logger.error(f"❌ Error stopping recording during exit: {e}")
+    
+    # Force cleanup any remaining camera resources
+    try:
+        import subprocess
+        logger.info("🛑 Force cleaning up camera resources...")
+        subprocess.run(['pkill', '-f', 'picamera2'], capture_output=True, timeout=5)
+        subprocess.run(['pkill', '-f', 'dual_recorder'], capture_output=True, timeout=5)
+        logger.info("✅ Camera cleanup completed")
+    except Exception as e:
+        logger.warning(f"⚠️ Error during camera cleanup: {e}")
+    
+    # Update final status
+    try:
+        set_is_recording(False)
+    except Exception as e:
+        logger.error(f"❌ Error updating final status: {e}")
+    
     sys.exit(0)
 
 signal.signal(signal.SIGINT, handle_exit)
@@ -1339,10 +1397,20 @@ def main():
                 # Periodic health monitoring
                 current_time = time.time()
                 if current_time - last_health_check >= health_check_interval:
-                    # Simple health check - log system status
+                    # Enhanced health check - check for stuck camera processes
                     try:
                         disk_usage = psutil.disk_usage('/')
                         logger.info(f"📊 Health check - Disk usage: {disk_usage.percent:.1f}% used, {disk_usage.free / (1024**3):.1f} GB free")
+                        
+                        # Check for stuck camera processes
+                        import subprocess
+                        result = subprocess.run(['pgrep', '-f', 'picamera2'], capture_output=True, text=True)
+                        if result.returncode == 0:
+                            camera_pids = result.stdout.strip().split('\n')
+                            if len(camera_pids) > 2:  # More than expected
+                                logger.warning(f"⚠️ Found {len(camera_pids)} camera processes, cleaning up...")
+                                subprocess.run(['pkill', '-f', 'picamera2'], capture_output=True, timeout=5)
+                                logger.info("✅ Cleaned up stuck camera processes")
                     except Exception as e:
                         logger.warning(f"⚠️ Health check failed: {e}")
                     last_health_check = current_time
