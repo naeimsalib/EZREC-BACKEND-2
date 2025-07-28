@@ -748,8 +748,9 @@ class DualRecordingSession:
             else:
                 logger.error(f"❌ {CAMERA_1_NAME} recording file missing: {self.camera1_file}")
             
-            # Merge videos if both cameras recorded successfully
+            # Handle different recording scenarios
             if cam0_success and cam1_success:
+                # Both cameras recorded successfully - merge them
                 logger.info("✅ Both camera recordings completed")
                 
                 if merge_videos(self.camera0_file, self.camera1_file, self.merged_file, MERGE_METHOD):
@@ -798,12 +799,95 @@ class DualRecordingSession:
                     error_marker = self.merged_file.with_suffix('.error')
                     error_marker.touch()
                     logger.error("🔧 Created .error marker due to merge failure")
+                    
+            elif cam0_success and not cam1_success:
+                # Only camera 0 recorded successfully - use it as the merged file
+                logger.info("⚠️ Only camera 0 recorded successfully, using it as merged video")
+                
+                try:
+                    # Copy the single camera recording as the merged file
+                    import shutil
+                    shutil.copy2(self.camera0_file, self.merged_file)
+                    
+                    if self.merged_file.exists():
+                        merged_size = self.merged_file.stat().st_size
+                        logger.info(f"✅ Created single camera merged video: {self.merged_file.name} ({merged_size:,} bytes)")
+                        
+                        # Save metadata first
+                        metadata = self.save_metadata()
+                        
+                        # Trigger auto-upload if enabled
+                        if metadata:
+                            trigger_upload(self.merged_file, metadata)
+                        
+                        # Create .done marker
+                        done_marker = self.merged_file.with_suffix('.done')
+                        done_marker.touch()
+                        logger.info(f"✅ Created .done marker: {done_marker}")
+                        
+                        # Clean up individual camera file
+                        self.camera0_file.unlink(missing_ok=True)
+                        logger.info("✅ Cleaned up individual camera file")
+                        
+                    else:
+                        logger.error("❌ Failed to create single camera merged file")
+                        error_marker = self.merged_file.with_suffix('.error')
+                        error_marker.touch()
+                        logger.error("🔧 Created .error marker due to copy failure")
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error creating single camera merged file: {e}")
+                    error_marker = self.merged_file.with_suffix('.error')
+                    error_marker.touch()
+                    logger.error("🔧 Created .error marker due to copy error")
+                    
+            elif not cam0_success and cam1_success:
+                # Only camera 1 recorded successfully - use it as the merged file
+                logger.info("⚠️ Only camera 1 recorded successfully, using it as merged video")
+                
+                try:
+                    # Copy the single camera recording as the merged file
+                    import shutil
+                    shutil.copy2(self.camera1_file, self.merged_file)
+                    
+                    if self.merged_file.exists():
+                        merged_size = self.merged_file.stat().st_size
+                        logger.info(f"✅ Created single camera merged video: {self.merged_file.name} ({merged_size:,} bytes)")
+                        
+                        # Save metadata first
+                        metadata = self.save_metadata()
+                        
+                        # Trigger auto-upload if enabled
+                        if metadata:
+                            trigger_upload(self.merged_file, metadata)
+                        
+                        # Create .done marker
+                        done_marker = self.merged_file.with_suffix('.done')
+                        done_marker.touch()
+                        logger.info(f"✅ Created .done marker: {done_marker}")
+                        
+                        # Clean up individual camera file
+                        self.camera1_file.unlink(missing_ok=True)
+                        logger.info("✅ Cleaned up individual camera file")
+                        
+                    else:
+                        logger.error("❌ Failed to create single camera merged file")
+                        error_marker = self.merged_file.with_suffix('.error')
+                        error_marker.touch()
+                        logger.error("🔧 Created .error marker due to copy failure")
+                        
+                except Exception as e:
+                    logger.error(f"❌ Error creating single camera merged file: {e}")
+                    error_marker = self.merged_file.with_suffix('.error')
+                    error_marker.touch()
+                    logger.error("🔧 Created .error marker due to copy error")
+                    
             else:
-                logger.warning("⚠️ One or both camera recordings failed")
+                logger.error("❌ Both camera recordings failed")
                 # Create error marker to prevent infinite retries
                 error_marker = self.merged_file.with_suffix('.error')
                 error_marker.touch()
-                logger.error("🔧 Created .error marker to prevent infinite retries")
+                logger.error("🔧 Created .error marker due to both cameras failing")
             
             # Update booking status
             try:
