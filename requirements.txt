@@ -31,3 +31,9 @@ numpy<2.3.0,>=2.0.0
 
 # Date utilities
 python-dateutil==2.9.0.post0
+
+# File locking (for video processing)
+portalocker==2.7.0
+
+# Additional utilities for modular services
+dataclasses-json==0.6.4
