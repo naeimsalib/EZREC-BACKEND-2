@@ -1,1 +1,23 @@
- 
+[Unit]
+Description=EZREC Video Processing Worker Service
+After=network.target
+Wants=ezrec-api.service
+
+[Service]
+Type=simple
+User=ezrec
+Group=ezrec
+WorkingDirectory=/opt/ezrec-backend/backend
+Environment=PATH=/opt/ezrec-backend/backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 video_worker.py
+Restart=on-failure
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+ProtectSystem=full
+ProtectHome=yes
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target 
