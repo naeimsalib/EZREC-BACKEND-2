@@ -94,6 +94,13 @@ if missing:
     print(f"❌ Missing required environment variables: {missing}")
     sys.exit(1)
 
+# Configuration constants as per integration plan
+CAM_IDS = [0, 1]
+RESOLUTION = (1920, 1080)
+FRAMERATE = 30
+BITRATE = 6_000_000
+OUTPUT_DIR = Path("/opt/ezrec-backend/recordings")
+
 USER_ID = os.getenv('USER_ID')
 CAMERA_ID = os.getenv('CAMERA_ID')
 SUPABASE_URL = os.getenv('SUPABASE_URL')
@@ -101,7 +108,7 @@ SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
 BOOKING_CACHE_FILE = Path('/opt/ezrec-backend/api/local_data/bookings.json')
 RECORDINGS_DIR = Path('/opt/ezrec-backend/recordings/')
 LOG_FILE = Path('/opt/ezrec-backend/logs/dual_recorder.log')
-CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))
+CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '5'))  # Changed to 5s as per plan
 
 # Camera configuration
 CAMERA_0_SERIAL = os.getenv('CAMERA_0_SERIAL', '88000')
@@ -177,6 +184,31 @@ def set_is_recording(value: bool):
             json.dump(status, f, indent=2)
     except Exception as e:
         logger.error(f"❌ Failed to update recording status: {e}")
+
+def emit_event(event_type: str, booking_id: str, **kwargs):
+    """Emit an event file for inter-service communication"""
+    try:
+        events_dir = Path("/opt/ezrec-backend/events")
+        events_dir.mkdir(parents=True, exist_ok=True)
+        
+        event_file = events_dir / f"{event_type}_{booking_id}.event"
+        
+        # Create event with metadata
+        event_data = {
+            "event_type": event_type,
+            "booking_id": booking_id,
+            "timestamp": datetime.now().isoformat(),
+            **kwargs
+        }
+        
+        with open(event_file, 'w') as f:
+            json.dump(event_data, f, indent=2)
+        
+        logger.info(f"📤 Emitted {event_type} event for booking {booking_id}")
+        return event_file
+    except Exception as e:
+        logger.error(f"❌ Failed to emit {event_type} event: {e}")
+        return None
 
 def detect_cameras():
     """Detect available cameras by trying to access them directly and return camera indices"""
@@ -865,6 +897,12 @@ class DualRecordingSession:
                             done_marker.touch()
                             logger.info(f"✅ Created .done marker: {done_marker}")
                             
+                            # Emit recording_complete event as per integration plan
+                            emit_event("recording_complete", self.booking["id"], 
+                                     out0=str(self.camera0_file), 
+                                     out1=str(self.camera1_file),
+                                     merged=str(self.merged_file))
+                            
                             # Clean up individual camera files
                             self.camera0_file.unlink(missing_ok=True)
                             self.camera1_file.unlink(missing_ok=True)
@@ -915,6 +953,12 @@ class DualRecordingSession:
                         done_marker.touch()
                         logger.info(f"✅ Created .done marker: {done_marker}")
                         
+                        # Emit recording_complete event for single camera (cam0 only)
+                        emit_event("recording_complete", self.booking["id"], 
+                                 out0=str(self.camera0_file), 
+                                 out1=None,
+                                 merged=str(self.merged_file))
+                        
                         # Clean up individual camera file
                         self.camera0_file.unlink(missing_ok=True)
                         logger.info("✅ Cleaned up individual camera file")
@@ -955,6 +999,12 @@ class DualRecordingSession:
                         done_marker = self.merged_file.with_suffix('.done')
                         done_marker.touch()
                         logger.info(f"✅ Created .done marker: {done_marker}")
+                        
+                        # Emit recording_complete event for single camera (cam1 only)
+                        emit_event("recording_complete", self.booking["id"], 
+                                 out0=None, 
+                                 out1=str(self.camera1_file),
+                                 merged=str(self.merged_file))
                         
                         # Clean up individual camera file
                         self.camera1_file.unlink(missing_ok=True)
