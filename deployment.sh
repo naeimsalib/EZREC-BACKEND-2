@@ -12,22 +12,14 @@ echo "=================================="
 # 1. STOP ALL EXISTING SERVICES
 #------------------------------#
 echo "🛑 Stopping all existing services..."
-sudo systemctl stop dual_camera.service 2>/dev/null || true
-sudo systemctl stop booking_watcher.service 2>/dev/null || true
-sudo systemctl stop stitcher.service 2>/dev/null || true
-sudo systemctl stop video_processor.service 2>/dev/null || true
-sudo systemctl stop uploader.service 2>/dev/null || true
+sudo systemctl stop dual_recorder.service 2>/dev/null || true
 sudo systemctl stop video_worker.service 2>/dev/null || true
 sudo systemctl stop ezrec-api.service 2>/dev/null || true
 sudo systemctl stop system_status.service 2>/dev/null || true
 
 # Kill any remaining processes
 echo "🔪 Killing remaining processes..."
-sudo pkill -f "dual_camera.py" 2>/dev/null || true
-sudo pkill -f "booking_watcher.py" 2>/dev/null || true
-sudo pkill -f "stitcher.py" 2>/dev/null || true
-sudo pkill -f "video_processor.py" 2>/dev/null || true
-sudo pkill -f "uploader.py" 2>/dev/null || true
+sudo pkill -f "dual_recorder.py" 2>/dev/null || true
 sudo pkill -f "video_worker.py" 2>/dev/null || true
 sudo pkill -f "api_server.py" 2>/dev/null || true
 
@@ -309,12 +301,40 @@ sudo chmod -R 755 /opt/ezrec-backend/api/venv
 sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
 
 #------------------------------#
-# 10. CREATE SYSTEMD SERVICE FILES
+# 10. INSTALL SYSTEMD SERVICE FILES
 #------------------------------#
-echo "⚙️ Creating systemd service files..."
+echo "⚙️ Installing systemd service files..."
 
-# Create proper dual_camera service
-sudo tee /etc/systemd/system/dual_camera.service > /dev/null << 'EOF'
+# Copy systemd service files from the systemd folder
+if [ -d "/opt/ezrec-backend/systemd" ]; then
+    echo "📁 Copying systemd service files..."
+    
+    # Copy all .service files
+    for service_file in /opt/ezrec-backend/systemd/*.service; do
+        if [ -f "$service_file" ]; then
+            service_name=$(basename "$service_file")
+            echo "📋 Installing $service_name..."
+            sudo cp "$service_file" "/etc/systemd/system/"
+            sudo chmod 644 "/etc/systemd/system/$service_name"
+        fi
+    done
+    
+    # Copy all .timer files
+    for timer_file in /opt/ezrec-backend/systemd/*.timer; do
+        if [ -f "$timer_file" ]; then
+            timer_name=$(basename "$timer_file")
+            echo "📋 Installing $timer_name..."
+            sudo cp "$timer_file" "/etc/systemd/system/"
+            sudo chmod 644 "/etc/systemd/system/$timer_name"
+        fi
+    done
+    
+    echo "✅ Systemd service files installed"
+else
+    echo "⚠️ Systemd folder not found, creating basic services..."
+    
+    # Create basic dual_recorder service
+    sudo tee /etc/systemd/system/dual_recorder.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC Dual Camera Recorder
 After=network.target
@@ -325,7 +345,7 @@ User=ezrec
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/dual_camera.py
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -340,112 +360,8 @@ CapabilityBoundingSet=CAP_SYS_ADMIN CAP_SYS_RAWIO
 WantedBy=multi-user.target
 EOF
 
-# Create booking_watcher service
-sudo tee /etc/systemd/system/booking_watcher.service > /dev/null << 'EOF'
-[Unit]
-Description=EZREC Booking Watcher
-After=network.target
-
-[Service]
-Type=simple
-User=ezrec
-Group=ezrec
-WorkingDirectory=/opt/ezrec-backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/booking_watcher.py
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-ProtectSystem=full
-ProtectHome=yes
-NoNewPrivileges=true
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Create stitcher service
-sudo tee /etc/systemd/system/stitcher.service > /dev/null << 'EOF'
-[Unit]
-Description=EZREC Video Stitcher
-After=network.target
-
-[Service]
-Type=simple
-User=ezrec
-Group=ezrec
-WorkingDirectory=/opt/ezrec-backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/stitcher.py
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-ProtectSystem=full
-ProtectHome=yes
-NoNewPrivileges=true
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Create video_processor service
-sudo tee /etc/systemd/system/video_processor.service > /dev/null << 'EOF'
-[Unit]
-Description=EZREC Video Processor
-After=network.target
-
-[Service]
-Type=simple
-User=ezrec
-Group=ezrec
-WorkingDirectory=/opt/ezrec-backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/video_processor.py
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-ProtectSystem=full
-ProtectHome=yes
-NoNewPrivileges=true
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Create uploader service
-sudo tee /etc/systemd/system/uploader.service > /dev/null << 'EOF'
-[Unit]
-Description=EZREC Video Uploader
-After=network.target
-
-[Service]
-Type=simple
-User=ezrec
-Group=ezrec
-WorkingDirectory=/opt/ezrec-backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/uploader.py
-Restart=on-failure
-RestartSec=10
-StandardOutput=journal
-StandardError=journal
-ProtectSystem=full
-ProtectHome=yes
-NoNewPrivileges=true
-PrivateTmp=true
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Create proper video_worker service
-sudo tee /etc/systemd/system/video_worker.service > /dev/null << 'EOF'
+    # Create basic video_worker service
+    sudo tee /etc/systemd/system/video_worker.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC Video Processor
 After=network.target
@@ -470,8 +386,8 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-# Create proper ezrec-api service
-sudo tee /etc/systemd/system/ezrec-api.service > /dev/null << 'EOF'
+    # Create basic ezrec-api service
+    sudo tee /etc/systemd/system/ezrec-api.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC FastAPI Backend
 After=network.target
@@ -496,8 +412,8 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-# Create system_status service (one-shot service for timer)
-sudo tee /etc/systemd/system/system_status.service > /dev/null << 'EOF'
+    # Create system_status service (one-shot service for timer)
+    sudo tee /etc/systemd/system/system_status.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC System Status Monitor
 After=network.target
@@ -518,8 +434,8 @@ TimeoutStartSec=60
 WantedBy=multi-user.target
 EOF
 
-# Create system_status timer
-sudo tee /etc/systemd/system/system_status.timer > /dev/null << 'EOF'
+    # Create system_status timer
+    sudo tee /etc/systemd/system/system_status.timer > /dev/null << 'EOF'
 [Unit]
 Description=EZREC System Status Monitor Timer
 After=network.target
@@ -532,6 +448,9 @@ Unit=system_status.service
 [Install]
 WantedBy=timers.target
 EOF
+
+    echo "✅ Basic systemd services created"
+fi
 
 #------------------------------#
 # 11. RELOAD SYSTEMD
@@ -638,7 +557,7 @@ sudo usermod -a -G video ezrec
 
 # Reset failed services before enabling
 echo "🔄 Resetting failed services..."
-sudo systemctl reset-failed dual_camera.service 2>/dev/null || true
+sudo systemctl reset-failed dual_recorder.service 2>/dev/null || true
 sudo systemctl reset-failed booking_watcher.service 2>/dev/null || true
 sudo systemctl reset-failed stitcher.service 2>/dev/null || true
 sudo systemctl reset-failed video_processor.service 2>/dev/null || true
@@ -648,7 +567,7 @@ sudo systemctl reset-failed ezrec-api.service 2>/dev/null || true
 sudo systemctl reset-failed system_status.service 2>/dev/null || true
 
 # Enable all services
-sudo systemctl enable dual_camera.service || { echo "❌ Failed to enable dual_camera.service"; exit 1; }
+sudo systemctl enable dual_recorder.service || { echo "❌ Failed to enable dual_recorder.service"; exit 1; }
 sudo systemctl enable booking_watcher.service || { echo "❌ Failed to enable booking_watcher.service"; exit 1; }
 sudo systemctl enable stitcher.service || { echo "❌ Failed to enable stitcher.service"; exit 1; }
 sudo systemctl enable video_processor.service || { echo "❌ Failed to enable video_processor.service"; exit 1; }
@@ -661,11 +580,8 @@ sudo systemctl enable system_status.timer || { echo "❌ Failed to enable system
 # Validate critical files exist before starting services
 echo "🔍 Validating critical files..."
 critical_files=(
-    "/opt/ezrec-backend/backend/dual_camera.py"
-    "/opt/ezrec-backend/backend/booking_watcher.py"
-    "/opt/ezrec-backend/backend/stitcher.py"
-    "/opt/ezrec-backend/backend/video_processor.py"
-    "/opt/ezrec-backend/backend/uploader.py"
+    "/opt/ezrec-backend/backend/dual_recorder.py"
+    "/opt/ezrec-backend/backend/video_worker.py"
     "/opt/ezrec-backend/backend/video_worker.py"
     "/opt/ezrec-backend/backend/system_status.py"
     "/opt/ezrec-backend/api/api_server.py"
@@ -743,7 +659,7 @@ fi
 
 # Restart all services (safer than individual starts)
 echo "🔄 Restarting all services..."
-sudo systemctl restart dual_camera.service booking_watcher.service stitcher.service video_processor.service uploader.service video_worker.service ezrec-api.service system_status.service
+sudo systemctl restart dual_recorder.service video_worker.service ezrec-api.service system_status.service
 sudo systemctl start system_status.timer || { echo "❌ Failed to start system_status.timer"; exit 1; }
 
 #------------------------------#
@@ -813,7 +729,7 @@ echo "📊 Service Status Summary:"
 echo "=========================="
 
 # Check each service individually
-services=("dual_camera.service" "booking_watcher.service" "stitcher.service" "video_processor.service" "uploader.service" "video_worker.service" "ezrec-api.service" "system_status.service")
+services=("dual_recorder.service" "video_worker.service" "ezrec-api.service" "system_status.service")
 for service in "${services[@]}"; do
     if sudo systemctl is-active --quiet "$service"; then
         echo "✅ $service: ACTIVE"
