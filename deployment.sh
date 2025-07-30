@@ -145,7 +145,6 @@ sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend
 
 # Set permissions
 sudo chmod -R 755 /opt/ezrec-backend
-sudo chmod 644 /opt/ezrec-backend/.env 2>/dev/null || true
 sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
 
 #------------------------------#

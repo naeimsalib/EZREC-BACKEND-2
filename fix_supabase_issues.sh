@@ -9,31 +9,19 @@ if [ -f "/opt/ezrec-backend/.env" ]; then
     echo "✅ .env file exists"
     echo "📋 Current .env content:"
     cat /opt/ezrec-backend/.env | grep -E "(SUPABASE|AWS)" || echo "⚠️ No Supabase/AWS keys found"
+    echo ""
+    echo "⚠️ IMPORTANT: Your .env file has been preserved!"
+    echo "⚠️ No modifications will be made to your existing .env file."
 else
     echo "❌ .env file not found"
-    echo "📝 Creating .env file with template..."
-    sudo -u ezrec tee /opt/ezrec-backend/.env > /dev/null << 'EOF'
-# Supabase Configuration
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
-
-# AWS Configuration (optional)
-AWS_ACCESS_KEY_ID=your_aws_access_key_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=your_s3_bucket_name_here
-
-# Camera Configuration
-CAMERA_0_SERIAL=88000
-CAMERA_1_SERIAL=80000
-DUAL_CAMERA_MODE=true
-
-# Recording Configuration
-RECORDING_QUALITY=high
-MERGE_METHOD=side_by_side
-EOF
-    echo "✅ Created .env template"
+    echo "📝 Please create your .env file manually:"
+    echo "   sudo nano /opt/ezrec-backend/.env"
+    echo ""
+    echo "📋 Required variables:"
+    echo "   SUPABASE_URL=your_supabase_url"
+    echo "   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
+    echo "   USER_ID=your_user_id"
+    echo "   CAMERA_ID=your_camera_id"
 fi
 
 # Fix missing update_booking_status function in API

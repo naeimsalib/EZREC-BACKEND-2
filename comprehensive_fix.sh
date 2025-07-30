@@ -39,7 +39,7 @@ sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend
 
 # Set proper permissions
 sudo chmod -R 755 /opt/ezrec-backend
-sudo chmod 644 /opt/ezrec-backend/.env 2>/dev/null || true
+# Note: .env file permissions are not modified to preserve user configuration
 
 #------------------------------#
 # 3. REMOVE AND RECREATE VIRTUAL ENVIRONMENTS
