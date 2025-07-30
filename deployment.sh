@@ -111,6 +111,10 @@ sudo chown -R ezrec:ezrec /opt/ezrec-backend
 # 7. SETUP PYTHON VIRTUAL ENVIRONMENTS
 log "7. Setting up Python virtual environments..."
 
+# Ensure proper ownership before creating virtual environments
+log "Setting proper ownership for virtual environment creation..."
+sudo chown -R michomanoly14892:michomanoly14892 /opt/ezrec-backend
+
 # Backend virtual environment - create as michomanoly14892 user
 log "Setting up backend virtual environment..."
 cd /opt/ezrec-backend/backend
@@ -193,7 +197,6 @@ EOF
 
 # Fix 4: Set proper permissions
 log "Setting proper permissions..."
-sudo chown -R michomanoly14892:michomanoly14892 /opt/ezrec-backend
 sudo chmod -R 755 /opt/ezrec-backend
 sudo chmod 644 /opt/ezrec-backend/.env 2>/dev/null || true
 
