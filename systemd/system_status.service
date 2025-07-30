@@ -8,8 +8,8 @@ RemainAfterExit=yes
 User=ezrec
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/backend
-Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
+Environment=PATH=/opt/ezrec-backend/backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py
 StandardOutput=journal
 StandardError=journal
 TimeoutStartSec=60
