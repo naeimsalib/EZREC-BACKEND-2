@@ -3,7 +3,8 @@ Description=EZREC Video Processing Worker Service
 After=network.target
 
 [Service]
-User=ezrec
+User=michomanoly14892
+EnvironmentFile=/opt/ezrec-backend/.env
 Group=video
 # run in the backend folder so "import video_worker" etc. works
 WorkingDirectory=/opt/ezrec-backend/backend

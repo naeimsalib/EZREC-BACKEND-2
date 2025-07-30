@@ -4,7 +4,8 @@ After=network.target
 
 [Service]
 Type=simple
-User=ezrec
+User=michomanoly14892
+EnvironmentFile=/opt/ezrec-backend/.env
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/api
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin

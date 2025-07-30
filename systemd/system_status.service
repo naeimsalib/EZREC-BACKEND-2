@@ -5,7 +5,8 @@ After=network.target
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-User=ezrec
+User=michomanoly14892
+EnvironmentFile=/opt/ezrec-backend/.env
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/backend
 Environment=PATH=/opt/ezrec-backend/backend/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
