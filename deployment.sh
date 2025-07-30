@@ -30,9 +30,17 @@ sudo pkill -f "api_server.py" 2>/dev/null || true
 sudo pkill -f "system_status.py" 2>/dev/null || true
 
 #------------------------------#
-# 2. CLEANUP OLD INSTALLATION
+# 2. CLEANUP OLD INSTALLATION (PRESERVING .env)
 #------------------------------#
 echo "🧹 Cleaning up old installation..."
+
+# Preserve .env file if it exists
+ENV_BACKUP="/tmp/ezrec_env_backup"
+if [ -f "/opt/ezrec-backend/.env" ]; then
+    echo "📄 Backing up existing .env file..."
+    sudo cp /opt/ezrec-backend/.env "$ENV_BACKUP"
+    echo "✅ .env file backed up to $ENV_BACKUP"
+fi
 
 # Remove old installation if it exists
 if [ -d "/opt/ezrec-backend" ]; then
@@ -50,6 +58,19 @@ sudo mkdir -p /opt/ezrec-backend
 
 # Copy all files
 sudo cp -r . /opt/ezrec-backend/
+
+# Restore .env file if it was backed up
+if [ -f "$ENV_BACKUP" ]; then
+    echo "📄 Restoring .env file..."
+    sudo cp "$ENV_BACKUP" /opt/ezrec-backend/.env
+    sudo chown ezrec:ezrec /opt/ezrec-backend/.env
+    sudo chmod 644 /opt/ezrec-backend/.env
+    echo "✅ .env file restored and permissions set"
+    # Clean up backup
+    sudo rm "$ENV_BACKUP"
+else
+    echo "📄 No .env backup found - will use template or manual creation"
+fi
 
 #------------------------------#
 # 4. INSTALL REQUIRED TOOLS
