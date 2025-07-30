@@ -47,4 +47,4 @@ tqdm==4.66.1
 attrs==23.1.0
 
 # Camera and image processing
-PiDNG==0.1.0
+PiDNG==4.0.9
