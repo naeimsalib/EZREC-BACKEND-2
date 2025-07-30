@@ -114,7 +114,7 @@ log "7. Setting up Python virtual environments..."
 log "Setting up backend virtual environment..."
 cd /opt/ezrec-backend/backend
 sudo rm -rf venv 2>/dev/null || true
-sudo -u ezrec python3 -m venv venv
+sudo -u ezrec python3 -m venv --system-site-packages venv
 
 # Activate and install backend dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
@@ -124,7 +124,7 @@ sudo -u ezrec venv/bin/pip install -r ../requirements.txt
 log "Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
 sudo rm -rf venv 2>/dev/null || true
-sudo -u ezrec python3 -m venv venv
+sudo -u ezrec python3 -m venv --system-site-packages venv
 
 # Activate and install API dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
@@ -245,12 +245,37 @@ sudo systemctl start system_status.timer
 log "15. Performing final status check..."
 sleep 5
 
+# Reset any failed services and restart them
+log "Resetting failed services..."
+sudo systemctl reset-failed system_status.service 2>/dev/null || true
+sudo systemctl reset-failed dual_recorder.service 2>/dev/null || true
+sudo systemctl reset-failed video_worker.service 2>/dev/null || true
+sudo systemctl reset-failed ezrec-api.service 2>/dev/null || true
+
+# Restart services to ensure they use the new virtual environments
+log "Restarting services with updated virtual environments..."
+sudo systemctl restart dual_recorder.service
+sudo systemctl restart video_worker.service
+sudo systemctl restart ezrec-api.service
+sudo systemctl restart system_status.service
+
+# Wait for services to start
+sleep 10
+
 # Check service status
 log "Checking service status..."
 sudo systemctl status dual_recorder.service --no-pager -l
 sudo systemctl status video_worker.service --no-pager -l
 sudo systemctl status ezrec-api.service --no-pager -l
 sudo systemctl status system_status.service --no-pager -l
+
+# Test picamera2 import
+log "Testing picamera2 import..."
+if sudo -u ezrec /opt/ezrec-backend/backend/venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null; then
+    log "✅ picamera2 import test passed"
+else
+    warn "⚠️ picamera2 import test failed - check system packages"
+fi
 
 # Check if .env exists
 if [ -f "/opt/ezrec-backend/.env" ]; then
