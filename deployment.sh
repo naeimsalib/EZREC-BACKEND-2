@@ -140,8 +140,8 @@ fi
 sudo usermod -a -G video ezrec
 
 # Set proper ownership BEFORE creating virtual environments
-sudo chown -R ezrec:ezrec /opt/ezrec-backend
-sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api 2>/dev/null || true
+echo "🔐 Setting ownership to current user for virtual environment creation..."
+sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend
 
 # Set permissions
 sudo chmod -R 755 /opt/ezrec-backend
@@ -160,15 +160,11 @@ cd /opt/ezrec-backend/api
 # Remove existing venv if it exists and has permission issues
 if [ -d "venv" ]; then
     echo "🧹 Removing existing API virtual environment..."
-    sudo rm -rf venv
+    rm -rf venv
 fi
 
 # Create new virtual environment
 python3 -m venv venv
-
-# Fix ownership to current user so pip can install packages
-sudo chown -R $CURRENT_USER:$CURRENT_USER venv
-sudo chmod -R 755 venv
 
 # Install dependencies
 source venv/bin/activate
@@ -182,15 +178,11 @@ cd /opt/ezrec-backend/backend
 # Remove existing venv if it exists
 if [ -d "venv" ]; then
     echo "🧹 Removing existing backend virtual environment..."
-    sudo rm -rf venv
+    rm -rf venv
 fi
 
 # Create new virtual environment
 python3 -m venv venv
-
-# Fix ownership to current user so pip can install packages
-sudo chown -R $CURRENT_USER:$CURRENT_USER venv
-sudo chmod -R 755 venv
 
 # Install dependencies
 source venv/bin/activate
@@ -198,6 +190,7 @@ pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
 
 # Fix virtual environment ownership for services
+echo "🔐 Setting ownership for services..."
 sudo chown -R ezrec:ezrec /opt/ezrec-backend/backend/venv
 sudo chown -R ezrec:ezrec /opt/ezrec-backend/api/venv
 
