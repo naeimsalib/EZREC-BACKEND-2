@@ -216,15 +216,15 @@ python3 -c "import boto3; print('✅ boto3 is working')" || echo "❌ boto3 fail
 echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
-# 10. SETUP ENVIRONMENT CONFIGURATION (PRESERVED)
+# 10. ENVIRONMENT CONFIGURATION (SKIPPED - PRESERVE EXISTING .env)
 #------------------------------#
-echo "⚙️ Checking environment configuration..."
+echo "⚙️ Environment configuration check..."
 
 ENV_FILE="/opt/ezrec-backend/.env"
 
-# Check if .env file exists
+# Check if .env file exists but DO NOT MODIFY IT
 if [ -f "$ENV_FILE" ]; then
-    echo "✅ .env file already exists - PRESERVING EXISTING CONFIGURATION"
+    echo "✅ .env file exists - PRESERVING EXISTING CONFIGURATION"
     echo "📋 Current .env variables:"
     grep -E "^(SUPABASE|AWS|CAMERA|USER|EMAIL|SHARE|TIMEZONE|RECORDING)" "$ENV_FILE" 2>/dev/null || echo "⚠️ No configured variables found"
     echo ""
@@ -232,64 +232,24 @@ if [ -f "$ENV_FILE" ]; then
     echo "🔧 To view: cat /opt/ezrec-backend/.env"
     echo ""
     echo "⚠️ IMPORTANT: Your existing .env file has been preserved!"
-    echo "⚠️ The deployment script will NEVER overwrite your .env file again."
+    echo "⚠️ The deployment script will NEVER create or modify your .env file."
 else
-    echo "📝 Creating .env file from template..."
-    sudo tee "$ENV_FILE" > /dev/null << 'EOF'
-# EZREC Backend Environment Configuration
-# Copy this file to .env and fill in your actual values
-
-# Supabase Configuration
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-
-# AWS S3 Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
-AWS_REGION=us-east-1
-AWS_S3_BUCKET=your_s3_bucket_name_here
-AWS_USER_MEDIA_BUCKET=your_user_media_bucket_here
-
-# Camera Configuration
-CAMERA_0_SERIAL=88000
-CAMERA_1_SERIAL=80000
-DUAL_CAMERA_MODE=true
-
-# User Configuration
-USER_ID=your_user_id_here
-CAMERA_ID=your_camera_id_here
-
-# Email Configuration (for share links)
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your_email@gmail.com
-EMAIL_HOST_PASSWORD=your_app_password_here
-EMAIL_USE_TLS=True
-EMAIL_FROM=your_email@gmail.com
-
-# Share Configuration
-SHARE_BASE_URL=https://yourdomain.com
-
-# Timezone
-TIMEZONE_NAME=UTC
-
-# Recording Configuration
-RECORDING_QUALITY=high
-MERGE_METHOD=side_by_side
-RECORDING_FPS=30
-LOG_LEVEL=INFO
-BOOKING_CHECK_INTERVAL=5
-EOF
-    echo "✅ Basic .env file created from template"
-    echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
-    echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
+    echo "⚠️ .env file not found"
+    echo "📝 Please create your .env file manually:"
+    echo "   sudo nano /opt/ezrec-backend/.env"
+    echo ""
+    echo "📋 Required variables:"
+    echo "   SUPABASE_URL=your_supabase_url"
+    echo "   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
+    echo "   USER_ID=your_user_id"
+    echo "   CAMERA_ID=your_camera_id"
+    echo "   CAMERA_0_SERIAL=your_first_camera_serial"
+    echo "   CAMERA_1_SERIAL=your_second_camera_serial"
+    echo ""
+    echo "⚠️ The system will not work properly until .env is configured!"
 fi
 
-# Set proper permissions (readable by ezrec user)
-sudo chown ezrec:ezrec "$ENV_FILE"
-sudo chmod 644 "$ENV_FILE"
-
-echo "✅ Environment configuration setup completed"
+echo "✅ Environment configuration check completed"
 
 #------------------------------#
 # 11. INSTALL SYSTEMD SERVICE FILES
