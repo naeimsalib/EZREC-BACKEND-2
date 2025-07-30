@@ -168,8 +168,18 @@ logger.info(f"📷 Camera 0: {CAMERA_0_NAME} (Serial: {CAMERA_0_SERIAL})")
 logger.info(f"📷 Camera 1: {CAMERA_1_NAME} (Serial: {CAMERA_1_SERIAL})")
 logger.info(f"🎬 Merge method: {MERGE_METHOD}")
 
+# Global flag to prevent recursion
+_status_update_in_progress = False
+
 def set_is_recording(value: bool):
-    """Update recording status in status.json"""
+    """Update recording status in status.json with recursion protection"""
+    global _status_update_in_progress
+    
+    if _status_update_in_progress:
+        logger.warning("⚠️ Status update already in progress, skipping to prevent recursion")
+        return
+    
+    _status_update_in_progress = True
     try:
         status_path = Path("/opt/ezrec-backend/status.json")
         status = {}
@@ -180,10 +190,14 @@ def set_is_recording(value: bool):
             except Exception:
                 status = {}
         status["is_recording"] = value
+        status["last_update"] = datetime.now().isoformat()
         with open(status_path, "w") as f:
             json.dump(status, f, indent=2)
+        logger.debug(f"📝 Updated recording status: {value}")
     except Exception as e:
         logger.error(f"❌ Failed to update recording status: {e}")
+    finally:
+        _status_update_in_progress = False
 
 def emit_event(event_type: str, booking_id: str, **kwargs):
     """Emit an event file for inter-service communication"""

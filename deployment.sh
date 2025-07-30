@@ -240,6 +240,9 @@ sudo -u ezrec tee /opt/ezrec-backend/status.json > /dev/null << 'EOF'
 }
 EOF
 
+sudo chown ezrec:ezrec /opt/ezrec-backend/status.json  
+sudo chmod 664  /opt/ezrec-backend/status.json
+
 # 14. START SERVICES
 log "14. Starting services..."
 sudo systemctl start dual_recorder.service
