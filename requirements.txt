@@ -17,6 +17,7 @@ python-dotenv==1.0.0
 # Data validation
 pydantic==2.5.0
 pydantic-settings==2.1.0
+email-validator==2.1.0
 
 # Computer vision and video processing
 opencv-python-headless==4.8.1.78
