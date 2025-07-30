@@ -39,7 +39,14 @@ def update_booking_status(booking_id: str, new_status: str) -> bool:
             if bookings_file.exists():
                 try:
                     with open(bookings_file, 'r') as f:
-                        bookings = json.load(f)
+                        data = json.load(f)
+                        # Handle both list and dict formats
+                        if isinstance(data, dict) and 'bookings' in data:
+                            bookings = data['bookings']
+                        elif isinstance(data, list):
+                            bookings = data
+                        else:
+                            bookings = []
                 except (json.JSONDecodeError, FileNotFoundError):
                     bookings = []
                 
@@ -49,8 +56,15 @@ def update_booking_status(booking_id: str, new_status: str) -> bool:
                         booking['status'] = new_status
                         break
                 
+                # Save back in the same format
+                if isinstance(data, dict) and 'bookings' in data:
+                    data['bookings'] = bookings
+                    save_data = data
+                else:
+                    save_data = bookings
+                
                 with open(bookings_file, 'w') as f:
-                    json.dump(bookings, f, indent=2)
+                    json.dump(save_data, f, indent=2)
                 
                 print(f"✅ Updated booking {booking_id} status to {new_status} locally")
                 return True
@@ -74,7 +88,14 @@ def get_bookings() -> list:
             if bookings_file.exists():
                 try:
                     with open(bookings_file, 'r') as f:
-                        return json.load(f)
+                        data = json.load(f)
+                        # Handle both list and dict formats
+                        if isinstance(data, dict) and 'bookings' in data:
+                            return data['bookings']
+                        elif isinstance(data, list):
+                            return data
+                        else:
+                            return []
                 except (json.JSONDecodeError, FileNotFoundError):
                     return []
             return []
@@ -95,14 +116,33 @@ def create_booking(booking_data: Dict[str, Any]) -> bool:
             bookings_file = Path('/opt/ezrec-backend/api/local_data/bookings.json')
             try:
                 with open(bookings_file, 'r') as f:
-                    bookings = json.load(f)
+                    data = json.load(f)
+                    # Handle both list and dict formats
+                    if isinstance(data, dict) and 'bookings' in data:
+                        bookings = data['bookings']
+                        is_dict_format = True
+                    elif isinstance(data, list):
+                        bookings = data
+                        is_dict_format = False
+                    else:
+                        bookings = []
+                        is_dict_format = False
             except (json.JSONDecodeError, FileNotFoundError):
                 bookings = []
+                is_dict_format = False
             
+            # Add the new booking
             bookings.append(booking_data)
             
+            # Save back in the same format
+            if is_dict_format:
+                data['bookings'] = bookings
+                save_data = data
+            else:
+                save_data = bookings
+            
             with open(bookings_file, 'w') as f:
-                json.dump(bookings, f, indent=2)
+                json.dump(save_data, f, indent=2)
             
             print(f"✅ Created booking locally")
             return True
