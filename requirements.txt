@@ -2,6 +2,9 @@
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 
+# HTTP requests
+requests==2.31.0
+
 # Database and cloud
 supabase==2.0.2
 boto3==1.34.0
