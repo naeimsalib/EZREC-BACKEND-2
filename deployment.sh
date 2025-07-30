@@ -75,9 +75,6 @@ sudo apt install -y \
     imagemagick \
     python3-libcamera \
     python3-picamera2 \
-    libcamera-tools \
-    libcamera-apps \
-    libcamera0 \
     python3-pip \
     python3-venv \
     python3-dev \
@@ -153,6 +150,7 @@ import warnings
 warnings.warn("Using placeholder kms module – picamera2 may not work correctly")
 
 class PixelFormat:
+    XRGB8888 = "XRGB8888"
     RGB888 = "RGB888"
     BGR888 = "BGR888"
     YUV420 = "YUV420"
