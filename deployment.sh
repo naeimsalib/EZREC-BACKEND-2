@@ -111,29 +111,29 @@ sudo chown -R ezrec:ezrec /opt/ezrec-backend
 # 7. SETUP PYTHON VIRTUAL ENVIRONMENTS
 log "7. Setting up Python virtual environments..."
 
-# Backend virtual environment - create as ezrec user
+# Backend virtual environment - create as michomanoly14892 user
 log "Setting up backend virtual environment..."
 cd /opt/ezrec-backend/backend
 sudo rm -rf venv 2>/dev/null || true
-sudo -u ezrec python3 -m venv --system-site-packages venv
+sudo -u michomanoly14892 python3 -m venv --system-site-packages venv
 
 # Activate and install backend dependencies
-sudo -u ezrec venv/bin/pip install --upgrade pip
-sudo -u ezrec venv/bin/pip install -r ../requirements.txt
-sudo -u ezrec venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
-sudo -u ezrec venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
+sudo -u michomanoly14892 venv/bin/pip install --upgrade pip
+sudo -u michomanoly14892 venv/bin/pip install -r ../requirements.txt
+sudo -u michomanoly14892 venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
+sudo -u michomanoly14892 venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
 
-# API virtual environment - create as ezrec user
+# API virtual environment - create as michomanoly14892 user
 log "Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
 sudo rm -rf venv 2>/dev/null || true
-sudo -u ezrec python3 -m venv --system-site-packages venv
+sudo -u michomanoly14892 python3 -m venv --system-site-packages venv
 
 # Activate and install API dependencies
-sudo -u ezrec venv/bin/pip install --upgrade pip
-sudo -u ezrec venv/bin/pip install -r ../requirements.txt
-sudo -u ezrec venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
-sudo -u ezrec venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
+sudo -u michomanoly14892 venv/bin/pip install --upgrade pip
+sudo -u michomanoly14892 venv/bin/pip install -r ../requirements.txt
+sudo -u michomanoly14892 venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
+sudo -u michomanoly14892 venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
 
 
 # 8. COMPREHENSIVE FIXES SECTION
@@ -142,11 +142,11 @@ log "8. Applying comprehensive fixes..."
 # Fix 1: Handle libcamera/pykms issues
 log "Fixing libcamera/pykms dependencies..."
 cd /opt/ezrec-backend/backend
-sudo -u ezrec venv/bin/python3 -c "import picamera2" 2>/dev/null || {
+sudo -u michomanoly14892 venv/bin/python3 -c "import picamera2" 2>/dev/null || {
     log "Creating kms.py placeholder for picamera2 compatibility..."
     # figure out exactly where site‑packages lives
-    SITE_PACKAGES=$(sudo -u ezrec venv/bin/python3 -c "import distutils.sysconfig as s; print(s.get_python_lib())")
-    sudo -u ezrec tee "$SITE_PACKAGES/kms.py" > /dev/null << 'EOF'
+    SITE_PACKAGES=$(sudo -u michomanoly14892 venv/bin/python3 -c "import distutils.sysconfig as s; print(s.get_python_lib())")
+    sudo -u michomanoly14892 tee "$SITE_PACKAGES/kms.py" > /dev/null << 'EOF'
 """
 Placeholder kms module for picamera2 compatibility
 """
@@ -176,33 +176,33 @@ def create_kms():
 # Add PixelFormat to the module namespace
 __all__ = ['KMS', 'create_kms', 'PixelFormat']
 EOF
-    sudo -u ezrec ln -sf "$SITE_PACKAGES/kms.py" "$SITE_PACKAGES/pykms.py"
+    sudo -u michomanoly14892 ln -sf "$SITE_PACKAGES/kms.py" "$SITE_PACKAGES/pykms.py"
 }
 
 # Fix 2: Create missing assets
 log "Creating placeholder assets..."
 cd /opt/ezrec-backend
-sudo -u ezrec python3 backend/create_assets.py
+sudo -u michomanoly14892 python3 backend/create_assets.py
 
 # Fix 3: Ensure bookings.json exists
 log "Setting up bookings.json..."
 sudo mkdir -p /opt/ezrec-backend/api/local_data
-sudo -u ezrec tee /opt/ezrec-backend/api/local_data/bookings.json > /dev/null << 'EOF'
+sudo -u michomanoly14892 tee /opt/ezrec-backend/api/local_data/bookings.json > /dev/null << 'EOF'
 []
 EOF
 
 # Fix 4: Set proper permissions
 log "Setting proper permissions..."
-sudo chown -R ezrec:ezrec /opt/ezrec-backend
+sudo chown -R michomanoly14892:michomanoly14892 /opt/ezrec-backend
 sudo chmod -R 755 /opt/ezrec-backend
 sudo chmod 644 /opt/ezrec-backend/.env 2>/dev/null || true
 
 # Fix 5: Create log files
 log "Setting up log files..."
-sudo -u ezrec touch /opt/ezrec-backend/logs/dual_recorder.log
-sudo -u ezrec touch /opt/ezrec-backend/logs/video_worker.log
-sudo -u ezrec touch /opt/ezrec-backend/logs/ezrec-api.log
-sudo -u ezrec touch /opt/ezrec-backend/logs/system_status.log
+sudo -u michomanoly14892 touch /opt/ezrec-backend/logs/dual_recorder.log
+sudo -u michomanoly14892 touch /opt/ezrec-backend/logs/video_worker.log
+sudo -u michomanoly14892 touch /opt/ezrec-backend/logs/ezrec-api.log
+sudo -u michomanoly14892 touch /opt/ezrec-backend/logs/system_status.log
 sudo chmod 644 /opt/ezrec-backend/logs/*.log
 
 # 9. INSTALL SYSTEMD SERVICES
@@ -232,7 +232,7 @@ sudo chmod 644 /opt/ezrec-backend/.env 2>/dev/null || true
 
 # 13. CREATE STATUS FILE
 log "13. Creating status file..."
-sudo -u ezrec tee /opt/ezrec-backend/status.json > /dev/null << 'EOF'
+sudo -u michomanoly14892 tee /opt/ezrec-backend/status.json > /dev/null << 'EOF'
 {
   "is_recording": false,
   "last_update": "$(date -Iseconds)",
@@ -240,7 +240,7 @@ sudo -u ezrec tee /opt/ezrec-backend/status.json > /dev/null << 'EOF'
 }
 EOF
 
-sudo chown ezrec:ezrec /opt/ezrec-backend/status.json  
+sudo chown michomanoly14892:michomanoly14892 /opt/ezrec-backend/status.json  
 sudo chmod 664  /opt/ezrec-backend/status.json
 
 # 14. START SERVICES
