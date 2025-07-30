@@ -45,7 +45,7 @@ def create_test_booking():
     print(f"✅ Created test booking: {booking_id}")
     return booking_id
 
-def create_test_video(output_path: Path, duration: int = 5):
+def create_test_video(output_path: Path, duration: int = 10):
     """Create a test video using FFmpeg"""
     try:
         cmd = [
@@ -55,6 +55,7 @@ def create_test_video(output_path: Path, duration: int = 5):
             '-vf', 'drawtext=text=Test:fontsize=60:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2',
             '-c:v', 'libx264',
             '-preset', 'ultrafast',
+            '-b:v', '2000k',  # Higher bitrate for larger files
             '-t', str(duration),
             str(output_path)
         ]
@@ -113,10 +114,10 @@ def test_merge():
         video2 = test_dir / "test2.mp4"
         merged = test_dir / "merged.mp4"
         
-        if not create_test_video(video1, 3):
+        if not create_test_video(video1, 10):
             return False
         
-        if not create_test_video(video2, 3):
+        if not create_test_video(video2, 10):
             return False
         
         # Test merge

@@ -1,11 +1,10 @@
 [Unit]
 Description=EZREC System Status Monitor
 After=network.target
-Type=oneshot
-RemainAfterExit=no
 
 [Service]
 Type=oneshot
+RemainAfterExit=yes
 User=ezrec
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/backend
