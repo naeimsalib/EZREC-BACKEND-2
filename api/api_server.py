@@ -33,6 +33,15 @@ import io
 import threading
 import pytz
 
+# Import booking utilities
+try:
+    from booking_utils import update_booking_status
+except ImportError:
+    def update_booking_status(booking_id: str, status: str) -> bool:
+        """Fallback function if booking_utils is not available"""
+        logger.warning(f"⚠️ update_booking_status not available for booking {booking_id}")
+        return False
+
 # --------------------------
 # LOAD .env FILE
 # --------------------------
@@ -55,7 +64,18 @@ logger = logging.getLogger("EZREC")
 # --------------------------
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
+
+# Initialize Supabase client with error handling
+supabase = None
+try:
+    if SUPABASE_URL and SUPABASE_KEY:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        logger.info("✅ Supabase client initialized successfully")
+    else:
+        logger.warning("⚠️ Supabase credentials not configured, using local mode")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to initialize Supabase client: {e}")
+    logger.warning("⚠️ System will work in local mode only")
 
 # --------------------------
 # FASTAPI INIT
@@ -155,11 +175,11 @@ def root():
 @app.get("/status")
 def status():
     """Simple status endpoint"""
-        return {
+    return {
         "status": "running",
-            "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now().isoformat(),
         "version": "1.0.0"
-        }
+    }
 
 @app.get("/bookings")
 def get_bookings():
@@ -212,12 +232,12 @@ def post_bookings(bookings: Union[List[Booking], Booking]):
         try:
             for booking in bookings_list:
                 update_booking_status(booking.id, booking.status)
-            except Exception as e:
+        except Exception as e:
             logger.warning(f"⚠️ Failed to update Supabase: {e}")
 
         return {"message": f"Successfully created {len(bookings_list)} booking(s)", "bookings": [b.id for b in bookings_list]}
         
-        except Exception as e:
+    except Exception as e:
         logger.error(f"❌ Error creating bookings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
