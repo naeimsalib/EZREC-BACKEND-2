@@ -127,7 +127,7 @@ sudo -u ezrec venv/bin/pip install --force-reinstall --no-binary simplejpeg simp
 log "Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
 sudo rm -rf venv 2>/dev/null || true
-udo -u ezrec python3 -m venv venv
+sudo -u ezrec python3 -m venv venv
 
 # Activate and install API dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
