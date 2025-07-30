@@ -152,6 +152,13 @@ import warnings
 
 warnings.warn("Using placeholder kms module – picamera2 may not work correctly")
 
+class PixelFormat:
+    RGB888 = "RGB888"
+    BGR888 = "BGR888"
+    YUV420 = "YUV420"
+    NV12 = "NV12"
+    NV21 = "NV21"
+
 class KMS:
     def __init__(self):
         pass
@@ -161,6 +168,9 @@ class KMS:
 
 def create_kms():
     return KMS()
+
+# Add PixelFormat to the module namespace
+__all__ = ['KMS', 'create_kms', 'PixelFormat']
 EOF
     sudo -u ezrec ln -sf "$SITE_PACKAGES/kms.py" "$SITE_PACKAGES/pykms.py"
 }
