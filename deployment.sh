@@ -235,7 +235,7 @@ log "11. Setting up cron jobs..."
 
 # 12. FINAL PERMISSIONS AND OWNERSHIP
 log "12. Setting final permissions and ownership..."
-sudo chown -R ezrec:ezrec /opt/ezrec-backend
+sudo chown -R michomanoly14892:michomanoly14892 /opt/ezrec-backend
 sudo chmod -R 755 /opt/ezrec-backend
 sudo chmod 644 /opt/ezrec-backend/.env 2>/dev/null || true
 
@@ -249,7 +249,6 @@ sudo -u michomanoly14892 tee /opt/ezrec-backend/status.json > /dev/null << 'EOF'
 }
 EOF
 
-sudo chown michomanoly14892:michomanoly14892 /opt/ezrec-backend/status.json  
 sudo chmod 664  /opt/ezrec-backend/status.json
 
 # 14. START SERVICES
@@ -289,7 +288,7 @@ sudo systemctl status system_status.service --no-pager -l
 
 # Test picamera2 import
 log "Testing picamera2 import..."
-if sudo -u ezrec /opt/ezrec-backend/backend/venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null; then
+if sudo -u michomanoly14892 /opt/ezrec-backend/backend/venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null; then
     log "✅ picamera2 import test passed"
 else
     warn "⚠️ picamera2 import test failed - check system packages"
