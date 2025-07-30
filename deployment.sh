@@ -56,26 +56,26 @@ sudo cp -r . /opt/ezrec-backend/
 #------------------------------#
 echo "🔧 Checking and installing required tools..."
 
-# Check FFmpeg
+    # Check FFmpeg
 if command -v ffmpeg &> /dev/null; then
     echo "✅ FFmpeg is available"
 else
     echo "❌ FFmpeg not found"
     echo "🔧 Installing FFmpeg..."
-    sudo apt-get update
+        sudo apt-get update
     sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFmpeg"; exit 1; }
-fi
-
-# Check FFprobe
+    fi
+    
+    # Check FFprobe
 if command -v ffprobe &> /dev/null; then
     echo "✅ FFprobe is available"
 else
     echo "❌ FFprobe not found"
     echo "🔧 Installing FFprobe..."
     sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFprobe"; exit 1; }
-fi
-
-# Check v4l2-ctl
+    fi
+    
+    # Check v4l2-ctl
 if command -v v4l2-ctl &> /dev/null; then
     echo "✅ v4l2-ctl is available"
 else
@@ -96,13 +96,13 @@ fi
 #------------------------------#
 # 5. INSTALL ADDITIONAL DEPENDENCIES
 #------------------------------#
-echo "📦 Installing additional dependencies..."
+    echo "📦 Installing additional dependencies..."
 
 # Update package list
-sudo apt-get update
+    sudo apt-get update
 
 # Install Python packages
-sudo apt-get install -y python3-requests python3-psutil python3-boto3 python3-dotenv build-essential
+    sudo apt-get install -y python3-requests python3-psutil python3-boto3 python3-dotenv build-essential
 
 # Install additional system packages
 sudo apt-get install -y imagemagick v4l-utils
@@ -284,28 +284,28 @@ EOF
         echo "   CAMERA_1_SERIAL=your_second_camera_serial"
         echo ""
         echo "⚠️  The system will not work properly until these are configured!"
-    else
-        echo "✅ .env file already exists"
-        
-        # Check if all required variables are present
-        missing_vars=()
-        for var in "${REQUIRED_VARS[@]}"; do
-            if ! grep -q "^${var}=" "$ENV_FILE"; then
-                missing_vars+=("$var")
-            fi
-        done
-        
-        if [ ${#missing_vars[@]} -eq 0 ]; then
-            echo "✅ All required environment variables are configured"
-        else
-            echo "⚠️ Missing required environment variables: ${missing_vars[*]}"
-            echo "🔧 Please add them to /opt/ezrec-backend/.env"
-            echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
+else
+    echo "✅ .env file already exists"
+    
+    # Check if all required variables are present
+    missing_vars=()
+    for var in "${REQUIRED_VARS[@]}"; do
+        if ! grep -q "^${var}=" "$ENV_FILE"; then
+            missing_vars+=("$var")
         fi
-        
-        echo "🔧 To update: sudo nano /opt/ezrec-backend/.env"
-        echo "📋 Make sure these variables are set: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, USER_ID, CAMERA_ID"
+    done
+    
+    if [ ${#missing_vars[@]} -eq 0 ]; then
+        echo "✅ All required environment variables are configured"
+    else
+        echo "⚠️ Missing required environment variables: ${missing_vars[*]}"
+        echo "🔧 Please add them to /opt/ezrec-backend/.env"
+        echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
     fi
+    
+    echo "🔧 To update: sudo nano /opt/ezrec-backend/.env"
+    echo "📋 Make sure these variables are set: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, USER_ID, CAMERA_ID"
+fi
 
 #------------------------------#
 # 11. INSTALL SYSTEMD SERVICE FILES
@@ -556,7 +556,131 @@ else
 fi
 
 #------------------------------#
-# 16. ENABLE AND START SERVICES
+# 16. APPLY COMPREHENSIVE FIXES
+#------------------------------#
+echo "🔧 Applying comprehensive fixes..."
+echo "=================================="
+
+# Make all fix scripts executable
+echo "📝 Making fix scripts executable..."
+cd /opt/ezrec-backend
+chmod +x *.sh
+
+# Apply fixes in order
+echo "🔄 Step 1: Fixing permissions..."
+if [ -f "fix_permissions.sh" ]; then
+    sudo ./fix_permissions.sh
+else
+    echo "⚠️ fix_permissions.sh not found, applying basic permissions..."
+    sudo mkdir -p /opt/ezrec-backend/{logs,media_cache,api/local_data,events,recordings,processed,final,assets}
+    sudo touch /opt/ezrec-backend/api/local_data/bookings.json
+    sudo touch /opt/ezrec-backend/status.json
+    sudo chown -R ezrec:ezrec /opt/ezrec-backend
+    sudo chmod -R 755 /opt/ezrec-backend
+    sudo chmod 664 /opt/ezrec-backend/api/local_data/bookings.json
+    sudo chmod 664 /opt/ezrec-backend/status.json
+fi
+
+echo "🔄 Step 2: Installing libcamera..."
+if [ -f "fix_libcamera.sh" ]; then
+    sudo ./fix_libcamera.sh
+else
+    echo "⚠️ fix_libcamera.sh not found, installing manually..."
+    sudo apt update
+    sudo apt install -y python3-libcamera libcamera-apps
+fi
+
+echo "🔄 Step 3: Installing ImageMagick..."
+if [ -f "fix_imagemagick.sh" ]; then
+    sudo ./fix_imagemagick.sh
+else
+    echo "⚠️ fix_imagemagick.sh not found, installing manually..."
+    sudo apt update
+    sudo apt install -y imagemagick
+fi
+
+echo "🔄 Step 4: Fixing backend venv..."
+if [ -f "fix_backend_venv_final.sh" ]; then
+    sudo ./fix_backend_venv_final.sh
+else
+    echo "⚠️ fix_backend_venv_final.sh not found, applying basic venv fix..."
+    cd /opt/ezrec-backend/backend
+    sudo rm -rf venv
+    python3 -m venv venv
+    source venv/bin/activate
+    pip install --upgrade pip
+    pip install -r /opt/ezrec-backend/requirements.txt
+    sudo chown -R ezrec:ezrec venv
+fi
+
+echo "🔄 Step 5: Fixing pykms module..."
+if [ -f "fix_pykms.sh" ]; then
+    sudo ./fix_pykms.sh
+else
+    echo "⚠️ fix_pykms.sh not found, installing manually..."
+    sudo apt update
+    sudo apt install -y python3-kms
+fi
+
+echo "🔄 Step 6: Fixing Supabase integration..."
+if [ -f "fix_supabase_issues.sh" ]; then
+    sudo ./fix_supabase_issues.sh
+else
+    echo "⚠️ fix_supabase_issues.sh not found, applying basic fixes..."
+    # Create booking_utils.py if it doesn't exist
+    if [ ! -f "/opt/ezrec-backend/api/booking_utils.py" ]; then
+        sudo -u ezrec tee /opt/ezrec-backend/api/booking_utils.py > /dev/null << 'EOF'
+def update_booking_status(booking_id: str, new_status: str) -> bool:
+    """Update booking status in Supabase"""
+    try:
+        from supabase import create_client, Client
+        import os
+        from dotenv import load_dotenv
+        
+        load_dotenv()
+        
+        supabase_url = os.getenv('SUPABASE_URL')
+        supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
+        
+        if not supabase_url or not supabase_key:
+            print("⚠️ Supabase credentials not configured")
+            return False
+            
+        supabase: Client = create_client(supabase_url, supabase_key)
+        
+        # Update the booking status
+        result = supabase.table('bookings').update({
+            'status': new_status,
+            'updated_at': 'now()'
+        }).eq('id', booking_id).execute()
+        
+        print(f"✅ Updated booking {booking_id} status to {new_status}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Failed to update booking status: {e}")
+        return False
+EOF
+    fi
+fi
+
+echo "🔄 Step 7: Fixing API issues..."
+if [ -f "fix_api_issues.sh" ]; then
+    sudo ./fix_api_issues.sh
+else
+    echo "⚠️ fix_api_issues.sh not found, applying basic API fixes..."
+    # Ensure bookings.json exists and is valid JSON
+    if [ ! -f "/opt/ezrec-backend/api/local_data/bookings.json" ]; then
+        sudo -u ezrec tee /opt/ezrec-backend/api/local_data/bookings.json > /dev/null << 'EOF'
+[]
+EOF
+    fi
+    sudo chown ezrec:ezrec /opt/ezrec-backend/api/local_data/bookings.json
+    sudo chmod 664 /opt/ezrec-backend/api/local_data/bookings.json
+fi
+
+#------------------------------#
+# 17. ENABLE AND START SERVICES
 #------------------------------#
 echo "🚀 Enabling and starting services..."
 
@@ -582,7 +706,7 @@ sudo systemctl start ezrec-api.service
 sudo systemctl start system_status.timer
 
 #------------------------------#
-# 17. VERIFY CRITICAL FILES
+# 18. VERIFY CRITICAL FILES
 #------------------------------#
 echo "📋 Verifying critical files..."
 
@@ -603,7 +727,7 @@ for file in "${CRITICAL_FILES[@]}"; do
 done
 
 #------------------------------#
-# 18. FINAL STATUS CHECK
+# 19. FINAL STATUS CHECK
 #------------------------------#
 echo "🎯 Final status check..."
 
@@ -624,7 +748,18 @@ else
 fi
 
 #------------------------------#
-# 19. SUCCESS MESSAGE
+# 20. RUN COMPLETE SYSTEM TEST
+#------------------------------#
+echo "🧪 Running complete system test..."
+if [ -f "/opt/ezrec-backend/test_complete_system.py" ]; then
+    cd /opt/ezrec-backend
+    python3 test_complete_system.py
+else
+    echo "⚠️ test_complete_system.py not found, skipping system test"
+fi
+
+#------------------------------#
+# 21. SUCCESS MESSAGE
 #------------------------------#
 echo ""
 echo "🎉 EZREC Backend Deployment Complete!"
@@ -632,7 +767,7 @@ echo "====================================="
 echo ""
 echo "📋 Next Steps:"
 echo "1. Configure your .env file: sudo nano /opt/ezrec-backend/.env"
-echo "2. Test the system: ./pi_test_script.sh"
+echo "2. Test the system: python3 test_complete_system.py"
 echo "3. Check service logs: sudo journalctl -u dual_recorder.service -f"
 echo ""
 echo "🔧 Useful Commands:"
@@ -646,3 +781,4 @@ echo "📝 Logs Directory: /opt/ezrec-backend/logs"
 echo "🎥 Recordings Directory: /opt/ezrec-backend/recordings"
 echo ""
 echo "✅ Deployment completed successfully!"
+echo "🎯 All fixes applied - system should be fully operational!"
