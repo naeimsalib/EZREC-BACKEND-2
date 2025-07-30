@@ -2,7 +2,7 @@ from supabase import create_client
 from fastapi import FastAPI, HTTPException, Query, Request, Body, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
-from typing import List, Optional
+from typing import List, Optional, Union
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import json
@@ -154,87 +154,12 @@ def root():
 
 @app.get("/status")
 def status():
-    """Enhanced system status endpoint with detailed health information"""
-    try:
-        import psutil
-        import shutil
-        
-        # Get system metrics
-        cpu_percent = psutil.cpu_percent(interval=1)
-        memory = psutil.virtual_memory()
-        disk = shutil.disk_usage("/opt/ezrec-backend")
-        disk_used_percent = (disk.used / disk.total) * 100
-        
-        # Get camera status
-        camera_status = "unknown"
-        try:
-            from pathlib import Path
-            status_file = Path("/opt/ezrec-backend/status.json")
-            if status_file.exists():
-                with open(status_file) as f:
-                    status_data = json.load(f)
-                    camera_status = "recording" if status_data.get("is_recording", False) else "idle"
-        except Exception:
-            camera_status = "error"
-        
-        # Get recent recordings
-        recent_recordings = []
-        try:
-            recordings_dir = Path("/opt/ezrec-backend/recordings")
-            if recordings_dir.exists():
-                for date_dir in sorted(recordings_dir.glob("*"), reverse=True)[:3]:
-                    if date_dir.is_dir():
-                        recordings = list(date_dir.glob("*.mp4"))
-                        if recordings:
-                            recent_recordings.append({
-                                "date": date_dir.name,
-                                "count": len(recordings),
-                                "latest": recordings[-1].name if recordings else None
-                            })
-        except Exception:
-            pass
-        
-        # Get last upload time
-        last_upload = "unknown"
-        try:
-            processed_dir = Path("/opt/ezrec-backend/processed")
-            if processed_dir.exists():
-                processed_files = list(processed_dir.rglob("*.mp4"))
-                if processed_files:
-                    latest_file = max(processed_files, key=lambda x: x.stat().st_mtime)
-                    last_upload = datetime.fromtimestamp(latest_file.stat().st_mtime).isoformat()
-        except Exception:
-            pass
-        
-        return {
-            "status": "ok",
-            "timestamp": datetime.now().isoformat(),
-            "system": {
-                "cpu_percent": cpu_percent,
-                "memory_percent": memory.percent,
-                "disk_used_percent": round(disk_used_percent, 1),
-                "disk_free_gb": round(disk.free / (1024**3), 1)
-            },
-            "camera": {
-                "status": camera_status,
-                "mode": "dual" if os.getenv("DUAL_CAMERA_MODE", "false").lower() == "true" else "single"
-            },
-            "recordings": {
-                "recent": recent_recordings,
-                "last_upload": last_upload
-            },
-            "services": {
-                "recorder": "running",  # TODO: Check actual service status
-                "video_worker": "running",
-                "api": "running"
-            }
-        }
-    except Exception as e:
-        return {
-            "status": "error",
-            "timestamp": datetime.now().isoformat(),
-            "error": str(e)
-        }
+    """Simple status endpoint"""
+    return {
+        "status": "running",
+        "timestamp": datetime.now().isoformat(),
+        "version": "1.0.0"
+    }
 
 @app.get("/bookings")
 def get_bookings():
@@ -247,106 +172,54 @@ def get_bookings():
     return []
 
 @app.post("/bookings")
-def post_bookings(bookings: List[Booking]):
+def post_bookings(bookings: Union[List[Booking], Booking]):
+    """
+    Create bookings - accepts either a single booking or a list of bookings
+    """
     try:
-        logger.info(f"📥 Received {len(bookings)} bookings via POST")
+        # Handle both single booking and list of bookings
+        if isinstance(bookings, Booking):
+            bookings_list = [bookings]
+        else:
+            bookings_list = bookings
+            
+        logger.info(f"📝 Creating {len(bookings_list)} booking(s)")
         
-        # Ensure the local_data directory exists
-        BOOKINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        # Load existing bookings
+        bookings_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+        bookings_file.parent.mkdir(parents=True, exist_ok=True)
         
-        # Validate each booking
-        for i, booking in enumerate(bookings):
-            logger.info(f"➡️ Validating booking {i+1}: {booking.dict()}")
-            
-            # Parse booking times
-            try:
-                start_time = datetime.fromisoformat(booking.start_time.replace('Z', '+00:00'))
-                end_time = datetime.fromisoformat(booking.end_time.replace('Z', '+00:00'))
-            except ValueError as e:
-                logger.error(f"❌ Invalid booking time format for booking {i+1}: {e}")
-                raise HTTPException(status_code=400, detail=f"Invalid booking time format: {e}")
-            
-            # Check if booking ends in the past
-            now = datetime.now(timezone.utc)
-            if end_time <= now:
-                logger.error(f"❌ Booking {i+1} ends in the past: {end_time}")
-                raise HTTPException(status_code=400, detail="Booking ends in the past")
-            
-            # Check if start time is after end time
-            if start_time >= end_time:
-                logger.error(f"❌ Invalid booking times for booking {i+1}: start {start_time} >= end {end_time}")
-                raise HTTPException(status_code=400, detail="Invalid booking times: start must be before end")
-            
-            # Check for overlapping bookings
-            existing = []
-            if BOOKINGS_FILE.exists():
-                try:
-                    existing = json.loads(BOOKINGS_FILE.read_text())
-                    # Ensure existing is a list
-                    if not isinstance(existing, list):
-                        logger.warning(f"Existing bookings file contains non-list data: {type(existing)}")
-                        existing = []
-                except Exception as e:
-                    logger.warning(f"Could not read existing bookings: {e}")
-                    existing = []
-            
-            for existing_booking in existing:
-                try:
-                    # Ensure existing_booking is a dictionary
-                    if not isinstance(existing_booking, dict):
-                        logger.warning(f"Skipping non-dictionary booking: {type(existing_booking)}")
-                        continue
-                    
-                    # Check if required fields exist
-                    if 'start_time' not in existing_booking or 'end_time' not in existing_booking:
-                        logger.warning(f"Skipping booking without time fields: {existing_booking.get('id', 'unknown')}")
-                        continue
-                    
-                    existing_start = datetime.fromisoformat(existing_booking['start_time'].replace('Z', '+00:00'))
-                    existing_end = datetime.fromisoformat(existing_booking['end_time'].replace('Z', '+00:00'))
-                    
-                    # Check for overlap (not (booking.end <= existing.start or booking.start >= existing.end))
-                    if not (end_time <= existing_start or start_time >= existing_end):
-                        logger.error(f"❌ Booking {i+1} overlaps with existing booking {existing_booking.get('id', 'unknown')}")
-                        raise HTTPException(
-                            status_code=409, 
-                            detail=f"Booking overlaps with existing booking {existing_booking.get('id', 'unknown')}"
-                        )
-                except (KeyError, ValueError) as e:
-                    logger.warning(f"Error parsing existing booking: {e}")
-                    continue
-
-        # All validations passed, save bookings
-        existing = []
-        if BOOKINGS_FILE.exists():
-            try:
-                existing = json.loads(BOOKINGS_FILE.read_text())
-                # Ensure existing is a list
-                if not isinstance(existing, list):
-                    logger.warning(f"Existing bookings file contains non-list data: {type(existing)}")
-                    existing = []
-            except Exception as e:
-                logger.warning(f"Could not read existing bookings: {e}")
-                existing = []
-
-        combined = existing + [b.dict() for b in bookings]
-        unique = {b["id"]: b for b in combined}.values()
+        if bookings_file.exists():
+            with open(bookings_file, 'r') as f:
+                existing_bookings = json.load(f)
+        else:
+            existing_bookings = []
         
+        # Add new bookings
+        for booking in bookings_list:
+            booking_dict = booking.dict()
+            booking_dict['created_at'] = datetime.now().isoformat()
+            booking_dict['updated_at'] = datetime.now().isoformat()
+            existing_bookings.append(booking_dict)
+            
+            logger.info(f"✅ Added booking: {booking.id}")
+        
+        # Save updated bookings
+        with open(bookings_file, 'w') as f:
+            json.dump(existing_bookings, f, indent=2)
+        
+        # Update Supabase if configured
         try:
-            BOOKINGS_FILE.write_text(json.dumps(list(unique), indent=2))
-            logger.info(f"✅ Successfully saved {len(bookings)} bookings to {BOOKINGS_FILE}")
+            for booking in bookings_list:
+                update_booking_status(booking.id, booking.status)
         except Exception as e:
-            logger.error(f"❌ Failed to write bookings file: {e}")
-            raise HTTPException(status_code=500, detail=f"Failed to write bookings file: {e}")
-
-        return {"message": "Bookings saved", "count": len(bookings)}
-    except HTTPException:
-        raise
+            logger.warning(f"⚠️ Failed to update Supabase: {e}")
+        
+        return {"message": f"Successfully created {len(bookings_list)} booking(s)", "bookings": [b.id for b in bookings_list]}
+        
     except Exception as e:
-        logger.error(f"❌ Unexpected error saving bookings: {e}")
-        import traceback
-        logger.error(f"📋 Traceback: {traceback.format_exc()}")
-        raise HTTPException(status_code=500, detail="Failed to save bookings")
+        logger.error(f"❌ Error creating bookings: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.put("/bookings/{booking_id}")
 def update_booking(booking_id: str, updated_booking: Booking):
