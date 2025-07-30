@@ -124,9 +124,9 @@ sudo mkdir -p /opt/ezrec-backend/events
 sudo mkdir -p /opt/ezrec-backend/api/local_data
 
 #------------------------------#
-# 7. FIX PERMISSIONS
+# 7. CREATE DEDICATED USER AND FIX PERMISSIONS
 #------------------------------#
-echo "🔐 Fixing directory permissions..."
+echo "🔐 Creating dedicated user and fixing permissions..."
 
 # Create dedicated user for services
 if ! id "ezrec" &>/dev/null; then
@@ -139,9 +139,9 @@ fi
 # Add ezrec user to video group
 sudo usermod -a -G video ezrec
 
-# Set proper ownership
+# Set proper ownership BEFORE creating virtual environments
 sudo chown -R ezrec:ezrec /opt/ezrec-backend
-sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv 2>/dev/null || true
+sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api 2>/dev/null || true
 
 # Set permissions
 sudo chmod -R 755 /opt/ezrec-backend
@@ -156,7 +156,21 @@ echo "🐍 Setting up Python environments..."
 # Setup API virtual environment
 echo "🐍 Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
+
+# Remove existing venv if it exists and has permission issues
+if [ -d "venv" ]; then
+    echo "🧹 Removing existing API virtual environment..."
+    sudo rm -rf venv
+fi
+
+# Create new virtual environment
 python3 -m venv venv
+
+# Fix ownership to current user so pip can install packages
+sudo chown -R $CURRENT_USER:$CURRENT_USER venv
+sudo chmod -R 755 venv
+
+# Install dependencies
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
@@ -164,14 +178,28 @@ pip install -r /opt/ezrec-backend/requirements.txt
 # Setup Backend virtual environment
 echo "🐍 Setting up Backend virtual environment..."
 cd /opt/ezrec-backend/backend
+
+# Remove existing venv if it exists
+if [ -d "venv" ]; then
+    echo "🧹 Removing existing backend virtual environment..."
+    sudo rm -rf venv
+fi
+
+# Create new virtual environment
 python3 -m venv venv
+
+# Fix ownership to current user so pip can install packages
+sudo chown -R $CURRENT_USER:$CURRENT_USER venv
+sudo chmod -R 755 venv
+
+# Install dependencies
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
 
-# Fix virtual environment ownership
+# Fix virtual environment ownership for services
 sudo chown -R ezrec:ezrec /opt/ezrec-backend/backend/venv
-sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv
+sudo chown -R ezrec:ezrec /opt/ezrec-backend/api/venv
 
 #------------------------------#
 # 9. TEST PYTHON DEPENDENCIES
@@ -283,27 +311,7 @@ EOF
     fi
 
 #------------------------------#
-# 11. CREATE DEDICATED USER AND FIX PERMISSIONS
-#------------------------------#
-echo "🔐 Creating dedicated user and fixing permissions..."
-
-# Create dedicated user for services
-if ! id "ezrec" &>/dev/null; then
-    echo "👤 Creating dedicated ezrec user..."
-    sudo useradd -r -s /bin/false -d /opt/ezrec-backend ezrec
-else
-    echo "✅ ezrec user already exists"
-fi
-
-# Set proper ownership
-sudo chown -R ezrec:ezrec /opt/ezrec-backend
-sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend/api/venv
-sudo chmod -R 755 /opt/ezrec-backend
-sudo chmod -R 755 /opt/ezrec-backend/api/venv
-sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
-
-#------------------------------#
-# 12. INSTALL SYSTEMD SERVICE FILES
+# 11. INSTALL SYSTEMD SERVICE FILES
 #------------------------------#
 echo "⚙️ Installing systemd service files..."
 
@@ -455,13 +463,13 @@ EOF
 fi
 
 #------------------------------#
-# 13. RELOAD SYSTEMD
+# 12. RELOAD SYSTEMD
 #------------------------------#
 echo "🔄 Reloading systemd..."
 sudo systemctl daemon-reload
 
 #------------------------------#
-# 14. TEST BASIC FUNCTIONALITY
+# 13. TEST BASIC FUNCTIONALITY
 #------------------------------#
 echo "🧪 Testing basic functionality..."
 
@@ -530,7 +538,7 @@ python3 -c "import psutil; print('✅ psutil is working')" || echo "❌ psutil f
 python3 -c "import boto3; print('✅ boto3 is working')" || echo "❌ boto3 failed"
 
 #------------------------------#
-# 15. CREATE ASSETS
+# 14. CREATE ASSETS
 #------------------------------#
 echo "🎨 Creating assets..."
 cd /opt/ezrec-backend/backend
@@ -538,7 +546,7 @@ source venv/bin/activate
 python3 create_assets.py
 
 #------------------------------#
-# 16. SETUP CRON JOBS
+# 15. SETUP CRON JOBS
 #------------------------------#
 echo "⏰ Setting up cron jobs..."
 
@@ -551,7 +559,7 @@ else
 fi
 
 #------------------------------#
-# 17. ENABLE AND START SERVICES
+# 16. ENABLE AND START SERVICES
 #------------------------------#
 echo "🚀 Enabling and starting services..."
 
@@ -577,7 +585,7 @@ sudo systemctl start ezrec-api.service
 sudo systemctl start system_status.timer
 
 #------------------------------#
-# 18. VERIFY CRITICAL FILES
+# 17. VERIFY CRITICAL FILES
 #------------------------------#
 echo "📋 Verifying critical files..."
 
@@ -598,7 +606,7 @@ for file in "${CRITICAL_FILES[@]}"; do
 done
 
 #------------------------------#
-# 19. FINAL STATUS CHECK
+# 18. FINAL STATUS CHECK
 #------------------------------#
 echo "🎯 Final status check..."
 
@@ -619,7 +627,7 @@ else
 fi
 
 #------------------------------#
-# 20. SUCCESS MESSAGE
+# 19. SUCCESS MESSAGE
 #------------------------------#
 echo ""
 echo "🎉 EZREC Backend Deployment Complete!"
