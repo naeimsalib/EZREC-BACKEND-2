@@ -1,67 +1,111 @@
-import json
 import os
-import logging
+import json
 from pathlib import Path
-from dotenv import load_dotenv
-from supabase import create_client
+from typing import Optional, Dict, Any
+from supabase import create_client, Client
+from supabase._sync.client import SupabaseException
 
-# Load environment
-dotenv_path = "/opt/ezrec-backend/.env"
-if os.path.exists(dotenv_path):
-    load_dotenv(dotenv_path)
+# Load environment variables
+SUPABASE_URL = os.getenv('SUPABASE_URL', 'your_supabase_url_here')
+SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY', 'your_supabase_service_role_key_here')
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Initialize Supabase client with error handling
+supabase: Optional[Client] = None
+try:
+    if SUPABASE_URL != 'your_supabase_url_here' and SUPABASE_KEY != 'your_supabase_service_role_key_here':
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("✅ Supabase client initialized successfully")
+    else:
+        print("⚠️ Supabase credentials not configured, using local mode")
+except Exception as e:
+    print(f"⚠️ Failed to initialize Supabase client: {e}")
+    print("⚠️ System will work in local mode only")
+
 BOOKING_CACHE_FILE = Path("/opt/ezrec-backend/api/local_data/bookings.json")
 
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("booking_utils")
-
 def update_booking_status(booking_id: str, new_status: str) -> bool:
-    """
-    Updates booking status in both Supabase and the local cache file.
-    """
-    success = True
-
-    # --- Update in Supabase ---
+    """Update booking status in Supabase or local storage"""
     try:
-        logger.info(f"🔄 Updating Supabase booking {booking_id} to status '{new_status}'")
-        response = supabase.table("bookings").update({"status": new_status}).eq("id", booking_id).execute()
-        if hasattr(response, "error") and response.error:
-            logger.error(f"❌ Supabase update error: {response.error}")
-            success = False
-        elif hasattr(response, "status_code") and response.status_code >= 400:
-            logger.error(f"❌ Supabase update error: {response}")
-            success = False
-    except Exception as e:
-        logger.error(f"❌ Supabase exception: {e}")
-        success = False
-
-    # --- Update in Local JSON ---
-    try:
-        if BOOKING_CACHE_FILE.exists():
-            with open(BOOKING_CACHE_FILE, 'r') as f:
-                bookings = json.load(f)
-
-            updated = False
-            for booking in bookings:
-                if booking.get("id") == booking_id:
-                    booking["status"] = new_status
-                    updated = True
-                    break
-
-            if updated:
-                with open(BOOKING_CACHE_FILE, 'w') as f:
-                    json.dump(bookings, f, indent=2)
-                logger.info(f"📄 Updated local cache for booking {booking_id} to status '{new_status}'")
-            else:
-                logger.warning(f"⚠️ Booking ID {booking_id} not found in local file.")
+        if supabase:
+            # Update in Supabase
+            response = supabase.table('bookings').update(
+                {'status': new_status}
+            ).eq('id', booking_id).execute()
+            print(f"✅ Updated booking {booking_id} status to {new_status} in Supabase")
+            return True
         else:
-            logger.warning(f"⚠️ Local booking cache not found at {BOOKING_CACHE_FILE}")
+            # Update local file
+            bookings_file = Path('/opt/ezrec-backend/api/local_data/bookings.json')
+            if bookings_file.exists():
+                try:
+                    with open(bookings_file, 'r') as f:
+                        bookings = json.load(f)
+                except (json.JSONDecodeError, FileNotFoundError):
+                    bookings = []
+                
+                # Update the booking
+                for booking in bookings:
+                    if booking.get('id') == booking_id:
+                        booking['status'] = new_status
+                        break
+                
+                with open(bookings_file, 'w') as f:
+                    json.dump(bookings, f, indent=2)
+                
+                print(f"✅ Updated booking {booking_id} status to {new_status} locally")
+                return True
+            else:
+                print(f"❌ Could not update booking {booking_id}: no local storage")
+                return False
     except Exception as e:
-        logger.error(f"❌ Local file update error: {e}")
-        success = False
+        print(f"❌ Error updating booking status: {e}")
+        return False
 
-    return success
+def get_bookings() -> list:
+    """Get bookings from Supabase or local storage"""
+    try:
+        if supabase:
+            # Get from Supabase
+            response = supabase.table('bookings').select('*').execute()
+            return response.data
+        else:
+            # Get from local file
+            bookings_file = Path('/opt/ezrec-backend/api/local_data/bookings.json')
+            if bookings_file.exists():
+                try:
+                    with open(bookings_file, 'r') as f:
+                        return json.load(f)
+                except (json.JSONDecodeError, FileNotFoundError):
+                    return []
+            return []
+    except Exception as e:
+        print(f"❌ Error getting bookings: {e}")
+        return []
+
+def create_booking(booking_data: Dict[str, Any]) -> bool:
+    """Create booking in Supabase or local storage"""
+    try:
+        if supabase:
+            # Create in Supabase
+            response = supabase.table('bookings').insert(booking_data).execute()
+            print(f"✅ Created booking in Supabase")
+            return True
+        else:
+            # Create in local file
+            bookings_file = Path('/opt/ezrec-backend/api/local_data/bookings.json')
+            try:
+                with open(bookings_file, 'r') as f:
+                    bookings = json.load(f)
+            except (json.JSONDecodeError, FileNotFoundError):
+                bookings = []
+            
+            bookings.append(booking_data)
+            
+            with open(bookings_file, 'w') as f:
+                json.dump(bookings, f, indent=2)
+            
+            print(f"✅ Created booking locally")
+            return True
+    except Exception as e:
+        print(f"❌ Error creating booking: {e}")
+        return False
