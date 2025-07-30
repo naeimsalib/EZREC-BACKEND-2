@@ -75,6 +75,9 @@ sudo apt install -y \
     imagemagick \
     python3-libcamera \
     python3-picamera2 \
+    libcamera-tools \
+    libcamera-apps \
+    libcamera0 \
     python3-pip \
     python3-venv \
     python3-dev \
