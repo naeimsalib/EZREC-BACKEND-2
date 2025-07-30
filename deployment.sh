@@ -110,29 +110,25 @@ sudo chown -R ezrec:ezrec /opt/ezrec-backend
 # 7. SETUP PYTHON VIRTUAL ENVIRONMENTS
 log "7. Setting up Python virtual environments..."
 
-# Backend virtual environment
+# Backend virtual environment - create as ezrec user
 log "Setting up backend virtual environment..."
 cd /opt/ezrec-backend/backend
 sudo rm -rf venv 2>/dev/null || true
-python3 -m venv venv
-sudo chown -R ezrec:ezrec venv
+sudo -u ezrec python3 -m venv venv
 
 # Activate and install backend dependencies
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r ../requirements.txt
+sudo -u ezrec venv/bin/pip install --upgrade pip
+sudo -u ezrec venv/bin/pip install -r ../requirements.txt
 
-# API virtual environment
+# API virtual environment - create as ezrec user
 log "Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
 sudo rm -rf venv 2>/dev/null || true
-python3 -m venv venv
-sudo chown -R ezrec:ezrec venv
+sudo -u ezrec python3 -m venv venv
 
 # Activate and install API dependencies
-source venv/bin/activate
-pip install --upgrade pip
-pip install -r ../requirements.txt
+sudo -u ezrec venv/bin/pip install --upgrade pip
+sudo -u ezrec venv/bin/pip install -r ../requirements.txt
 
 # 8. COMPREHENSIVE FIXES SECTION
 log "8. Applying comprehensive fixes..."
@@ -140,13 +136,9 @@ log "8. Applying comprehensive fixes..."
 # Fix 1: Handle libcamera/pykms issues
 log "Fixing libcamera/pykms dependencies..."
 cd /opt/ezrec-backend/backend
-source venv/bin/activate
-
-# Install system-wide picamera2 to get pykms
-sudo apt install -y python3-picamera2 python3-kms
-
-# Create kms.py placeholder if needed
-cat > venv/lib/python3.*/site-packages/kms.py << 'EOF'
+sudo -u ezrec venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null || {
+    log "Creating kms.py placeholder for picamera2 compatibility..."
+    sudo -u ezrec tee venv/lib/python3.*/site-packages/kms.py > /dev/null << 'EOF'
 """
 Placeholder kms module for picamera2 compatibility
 """
@@ -166,8 +158,9 @@ def create_kms():
     return KMS()
 EOF
 
-# Create pykms.py symlink
-ln -sf venv/lib/python3.*/site-packages/kms.py venv/lib/python3.*/site-packages/pykms.py 2>/dev/null || true
+    # Create pykms.py symlink
+    sudo -u ezrec ln -sf venv/lib/python3.*/site-packages/kms.py venv/lib/python3.*/site-packages/pykms.py 2>/dev/null || true
+}
 
 # Fix 2: Create missing assets
 log "Creating placeholder assets..."
