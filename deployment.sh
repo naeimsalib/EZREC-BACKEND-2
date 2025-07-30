@@ -70,6 +70,7 @@ sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend
 log "4. Installing system dependencies..."
 sudo apt update
 sudo apt install -y \
+    build-essential libjpeg-dev \
     ffmpeg \
     v4l-utils \
     imagemagick \
@@ -119,6 +120,8 @@ sudo -u ezrec python3 -m venv --system-site-packages venv
 # Activate and install backend dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
 sudo -u ezrec venv/bin/pip install -r ../requirements.txt
+sudo -u ezrec venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
+sudo -u ezrec venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
 
 # API virtual environment - create as ezrec user
 log "Setting up API virtual environment..."
@@ -129,6 +132,8 @@ sudo -u ezrec python3 -m venv --system-site-packages venv
 # Activate and install API dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
 sudo -u ezrec venv/bin/pip install -r ../requirements.txt
+sudo -u ezrec venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
+
 
 # 8. COMPREHENSIVE FIXES SECTION
 log "8. Applying comprehensive fixes..."
