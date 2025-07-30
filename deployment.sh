@@ -230,6 +230,9 @@ if [ -f "$ENV_FILE" ]; then
     echo ""
     echo "🔧 To modify: sudo nano /opt/ezrec-backend/.env"
     echo "🔧 To view: cat /opt/ezrec-backend/.env"
+    echo ""
+    echo "⚠️ IMPORTANT: Your existing .env file has been preserved!"
+    echo "⚠️ The deployment script will NEVER overwrite your .env file again."
 else
     echo "📝 Creating .env file from template..."
     sudo tee "$ENV_FILE" > /dev/null << 'EOF'
@@ -282,9 +285,9 @@ EOF
     echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
 fi
 
-# Set proper permissions
+# Set proper permissions (readable by ezrec user)
 sudo chown ezrec:ezrec "$ENV_FILE"
-sudo chmod 600 "$ENV_FILE"
+sudo chmod 644 "$ENV_FILE"
 
 echo "✅ Environment configuration setup completed"
 
