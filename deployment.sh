@@ -214,41 +214,6 @@ python3 -c "import boto3; print('✅ boto3 is working')" || echo "❌ boto3 fail
 
 echo "✅ Python dependencies installed successfully"
 
-#------------------------------#
-# 10. ENVIRONMENT CONFIGURATION (SKIPPED - PRESERVE EXISTING .env)
-#------------------------------#
-echo "⚙️ Environment configuration check..."
-
-ENV_FILE="/opt/ezrec-backend/.env"
-
-# Check if .env file exists but DO NOT MODIFY IT
-if [ -f "$ENV_FILE" ]; then
-    echo "✅ .env file exists - PRESERVING EXISTING CONFIGURATION"
-    echo "📋 Current .env variables:"
-    grep -E "^(SUPABASE|AWS|CAMERA|USER|EMAIL|SHARE|TIMEZONE|RECORDING)" "$ENV_FILE" 2>/dev/null || echo "⚠️ No configured variables found"
-    echo ""
-    echo "🔧 To modify: sudo nano /opt/ezrec-backend/.env"
-    echo "🔧 To view: cat /opt/ezrec-backend/.env"
-    echo ""
-    echo "⚠️ IMPORTANT: Your existing .env file has been preserved!"
-    echo "⚠️ The deployment script will NEVER create or modify your .env file."
-else
-    echo "⚠️ .env file not found"
-    echo "📝 Please create your .env file manually:"
-    echo "   sudo nano /opt/ezrec-backend/.env"
-    echo ""
-    echo "📋 Required variables:"
-    echo "   SUPABASE_URL=your_supabase_url"
-    echo "   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
-    echo "   USER_ID=your_user_id"
-    echo "   CAMERA_ID=your_camera_id"
-    echo "   CAMERA_0_SERIAL=your_first_camera_serial"
-    echo "   CAMERA_1_SERIAL=your_second_camera_serial"
-    echo ""
-    echo "⚠️ The system will not work properly until .env is configured!"
-fi
-
-echo "✅ Environment configuration check completed"
 
 #------------------------------#
 # 11. INSTALL SYSTEMD SERVICE FILES
