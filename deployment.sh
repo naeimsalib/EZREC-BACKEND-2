@@ -164,9 +164,11 @@ if [ -d "venv" ]; then
 fi
 
 # Create new virtual environment
+echo "📦 Creating API virtual environment..."
 python3 -m venv venv
 
 # Install dependencies
+echo "📦 Installing API dependencies..."
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
@@ -182,9 +184,11 @@ if [ -d "venv" ]; then
 fi
 
 # Create new virtual environment
+echo "📦 Creating backend virtual environment..."
 python3 -m venv venv
 
 # Install dependencies
+echo "📦 Installing backend dependencies..."
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
