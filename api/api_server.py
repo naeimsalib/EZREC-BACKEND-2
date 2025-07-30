@@ -23,12 +23,7 @@ from email.message import EmailMessage
 import psutil
 import time
 import numpy as np
-try:
-    from picamera2 import Picamera2
-    PICAMERA2_AVAILABLE = True
-except ImportError:
-    import cv2
-    PICAMERA2_AVAILABLE = False
+# Remove the picamera2/cv2 import since API server doesn't need camera functionality
 import io
 import threading
 import pytz
