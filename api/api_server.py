@@ -155,11 +155,11 @@ def root():
 @app.get("/status")
 def status():
     """Simple status endpoint"""
-    return {
+        return {
         "status": "running",
-        "timestamp": datetime.now().isoformat(),
+            "timestamp": datetime.now().isoformat(),
         "version": "1.0.0"
-    }
+        }
 
 @app.get("/bookings")
 def get_bookings():
@@ -184,7 +184,7 @@ def post_bookings(bookings: Union[List[Booking], Booking]):
             bookings_list = bookings
             
         logger.info(f"📝 Creating {len(bookings_list)} booking(s)")
-        
+            
         # Load existing bookings
         bookings_file = Path("/opt/ezrec-backend/api/local_data/bookings.json")
         bookings_file.parent.mkdir(parents=True, exist_ok=True)
@@ -212,12 +212,12 @@ def post_bookings(bookings: Union[List[Booking], Booking]):
         try:
             for booking in bookings_list:
                 update_booking_status(booking.id, booking.status)
-        except Exception as e:
+            except Exception as e:
             logger.warning(f"⚠️ Failed to update Supabase: {e}")
-        
+
         return {"message": f"Successfully created {len(bookings_list)} booking(s)", "bookings": [b.id for b in bookings_list]}
         
-    except Exception as e:
+        except Exception as e:
         logger.error(f"❌ Error creating bookings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
