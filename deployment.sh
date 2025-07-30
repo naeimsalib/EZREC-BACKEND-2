@@ -136,16 +136,18 @@ log "8. Applying comprehensive fixes..."
 # Fix 1: Handle libcamera/pykms issues
 log "Fixing libcamera/pykms dependencies..."
 cd /opt/ezrec-backend/backend
-sudo -u ezrec venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null || {
+sudo -u ezrec venv/bin/python3 -c "import picamera2" 2>/dev/null || {
     log "Creating kms.py placeholder for picamera2 compatibility..."
-    sudo -u ezrec tee venv/lib/python3.*/site-packages/kms.py > /dev/null << 'EOF'
+    # figure out exactly where site‑packages lives
+    SITE_PACKAGES=$(sudo -u ezrec venv/bin/python3 -c "import distutils.sysconfig as s; print(s.get_python_lib())")
+    sudo -u ezrec tee "$SITE_PACKAGES/kms.py" > /dev/null << 'EOF'
 """
 Placeholder kms module for picamera2 compatibility
 """
 import sys
 import warnings
 
-warnings.warn("Using placeholder kms module - picamera2 may not work correctly")
+warnings.warn("Using placeholder kms module – picamera2 may not work correctly")
 
 class KMS:
     def __init__(self):
@@ -157,9 +159,7 @@ class KMS:
 def create_kms():
     return KMS()
 EOF
-
-    # Create pykms.py symlink
-    sudo -u ezrec ln -sf venv/lib/python3.*/site-packages/kms.py venv/lib/python3.*/site-packages/pykms.py 2>/dev/null || true
+    sudo -u ezrec ln -sf "$SITE_PACKAGES/kms.py" "$SITE_PACKAGES/pykms.py"
 }
 
 # Fix 2: Create missing assets
