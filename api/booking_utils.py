@@ -3,7 +3,6 @@ import json
 from pathlib import Path
 from typing import Optional, Dict, Any
 from supabase import create_client, Client
-from supabase._sync.client import SupabaseException
 
 # Load environment variables
 SUPABASE_URL = os.getenv('SUPABASE_URL', 'your_supabase_url_here')
