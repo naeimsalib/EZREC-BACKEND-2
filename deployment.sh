@@ -216,16 +216,22 @@ python3 -c "import boto3; print('✅ boto3 is working')" || echo "❌ boto3 fail
 echo "✅ Python dependencies installed successfully"
 
 #------------------------------#
-# 10. SETUP ENVIRONMENT CONFIGURATION
+# 10. SETUP ENVIRONMENT CONFIGURATION (PRESERVED)
 #------------------------------#
-echo "⚙️ Setting up environment configuration..."
+echo "⚙️ Checking environment configuration..."
 
 ENV_FILE="/opt/ezrec-backend/.env"
-REQUIRED_VARS=("SUPABASE_URL" "SUPABASE_SERVICE_ROLE_KEY" "USER_ID" "CAMERA_ID")
 
-# Create .env file if it doesn't exist
-if [ ! -f "$ENV_FILE" ]; then
-    echo "📝 Creating .env file..."
+# Check if .env file exists
+if [ -f "$ENV_FILE" ]; then
+    echo "✅ .env file already exists - PRESERVING EXISTING CONFIGURATION"
+    echo "📋 Current .env variables:"
+    grep -E "^(SUPABASE|AWS|CAMERA|USER|EMAIL|SHARE|TIMEZONE|RECORDING)" "$ENV_FILE" 2>/dev/null || echo "⚠️ No configured variables found"
+    echo ""
+    echo "🔧 To modify: sudo nano /opt/ezrec-backend/.env"
+    echo "🔧 To view: cat /opt/ezrec-backend/.env"
+else
+    echo "📝 Creating .env file from template..."
     sudo tee "$ENV_FILE" > /dev/null << 'EOF'
 # EZREC Backend Environment Configuration
 # Copy this file to .env and fill in your actual values
@@ -271,41 +277,16 @@ RECORDING_FPS=30
 LOG_LEVEL=INFO
 BOOKING_CHECK_INTERVAL=5
 EOF
-        echo "✅ Basic .env file created"
-        echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
-        echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
-        echo ""
-        echo "📋 Required environment variables:"
-        echo "   SUPABASE_URL=your_supabase_project_url"
-        echo "   SUPABASE_SERVICE_ROLE_KEY=your_service_role_key"
-        echo "   USER_ID=your_user_id"
-        echo "   CAMERA_ID=your_camera_id"
-        echo "   CAMERA_0_SERIAL=your_first_camera_serial"
-        echo "   CAMERA_1_SERIAL=your_second_camera_serial"
-        echo ""
-        echo "⚠️  The system will not work properly until these are configured!"
-else
-    echo "✅ .env file already exists"
-    
-    # Check if all required variables are present
-    missing_vars=()
-    for var in "${REQUIRED_VARS[@]}"; do
-        if ! grep -q "^${var}=" "$ENV_FILE"; then
-            missing_vars+=("$var")
-        fi
-    done
-    
-    if [ ${#missing_vars[@]} -eq 0 ]; then
-        echo "✅ All required environment variables are configured"
-    else
-        echo "⚠️ Missing required environment variables: ${missing_vars[*]}"
-        echo "🔧 Please add them to /opt/ezrec-backend/.env"
-        echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
-    fi
-    
-    echo "🔧 To update: sudo nano /opt/ezrec-backend/.env"
-    echo "📋 Make sure these variables are set: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, USER_ID, CAMERA_ID"
+    echo "✅ Basic .env file created from template"
+    echo "🔧 Please edit /opt/ezrec-backend/.env with your actual credentials"
+    echo "🔧 Example: sudo nano /opt/ezrec-backend/.env"
 fi
+
+# Set proper permissions
+sudo chown ezrec:ezrec "$ENV_FILE"
+sudo chmod 600 "$ENV_FILE"
+
+echo "✅ Environment configuration setup completed"
 
 #------------------------------#
 # 11. INSTALL SYSTEMD SERVICE FILES
