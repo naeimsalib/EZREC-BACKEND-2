@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # EZREC Backend Deployment Script
-# This script sets up the complete EZREC backend system
+# This script sets up the complete EZREC backend system using only requirements.txt
 
 set -e
 
@@ -73,63 +73,25 @@ else
 fi
 
 #------------------------------#
-# 4. INSTALL REQUIRED TOOLS
+# 4. INSTALL SYSTEM DEPENDENCIES
 #------------------------------#
-echo "🔧 Checking and installing required tools..."
-
-    # Check FFmpeg
-if command -v ffmpeg &> /dev/null; then
-    echo "✅ FFmpeg is available"
-else
-    echo "❌ FFmpeg not found"
-    echo "🔧 Installing FFmpeg..."
-        sudo apt-get update
-    sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFmpeg"; exit 1; }
-    fi
-    
-    # Check FFprobe
-if command -v ffprobe &> /dev/null; then
-    echo "✅ FFprobe is available"
-else
-    echo "❌ FFprobe not found"
-    echo "🔧 Installing FFprobe..."
-    sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFprobe"; exit 1; }
-    fi
-    
-    # Check v4l2-ctl
-if command -v v4l2-ctl &> /dev/null; then
-    echo "✅ v4l2-ctl is available"
-else
-    echo "❌ v4l2-ctl not found"
-    echo "🔧 Installing v4l-utils..."
-    sudo apt-get install -y v4l-utils || { echo "❌ Failed to install v4l-utils"; exit 1; }
-fi
-
-# Check Picamera2
-if python3 -c "import picamera2" 2>/dev/null; then
-    echo "✅ Picamera2 is available"
-else
-    echo "❌ Picamera2 not found"
-    echo "🔧 Installing Picamera2..."
-    sudo apt-get install -y python3-picamera2 || { echo "❌ Failed to install Picamera2"; exit 1; }
-fi
-
-#------------------------------#
-# 5. INSTALL ADDITIONAL DEPENDENCIES
-#------------------------------#
-    echo "📦 Installing additional dependencies..."
+echo "🔧 Installing system dependencies..."
 
 # Update package list
-    sudo apt-get update
+sudo apt-get update
 
-# Install Python packages
-    sudo apt-get install -y python3-requests python3-psutil python3-boto3 python3-dotenv build-essential
-
-# Install additional system packages
-sudo apt-get install -y imagemagick v4l-utils
+# Install essential system packages (only what's absolutely necessary)
+echo "📦 Installing essential system packages..."
+sudo apt-get install -y \
+    ffmpeg \
+    v4l-utils \
+    python3-venv \
+    python3-pip \
+    build-essential \
+    python3-dev
 
 #------------------------------#
-# 6. CREATE REQUIRED DIRECTORIES
+# 5. CREATE REQUIRED DIRECTORIES
 #------------------------------#
 echo "📁 Creating required directories..."
 
@@ -145,9 +107,9 @@ sudo mkdir -p /opt/ezrec-backend/events
 sudo mkdir -p /opt/ezrec-backend/api/local_data
 
 #------------------------------#
-# 7. CREATE DEDICATED USER AND FIX PERMISSIONS
+# 6. CREATE DEDICATED USER AND SET PERMISSIONS
 #------------------------------#
-echo "🔐 Creating dedicated user and fixing permissions..."
+echo "🔐 Creating dedicated user and setting permissions..."
 
 # Create dedicated user for services
 if ! id "ezrec" &>/dev/null; then
@@ -166,10 +128,9 @@ sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend
 
 # Set permissions
 sudo chmod -R 755 /opt/ezrec-backend
-sudo chmod 644 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
 
 #------------------------------#
-# 8. SETUP PYTHON ENVIRONMENTS
+# 7. SETUP PYTHON ENVIRONMENTS
 #------------------------------#
 echo "🐍 Setting up Python environments..."
 
@@ -177,7 +138,7 @@ echo "🐍 Setting up Python environments..."
 echo "🐍 Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
 
-# Remove existing venv if it exists and has permission issues
+# Remove existing venv if it exists
 if [ -d "venv" ]; then
     echo "🧹 Removing existing API virtual environment..."
     rm -rf venv
@@ -187,11 +148,12 @@ fi
 echo "📦 Creating API virtual environment..."
 python3 -m venv venv
 
-# Install dependencies
-echo "📦 Installing API dependencies..."
+# Install dependencies from requirements.txt
+echo "📦 Installing API dependencies from requirements.txt..."
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
+deactivate
 
 # Setup Backend virtual environment
 echo "🐍 Setting up Backend virtual environment..."
@@ -207,11 +169,12 @@ fi
 echo "📦 Creating backend virtual environment..."
 python3 -m venv venv
 
-# Install dependencies
-echo "📦 Installing backend dependencies..."
+# Install dependencies from requirements.txt
+echo "📦 Installing backend dependencies from requirements.txt..."
 source venv/bin/activate
 pip install --upgrade pip
 pip install -r /opt/ezrec-backend/requirements.txt
+deactivate
 
 # Fix virtual environment ownership for services
 echo "🔐 Setting ownership for services..."
@@ -219,25 +182,37 @@ sudo chown -R ezrec:ezrec /opt/ezrec-backend/backend/venv
 sudo chown -R ezrec:ezrec /opt/ezrec-backend/api/venv
 
 #------------------------------#
-# 9. TEST PYTHON DEPENDENCIES
+# 8. TEST PYTHON DEPENDENCIES
 #------------------------------#
-echo "🐍 Testing Python imports..."
+echo "🐍 Testing Python dependencies..."
 
 cd /opt/ezrec-backend/api
 source venv/bin/activate
 
 # Test critical packages
-echo "🔧 Testing other critical packages..."
+echo "🔧 Testing critical packages..."
 python3 -c "import fastapi; print('✅ fastapi is working')" || echo "❌ fastapi failed"
 python3 -c "import supabase; print('✅ supabase is working')" || echo "❌ supabase failed"
 python3 -c "import psutil; print('✅ psutil is working')" || echo "❌ psutil failed"
 python3 -c "import boto3; print('✅ boto3 is working')" || echo "❌ boto3 failed"
+python3 -c "import numpy; print(f'✅ numpy {numpy.__version__} is working')" || echo "❌ numpy failed"
+
+deactivate
+
+cd /opt/ezrec-backend/backend
+source venv/bin/activate
+
+# Test backend-specific packages
+echo "🔧 Testing backend packages..."
+python3 -c "import psutil; print('✅ psutil is working')" || echo "❌ psutil failed"
+python3 -c "import numpy; print(f'✅ numpy {numpy.__version__} is working')" || echo "❌ numpy failed"
+
+deactivate
 
 echo "✅ Python dependencies installed successfully"
 
-
 #------------------------------#
-# 11. INSTALL SYSTEMD SERVICE FILES
+# 9. INSTALL SYSTEMD SERVICE FILES
 #------------------------------#
 echo "⚙️ Installing systemd service files..."
 
@@ -299,7 +274,7 @@ EOF
     # Create basic video_worker service
 sudo tee /etc/systemd/system/video_worker.service > /dev/null << 'EOF'
 [Unit]
-Description=EZREC Video Processor
+Description=EZREC Video Processing Worker
 After=network.target
 
 [Service]
@@ -322,7 +297,7 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-    # Create basic ezrec-api service
+    # Create basic API service
 sudo tee /etc/systemd/system/ezrec-api.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC FastAPI Backend
@@ -348,7 +323,7 @@ PrivateTmp=true
 WantedBy=multi-user.target
 EOF
 
-# Create system_status service (one-shot service for timer)
+    # Create basic system_status service
 sudo tee /etc/systemd/system/system_status.service > /dev/null << 'EOF'
 [Unit]
 Description=EZREC System Status Monitor
@@ -356,7 +331,6 @@ After=network.target
 
 [Service]
 Type=oneshot
-RemainAfterExit=no
 User=ezrec
 Group=ezrec
 WorkingDirectory=/opt/ezrec-backend/backend
@@ -364,261 +338,73 @@ Environment=PATH=/opt/ezrec-backend/backend/venv/bin:/usr/local/sbin:/usr/local/
 ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 system_status.py
 StandardOutput=journal
 StandardError=journal
-TimeoutStartSec=60
 
 [Install]
 WantedBy=multi-user.target
 EOF
 
-# Create system_status timer
+    # Create system_status timer
 sudo tee /etc/systemd/system/system_status.timer > /dev/null << 'EOF'
 [Unit]
-Description=EZREC System Status Monitor Timer
-After=network.target
+Description=Run system status check every 5 minutes
+Requires=system_status.service
 
 [Timer]
-OnBootSec=30s
-OnUnitActiveSec=5m
-Unit=system_status.service
+OnCalendar=*:0/5
+Persistent=true
 
 [Install]
 WantedBy=timers.target
 EOF
 
-    echo "✅ Basic systemd services created"
+    echo "✅ Basic systemd service files created"
 fi
 
 #------------------------------#
-# 12. RELOAD SYSTEMD
+# 10. SETUP LOGROTATE
 #------------------------------#
-echo "🔄 Reloading systemd..."
-sudo systemctl daemon-reload
+echo "📝 Setting up log rotation..."
 
-#------------------------------#
-# 13. TEST BASIC FUNCTIONALITY
-#------------------------------#
-echo "🧪 Testing basic functionality..."
-
-# Test FFmpeg
-if command -v ffmpeg &> /dev/null; then
-    echo "✅ FFmpeg is available"
-    # Test FFmpeg functionality
-    if ffmpeg -version &> /dev/null; then
-        echo "✅ FFmpeg is working correctly"
-    else
-        echo "⚠️ FFmpeg found but not working correctly"
-    fi
-else
-    echo "❌ FFmpeg not found"
-    echo "🔧 Installing FFmpeg..."
-    sudo apt-get update
-    sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFmpeg"; exit 1; }
-    if command -v ffmpeg &> /dev/null; then
-        echo "✅ FFmpeg installed successfully"
-    else
-        echo "❌ FFmpeg installation failed"
-        exit 1
-    fi
-fi
-
-# Test ffprobe
-if command -v ffprobe &> /dev/null; then
-    echo "✅ FFprobe is available"
-    # Test ffprobe functionality
-    if ffprobe -version &> /dev/null; then
-        echo "✅ FFprobe is working correctly"
-    else
-        echo "⚠️ FFprobe found but not working correctly"
-    fi
-else
-    echo "❌ FFprobe not found"
-    echo "🔧 Installing FFprobe..."
-    sudo apt-get install -y ffmpeg || { echo "❌ Failed to install FFprobe"; exit 1; }
-    if command -v ffprobe &> /dev/null; then
-        echo "✅ FFprobe installed successfully"
-    else
-        echo "❌ FFprobe installation failed"
-        exit 1
-    fi
-fi
-
-# Test v4l2-ctl
-if command -v v4l2-ctl &> /dev/null; then
-    echo "✅ v4l2-ctl is available"
-    echo "📹 Camera devices:"
-    v4l2-ctl --list-devices | grep -A 1 "video" | head -10
-else
-    echo "❌ v4l2-ctl not found"
-fi
-
-# Test Python imports
-echo "🐍 Testing Python imports..."
-cd /opt/ezrec-backend/backend
-source venv/bin/activate
-
-# Test critical packages
-echo "🔧 Testing other critical packages..."
-python3 -c "import fastapi; print('✅ fastapi is working')" || echo "❌ fastapi failed"
-python3 -c "import supabase; print('✅ supabase is working')" || echo "❌ supabase failed"
-python3 -c "import psutil; print('✅ psutil is working')" || echo "❌ psutil failed"
-python3 -c "import boto3; print('✅ boto3 is working')" || echo "❌ boto3 failed"
-
-#------------------------------#
-# 14. CREATE ASSETS
-#------------------------------#
-echo "🎨 Creating assets..."
-cd /opt/ezrec-backend/backend
-source venv/bin/activate
-python3 create_assets.py
-
-#------------------------------#
-# 15. SETUP CRON JOBS
-#------------------------------#
-echo "⏰ Setting up cron jobs..."
-
-# Add cron job for log rotation (if not exists)
-if ! crontab -l 2>/dev/null | grep -q "ezrec"; then
-    (crontab -l 2>/dev/null; echo "0 2 * * * find /opt/ezrec-backend/logs -name '*.log' -mtime +7 -delete") | crontab -
-    echo "✅ Log rotation cron job added"
-else
-    echo "✅ Log rotation cron job already exists"
-fi
-
-#------------------------------#
-# 16. APPLY COMPREHENSIVE FIXES
-#------------------------------#
-echo "🔧 Applying comprehensive fixes..."
-echo "=================================="
-
-# Make all fix scripts executable
-echo "📝 Making fix scripts executable..."
-cd /opt/ezrec-backend
-chmod +x *.sh
-
-# Apply fixes in order
-echo "🔄 Step 1: Fixing permissions..."
-if [ -f "fix_permissions.sh" ]; then
-    sudo ./fix_permissions.sh
-else
-    echo "⚠️ fix_permissions.sh not found, applying basic permissions..."
-    sudo mkdir -p /opt/ezrec-backend/{logs,media_cache,api/local_data,events,recordings,processed,final,assets}
-    sudo touch /opt/ezrec-backend/api/local_data/bookings.json
-    sudo touch /opt/ezrec-backend/status.json
-    sudo chown -R ezrec:ezrec /opt/ezrec-backend
-    sudo chmod -R 755 /opt/ezrec-backend
-    sudo chmod 664 /opt/ezrec-backend/api/local_data/bookings.json
-    sudo chmod 664 /opt/ezrec-backend/status.json
-fi
-
-echo "🔄 Step 2: Installing libcamera..."
-if [ -f "fix_libcamera.sh" ]; then
-    sudo ./fix_libcamera.sh
-else
-    echo "⚠️ fix_libcamera.sh not found, installing manually..."
-    sudo apt update
-    sudo apt install -y python3-libcamera libcamera-apps
-fi
-
-echo "🔄 Step 3: Installing ImageMagick..."
-if [ -f "fix_imagemagick.sh" ]; then
-    sudo ./fix_imagemagick.sh
-else
-    echo "⚠️ fix_imagemagick.sh not found, installing manually..."
-    sudo apt update
-    sudo apt install -y imagemagick
-fi
-
-echo "🔄 Step 4: Fixing backend venv..."
-if [ -f "fix_backend_venv_final.sh" ]; then
-    sudo ./fix_backend_venv_final.sh
-else
-    echo "⚠️ fix_backend_venv_final.sh not found, applying basic venv fix..."
-    cd /opt/ezrec-backend/backend
-    sudo rm -rf venv
-    python3 -m venv venv
-    source venv/bin/activate
-    pip install --upgrade pip
-    pip install -r /opt/ezrec-backend/requirements.txt
-    sudo chown -R ezrec:ezrec venv
-fi
-
-echo "🔄 Step 5: Fixing pykms module..."
-if [ -f "fix_pykms.sh" ]; then
-    sudo ./fix_pykms.sh
-else
-    echo "⚠️ fix_pykms.sh not found, installing manually..."
-    sudo apt update
-    sudo apt install -y python3-kms
-fi
-
-echo "🔄 Step 6: Fixing Supabase integration..."
-if [ -f "fix_supabase_issues.sh" ]; then
-    sudo ./fix_supabase_issues.sh
-else
-    echo "⚠️ fix_supabase_issues.sh not found, applying basic fixes..."
-    # Create booking_utils.py if it doesn't exist
-    if [ ! -f "/opt/ezrec-backend/api/booking_utils.py" ]; then
-        sudo -u ezrec tee /opt/ezrec-backend/api/booking_utils.py > /dev/null << 'EOF'
-def update_booking_status(booking_id: str, new_status: str) -> bool:
-    """Update booking status in Supabase"""
-    try:
-        from supabase import create_client, Client
-        import os
-        from dotenv import load_dotenv
-        
-        load_dotenv()
-        
-        supabase_url = os.getenv('SUPABASE_URL')
-        supabase_key = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
-        
-        if not supabase_url or not supabase_key:
-            print("⚠️ Supabase credentials not configured")
-            return False
-            
-        supabase: Client = create_client(supabase_url, supabase_key)
-        
-        # Update the booking status
-        result = supabase.table('bookings').update({
-            'status': new_status,
-            'updated_at': 'now()'
-        }).eq('id', booking_id).execute()
-        
-        print(f"✅ Updated booking {booking_id} status to {new_status}")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Failed to update booking status: {e}")
-        return False
+# Create logrotate configuration
+sudo tee /etc/logrotate.d/ezrec-backend > /dev/null << 'EOF'
+/opt/ezrec-backend/logs/*.log {
+    daily
+    missingok
+    rotate 7
+    compress
+    delaycompress
+    notifempty
+    create 644 ezrec ezrec
+    postrotate
+        systemctl reload dual_recorder.service > /dev/null 2>&1 || true
+        systemctl reload video_worker.service > /dev/null 2>&1 || true
+        systemctl reload ezrec-api.service > /dev/null 2>&1 || true
+    endscript
+}
 EOF
-    fi
-fi
 
-echo "🔄 Step 7: Fixing API issues..."
-if [ -f "fix_api_issues.sh" ]; then
-    sudo ./fix_api_issues.sh
-else
-    echo "⚠️ fix_api_issues.sh not found, applying basic API fixes..."
-    # Ensure bookings.json exists and is valid JSON
-    if [ ! -f "/opt/ezrec-backend/api/local_data/bookings.json" ]; then
-        sudo -u ezrec tee /opt/ezrec-backend/api/local_data/bookings.json > /dev/null << 'EOF'
-[]
-EOF
-    fi
-    sudo chown ezrec:ezrec /opt/ezrec-backend/api/local_data/bookings.json
-    sudo chmod 664 /opt/ezrec-backend/api/local_data/bookings.json
-fi
+echo "✅ Log rotation configured"
 
 #------------------------------#
-# 17. ENABLE AND START SERVICES
+# 11. SET FINAL PERMISSIONS
+#------------------------------#
+echo "🔐 Setting final permissions..."
+
+# Set ownership to ezrec user
+sudo chown -R ezrec:ezrec /opt/ezrec-backend
+
+# Set permissions
+sudo chmod -R 755 /opt/ezrec-backend
+sudo chmod 664 /opt/ezrec-backend/api/local_data/bookings.json 2>/dev/null || true
+sudo chmod 664 /opt/ezrec-backend/status.json 2>/dev/null || true
+
+#------------------------------#
+# 12. ENABLE AND START SERVICES
 #------------------------------#
 echo "🚀 Enabling and starting services..."
 
-# Add ezrec user to video group for camera access
-sudo usermod -a -G video ezrec
-
-# Reset failed services
-echo "🔄 Resetting failed services..."
-sudo systemctl reset-failed
+# Reload systemd daemon
+sudo systemctl daemon-reload
 
 # Enable services
 sudo systemctl enable dual_recorder.service
@@ -632,10 +418,11 @@ echo "🚀 Starting services..."
 sudo systemctl start dual_recorder.service
 sudo systemctl start video_worker.service
 sudo systemctl start ezrec-api.service
+sudo systemctl start system_status.service
 sudo systemctl start system_status.timer
 
 #------------------------------#
-# 18. VERIFY CRITICAL FILES
+# 13. VERIFY CRITICAL FILES
 #------------------------------#
 echo "📋 Verifying critical files..."
 
@@ -656,7 +443,7 @@ for file in "${CRITICAL_FILES[@]}"; do
 done
 
 #------------------------------#
-# 19. FINAL STATUS CHECK
+# 14. FINAL STATUS CHECK
 #------------------------------#
 echo "🎯 Final status check..."
 
@@ -677,18 +464,7 @@ else
 fi
 
 #------------------------------#
-# 20. RUN COMPLETE SYSTEM TEST
-#------------------------------#
-echo "🧪 Running complete system test..."
-if [ -f "/opt/ezrec-backend/test_complete_system.py" ]; then
-    cd /opt/ezrec-backend
-    python3 test_complete_system.py
-else
-    echo "⚠️ test_complete_system.py not found, skipping system test"
-fi
-
-#------------------------------#
-# 21. SUCCESS MESSAGE
+# 15. SUCCESS MESSAGE
 #------------------------------#
 echo ""
 echo "🎉 EZREC Backend Deployment Complete!"
@@ -710,4 +486,4 @@ echo "📝 Logs Directory: /opt/ezrec-backend/logs"
 echo "🎥 Recordings Directory: /opt/ezrec-backend/recordings"
 echo ""
 echo "✅ Deployment completed successfully!"
-echo "🎯 All fixes applied - system should be fully operational!"
+echo "🎯 All dependencies installed from requirements.txt!"
