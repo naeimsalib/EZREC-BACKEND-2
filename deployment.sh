@@ -115,7 +115,7 @@ log "7. Setting up Python virtual environments..."
 log "Setting up backend virtual environment..."
 cd /opt/ezrec-backend/backend
 sudo rm -rf venv 2>/dev/null || true
-sudo -u ezrec python3 -m venv venv
+sudo -u ezrec python3 -m venv --system-site-packages venv
 
 # Activate and install backend dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
@@ -127,7 +127,7 @@ sudo -u ezrec venv/bin/pip install --force-reinstall --no-binary simplejpeg simp
 log "Setting up API virtual environment..."
 cd /opt/ezrec-backend/api
 sudo rm -rf venv 2>/dev/null || true
-sudo -u ezrec python3 -m venv venv
+sudo -u ezrec python3 -m venv --system-site-packages venv
 
 # Activate and install API dependencies
 sudo -u ezrec venv/bin/pip install --upgrade pip
