@@ -57,14 +57,14 @@ sudo mkdir -p /opt/ezrec-backend
 if [ -f "/tmp/ezrec_env_backup" ]; then
     log "Restoring .env file..."
     sudo cp /tmp/ezrec_env_backup /opt/ezrec-backend/.env
-    sudo chown ezrec:ezrec /opt/ezrec-backend/.env
+    sudo chown michomanoly14892:michomanoly14892 /opt/ezrec-backend/.env
     sudo chmod 644 /opt/ezrec-backend/.env
 fi
 
 # 3. COPY PROJECT FILES
 log "3. Copying project files..."
 sudo cp -r . /opt/ezrec-backend/
-sudo chown -R $CURRENT_USER:$CURRENT_USER /opt/ezrec-backend
+sudo chown -R michomanoly14892:michomanoly14892 /opt/ezrec-backend
 
 # 4. INSTALL SYSTEM DEPENDENCIES
 log "4. Installing system dependencies..."
@@ -72,6 +72,7 @@ sudo apt update
 sudo apt install -y \
     build-essential libjpeg-dev \
     ffmpeg \
+    ffprobe \
     v4l-utils \
     imagemagick \
     python3-libcamera \
@@ -97,6 +98,11 @@ sudo apt install -y \
 log "5. Setting up user and groups..."
 if ! id "ezrec" &>/dev/null; then
     sudo useradd -r -s /bin/false -d /opt/ezrec-backend ezrec
+fi
+
+# Ensure michomanoly14892 user exists and has proper permissions
+if ! id "michomanoly14892" &>/dev/null; then
+    sudo useradd -m -s /bin/bash michomanoly14892
 fi
 
 # Add current user to video group
