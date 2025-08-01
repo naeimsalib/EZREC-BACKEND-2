@@ -349,13 +349,15 @@ class CameraRecorder:
                 self.picamera2.configure(config)
                 self.picamera2.start()
                 
-                # Create encoder with better MP4 compatibility
+                # Create encoder with proper MP4 compatibility
                 from picamera2.encoders import H264Encoder
                 self.encoder = H264Encoder(
                     bitrate=6000000,
                     repeat=False,
                     iperiod=30,
-                    qp=25
+                    qp=25,
+                    profile="baseline",
+                    level="4.1"
                 )
                 
                 self.logger.info(f"✅ {self.camera_name} camera initialized successfully")
@@ -411,8 +413,25 @@ class CameraRecorder:
             self.logger.info(f"🎥 Starting {self.camera_name} camera recording")
             self.recording = True
             
-            # Start recording
-            self.picamera2.start_recording(self.encoder, str(self.output_path))
+            # Start recording with proper MP4 configuration
+            try:
+                self.picamera2.start_recording(self.encoder, str(self.output_path))
+            except Exception as e:
+                if "GLOBAL_HEADER" in str(e):
+                    # Try alternative encoder configuration
+                    self.logger.warning(f"⚠️ GLOBAL_HEADER error, trying alternative encoder config")
+                    from picamera2.encoders import H264Encoder
+                    self.encoder = H264Encoder(
+                        bitrate=4000000,
+                        repeat=False,
+                        iperiod=30,
+                        qp=30,
+                        profile="baseline",
+                        level="4.0"
+                    )
+                    self.picamera2.start_recording(self.encoder, str(self.output_path))
+                else:
+                    raise e
             
             # Keep recording until stopped with health monitoring
             last_log_time = time.time()
