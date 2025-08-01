@@ -194,6 +194,18 @@ setup_venv() {
         sudo -u $DEPLOY_USER venv/bin/pip install simplejpeg
     fi
     
+    # Ensure PyAV is upgraded to compatible version for picamera2
+    log_info "Upgrading PyAV to ensure picamera2 compatibility"
+    sudo -u $DEPLOY_USER venv/bin/pip install --upgrade "av>=15.0.0"
+    
+    # Verify picamera2 compatibility
+    log_info "Verifying picamera2 and PyAV compatibility"
+    if sudo -u $DEPLOY_USER venv/bin/python3 -c "import picamera2; import av; print('✅ picamera2 and PyAV compatibility verified')" 2>/dev/null; then
+        log_info "✅ picamera2 and PyAV compatibility verified"
+    else
+        log_warn "⚠️ picamera2 and PyAV compatibility check failed"
+    fi
+    
     log_info "$name virtual environment ready"
 }
 
