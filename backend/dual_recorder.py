@@ -772,9 +772,31 @@ class DualRecordingSession:
                 self.camera1_recorder = None
                 logger.info("🎥 Starting single camera recording...")
             
-            # Start recording on available cameras
-            cam0_started = self.camera0_recorder.start_recording()
-            cam1_started = self.camera1_recorder.start_recording() if self.camera1_recorder else False
+            # Start recording on available cameras SIMULTANEOUSLY
+            logger.info("🎬 Starting both cameras simultaneously...")
+            
+            # Start both camera threads at the same time
+            if self.camera0_recorder:
+                self.camera0_recorder.thread = threading.Thread(target=self.camera0_recorder._record_loop)
+                self.camera0_recorder.thread.daemon = True
+                self.camera0_recorder.thread.start()
+            
+            if self.camera1_recorder:
+                self.camera1_recorder.thread = threading.Thread(target=self.camera1_recorder._record_loop)
+                self.camera1_recorder.thread.daemon = True
+                self.camera1_recorder.thread.start()
+            
+            # Wait for both cameras to initialize and start recording
+            time.sleep(3)  # Give both cameras time to initialize
+            
+            # Check if both cameras started successfully
+            cam0_started = (self.camera0_recorder and self.camera0_recorder.thread and 
+                           self.camera0_recorder.thread.is_alive() and 
+                           self.camera0_recorder.recording)
+            
+            cam1_started = (self.camera1_recorder and self.camera1_recorder.thread and 
+                           self.camera1_recorder.thread.is_alive() and 
+                           self.camera1_recorder.recording)
             
             # Handle partial success scenarios
             if not cam0_started and not cam1_started:
