@@ -112,7 +112,9 @@ sudo usermod -a -G video ezrec
 # 6. CREATE DIRECTORY STRUCTURE
 log "6. Creating directory structure..."
 sudo mkdir -p /opt/ezrec-backend/{recordings,processed,final,assets,logs,events,api/local_data,media_cache}
-sudo chown -R ezrec:ezrec /opt/ezrec-backend
+# Set proper ownership for logs directory
+sudo chown michomanoly14892:michomanoly14892 /opt/ezrec-backend/logs
+sudo chmod 755 /opt/ezrec-backend/logs
 
 # 7. SETUP PYTHON VIRTUAL ENVIRONMENTS
 log "7. Setting up Python virtual environments..."
