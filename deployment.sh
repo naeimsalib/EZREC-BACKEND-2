@@ -301,9 +301,11 @@ download_user_assets() {
     log_info "Downloading main company logo..."
     COMPANY_LOGO_PATH="$ASSETS_DIR/ezrec_logo.png"
     
-    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
+    # Capture the actual download result
+    COMPANY_LOGO_RESULT=$(sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
 import os
+import sys
 from pathlib import Path
 
 # Load environment
@@ -316,32 +318,39 @@ region = os.getenv('AWS_REGION')
 access_key = os.getenv('AWS_ACCESS_KEY_ID')
 secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-if all([bucket, region, access_key, secret_key]):
+if not all([bucket, region, access_key, secret_key]):
+    print('❌ Missing AWS credentials for asset download')
+    sys.exit(1)
+
+try:
+    s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    
+    # Download company logo from root of bucket
     try:
-        s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-        
-        # Download company logo from root of bucket
-        try:
-            s3.download_file(bucket, 'main_ezrec_logo.png', '$COMPANY_LOGO_PATH')
-            print('✅ Downloaded company logo: main_ezrec_logo.png')
-        except Exception as e:
-            print(f'❌ Company logo not found: {e}')
-            
+        s3.download_file(bucket, 'main_ezrec_logo.png', '$COMPANY_LOGO_PATH')
+        print('✅ Downloaded company logo: main_ezrec_logo.png')
+        sys.exit(0)
     except Exception as e:
-        print(f'⚠️ Error downloading company logo: {e}')
-else:
-    print('⚠️ Missing AWS credentials for asset download')
-" 2>/dev/null; then
+        print(f'❌ Company logo not found: {e}')
+        sys.exit(1)
+        
+except Exception as e:
+    print(f'⚠️ Error downloading company logo: {e}')
+    sys.exit(1)
+" 2>/dev/null)
+    
+    if [[ $? -eq 0 ]]; then
         log_info "✅ Company logo downloaded successfully"
     else
-        log_warn "⚠️ Company logo not found or download failed"
+        log_warn "⚠️ Company logo download failed: $COMPANY_LOGO_RESULT"
     fi
     
     # Download user assets from user-specific folders
     log_info "Checking for user assets in user folder..."
-    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
+    USER_ASSETS_RESULT=$(sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
 import os
+import sys
 from pathlib import Path
 
 # Load environment
@@ -354,54 +363,64 @@ region = os.getenv('AWS_REGION')
 access_key = os.getenv('AWS_ACCESS_KEY_ID')
 secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 
-if all([bucket, region, access_key, secret_key]):
-    try:
-        s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-        
-        # Define user assets with correct paths based on S3 structure
-        user_assets = [
-            # User logo from logo folder
-            ('$USER_ID/logo/logo.png', '$ASSETS_DIR/user_logo.png'),
-            # Intro video from intro-video folder
-            ('$USER_ID/intro-video/intro.mp4', '$ASSETS_DIR/intro.mp4'),
-            # Sponsor logos from sponsor-logo folders
-            ('$USER_ID/sponsor-logo1/logo1.png', '$ASSETS_DIR/sponsor_logo1.png'),
-            ('$USER_ID/sponsor-logo2/logo2.png', '$ASSETS_DIR/sponsor_logo2.png'),
-            ('$USER_ID/sponsor-logo3/logo3.png', '$ASSETS_DIR/sponsor_logo3.png'),
-        ]
-        
-        downloaded_count = 0
-        
-        for s3_key, local_path in user_assets:
-            try:
-                s3.download_file(bucket, s3_key, local_path)
-                print(f'✅ Downloaded: {s3_key} -> {local_path}')
-                downloaded_count += 1
-            except Exception as e:
-                print(f'⚠️ Not found: {s3_key}')
-        
-        print(f'📊 Downloaded {downloaded_count} user assets')
-        
-        # List all objects in bucket for debugging
+if not all([bucket, region, access_key, secret_key]):
+    print('❌ Missing AWS credentials for asset download')
+    sys.exit(1)
+
+try:
+    s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+    
+    # Define user assets with correct paths based on S3 structure
+    user_assets = [
+        # User logo from logo folder
+        ('$USER_ID/logo/logo.png', '$ASSETS_DIR/user_logo.png'),
+        # Intro video from intro-video folder
+        ('$USER_ID/intro-video/intro.mp4', '$ASSETS_DIR/intro.mp4'),
+        # Sponsor logos from sponsor-logo folders
+        ('$USER_ID/sponsor-logo1/logo1.png', '$ASSETS_DIR/sponsor_logo1.png'),
+        ('$USER_ID/sponsor-logo2/logo2.png', '$ASSETS_DIR/sponsor_logo2.png'),
+        ('$USER_ID/sponsor-logo3/logo3.png', '$ASSETS_DIR/sponsor_logo3.png'),
+    ]
+    
+    downloaded_count = 0
+    
+    for s3_key, local_path in user_assets:
         try:
-            response = s3.list_objects_v2(Bucket=bucket, MaxKeys=50)
-            if 'Contents' in response:
-                print('📋 Available objects in bucket:')
-                for obj in response['Contents']:
-                    print(f'  - {obj[\"Key\"]}')
-            else:
-                print('📋 Bucket appears to be empty')
+            s3.download_file(bucket, s3_key, local_path)
+            print(f'✅ Downloaded: {s3_key} -> {local_path}')
+            downloaded_count += 1
         except Exception as e:
-            print(f'⚠️ Could not list bucket contents: {e}')
-        
+            print(f'⚠️ Not found: {s3_key}')
+    
+    print(f'📊 Downloaded {downloaded_count} user assets')
+    
+    # List all objects in bucket for debugging
+    try:
+        response = s3.list_objects_v2(Bucket=bucket, MaxKeys=50)
+        if 'Contents' in response:
+            print('📋 Available objects in bucket:')
+            for obj in response['Contents']:
+                print(f'  - {obj[\"Key\"]}')
+        else:
+            print('📋 Bucket appears to be empty')
     except Exception as e:
-        print(f'⚠️ Error checking user assets: {e}')
-else:
-    print('⚠️ Missing AWS credentials for asset download')
-" 2>/dev/null; then
-        log_info "✅ User asset download completed"
+        print(f'⚠️ Could not list bucket contents: {e}')
+    
+    # Exit with success if at least one asset was downloaded
+    if downloaded_count > 0:
+        sys.exit(0)
+    else:
+        sys.exit(1)
+        
+except Exception as e:
+    print(f'⚠️ Error checking user assets: {e}')
+    sys.exit(1)
+" 2>/dev/null)
+    
+    if [[ $? -eq 0 ]]; then
+        log_info "✅ User asset download completed successfully"
     else
-        log_warn "⚠️ User asset download failed or no assets found"
+        log_warn "⚠️ User asset download failed or no assets found: $USER_ASSETS_RESULT"
     fi
     
     # Set proper permissions
