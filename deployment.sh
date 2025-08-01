@@ -131,25 +131,25 @@ setup_users() {
 install_dependencies() {
     log_step "Installing system dependencies"
     
-    sudo apt update
-    sudo apt install -y \
-        build-essential libjpeg-dev \
-        ffmpeg \
-        v4l-utils \
-        imagemagick \
-        python3-libcamera \
-        python3-picamera2 \
-        python3-pip \
-        python3-venv \
-        python3-dev \
-        libavcodec-extra \
-        libavdevice-dev \
-        libavfilter-dev \
-        libavformat-dev \
-        libavutil-dev \
-        libswscale-dev \
-        libswresample-dev \
-        v4l2loopback-dkms \
+sudo apt update
+sudo apt install -y \
+    build-essential libjpeg-dev \
+    ffmpeg \
+    v4l-utils \
+    imagemagick \
+    python3-libcamera \
+    python3-picamera2 \
+    python3-pip \
+    python3-venv \
+    python3-dev \
+    libavcodec-extra \
+    libavdevice-dev \
+    libavfilter-dev \
+    libavformat-dev \
+    libavutil-dev \
+    libswscale-dev \
+    libswresample-dev \
+    v4l2loopback-dkms \
         git curl wget vim htop
     
     log_info "System dependencies installed"
@@ -178,7 +178,7 @@ setup_venv() {
     log_info "Setting up $name virtual environment"
     
     cd "$path"
-    sudo rm -rf venv 2>/dev/null || true
+sudo rm -rf venv 2>/dev/null || true
     sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
     
     # Install dependencies with better error handling
@@ -457,7 +457,7 @@ setup_files() {
     sudo -u $DEPLOY_USER tee $DEPLOY_PATH/api/local_data/bookings.json > /dev/null << 'EOF'
 []
 EOF
-    
+
     # Create status file
     sudo -u $DEPLOY_USER tee $DEPLOY_PATH/status.json > /dev/null << EOF
 {
@@ -528,8 +528,8 @@ start_services() {
     done
     
     # Wait for services to start
-    sleep 5
-    
+sleep 5
+
     # Reset any failed services
     for service in "${SERVICES[@]}"; do
         sudo systemctl reset-failed ${service}.service 2>/dev/null || true
@@ -542,8 +542,8 @@ start_services() {
     done
     
     # Wait for final startup
-    sleep 10
-    
+sleep 10
+
     log_info "Services started"
 }
 
