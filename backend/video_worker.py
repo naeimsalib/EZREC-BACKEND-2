@@ -766,16 +766,16 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             
             # Add logo inputs and build filter chain
             logo_files = []
-            if (ASSETS_DIR / "ezrec_logo.png").exists():
-                logo_files.append(str(ASSETS_DIR / "ezrec_logo.png"))
-            if (ASSETS_DIR / "user_logo.png").exists():
-                logo_files.append(str(ASSETS_DIR / "user_logo.png"))
-            if (ASSETS_DIR / "sponsor_logo1.png").exists():
-                logo_files.append(str(ASSETS_DIR / "sponsor_logo1.png"))
-            if (ASSETS_DIR / "sponsor_logo2.png").exists():
-                logo_files.append(str(ASSETS_DIR / "sponsor_logo2.png"))
-            if (ASSETS_DIR / "sponsor_logo3.png").exists():
-                logo_files.append(str(ASSETS_DIR / "sponsor_logo3.png"))
+            if (assets_dir / "ezrec_logo.png").exists():
+                logo_files.append(str(assets_dir / "ezrec_logo.png"))
+            if (assets_dir / "user_logo.png").exists():
+                logo_files.append(str(assets_dir / "user_logo.png"))
+            if (assets_dir / "sponsor_logo1.png").exists():
+                logo_files.append(str(assets_dir / "sponsor_logo1.png"))
+            if (assets_dir / "sponsor_logo2.png").exists():
+                logo_files.append(str(assets_dir / "sponsor_logo2.png"))
+            if (assets_dir / "sponsor_logo3.png").exists():
+                logo_files.append(str(assets_dir / "sponsor_logo3.png"))
             
             # Build complex filter for logo overlays
             filter_parts = []
