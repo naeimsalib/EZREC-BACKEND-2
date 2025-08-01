@@ -214,18 +214,41 @@ import warnings
 warnings.warn("Using placeholder kms module – picamera2 may not work correctly")
 
 class PixelFormat:
+    # Standard formats
     XRGB8888 = "XRGB8888"
-    XBGR8888 = "XBGR8888"  # Added missing attribute
+    XBGR8888 = "XBGR8888"
     RGB888 = "RGB888"
     BGR888 = "BGR888"
+    
+    # YUV formats
     YUV420 = "YUV420"
+    YUV422 = "YUV422"
+    YUV444 = "YUV444"
+    YVU420 = "YVU420"  # Added missing attribute
+    YVU422 = "YVU422"  # Added missing attribute
+    YVU444 = "YVU444"  # Added missing attribute
+    
+    # NV formats
     NV12 = "NV12"
     NV21 = "NV21"
-    # Add more formats that picamera2 might need
+    
+    # RGB565 formats (little endian)
     RGB565 = "RGB565"
     BGR565 = "BGR565"
+    RGB565_LE = "RGB565_LE"  # Added missing attribute
+    BGR565_LE = "BGR565_LE"  # Added missing attribute
+    
+    # YUV packed formats
     YUYV = "YUYV"
     UYVY = "UYVY"
+    
+    # Additional formats that might be needed
+    RGB24 = "RGB24"
+    BGR24 = "BGR24"
+    ARGB8888 = "ARGB8888"
+    ABGR8888 = "ABGR8888"
+    RGBA8888 = "RGBA8888"
+    BGRA8888 = "BGRA8888"
 
 class KMS:
     def __init__(self):
@@ -550,6 +573,63 @@ main() {
     log_info "3. Test system: sudo systemctl status system_status.service"
     log_info ""
     log_info "Services are now running and will start automatically on boot."
+    
+    # Final comprehensive system check
+    log_step "12. Final comprehensive system check"
+    log_info "Running comprehensive system health check..."
+    
+    # Service status check
+    echo "=== FULL SYSTEM HEALTH CHECK ==="
+    echo "--- SERVICE STATUS ---"
+    systemctl status dual_recorder.service video_worker.service ezrec-api.service system_status.service --no-pager
+    
+    echo -e "\n--- SERVICE VALIDATION ---"
+    for service in dual_recorder video_worker ezrec-api system_status; do
+        echo "Testing $service:"
+        if sudo systemctl is-active --quiet ${service}.service; then
+            echo "✅ $service: ACTIVE"
+        else
+            echo "❌ $service: FAILED"
+        fi
+    done
+    
+    echo -e "\n--- PYTHON IMPORT TESTS ---"
+    echo "Testing picamera2 import:"
+    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null; then
+        echo "✅ picamera2 import test passed"
+    else
+        echo "❌ picamera2 import test failed"
+    fi
+    
+    echo "Testing system_status script:"
+    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 $DEPLOY_PATH/backend/system_status.py 2>/dev/null; then
+        echo "✅ system_status script executed successfully"
+    else
+        echo "❌ system_status script failed"
+    fi
+    
+    echo -e "\n--- LOG FILES CHECK ---"
+    ls -la $DEPLOY_PATH/logs/
+    
+    echo -e "\n--- RECENT LOGS (Last 5 entries each) ---"
+    for service in dual_recorder video_worker ezrec-api system_status; do
+        echo "--- $service LOGS ---"
+        journalctl -u ${service}.service --no-pager -n 5
+    done
+    
+    echo -e "\n--- SYSTEM STATUS FILE ---"
+    cat $DEPLOY_PATH/status.json
+    
+    echo -e "\n--- KMS.PY CHECK ---"
+    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "import kms; print('✅ kms.py imported successfully'); print('XBGR8888 available:', hasattr(kms.PixelFormat, 'XBGR8888')); print('YVU420 available:', hasattr(kms.PixelFormat, 'YVU420'))" 2>/dev/null; then
+        echo "✅ kms.py placeholder working correctly"
+    else
+        echo "❌ kms.py placeholder has issues"
+    fi
+    
+    echo -e "\n--- FINAL SUMMARY ---"
+    echo "All services should be ACTIVE and all tests should pass ✅"
+    log_info "Comprehensive system check completed!"
 }
 
 # Run main function
