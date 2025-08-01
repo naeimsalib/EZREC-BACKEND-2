@@ -18,9 +18,10 @@ systemctl stop ezrec-api.service || true
 # Create deployment dir if not exists
 mkdir -p "$DEPLOY_DIR"
 
-# Sync code
+# Sync code (PROTECTING .env files)
 echo "📂 Syncing code from $CODE_DIR to $DEPLOY_DIR..."
-rsync -av --exclude='venv' --delete "$CODE_DIR/" "$DEPLOY_DIR/"
+echo "🔒 PROTECTING .env files from being overwritten..."
+rsync -av --exclude='venv' --exclude='.env' --delete "$CODE_DIR/" "$DEPLOY_DIR/"
 
 # Set ownership and permissions
 echo "🔐 Fixing permissions..."
@@ -40,28 +41,14 @@ pip install --upgrade "typing-extensions>=4.12.0"
 pip install -r "$CODE_DIR/requirements.txt"
 deactivate
 
-# Ensure .env file exists
-echo "🔧 Setting up environment file..."
+# PROTECT .env FILE - NEVER TOUCH IT
+echo "🔒 .env file protection: deployment script will NEVER modify .env file"
 if [ ! -f "$DEPLOY_DIR/.env" ]; then
-    echo "⚠️ .env file not found, creating template..."
-    cat > "$DEPLOY_DIR/.env" << 'EOF'
-# Supabase Configuration
-SUPABASE_URL=your_supabase_url_here
-SUPABASE_ANON_KEY=your_supabase_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-
-# AWS S3 Configuration
-AWS_ACCESS_KEY_ID=your_aws_access_key_here
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
-AWS_DEFAULT_REGION=us-east-1
-S3_BUCKET_NAME=your_s3_bucket_name_here
-
-# Application Configuration
-RECORDING_DIR=/opt/ezrec-backend/recordings
-PROCESSED_DIR=/opt/ezrec-backend/processed
-ASSETS_DIR=/opt/ezrec-backend/assets
-EOF
-    echo "⚠️ Please update the .env file with your actual credentials"
+    echo "⚠️ WARNING: .env file not found at $DEPLOY_DIR/.env"
+    echo "⚠️ Please create your .env file manually with your credentials"
+    echo "⚠️ Deployment will continue but services may fail without proper configuration"
+else
+    echo "✅ .env file exists and will be preserved"
 fi
 
 # Ensure required directories exist
