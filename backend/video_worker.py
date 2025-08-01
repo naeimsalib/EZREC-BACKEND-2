@@ -828,7 +828,7 @@ file '{main_with_logos}'"""
             # Add detailed debugging for concat list creation
             log.info(f"📋 Creating concat list file: {concat_list_file}")
             log.info(f"📋 Concat list content:")
-            log.info(f"📋   file '{intro_path}'")
+            log.info(f"📋   file '{intro_reencoded}'")
             log.info(f"📋   file '{main_with_logos}'")
             
             with open(concat_list_file, 'w') as f:
