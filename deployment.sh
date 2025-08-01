@@ -280,6 +280,122 @@ EOF
     log_info "Improved kms.py placeholder created"
 }
 
+# Download user assets and company logo
+download_user_assets() {
+    log_info "Downloading user assets and company logo"
+    
+    cd $DEPLOY_PATH
+    
+    # Get user_id from .env file
+    USER_ID=$(grep "^USER_ID=" .env | cut -d'=' -f2)
+    if [[ -z "$USER_ID" ]]; then
+        log_warn "USER_ID not found in .env file, skipping user asset download"
+        return
+    fi
+    
+    # Create media cache directory for user
+    USER_MEDIA_DIR="$DEPLOY_PATH/media_cache/$USER_ID"
+    sudo -u $DEPLOY_USER mkdir -p "$USER_MEDIA_DIR"
+    
+    # Create assets directory for company logo
+    ASSETS_DIR="$DEPLOY_PATH/assets"
+    sudo -u $DEPLOY_USER mkdir -p "$ASSETS_DIR"
+    
+    # Download main company logo (always required)
+    log_info "Downloading main company logo..."
+    COMPANY_LOGO_PATH="$ASSETS_DIR/ezrec_logo.png"
+    COMPANY_LOGO_S3_KEY="main_ezrec_logo.png"
+    
+    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
+import boto3
+import os
+from pathlib import Path
+
+# Load environment
+from dotenv import load_dotenv
+load_dotenv('/opt/ezrec-backend/.env')
+
+# Get AWS credentials
+bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
+region = os.getenv('AWS_REGION')
+access_key = os.getenv('AWS_ACCESS_KEY_ID')
+secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+if all([bucket, region, access_key, secret_key]):
+    try:
+        s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+        s3.download_file(bucket, '$COMPANY_LOGO_S3_KEY', '$COMPANY_LOGO_PATH')
+        print('✅ Downloaded company logo')
+    except Exception as e:
+        print(f'⚠️ Company logo not found: {e}')
+else:
+    print('⚠️ Missing AWS credentials for asset download')
+" 2>/dev/null; then
+        log_info "✅ Company logo downloaded successfully"
+    else
+        log_warn "⚠️ Company logo not found or download failed"
+    fi
+    
+    # Download user assets if they exist
+    log_info "Checking for user assets..."
+    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
+import boto3
+import os
+from pathlib import Path
+
+# Load environment
+from dotenv import load_dotenv
+load_dotenv('/opt/ezrec-backend/.env')
+
+# Get AWS credentials
+bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
+region = os.getenv('AWS_REGION')
+access_key = os.getenv('AWS_ACCESS_KEY_ID')
+secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+if all([bucket, region, access_key, secret_key]):
+    try:
+        s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+        
+        # Define user assets to check
+        user_assets = [
+            ('$USER_ID/logo/logo.png', '$USER_MEDIA_DIR/logo.png'),
+            ('$USER_ID/intro-video/intro.mp4', '$USER_MEDIA_DIR/intro.mp4'),
+            ('$USER_ID/sponsor-logo1/logo1.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
+            ('$USER_ID/sponsor-logo2/logo2.png', '$USER_MEDIA_DIR/sponsor_logo2.png'),
+            ('$USER_ID/sponsor-logo3/logo3.png', '$USER_MEDIA_DIR/sponsor_logo3.png'),
+        ]
+        
+        downloaded_count = 0
+        for s3_key, local_path in user_assets:
+            try:
+                s3.download_file(bucket, s3_key, local_path)
+                print(f'✅ Downloaded: {s3_key}')
+                downloaded_count += 1
+            except Exception as e:
+                print(f'⚠️ Not found: {s3_key}')
+        
+        print(f'📊 Downloaded {downloaded_count} user assets')
+        
+    except Exception as e:
+        print(f'⚠️ Error checking user assets: {e}')
+else:
+    print('⚠️ Missing AWS credentials for asset download')
+" 2>/dev/null; then
+        log_info "✅ User asset download completed"
+    else
+        log_warn "⚠️ User asset download failed or no assets found"
+    fi
+    
+    # Set proper permissions
+    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$USER_MEDIA_DIR"
+    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$ASSETS_DIR"
+    sudo chmod -R 755 "$USER_MEDIA_DIR"
+    sudo chmod -R 755 "$ASSETS_DIR"
+    
+    log_info "Asset download process completed"
+}
+
 # Setup files and permissions
 setup_files() {
     log_step "Setting up files and permissions"
@@ -520,6 +636,9 @@ main() {
     log_info "Creating placeholder assets"
     cd $DEPLOY_PATH
     sudo -u $DEPLOY_USER python3 backend/create_assets.py
+    
+    # Download user assets and company logo
+    download_user_assets
     
     # 8. Setup files and services
     setup_files
