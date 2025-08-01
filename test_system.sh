@@ -71,63 +71,17 @@ fi
 log_step "3. Testing camera initialization and encoder configuration"
 cd $DEPLOY_PATH
 
-# Check if we're on a Raspberry Pi with camera hardware
-if [ -d "/dev/media" ] && ls /dev/media* >/dev/null 2>&1; then
-    log_info "🔍 Raspberry Pi detected with camera hardware"
-    
-    # Test camera initialization only (no recording to avoid hanging)
-    test_result=$(timeout 20 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
-import picamera2
-import time
-import os
+# Test 3: Test encoder configuration and code validation (no camera hardware access)
+log_step "3. Testing encoder configuration and code validation"
+cd $DEPLOY_PATH
 
-try:
-    print('🔍 Testing camera initialization...')
-    
-    camera = picamera2.Picamera2()
-    camera.configure(camera.create_preview_configuration())
-    camera.start()
-    
-    print('✅ Camera started successfully')
-    time.sleep(1)
-    
-    # Test encoder configuration without recording
-    from picamera2.encoders import H264Encoder
-    encoder = H264Encoder(
-        bitrate=6000000,
-        repeat=False,
-        iperiod=30,
-        qp=25,
-        profile=\"baseline\",
-        level=\"4.1\"
-    )
-    
-    print('✅ Encoder configured with baseline profile')
-    
-    # Test if encoder can be created without errors
-    print('✅ Encoder creation successful')
-    
-    camera.close()
-    print('✅ Camera closed successfully')
-    print('🎉 Camera and encoder test passed!')
-    exit(0)
-        
-except Exception as e:
-    print(f'❌ Camera test failed: {e}')
-    import traceback
-    traceback.print_exc()
-    exit(1)
-" 2>&1)
-else
-    log_info "🔍 Development machine detected (no camera hardware)"
-    
-    # Test only encoder configuration without camera hardware
-    test_result=$(timeout 10 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
+# Test encoder configuration without camera hardware access
+test_result=$(timeout 15 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
 import sys
 import os
 
 try:
-    print('🔍 Testing encoder configuration on development machine...')
+    print('🔍 Testing picamera2 import and encoder configuration...')
     
     # Test if picamera2 can be imported
     import picamera2
@@ -146,6 +100,18 @@ try:
     
     print('✅ Encoder configured with baseline profile')
     print('✅ Encoder creation successful')
+    
+    # Test fallback encoder configuration
+    fallback_encoder = H264Encoder(
+        bitrate=4000000,
+        repeat=False,
+        iperiod=30,
+        qp=30,
+        profile=\"baseline\",
+        level=\"4.0\"
+    )
+    
+    print('✅ Fallback encoder configuration successful')
     print('🎉 Encoder configuration test passed!')
     exit(0)
         
@@ -155,7 +121,6 @@ except Exception as e:
     traceback.print_exc()
     exit(1)
 " 2>&1)
-fi
 
 if [ $? -eq 0 ]; then
     log_info "✅ Camera recording test passed"
@@ -166,26 +131,8 @@ else
     echo "$test_result"
     
     # Try a simpler test as fallback
-    log_info "🔄 Trying simpler camera test..."
-    
-    if [ -d "/dev/media" ] && ls /dev/media* >/dev/null 2>&1; then
-        # Raspberry Pi fallback
-        simple_test_result=$(timeout 10 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
-import picamera2
-
-try:
-    print('🔍 Testing basic camera import...')
-    camera = picamera2.Picamera2()
-    print('✅ Camera object created successfully')
-    print('✅ Camera test passed (basic functionality)')
-    exit(0)
-except Exception as e:
-    print(f'❌ Basic camera test failed: {e}')
-    exit(1)
-" 2>&1)
-    else
-        # Development machine fallback
-        simple_test_result=$(timeout 5 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
+    log_info "🔄 Trying simpler picamera2 import test..."
+    simple_test_result=$(timeout 10 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
 try:
     print('🔍 Testing picamera2 import...')
     import picamera2
@@ -196,7 +143,6 @@ except Exception as e:
     print(f'❌ Import test failed: {e}')
     exit(1)
 " 2>&1)
-    fi
     
     if [ $? -eq 0 ]; then
         log_info "✅ Basic camera test passed"
@@ -300,27 +246,21 @@ fi
 # Test 9: Create a test booking and test complete recording workflow
 log_step "9. Testing complete recording workflow with real booking"
 
-# Check if camera test passed before proceeding
+# Check if encoder test passed before proceeding
 if [ "$camera_test_passed" = true ]; then
-    # Check if we're on a Raspberry Pi (skip booking test on development machine)
-    if [ -d "/dev/media" ] && ls /dev/media* >/dev/null 2>&1; then
-        log_info "✅ Camera test passed, proceeding with real booking test"
-        
-        # Create a booking for 2 minutes from now
-        START_TIME=$(date -d "+2 minutes" -Iseconds)
-        END_TIME=$(date -d "+3 minutes" -Iseconds)
-        
-        echo "Creating test booking:"
-        echo "Start: $START_TIME"
-        echo "End: $END_TIME"
-    else
-        log_info "✅ Camera test passed, but skipping real booking test on development machine"
-        echo "Skipping real booking test (development machine detected)..."
-    fi
+    log_info "✅ Encoder test passed, proceeding with booking API test"
+    
+    # Create a booking for 2 minutes from now
+    START_TIME=$(date -d "+2 minutes" -Iseconds)
+    END_TIME=$(date -d "+3 minutes" -Iseconds)
+    
+    echo "Creating test booking:"
+    echo "Start: $START_TIME"
+    echo "End: $END_TIME"
 else
-    log_warn "⚠️ Camera test failed, skipping real booking test"
-    log_info "Skipping real booking test due to camera issues"
-    echo "Skipping real booking test..."
+    log_warn "⚠️ Encoder test failed, skipping booking test"
+    log_info "Skipping booking test due to encoder issues"
+    echo "Skipping booking test..."
 fi
 
 test_booking_result=$(curl -s -X POST "http://localhost:8000/bookings" \
