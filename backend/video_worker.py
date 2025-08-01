@@ -769,13 +769,64 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 
             log.info(f"✅ Both input files exist, starting FFmpeg...")
             
-            result = subprocess.run(concat_cmd, capture_output=True, text=True)
+            # Add progress monitoring with timeout
+            log.info(f"⏱️ Starting FFmpeg with progress monitoring...")
+            
+            # Use Popen to monitor progress
+            process = subprocess.Popen(
+                concat_cmd, 
+                stdout=subprocess.PIPE, 
+                stderr=subprocess.PIPE,
+                text=True
+            )
+            
+            # Monitor progress for up to 10 minutes
+            start_time = time.time()
+            timeout = 600  # 10 minutes
+            
+            while process.poll() is None:
+                elapsed = time.time() - start_time
+                if elapsed > timeout:
+                    log.error(f"❌ FFmpeg concat process timed out after {timeout} seconds")
+                    process.terminate()
+                    try:
+                        process.wait(timeout=10)
+                    except subprocess.TimeoutExpired:
+                        process.kill()
+                    return None
+                
+                # Log progress every 30 seconds
+                if int(elapsed) % 30 == 0 and elapsed > 0:
+                    log.info(f"⏱️ FFmpeg concat still running... ({elapsed:.0f}s elapsed)")
+                
+                time.sleep(1)
+            
+            # Get the result
+            stdout, stderr = process.communicate()
+            result = subprocess.CompletedProcess(
+                concat_cmd, 
+                process.returncode, 
+                stdout, 
+                stderr
+            )
             
             if result.returncode != 0:
                 log.error(f"❌ Concat pass failed with return code: {result.returncode}")
                 log.error(f"❌ FFmpeg stderr: {result.stderr}")
                 log.error(f"❌ FFmpeg stdout: {result.stdout}")
-                return None
+                
+                # Try fallback: use main video without intro
+                log.warn(f"⚠️ Trying fallback: using main video without intro")
+                output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+                output_file.parent.mkdir(parents=True, exist_ok=True)
+                shutil.move(str(main_with_logos), str(output_file))
+                
+                # Clean up temp file
+                if main_with_logos.exists():
+                    main_with_logos.unlink()
+                    
+                log.info(f"✅ Fallback successful: created video without intro")
+                return output_file
                 
             log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
         except Exception as e:
