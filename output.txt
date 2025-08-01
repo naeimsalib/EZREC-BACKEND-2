@@ -1,282 +1,1107 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull && sudo ./test_system.sh
-remote: Enumerating objects: 5, done.
-remote: Counting objects: 100% (5/5), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 3 (delta 2), reused 3 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (3/3), 1003 bytes | 501.00 KiB/s, done.
-From https://github.com/naeimsalib/EZREC-BACKEND-2
-   37619f5..e0ad1f7  main       -> origin/main
-Updating 37619f5..e0ad1f7
-Fast-forward
- test_system.sh | 189 +++++++++++----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 1 file changed, 11 insertions(+), 178 deletions(-)
-🧪 EZREC System Test Script
-==========================
-[00:34:41] STEP: 1. Checking service status
-[00:34:41] ✅ dual_recorder.service is running
-[00:34:41] ✅ video_worker.service is running
-[00:34:41] ✅ ezrec-api.service is running
-[00:34:41] ✅ system_status.service is running
-[00:34:41] ✅ All services are running
-[00:34:41] STEP: 2. Testing PyAV and picamera2 compatibility
-✅ PyAV and picamera2 compatibility verified
-[00:34:42] ✅ PyAV and picamera2 compatibility verified
-[00:34:42] STEP: 3. Testing camera initialization and encoder configuration
-[00:34:42] STEP: 3. Testing comprehensive camera and recording functionality
-[00:34:42] 🔍 Testing camera hardware detection...
-[00:34:42] ✅ Camera hardware detection passed
-/opt/ezrec-backend/backend/venv/lib/python3.11/site-packages/kms.py:7: UserWarning: Using placeholder kms module – picamera2 may not work correctly
-  warnings.warn("Using placeholder kms module – picamera2 may not work correctly")
-[4:42:18.424413368] [45475]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
-[4:42:18.434041627] [45481]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-[4:42:18.442951012] [45481]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-[4:42:18.443003383] [45481]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-[4:42:18.451154191] [45481]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media2 and ISP device /dev/media4 using PiSP variant BCM2712_D0
-🔍 Detecting camera hardware...
-✅ Camera 0 detected
-✅ Camera 1 detected
-⚠️ Camera 2: list index out of range
-⚠️ Camera 3: list index out of range
-⚠️ Camera 4: list index out of range
-⚠️ Camera 5: list index out of range
-⚠️ Camera 6: list index out of range
-⚠️ Camera 7: list index out of range
-⚠️ Camera 8: list index out of range
-⚠️ Camera 9: list index out of range
-✅ Found 2 camera(s): [0, 1]
-[00:34:42] 🔍 Testing camera initialization...
-[00:34:45] ✅ Camera initialization passed
-/opt/ezrec-backend/backend/venv/lib/python3.11/site-packages/kms.py:7: UserWarning: Using placeholder kms module – picamera2 may not work correctly
-  warnings.warn("Using placeholder kms module – picamera2 may not work correctly")
-[4:42:18.941849418] [45493]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
-[4:42:18.951467510] [45499]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-[4:42:18.960381858] [45499]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
-[4:42:18.960439470] [45499]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
-[4:42:18.968777427] [45499]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media2 and ISP device /dev/media4 using PiSP variant BCM2712_D0
-[4:42:18.971589345] [45493]  INFO Camera camera.cpp:1205 configuring streams: (0) 640x480-XBGR8888/sRGB (1) 2028x1520-BGGR_PISP_COMP1/RAW
-[4:42:18.971685660] [45499]  INFO RPI pisp.cpp:1483 Sensor: /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a - Selected sensor format: 2028x1520-SBGGR12_1X12 - Selected CFE format: 2028x1520-PC1B
-🔍 Initializing camera...
-✅ Camera initialized successfully
-✅ Camera closed successfully
-[00:34:45] 🔍 Skipping encoder configuration test (known to hang) and proceeding to actual recording test...
-[00:34:45] ✅ Encoder configuration test skipped
-Skipped encoder configuration test to avoid hanging
-[00:34:45] 🔍 Skipping actual recording test (known to hang) and proceeding to comprehensive workflow test...
-[00:34:45] ✅ Actual recording test skipped
-Skipped actual recording test to avoid hanging
-[00:34:45] ✅ Camera recording test passed
-
-[00:34:45] STEP: 4. Testing API endpoint
-[00:34:45] ✅ API endpoint is responding
-[00:34:45] STEP: 5. Checking environment variables
-[00:34:45] ✅ CAMERA_ID is set
-[00:34:45] ✅ USER_ID is set
-[00:34:45] ✅ SUPABASE_URL is set
-[00:34:45] ✅ AWS_ACCESS_KEY_ID is set
-[00:34:45] ✅ AWS_SECRET_ACCESS_KEY is set
-[00:34:45] ✅ All required environment variables are set
-[00:34:45] STEP: 6. Checking file permissions
-[00:34:45] ✅ File permissions are correct
-[00:34:45] STEP: 7. Checking disk space
-[00:34:45] ✅ Disk usage is healthy: 9%
-[00:34:45] STEP: 8. Checking recent logs for errors and GLOBAL_HEADER fix
-[00:34:45] ✅ No GLOBAL_HEADER errors found (fix working)
-[00:34:45] ✅ No recording errors found
-[00:34:45] WARNING: ⚠️ No successful recordings found in recent logs
-[00:34:45] ✅ No 0-byte recordings found (good)
-[00:34:45] ✅ Primary encoder configuration working
-[00:34:45] STEP: 9. Testing comprehensive recording workflow with real booking
-[00:34:45] ✅ Camera test passed, proceeding with comprehensive recording workflow test
-Creating test booking:
-Start: 2025-08-01T00:35:45-04:00
-End: 2025-08-01T00:36:45-04:00
-[00:34:45] ✅ Test booking created successfully
-[00:34:45] ⏳ Waiting for recording to start and complete...
-[00:36:15] 🔍 Checking for recording files...
-[00:36:15] ERROR: ❌ No recording files found
-[00:36:15] 🔍 Checking for processed files...
-[00:36:15] WARNING: ⚠️ No processed files found (video_worker may still be processing)
-[00:36:15] 🔍 Checking dual_recorder logs for GLOBAL_HEADER errors...
-[00:36:15] ✅ No GLOBAL_HEADER errors found in recent logs
-[00:36:15] WARNING: ⚠️ No successful recordings found in recent logs
-[00:36:15] ✅ Test booking created successfully
-[00:36:15] ⏳ Waiting for recording to start...
-[00:38:25] 🔍 Checking for recording files...
-[00:38:25] ERROR: ❌ No recording files found
-[00:38:25] 🔍 Checking for processed files...
-[00:38:25] WARNING: ⚠️ No processed files found (video_worker may still be processing)
-[00:38:25] STEP: 10. Checking system status
-[00:38:25] ✅ System status file exists
-{
-  "timestamp": "2025-08-01T00:19:44.574686",
-  "overall_status": "healthy",
-  "critical_issues": [],
-  "warnings": [],
-  "disk_usage": {
-    "status": "healthy",
-    "usage_percent": 8.1,
-    "free_gb": 101.96,
-    "total_gb": 116.93
-  },
-  "memory_usage": {
-    "status": "healthy",
-    "usage_percent": 11.9,
-    "available_gb": 6.94,
-    "total_gb": 7.87
-  },
-  "cpu_usage": {
-    "status": "healthy",
-    "usage_percent": 4.0
-  },
-  "services": {
-    "services": {
-      "dual_recorder.service": {
-        "active": true,
-        "status": "active"
-      },
-      "video_worker.service": {
-        "active": true,
-        "status": "active"
-      },
-      "ezrec-api.service": {
-        "active": true,
-        "status": "active"
-      }
-    },
-    "inactive": [],
-    "timer_active": true
-  },
-  "cameras": {
-    "status": "healthy",
-    "available": true,
-    "camera_count": 2
-  },
-  "ffmpeg": {
-    "status": "healthy",
-    "available": true,
-    "version": "5.1.6-0+deb12u1+rpt3"
-  },
-  "environment": {
-    "status": "healthy",
-    "all_set": true,
-    "missing_vars": []
-  },
-  "recording": {
-    "status": "idle",
-    "is_recording": false
-  },
-  "is_recording": false,
-  "last_update": "2025-08-01T00:36:52.594295"
-}[00:38:25] STEP: 11. Checking dual_recorder configuration and GLOBAL_HEADER fix
-[00:38:25] ✅ GLOBAL_HEADER error handling found in code
-[00:38:25] ✅ Baseline profile encoder configuration found
-[00:38:25] ERROR: ❌ Encoder fallback mechanism not found
-[00:38:25] ✅ H264 level 4.1 configuration found
-[00:38:25] ✅ Error handling around start_recording found
-
-🎯 Comprehensive Test Summary
-============================
-✅ Services: All running
-✅ PyAV Compatibility: Fixed (av>=15.0.0)
-✅ Camera Hardware: Detected and accessible
-✅ Camera Initialization: Working
-✅ Encoder Configuration: Validated (primary + fallback)
-✅ Actual Recording: Tested with real video files
-✅ GLOBAL_HEADER Fix: Implemented and tested
-✅ API Endpoint: Responding
-✅ Environment: Configured
-✅ Permissions: Correct
-✅ Disk Space: Healthy
-✅ Logs: Clean
-✅ Bookings: Working
-✅ System Status: Available
-✅ Complete Workflow: Tested (booking → recording → processing)
-✅ File Validation: Recording files created and validated
-
-[00:38:25] 🎉 EZREC Comprehensive System Test Completed!
-[00:38:25] Your system is ready for production recording!
-
-📋 Next Steps:
-1. Create a booking through your frontend
-2. Monitor logs: sudo journalctl -f -u dual_recorder.service
-3. Check recordings: ls -la /opt/ezrec-backend/recordings/
-4. View processed videos: ls -la /opt/ezrec-backend/processed/
-5. Monitor video_worker: sudo journalctl -f -u video_worker.service
-
-🔧 Troubleshooting Commands:
-- Check service status: systemctl status dual_recorder.service
-- View recent logs: journalctl -u dual_recorder.service -n 50
-- Check for GLOBAL_HEADER errors: journalctl -u dual_recorder.service | grep GLOBAL_HEADER
-- Monitor real-time: sudo journalctl -f -u dual_recorder.service
-
-✅ Your EZREC system is now fully functional with all fixes applied!
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # 1. Check dual_recorder logs for booking detection
-echo "=== DUAL_RECORDER LOGS ==="
-sudo journalctl -u dual_recorder.service --no-pager -n 20
-
-# 2. Check if the booking was actually created in the cache
-echo "=== BOOKING CACHE ==="
-cat /opt/ezrec-backend/api/local_data/bookings.json
-
-# 3. Check the current time vs booking time
-echo "=== TIME CHECK ==="
-date
-echo "Booking was created for: 2025-08-01T00:35:45-04:00 to 2025-08-01T00:36:45-04:00"
-
-# 4. Check if dual_recorder is looking for the right camera_id
-echo "=== CAMERA ID CHECK ==="
-grep "CAMERA_ID" /opt/ezrec-backend/.env
-=== DUAL_RECORDER LOGS ===
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
-Aug 01 00:40:52 raspberrypi python3[44166]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:40:52 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO - 🔍 Booking 0: test-booking-1754022885
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    Start: 2025-08-01 00:35:45 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    End: 2025-08-01 00:36:45 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    Now: 2025-08-01 00:40:52 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    User match: True, Camera match: True, Time match: False
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO - 🔍 Booking 1: test-booking-1754022975
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    Start: 2025-08-01 00:35:45 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    End: 2025-08-01 00:36:45 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    Now: 2025-08-01 00:40:52 EDT
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO -    User match: True, Camera match: True, Time match: False
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO - ❌ No active booking found
-Aug 01 00:40:52 raspberrypi python3[44166]: 2025-08-01 00:40:52,669:INFO - ⏳ No active booking found, waiting...
-=== BOOKING CACHE ===
+Aug 01 00:49:39 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:49:39 EDT
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO -    Now: 2025-08-01 00:49:39 EDT
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:49:39 raspberrypi python3[48361]: 2025-08-01 00:49:39,606:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:49:39.606115-04:00
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:44 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:49:44 EDT
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO -    Now: 2025-08-01 00:49:44 EDT
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:49:44 raspberrypi python3[48361]: 2025-08-01 00:49:44,607:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:49:44.607006-04:00
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,607:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:49 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:49:49 EDT
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO -    Now: 2025-08-01 00:49:49 EDT
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:49:49 raspberrypi python3[48361]: 2025-08-01 00:49:49,608:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:49:49.607900-04:00
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,608:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:54 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:49:54 EDT
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO -    Now: 2025-08-01 00:49:54 EDT
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:49:54 raspberrypi python3[48361]: 2025-08-01 00:49:54,609:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:49:54.608787-04:00
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,609:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:59 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:49:59 EDT
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO -    Now: 2025-08-01 00:49:59 EDT
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:49:59 raspberrypi python3[48361]: 2025-08-01 00:49:59,610:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:49:59.609876-04:00
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,610:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:04 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:04 EDT
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO -    Now: 2025-08-01 00:50:04 EDT
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:04 raspberrypi python3[48361]: 2025-08-01 00:50:04,611:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:04.610765-04:00
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,611:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,611:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:09 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:09 EDT
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO -    Now: 2025-08-01 00:50:09 EDT
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:09 raspberrypi python3[48361]: 2025-08-01 00:50:09,612:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:09.611659-04:00
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,612:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,612:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:14 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,612:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:14 EDT
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,612:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO -    Now: 2025-08-01 00:50:14 EDT
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:14 raspberrypi python3[48361]: 2025-08-01 00:50:14,613:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:14.612602-04:00
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,613:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,613:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:19 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:19 EDT
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO -    Now: 2025-08-01 00:50:19 EDT
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:19 raspberrypi python3[48361]: 2025-08-01 00:50:19,614:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:19.613577-04:00
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,614:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:24 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:24 EDT
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO -    Now: 2025-08-01 00:50:24 EDT
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:24 raspberrypi python3[48361]: 2025-08-01 00:50:24,615:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:24.614766-04:00
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,615:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,615:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:29 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,615:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:29 EDT
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO -    Now: 2025-08-01 00:50:29 EDT
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:29 raspberrypi python3[48361]: 2025-08-01 00:50:29,616:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:29.615650-04:00
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,616:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,616:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:34 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,616:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:34 EDT
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,616:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,616:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO -    Now: 2025-08-01 00:50:34 EDT
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:34 raspberrypi python3[48361]: 2025-08-01 00:50:34,617:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:34.616542-04:00
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,617:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,617:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:39 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,617:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:39 EDT
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,617:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO -    Now: 2025-08-01 00:50:39 EDT
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:39 raspberrypi python3[48361]: 2025-08-01 00:50:39,618:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:39.617492-04:00
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,618:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,618:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:44 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:44 EDT
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO -    Now: 2025-08-01 00:50:44 EDT
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:44 raspberrypi python3[48361]: 2025-08-01 00:50:44,619:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:44.618684-04:00
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,619:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,619:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:49 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,619:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:49 EDT
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,619:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO -    Now: 2025-08-01 00:50:49 EDT
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:49 raspberrypi python3[48361]: 2025-08-01 00:50:49,620:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:49.619570-04:00
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,620:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:54 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:54 EDT
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO -    Now: 2025-08-01 00:50:54 EDT
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,621:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,622:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:54 raspberrypi python3[48361]: 2025-08-01 00:50:54,622:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:54.620477-04:00
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,622:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,622:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:59 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,622:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:50:59 EDT
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,622:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,622:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO -    Now: 2025-08-01 00:50:59 EDT
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:50:59 raspberrypi python3[48361]: 2025-08-01 00:50:59,623:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:50:59.622475-04:00
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,623:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,623:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:04 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,623:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:04 EDT
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,623:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,623:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO -    Now: 2025-08-01 00:51:04 EDT
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:51:04 raspberrypi python3[48361]: 2025-08-01 00:51:04,624:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:51:04.623504-04:00
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:09 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:09 EDT
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,624:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,625:INFO -    Now: 2025-08-01 00:51:09 EDT
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,625:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,625:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,625:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:51:09 raspberrypi python3[48361]: 2025-08-01 00:51:09,625:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:51:09.624445-04:00
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:14 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:14 EDT
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO -    Now: 2025-08-01 00:51:14 EDT
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,625:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:51:14 raspberrypi python3[48361]: 2025-08-01 00:51:14,626:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:51:14.625331-04:00
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:19 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:19 EDT
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO -    Now: 2025-08-01 00:51:19 EDT
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO -    User match: True, Camera match: True, Time match: True
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - ✅ Found active booking: test-booking-1754023671
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - 🎯 Active booking found: test-booking-1754023671
+Aug 01 00:51:19 raspberrypi python3[48361]: 2025-08-01 00:51:19,626:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:51:19.626222-04:00
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:24 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:24 EDT
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,627:INFO -    Now: 2025-08-01 00:51:24 EDT
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - ❌ No active booking found
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - 📊 Session status - Active: True, End time: 2025-08-01 00:51:21-04:00, Current time: 2025-08-01 00:51:24.627144-04:00
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - 🛑 Booking ended at 2025-08-01 00:51:21-04:00, stopping recording (current time: 2025-08-01 00:51:24.627144-04:00)
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - 🛑 Stopping dual camera recording
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - 🛑 Stopping camera 0 recording...
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628 [INFO] ✅ left camera thread stopped gracefully
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - ✅ left camera thread stopped gracefully
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628 [ERROR] ❌ left recording file not found
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:ERROR - ❌ left recording file not found
+Aug 01 00:51:24 raspberrypi python3[48361]: ERROR: ❌ left recording file not found
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - 🛑 Stopping camera 1 recording...
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628 [INFO] ✅ right camera thread stopped gracefully
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:INFO - ✅ right camera thread stopped gracefully
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628 [ERROR] ❌ right recording file not found
+Aug 01 00:51:24 raspberrypi python3[48361]: 2025-08-01 00:51:24,628:ERROR - ❌ right recording file not found
+Aug 01 00:51:24 raspberrypi python3[48361]: ERROR: ❌ right recording file not found
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:INFO - ✅ Forced cleanup of any remaining camera processes
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:INFO - 🔍 Checking camera recording files...
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:INFO - 📊 Recording mode: Dual camera
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:ERROR - ❌ left recording file missing: /opt/ezrec-backend/recordings/2025-08-01/004821-005121_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4
+Aug 01 00:51:27 raspberrypi python3[48361]: ERROR: ❌ left recording file missing: /opt/ezrec-backend/recordings/2025-08-01/004821-005121_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:ERROR - ❌ right recording file missing: /opt/ezrec-backend/recordings/2025-08-01/004821-005121_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4
+Aug 01 00:51:27 raspberrypi python3[48361]: ERROR: ❌ right recording file missing: /opt/ezrec-backend/recordings/2025-08-01/004821-005121_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:ERROR - ❌ Both camera recordings failed
+Aug 01 00:51:27 raspberrypi python3[48361]: ERROR: ❌ Both camera recordings failed
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,643:ERROR - 🔧 Created .error marker due to both cameras failing
+Aug 01 00:51:27 raspberrypi python3[48361]: ERROR: 🔧 Created .error marker due to both cameras failing
+Aug 01 00:51:27 raspberrypi python3[48361]: 2025-08-01 00:51:27,917:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.test-booking-1754023671 "HTTP/1.1 200 OK"
+Aug 01 00:51:28 raspberrypi python3[48361]: 2025-08-01 00:51:28,175:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/cameras?id=eq.d217e751-dfa5-5276-abbb-da5ad6c2626a "HTTP/1.1 200 OK"
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:33 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:33 EDT
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO -    Now: 2025-08-01 00:51:33 EDT
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO - ❌ No active booking found
+Aug 01 00:51:33 raspberrypi python3[48361]: 2025-08-01 00:51:33,178:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:38 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:38 EDT
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO -    Now: 2025-08-01 00:51:38 EDT
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,179:INFO - ❌ No active booking found
+Aug 01 00:51:38 raspberrypi python3[48361]: 2025-08-01 00:51:38,180:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:43 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:43 EDT
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO -    Now: 2025-08-01 00:51:43 EDT
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO - ❌ No active booking found
+Aug 01 00:51:43 raspberrypi python3[48361]: 2025-08-01 00:51:43,180:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,181:INFO - 📊 Health check - Disk usage: 8.1% used, 102.0 GB free
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,192:INFO - 📋 Loaded 1 bookings from cache
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:48 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO - 🔍 Checking 1 bookings at 2025-08-01 00:51:48 EDT
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO -    Now: 2025-08-01 00:51:48 EDT
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO - ❌ No active booking found
+Aug 01 00:51:48 raspberrypi python3[48361]: 2025-08-01 00:51:48,193:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,193:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:53 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:53 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:51:53 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    Now: 2025-08-01 00:51:53 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    Now: 2025-08-01 00:51:53 EDT
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO - ❌ No active booking found
+Aug 01 00:51:53 raspberrypi python3[48361]: 2025-08-01 00:51:53,194:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,194:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:58 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:58 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:51:58 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    Now: 2025-08-01 00:51:58 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    Now: 2025-08-01 00:51:58 EDT
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO - ❌ No active booking found
+Aug 01 00:51:58 raspberrypi python3[48361]: 2025-08-01 00:51:58,195:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:03 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:03 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:03 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    Now: 2025-08-01 00:52:03 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,196:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,197:INFO -    Now: 2025-08-01 00:52:03 EDT
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,197:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,197:INFO - ❌ No active booking found
+Aug 01 00:52:03 raspberrypi python3[48361]: 2025-08-01 00:52:03,197:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:08 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:08 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:08 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO -    Now: 2025-08-01 00:52:08 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,197:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO -    Now: 2025-08-01 00:52:08 EDT
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO - ❌ No active booking found
+Aug 01 00:52:08 raspberrypi python3[48361]: 2025-08-01 00:52:08,198:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:13 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:13 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:13 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,198:INFO -    Now: 2025-08-01 00:52:13 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    Now: 2025-08-01 00:52:13 EDT
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO - ❌ No active booking found
+Aug 01 00:52:13 raspberrypi python3[48361]: 2025-08-01 00:52:13,199:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,199:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:18 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:18 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:18 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    Now: 2025-08-01 00:52:18 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    Now: 2025-08-01 00:52:18 EDT
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO - ❌ No active booking found
+Aug 01 00:52:18 raspberrypi python3[48361]: 2025-08-01 00:52:18,200:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,200:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:23 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:23 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:23 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    Now: 2025-08-01 00:52:23 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,201:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO -    Now: 2025-08-01 00:52:23 EDT
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO - ❌ No active booking found
+Aug 01 00:52:23 raspberrypi python3[48361]: 2025-08-01 00:52:23,202:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:28 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:28 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:28 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,202:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    Now: 2025-08-01 00:52:28 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    Now: 2025-08-01 00:52:28 EDT
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO - ❌ No active booking found
+Aug 01 00:52:28 raspberrypi python3[48361]: 2025-08-01 00:52:28,203:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,203:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,203:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:33 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,203:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:33 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,203:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:33 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,203:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    Now: 2025-08-01 00:52:33 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    Now: 2025-08-01 00:52:33 EDT
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO - ❌ No active booking found
+Aug 01 00:52:33 raspberrypi python3[48361]: 2025-08-01 00:52:33,204:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,204:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:38 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:38 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:38 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    Now: 2025-08-01 00:52:38 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    Now: 2025-08-01 00:52:38 EDT
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO - ❌ No active booking found
+Aug 01 00:52:38 raspberrypi python3[48361]: 2025-08-01 00:52:38,205:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,205:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:43 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:43 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:43 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    Now: 2025-08-01 00:52:43 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    Now: 2025-08-01 00:52:43 EDT
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,206:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,207:INFO - ❌ No active booking found
+Aug 01 00:52:43 raspberrypi python3[48361]: 2025-08-01 00:52:43,207:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:48 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:48 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:48 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    Now: 2025-08-01 00:52:48 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,207:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO -    Now: 2025-08-01 00:52:48 EDT
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO - ❌ No active booking found
+Aug 01 00:52:48 raspberrypi python3[48361]: 2025-08-01 00:52:48,208:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:53 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:53 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:53 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO -    Now: 2025-08-01 00:52:53 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,208:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO -    Now: 2025-08-01 00:52:53 EDT
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO - ❌ No active booking found
+Aug 01 00:52:53 raspberrypi python3[48361]: 2025-08-01 00:52:53,209:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:58 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:58 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:52:58 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO -    Now: 2025-08-01 00:52:58 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,209:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO -    Now: 2025-08-01 00:52:58 EDT
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO - ❌ No active booking found
+Aug 01 00:52:58 raspberrypi python3[48361]: 2025-08-01 00:52:58,210:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:03 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:03 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:03 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO -    Now: 2025-08-01 00:53:03 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,210:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO -    Now: 2025-08-01 00:53:03 EDT
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO - ❌ No active booking found
+Aug 01 00:53:03 raspberrypi python3[48361]: 2025-08-01 00:53:03,211:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,211:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,211:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:08 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,211:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:08 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,211:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:08 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,211:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    Now: 2025-08-01 00:53:08 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    Now: 2025-08-01 00:53:08 EDT
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO - ❌ No active booking found
+Aug 01 00:53:08 raspberrypi python3[48361]: 2025-08-01 00:53:08,212:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,212:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:13 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:13 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:13 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    Now: 2025-08-01 00:53:13 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    Now: 2025-08-01 00:53:13 EDT
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO - ❌ No active booking found
+Aug 01 00:53:13 raspberrypi python3[48361]: 2025-08-01 00:53:13,213:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,213:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:18 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:18 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:18 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    Now: 2025-08-01 00:53:18 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    Now: 2025-08-01 00:53:18 EDT
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO - ❌ No active booking found
+Aug 01 00:53:18 raspberrypi python3[48361]: 2025-08-01 00:53:18,214:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,214:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:23 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:23 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:23 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    Now: 2025-08-01 00:53:23 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    Now: 2025-08-01 00:53:23 EDT
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO - ❌ No active booking found
+Aug 01 00:53:23 raspberrypi python3[48361]: 2025-08-01 00:53:23,215:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,215:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:28 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:28 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:28 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    Now: 2025-08-01 00:53:28 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    Now: 2025-08-01 00:53:28 EDT
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO - ❌ No active booking found
+Aug 01 00:53:28 raspberrypi python3[48361]: 2025-08-01 00:53:28,216:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:33 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:33 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:33 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    Now: 2025-08-01 00:53:33 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    Now: 2025-08-01 00:53:33 EDT
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,217:INFO - ❌ No active booking found
+Aug 01 00:53:33 raspberrypi python3[48361]: 2025-08-01 00:53:33,218:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:38 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:38 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:38 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    Now: 2025-08-01 00:53:38 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,218:INFO -    Now: 2025-08-01 00:53:38 EDT
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,219:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,219:INFO - ❌ No active booking found
+Aug 01 00:53:38 raspberrypi python3[48361]: 2025-08-01 00:53:38,219:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,219:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,219:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:43 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:43 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:43 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    Now: 2025-08-01 00:53:43 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    Now: 2025-08-01 00:53:43 EDT
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO - ❌ No active booking found
+Aug 01 00:53:43 raspberrypi python3[48361]: 2025-08-01 00:53:43,220:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,220:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:48 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:48 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:48 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    Now: 2025-08-01 00:53:48 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    Now: 2025-08-01 00:53:48 EDT
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,221:INFO - ❌ No active booking found
+Aug 01 00:53:48 raspberrypi python3[48361]: 2025-08-01 00:53:48,222:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:53 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:53 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:53 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    Now: 2025-08-01 00:53:53 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,222:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,223:INFO -    Now: 2025-08-01 00:53:53 EDT
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,223:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,223:INFO - ❌ No active booking found
+Aug 01 00:53:53 raspberrypi python3[48361]: 2025-08-01 00:53:53,223:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO - 📋 Loaded 2 bookings from cache
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:58 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:58 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:53:58 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    Now: 2025-08-01 00:53:58 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,223:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO -    Now: 2025-08-01 00:53:58 EDT
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO - ❌ No active booking found
+Aug 01 00:53:58 raspberrypi python3[48361]: 2025-08-01 00:53:58,224:INFO - ⏳ No active booking found, waiting...
+=== BOOKING CACHE CHECK ===
 [
   {
-    "id": "test-booking-1754022885",
+    "id": "test-booking-1754023671",
     "user_id": "65aa2e2a-e463-424d-b88f-0724bb0bea3a",
-    "start_time": "2025-08-01T00:35:45-04:00",
-    "end_time": "2025-08-01T00:36:45-04:00",
+    "start_time": "2025-08-01T00:48:21-04:00",
+    "end_time": "2025-08-01T00:51:21-04:00",
     "date": null,
     "camera_id": "d217e751-dfa5-5276-abbb-da5ad6c2626a",
     "recording_id": null,
     "email": null,
-    "created_at": "2025-08-01T00:34:45.385709",
-    "updated_at": "2025-08-01T00:34:45.385719"
+    "created_at": "2025-08-01T00:47:51.966817",
+    "updated_at": "2025-08-01T00:47:51.966826"
   },
   {
-    "id": "test-booking-1754022975",
+    "id": "test-booking-1754023912",
     "user_id": "65aa2e2a-e463-424d-b88f-0724bb0bea3a",
-    "start_time": "2025-08-01T00:35:45-04:00",
-    "end_time": "2025-08-01T00:36:45-04:00",
+    "start_time": "2025-08-01T00:48:21-04:00",
+    "end_time": "2025-08-01T00:51:21-04:00",
     "date": null,
     "camera_id": "d217e751-dfa5-5276-abbb-da5ad6c2626a",
     "recording_id": null,
     "email": null,
-    "created_at": "2025-08-01T00:36:15.439815",
-    "updated_at": "2025-08-01T00:36:15.439825"
+    "created_at": "2025-08-01T00:51:52.011979",
+    "updated_at": "2025-08-01T00:51:52.011988"
   }
-]=== TIME CHECK ===
-Fri  1 Aug 00:40:56 EDT 2025
-Booking was created for: 2025-08-01T00:35:45-04:00 to 2025-08-01T00:36:45-04:00
-=== CAMERA ID CHECK ===
-CAMERA_ID=d217e751-dfa5-5276-abbb-da5ad6c2626a
+]=== RECENT DUAL_RECORDER LOGS ===
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:WARNING - Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:54:33 raspberrypi python3[48361]: WARNING: Error parsing booking times: can't compare offset-naive and offset-aware datetimes
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO - 🔍 Checking 2 bookings at 2025-08-01 00:54:33 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO - 🔍 Booking 0: test-booking-1754023671
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO -    Now: 2025-08-01 00:54:33 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,231:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO -    Now: 2025-08-01 00:54:33 EDT
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO - ❌ No active booking found
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO - ⏳ No active booking found, waiting...
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check if dual_recorder is actually running
+sudo systemctl status dual_recorder.service
+
+# Check if it's checking for bookings (should see logs every 5 seconds)
+sudo journalctl -u dual_recorder.service --since "1 minute ago" | grep "No active booking found"
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Fri 2025-08-01 00:46:41 EDT; 8min ago
+   Main PID: 48361 (python3)
+      Tasks: 6 (limit: 9572)
+        CPU: 2.337s
+     CGroup: /system.slice/dual_recorder.service
+             └─48361 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO - 🔍 Booking 1: test-booking-1754023912
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    Camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    Start: 2025-08-01 00:48:21 EDT
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    End: 2025-08-01 00:51:21 EDT
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    Now: 2025-08-01 00:55:08 EDT
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO -    User match: True, Camera match: True, Time match: False
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO - ❌ No active booking found
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:13 raspberrypi python3[48361]: 2025-08-01 00:54:13,227:INFO - ❌ No active booking found
+Aug 01 00:54:13 raspberrypi python3[48361]: 2025-08-01 00:54:13,227:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:18 raspberrypi python3[48361]: 2025-08-01 00:54:18,228:INFO - ❌ No active booking found
+Aug 01 00:54:18 raspberrypi python3[48361]: 2025-08-01 00:54:18,228:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:23 raspberrypi python3[48361]: 2025-08-01 00:54:23,229:INFO - ❌ No active booking found
+Aug 01 00:54:23 raspberrypi python3[48361]: 2025-08-01 00:54:23,229:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:28 raspberrypi python3[48361]: 2025-08-01 00:54:28,230:INFO - ❌ No active booking found
+Aug 01 00:54:28 raspberrypi python3[48361]: 2025-08-01 00:54:28,230:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO - ❌ No active booking found
+Aug 01 00:54:33 raspberrypi python3[48361]: 2025-08-01 00:54:33,232:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:38 raspberrypi python3[48361]: 2025-08-01 00:54:38,233:INFO - ❌ No active booking found
+Aug 01 00:54:38 raspberrypi python3[48361]: 2025-08-01 00:54:38,233:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:43 raspberrypi python3[48361]: 2025-08-01 00:54:43,234:INFO - ❌ No active booking found
+Aug 01 00:54:43 raspberrypi python3[48361]: 2025-08-01 00:54:43,234:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:48 raspberrypi python3[48361]: 2025-08-01 00:54:48,235:INFO - ❌ No active booking found
+Aug 01 00:54:48 raspberrypi python3[48361]: 2025-08-01 00:54:48,235:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:53 raspberrypi python3[48361]: 2025-08-01 00:54:53,237:INFO - ❌ No active booking found
+Aug 01 00:54:53 raspberrypi python3[48361]: 2025-08-01 00:54:53,237:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:54:58 raspberrypi python3[48361]: 2025-08-01 00:54:58,238:INFO - ❌ No active booking found
+Aug 01 00:54:58 raspberrypi python3[48361]: 2025-08-01 00:54:58,238:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:55:03 raspberrypi python3[48361]: 2025-08-01 00:55:03,239:INFO - ❌ No active booking found
+Aug 01 00:55:03 raspberrypi python3[48361]: 2025-08-01 00:55:03,239:INFO - ⏳ No active booking found, waiting...
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO - ❌ No active booking found
+Aug 01 00:55:08 raspberrypi python3[48361]: 2025-08-01 00:55:08,240:INFO - ⏳ No active booking found, waiting...
 michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
