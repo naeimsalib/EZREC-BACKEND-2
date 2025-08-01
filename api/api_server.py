@@ -77,6 +77,14 @@ except Exception as e:
 # --------------------------
 app = FastAPI()
 
+# Get the correct camera ID from environment
+CAMERA_ID = os.getenv("CAMERA_ID")
+if not CAMERA_ID:
+    logger.error("❌ CAMERA_ID not found in environment variables")
+    CAMERA_ID = "unknown"
+else:
+    logger.info(f"✅ Using camera ID: {CAMERA_ID}")
+
 @app.get("/test-alive")
 def test_alive():
     return {"status": "alive"}
@@ -213,11 +221,14 @@ def post_bookings(bookings: Union[List[Booking], Booking]):
         # Add new bookings
         for booking in bookings_list:
             booking_dict = booking.dict()
+            
+            # Always use the correct camera ID from environment, not from request
+            booking_dict['camera_id'] = CAMERA_ID
             booking_dict['created_at'] = datetime.now().isoformat()
             booking_dict['updated_at'] = datetime.now().isoformat()
             existing_bookings.append(booking_dict)
             
-            logger.info(f"✅ Added booking: {booking.id}")
+            logger.info(f"✅ Added booking: {booking.id} with camera_id: {CAMERA_ID}")
         
         # Save updated bookings
         with open(bookings_file, 'w') as f:
