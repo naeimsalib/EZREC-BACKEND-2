@@ -72,7 +72,6 @@ sudo apt update
 sudo apt install -y \
     build-essential libjpeg-dev \
     ffmpeg \
-    ffprobe \
     v4l-utils \
     imagemagick \
     python3-libcamera \
