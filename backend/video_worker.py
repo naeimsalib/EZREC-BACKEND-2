@@ -742,231 +742,107 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         # Use simpler concat approach with file list
         concat_list_file = raw_file.parent / "concat_list.txt"
         
-        # Use relative paths to avoid FFmpeg path length issues
-        intro_relative = intro_path.relative_to(raw_file.parent)
-        main_relative = main_with_logos.relative_to(raw_file.parent)
-        
-        concat_list_content = f"""file '{intro_relative}'
-file '{main_relative}'"""
+        # Use absolute paths to avoid path resolution issues
+        concat_list_content = f"""file '{intro_path}'
+file '{main_with_logos}'"""
         
         # Add detailed debugging for concat list creation
         log.info(f"📋 Creating concat list file: {concat_list_file}")
         log.info(f"📋 Concat list content:")
-        log.info(f"📋   file '{intro_relative}'")
-        log.info(f"📋   file '{main_relative}'")
+        log.info(f"📋   file '{intro_path}'")
+        log.info(f"📋   file '{main_with_logos}'")
         
         with open(concat_list_file, 'w') as f:
             f.write(concat_list_content)
         
         # Verify the concat list file was created correctly
         if concat_list_file.exists():
-            log.info(f"✅ Concat list file created: {concat_list_file}")
+            log.info(f"✅ Concat list file created successfully: {concat_list_file}")
             with open(concat_list_file, 'r') as f:
                 content = f.read()
                 log.info(f"📋 Concat list file content: {content}")
         else:
-            log.error(f"❌ Concat list file was not created: {concat_list_file}")
-            return None
+            log.error(f"❌ Failed to create concat list file: {concat_list_file}")
+            raise Exception(f"Failed to create concat list file: {concat_list_file}")
         
-        # Change to the directory containing the files for FFmpeg
-        original_cwd = os.getcwd()
-        os.chdir(raw_file.parent)
+        # Verify both input files exist
+        if not intro_path.exists():
+            log.error(f"❌ Intro video does not exist: {intro_path}")
+            raise Exception(f"Intro video does not exist: {intro_path}")
         
+        if not main_with_logos.exists():
+            log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
+            raise Exception(f"Main video with logos does not exist: {main_with_logos}")
+        
+        log.info(f"✅ Both input files exist, starting FFmpeg...")
+        
+        # Run FFmpeg concat with absolute paths
         concat_cmd = [
-            "ffmpeg", "-y", "-f", "concat", "-safe", "0",
-            "-i", "concat_list.txt",
-            "-c:v", "copy",  # Use copy for faster processing
-            str(concat_output.name)  # Use relative output path
+            'ffmpeg', '-y',
+            '-f', 'concat',
+            '-safe', '0',
+            '-i', str(concat_list_file),
+            '-c:v', 'copy',
+            str(concat_output)
         ]
-        log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
-        log.info(f"📹 Intro video: {intro_path}")
-        log.info(f"📹 Main video: {main_with_logos}")
-        log.info(f"📹 Output: {concat_output}")
         
-        try:
-            start = time.time()
-            log.info(f"🎬 Starting concat process...")
-            log.info(f"📋 Concat command: {' '.join(concat_cmd)}")
-            
-            # Check if input files exist
-            if not intro_path.exists():
-                log.error(f"❌ Intro video does not exist: {intro_path}")
-                os.chdir(original_cwd)
-                return None
-            if not main_with_logos.exists():
-                log.error(f"❌ Main video does not exist: {main_with_logos}")
-                os.chdir(original_cwd)
-                return None
-                
-            log.info(f"✅ Both input files exist, starting FFmpeg...")
-            
-            # Check video compatibility before concat
-            try:
-                intro_info = get_video_info(intro_path)
-                main_info = get_video_info(main_with_logos)
-                log.info(f"📹 Intro video: codec={intro_info[0]}, size={intro_info[1]}x{intro_info[2]}, fps={intro_info[3]}")
-                log.info(f"📹 Main video: codec={main_info[0]}, size={main_info[1]}x{main_info[2]}, fps={main_info[3]}")
-                
-                # Check if videos are compatible for concat
-                if intro_info[0] != main_info[0]:
-                    log.warn(f"⚠️ Video codecs don't match: intro={intro_info[0]}, main={main_info[0]}")
-                    log.warn(f"⚠️ Using fallback: main video without intro")
-                    output_file = PROCESSED_DIR / date_dir.name / raw_file.name
-                    output_file.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(main_with_logos), str(output_file))
-                    if concat_list_file.exists():
-                        concat_list_file.unlink()
-                    os.chdir(original_cwd)
-                    return output_file
-                    
-            except Exception as e:
-                log.error(f"❌ Error checking video compatibility: {e}")
-                # Continue with concat anyway
-            
-            # Add progress monitoring with timeout
-            log.info(f"⏱️ Starting FFmpeg with progress monitoring...")
-            
-            # Use Popen to monitor progress
-            process = subprocess.Popen(
-                concat_cmd, 
-                stdout=subprocess.PIPE, 
-                stderr=subprocess.PIPE,
-                text=True
-            )
-            
-            # Monitor progress for up to 10 minutes
-            start_time = time.time()
-            timeout = 600  # 10 minutes
-            
-            while process.poll() is None:
-                elapsed = time.time() - start_time
-                if elapsed > timeout:
-                    log.error(f"❌ FFmpeg concat process timed out after {timeout} seconds")
-                    process.terminate()
-                    try:
-                        process.wait(timeout=10)
-                    except subprocess.TimeoutExpired:
-                        process.kill()
-                    os.chdir(original_cwd)
-                    return None
-                
-                # Log progress every 30 seconds
-                if int(elapsed) % 30 == 0 and elapsed > 0:
-                    log.info(f"⏱️ FFmpeg concat still running... ({elapsed:.0f}s elapsed)")
-                
-                time.sleep(1)
-            
-            # Get the result
+        log.info(f"🎬 Concat command: {' '.join(concat_cmd)}")
+        
+        # Run FFmpeg with progress monitoring
+        process = subprocess.Popen(
+            concat_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        # Monitor progress with timeout
+        start_time = time.time()
+        timeout = 600  # 10 minutes timeout
+        
+        while process.poll() is None:
+            if time.time() - start_time > timeout:
+                log.error(f"❌ FFmpeg concat timed out after {timeout}s")
+                process.terminate()
+                raise Exception(f"FFmpeg concat timed out after {timeout}s")
+            time.sleep(1)
+        
+        # Check result
+        if process.returncode == 0:
+            log.info(f"✅ Concat completed successfully in {time.time() - start_time:.2f}s")
+        else:
             stdout, stderr = process.communicate()
-            result = subprocess.CompletedProcess(
-                concat_cmd, 
-                process.returncode, 
-                stdout, 
-                stderr
-            )
-            
-            # Restore original working directory
-            os.chdir(original_cwd)
-            
-            if result.returncode != 0:
-                log.error(f"❌ Concat pass failed with return code: {result.returncode}")
-                log.error(f"❌ FFmpeg stderr: {result.stderr}")
-                log.error(f"❌ FFmpeg stdout: {result.stdout}")
-                
-                # Try fallback with filter-based concat
-                log.warn(f"⚠️ Trying fallback: filter-based concat approach")
-                filter_concat_cmd = [
-                    "ffmpeg", "-y", "-i", str(intro_path), "-i", str(main_with_logos),
-                    "-filter_complex",
-                    f"[0:v]scale={width}:{height},format=yuv420p[intro];"
-                    f"[1:v]scale={width}:{height},format=yuv420p[main];"
-                    f"[intro][main]concat=n=2:v=1:a=0[concat]",
-                    "-map", "[concat]",
-                    "-c:v", "libx264", "-crf", "28", "-preset", "ultrafast", str(concat_output)
-                ]
-                
-                try:
-                    log.info(f"🔄 Trying filter-based concat...")
-                    filter_result = subprocess.run(filter_concat_cmd, capture_output=True, text=True, timeout=300)
-                    
-                    if filter_result.returncode == 0 and concat_output.exists():
-                        log.info(f"✅ Filter-based concat successful")
-                        # Continue with the rest of the processing
-                    else:
-                        log.error(f"❌ Filter-based concat also failed: {filter_result.stderr}")
-                        # Final fallback: use main video without intro
-                        log.warn(f"⚠️ Using final fallback: main video without intro")
-                        output_file = PROCESSED_DIR / date_dir.name / raw_file.name
-                        output_file.parent.mkdir(parents=True, exist_ok=True)
-                        shutil.move(str(main_with_logos), str(output_file))
-                        
-                        # Clean up temp files
-                        if main_with_logos.exists():
-                            main_with_logos.unlink()
-                        if concat_list_file.exists():
-                            concat_list_file.unlink()
-                            
-                        log.info(f"✅ Final fallback successful: created video without intro")
-                        return output_file
-                        
-                except Exception as e:
-                    log.error(f"❌ Filter-based concat exception: {e}")
-                    # Final fallback: use main video without intro
-                    log.warn(f"⚠️ Using final fallback: main video without intro")
-                    output_file = PROCESSED_DIR / date_dir.name / raw_file.name
-                    output_file.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.move(str(main_with_logos), str(output_file))
-                    
-                    # Clean up temp files
-                    if main_with_logos.exists():
-                        main_with_logos.unlink()
-                    if concat_list_file.exists():
-                        concat_list_file.unlink()
-                        
-                    log.info(f"✅ Final fallback successful: created video without intro")
-                    return output_file
-                
-            log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
-            
-            # Verify the output file duration
-            if concat_output.exists():
-                try:
-                    output_duration = get_duration(concat_output)
-                    intro_duration = get_duration(intro_path)
-                    main_duration = get_duration(main_with_logos)
-                    expected_duration = intro_duration + main_duration
-                    
-                    log.info(f"📊 Final video duration: {output_duration:.2f} seconds")
-                    log.info(f"📊 Final video size: {concat_output.stat().st_size} bytes")
-                    log.info(f"📊 Expected duration (intro + main): {expected_duration:.2f} seconds")
-                    
-                    if output_duration < expected_duration * 0.9:  # Allow 10% tolerance
-                        log.warn(f"⚠️ Final video duration ({output_duration:.2f}s) is shorter than expected ({expected_duration:.2f}s)")
-                        
-                        # Try to debug by checking the concat list file again
-                        if concat_list_file.exists():
-                            with open(concat_list_file, 'r') as f:
-                                content = f.read()
-                                log.info(f"📋 Concat list file still exists, content: {content}")
-                        else:
-                            log.error(f"❌ Concat list file was deleted during processing")
-                        
-                        # Check if the main video file still exists
-                        if main_with_logos.exists():
-                            log.info(f"✅ Main video file still exists: {main_with_logos}")
-                        else:
-                            log.error(f"❌ Main video file was deleted during processing: {main_with_logos}")
-                        
-                except Exception as e:
-                    log.error(f"❌ Error checking output duration: {e}")
-            
-            # Clean up the concat list file
-            if concat_list_file.exists():
-                concat_list_file.unlink()
-                
+            log.error(f"❌ FFmpeg concat failed with return code {process.returncode}")
+            log.error(f"❌ FFmpeg stderr: {stderr}")
+            raise Exception(f"FFmpeg concat failed: {stderr}")
+        
+        # Clean up concat list file
+        try:
+            concat_list_file.unlink()
+            log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
         except Exception as e:
-            log.error(f"❌ Concat process exception: {str(e)}")
-            return None
+            log.warn(f"⚠️ Failed to clean up concat list file: {e}")
+        
+        # Verify the final video duration
+        if concat_output.exists():
+            final_duration = get_duration(concat_output)
+            intro_duration = get_duration(intro_path)
+            main_duration = get_duration(main_with_logos)
+            expected_duration = intro_duration + main_duration
+            
+            log.info(f"📊 Duration verification:")
+            log.info(f"📊   Intro video: {intro_duration:.2f}s")
+            log.info(f"📊   Main video: {main_duration:.2f}s")
+            log.info(f"📊   Expected total: {expected_duration:.2f}s")
+            log.info(f"📊   Final video: {final_duration:.2f}s")
+            
+            if abs(final_duration - expected_duration) > 1.0:
+                log.warn(f"⚠️ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+            else:
+                log.info(f"✅ Duration matches expected: {final_duration:.2f}s")
+        else:
+            log.error(f"❌ Final concat video does not exist: {concat_output}")
+            raise Exception(f"Final concat video does not exist: {concat_output}")
 
         # Final output is concat_output
         output_file = PROCESSED_DIR / date_dir.name / raw_file.name
