@@ -741,14 +741,19 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         concat_output = raw_file.parent / f"concat_{raw_file.name}"
         # Use simpler concat approach with file list
         concat_list_file = raw_file.parent / "concat_list.txt"
-        concat_list_content = f"""file '{intro_path}'
-file '{main_with_logos}'"""
+        
+        # Use relative paths to avoid FFmpeg path length issues
+        intro_relative = intro_path.relative_to(raw_file.parent)
+        main_relative = main_with_logos.relative_to(raw_file.parent)
+        
+        concat_list_content = f"""file '{intro_relative}'
+file '{main_relative}'"""
         
         # Add detailed debugging for concat list creation
         log.info(f"📋 Creating concat list file: {concat_list_file}")
         log.info(f"📋 Concat list content:")
-        log.info(f"📋   file '{intro_path}'")
-        log.info(f"📋   file '{main_with_logos}'")
+        log.info(f"📋   file '{intro_relative}'")
+        log.info(f"📋   file '{main_relative}'")
         
         with open(concat_list_file, 'w') as f:
             f.write(concat_list_content)
@@ -763,11 +768,15 @@ file '{main_with_logos}'"""
             log.error(f"❌ Concat list file was not created: {concat_list_file}")
             return None
         
+        # Change to the directory containing the files for FFmpeg
+        original_cwd = os.getcwd()
+        os.chdir(raw_file.parent)
+        
         concat_cmd = [
             "ffmpeg", "-y", "-f", "concat", "-safe", "0",
-            "-i", str(concat_list_file),
+            "-i", "concat_list.txt",
             "-c:v", "copy",  # Use copy for faster processing
-            str(concat_output)
+            str(concat_output.name)  # Use relative output path
         ]
         log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
         log.info(f"📹 Intro video: {intro_path}")
@@ -782,9 +791,11 @@ file '{main_with_logos}'"""
             # Check if input files exist
             if not intro_path.exists():
                 log.error(f"❌ Intro video does not exist: {intro_path}")
+                os.chdir(original_cwd)
                 return None
             if not main_with_logos.exists():
                 log.error(f"❌ Main video does not exist: {main_with_logos}")
+                os.chdir(original_cwd)
                 return None
                 
             log.info(f"✅ Both input files exist, starting FFmpeg...")
@@ -805,6 +816,7 @@ file '{main_with_logos}'"""
                     shutil.move(str(main_with_logos), str(output_file))
                     if concat_list_file.exists():
                         concat_list_file.unlink()
+                    os.chdir(original_cwd)
                     return output_file
                     
             except Exception as e:
@@ -835,6 +847,7 @@ file '{main_with_logos}'"""
                         process.wait(timeout=10)
                     except subprocess.TimeoutExpired:
                         process.kill()
+                    os.chdir(original_cwd)
                     return None
                 
                 # Log progress every 30 seconds
@@ -851,6 +864,9 @@ file '{main_with_logos}'"""
                 stdout, 
                 stderr
             )
+            
+            # Restore original working directory
+            os.chdir(original_cwd)
             
             if result.returncode != 0:
                 log.error(f"❌ Concat pass failed with return code: {result.returncode}")
