@@ -748,119 +748,15 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             # Use the re-encoded video for logo overlay
             video_for_logos = merged_reencoded if merged_reencoded.exists() else raw_file
             
-            # Step 2: Overlay logos on the re-encoded video
-            log.info(f"[Two-pass] Pass 1: Overlaying logos on re-encoded recording...")
+            # Step 2: Skip complex logo overlay to avoid video corruption
+            log.info(f"🔧 Skipping complex logo overlay to avoid video corruption")
+            log.info(f"🔧 Using re-encoded video directly for concat")
             
-            # Get video dimensions for overlay positioning
-            video_info = get_video_info(video_for_logos)
-            if video_info is None:
-                log.error(f"❌ Could not get video info for {video_for_logos}")
-                return None
+            # Use the re-encoded video directly instead of logo overlay
+            main_with_logos = video_for_logos
             
-            codec, width, height, fps, pix_fmt = video_info
-            log.info(f"📹 Video dimensions: {width}x{height}")
-            
-            # Build overlay filter chain
-            overlay_filters = []
-            input_count = 1  # Start with 1 input (the video)
-            
-            # Add logo inputs and build filter chain
-            logo_files = []
-            if (assets_dir / "ezrec_logo.png").exists():
-                logo_files.append(str(assets_dir / "ezrec_logo.png"))
-            if (assets_dir / "user_logo.png").exists():
-                logo_files.append(str(assets_dir / "user_logo.png"))
-            if (assets_dir / "sponsor_logo1.png").exists():
-                logo_files.append(str(assets_dir / "sponsor_logo1.png"))
-            if (assets_dir / "sponsor_logo2.png").exists():
-                logo_files.append(str(assets_dir / "sponsor_logo2.png"))
-            if (assets_dir / "sponsor_logo3.png").exists():
-                logo_files.append(str(assets_dir / "sponsor_logo3.png"))
-            
-            # Build complex filter for logo overlays
-            filter_parts = []
-            current_input = "[0:v]"
-            
-            for i, logo_file in enumerate(logo_files):
-                logo_input = f"[{i+1}:v]"
-                scaled_logo = f"[logo{i}_scaled]"
-                output_name = f"[logo{i}_out]"
-                
-                # Scale logo to 120x120
-                filter_parts.append(f"{logo_input}scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000{scaled_logo}")
-                
-                # Position logos: bottom-right, bottom-left, top-left, top-center, top-right
-                if i == 0:  # EZREC logo - bottom right
-                    filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
-                elif i == 1:  # User logo - bottom right (stacked)
-                    filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
-                elif i == 2:  # Sponsor 1 - bottom left
-                    filter_parts.append(f"{current_input}{scaled_logo}overlay=10:main_h-overlay_h-10:format=auto{output_name}")
-                elif i == 3:  # Sponsor 2 - bottom right
-                    filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
-                elif i == 4:  # Sponsor 3 - center bottom
-                    filter_parts.append(f"{current_input}{scaled_logo}overlay=(main_w-overlay_w)/2:main_h-overlay_h-10:format=auto{output_name}")
-                
-                current_input = output_name
-            
-            # Add final SAR normalization
-            if filter_parts:
-                filter_parts.append(f"{current_input}setsar=1[finalout]")
-            
-            filter_complex = "; ".join(filter_parts)
-            log.info(f"🎨 Overlay filter chain: {filter_complex}")
-            
-            # Build FFmpeg command
-            ffmpeg_cmd = [
-                'ffmpeg', '-y',
-                '-i', str(video_for_logos)
-            ]
-            
-            # Add logo inputs
-            for logo_file in logo_files:
-                ffmpeg_cmd.extend(['-i', logo_file])
-            
-            # Add filter complex and output
-            ffmpeg_cmd.extend([
-                '-filter_complex', filter_complex,
-                '-map', '[finalout]',
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-crf', '28',
-                '-pix_fmt', 'yuv420p',
-                str(main_with_logos)
-            ])
-            
-            log.info(f"🎬 FFmpeg command: {' '.join(ffmpeg_cmd)}")
-            
-            # Run FFmpeg with timeout
-            try:
-                start_time = time.time()
-                result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True, timeout=600)
-                
-                if result.returncode == 0:
-                    log.info(f"✅ Logo overlay completed in {time.time() - start_time:.2f}s")
-                    
-                    # Check for silent failures in logo overlay
-                    if main_with_logos.exists():
-                        logo_output_size = main_with_logos.stat().st_size
-                        log.info(f"🔎 Logo overlay output: {main_with_logos}, size: {logo_output_size:,} bytes")
-                        if logo_output_size == 0:
-                            log.error(f"❌ Logo overlay output file is empty!")
-                            return None
-                    else:
-                        log.error(f"❌ Logo overlay output file does not exist: {main_with_logos}")
-                        return None
-                else:
-                    log.error(f"❌ Logo overlay failed with return code: {result.returncode}")
-                    log.error(f"❌ FFmpeg stderr: {result.stderr}")
-                    return None
-            except subprocess.TimeoutExpired:
-                log.error(f"❌ Logo overlay timed out")
-                return None
-            except Exception as e:
-                log.error(f"❌ Logo overlay error: {e}")
-                return None
+            log.info(f"✅ Using re-encoded video directly: {main_with_logos}")
+            log.info(f"✅ Skipped logo overlay to preserve video integrity")
             
             # Clean up re-encoded video
             try:
