@@ -293,11 +293,7 @@ download_user_assets() {
         return
     fi
     
-    # Create media cache directory for user
-    USER_MEDIA_DIR="$DEPLOY_PATH/media_cache/$USER_ID"
-    sudo -u $DEPLOY_USER mkdir -p "$USER_MEDIA_DIR"
-    
-    # Create assets directory for company logo
+    # Create single assets directory for all assets
     ASSETS_DIR="$DEPLOY_PATH/assets"
     sudo -u $DEPLOY_USER mkdir -p "$ASSETS_DIR"
     
@@ -354,7 +350,7 @@ else:
         log_warn "⚠️ Company logo not found or download failed"
     fi
     
-    # Download user assets if they exist - try multiple possible locations
+    # Download user assets if they exist - simplified to single assets folder
     log_info "Checking for user assets..."
     if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
@@ -375,21 +371,22 @@ if all([bucket, region, access_key, secret_key]):
     try:
         s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
         
-        # Define user assets to check - try multiple possible locations
+        # Simplified asset mapping - all assets go to single assets folder
         user_assets = [
-            # Try user-specific paths first
-            ('$USER_ID/logo/logo.png', '$USER_MEDIA_DIR/logo.png'),
-            ('$USER_ID/intro-video/intro.mp4', '$USER_MEDIA_DIR/intro.mp4'),
-            ('$USER_ID/sponsor-logo1/logo1.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
-            ('$USER_ID/sponsor-logo2/logo2.png', '$USER_MEDIA_DIR/sponsor_logo2.png'),
-            ('$USER_ID/sponsor-logo3/logo3.png', '$USER_MEDIA_DIR/sponsor_logo3.png'),
-            # Try root-level assets
-            ('intro.mp4', '$USER_MEDIA_DIR/intro.mp4'),
-            ('sponsor.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
-            ('logo.png', '$USER_MEDIA_DIR/logo.png'),
-            # Try with different naming patterns
-            ('sponsor_logo.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
-            ('user_logo.png', '$USER_MEDIA_DIR/logo.png'),
+            # Company logo (already downloaded above)
+            ('company.png', '$ASSETS_DIR/company_logo.png'),
+            ('ezrec_logo.png', '$ASSETS_DIR/ezrec_logo.png'),
+            ('logo.png', '$ASSETS_DIR/user_logo.png'),
+            # User assets
+            ('intro.mp4', '$ASSETS_DIR/intro.mp4'),
+            ('sponsor.png', '$ASSETS_DIR/sponsor_logo1.png'),
+            ('sponsor_logo.png', '$ASSETS_DIR/sponsor_logo1.png'),
+            ('sponsor_logo1.png', '$ASSETS_DIR/sponsor_logo1.png'),
+            ('sponsor_logo2.png', '$ASSETS_DIR/sponsor_logo2.png'),
+            ('sponsor_logo3.png', '$ASSETS_DIR/sponsor_logo3.png'),
+            # Alternative names
+            ('user_logo.png', '$ASSETS_DIR/user_logo.png'),
+            ('user_logo1.png', '$ASSETS_DIR/user_logo.png'),
         ]
         
         downloaded_count = 0
@@ -402,7 +399,7 @@ if all([bucket, region, access_key, secret_key]):
                 
             try:
                 s3.download_file(bucket, s3_key, local_path)
-                print(f'✅ Downloaded: {s3_key}')
+                print(f'✅ Downloaded: {s3_key} -> {local_path}')
                 downloaded_count += 1
                 downloaded_files.add(local_path)
             except Exception as e:
@@ -433,9 +430,7 @@ else:
     fi
     
     # Set proper permissions
-    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$USER_MEDIA_DIR"
     sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$ASSETS_DIR"
-    sudo chmod -R 755 "$USER_MEDIA_DIR"
     sudo chmod -R 755 "$ASSETS_DIR"
     
     log_info "Asset download process completed"

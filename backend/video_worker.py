@@ -180,11 +180,10 @@ MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 # Static logo config - updated to match deployment script paths
 STATIC_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
 STATIC_LOGO_POSITION = os.getenv("STATIC_LOGO_POSITION", "bottom_right")
-# Note: Static sponsor paths are not used since we download user assets dynamically
-# These are kept for backward compatibility but will be overridden by downloaded assets
-STATIC_SPONSOR_0_PATH = "/opt/ezrec-backend/static/sponsor_logo_1.png"
-STATIC_SPONSOR_1_PATH = "/opt/ezrec-backend/static/sponsor_logo_2.png"
-STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/static/sponsor_logo_3.png"
+# Simplified asset paths - all assets in single folder
+STATIC_SPONSOR_0_PATH = "/opt/ezrec-backend/assets/sponsor_logo1.png"
+STATIC_SPONSOR_1_PATH = "/opt/ezrec-backend/assets/sponsor_logo2.png"
+STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/assets/sponsor_logo3.png"
 STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
 STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
 STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
@@ -460,23 +459,23 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     output_file = PROCESSED_DIR / date_dir.name / raw_file.name
     output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Use local cache for user media
-    user_media_dir = MEDIA_CACHE_DIR / user_id
-    user_media_dir.mkdir(parents=True, exist_ok=True)
-    # --- Always fetch latest user media from Supabase and download if needed ---
+    # Use simplified asset structure - all assets in single folder
+    assets_dir = Path("/opt/ezrec-backend/assets")
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Check for downloaded assets in the assets folder
+    intro_path = assets_dir / "intro.mp4"
+    logo_path = assets_dir / "user_logo.png"
+    sponsor_paths = [assets_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
+    
+    # Also try to fetch from Supabase as fallback
     intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
-    intro_path = user_media_dir / "intro.mp4"
-    logo_path = user_media_dir / "logo.png"
-    sponsor_paths = [user_media_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
-    # Download intro
-    if intro_url:
+    if intro_url and not intro_path.exists():
         download_if_needed(intro_url, intro_path)
-    # Download logo
-    if logo_url:
+    if logo_url and not logo_path.exists():
         download_if_needed(logo_url, logo_path)
-    # Download sponsors
     for i, sponsor_url in enumerate(sponsor_urls):
-        if sponsor_url:
+        if sponsor_url and not sponsor_paths[i].exists():
             download_if_needed(sponsor_url, sponsor_paths[i])
 
     # --- Validate intro and logo/sponsor files ---
