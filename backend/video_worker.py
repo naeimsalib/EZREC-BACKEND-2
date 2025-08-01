@@ -725,25 +725,25 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         # Step 2: Concat clean intro and logo-overlaid main
         concat_output = raw_file.parent / f"concat_{raw_file.name}"
         concat_cmd = [
-            "ffmpeg", "-y", "-threads", "2",
+            "ffmpeg", "-y", "-threads", "4",  # Increased threads
             "-i", str(intro_path), "-i", str(main_with_logos),
             "-filter_complex",
             f"[0:v]scale={width}:{height},format=yuv420p,setsar=1[intro];"
             f"[1:v]scale={width}:{height},format=yuv420p,setsar=1[main];"
             f"[intro][main]concat=n=2:v=1:a=0[concat]",
             "-map", "[concat]",
-            "-c:v", "libx264", "-crf", "23", "-preset", "ultrafast", str(concat_output)
+            "-c:v", "libx264", "-crf", "28", "-preset", "ultrafast", "-movflags", "+faststart", str(concat_output)
         ]
         log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
         try:
             start = time.time()
-            result = subprocess.run(concat_cmd, capture_output=True, timeout=120)
+            result = subprocess.run(concat_cmd, capture_output=True, timeout=300)  # Increased to 5 minutes
             if result.returncode != 0:
                 log.error(f"Concat pass failed: {result.stderr.decode()}")
                 return None
             log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
         except subprocess.TimeoutExpired:
-            log.error("❌ FFmpeg concat step timed out.")
+            log.error("❌ FFmpeg concat step timed out (5 minutes).")
             return None
         except Exception as e:
             log.error(f"❌ FFmpeg concat error: {e}")
