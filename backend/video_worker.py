@@ -712,50 +712,20 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         # Output path for logo-overlaid main recording
         main_with_logos = raw_file.parent / f"main_with_logos_{raw_file.name}"
 
-        # Run FFmpeg to overlay logos on main recording only
-        log.info("[Two-pass] Pass 1: Overlaying logos on main recording only...")
-        log.info(f"Overlay filter chain: {filter_chain}")
-        ffmpeg_cmd = [
-            'ffmpeg', '-y',
-            *ffmpeg_inputs,
-            '-filter_complex', filter_chain,
-            '-map', last_out,
-            '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p',
-            str(main_with_logos)
-        ]
-        log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
-        try:
-            start = time.time()
-            result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
-            if result.returncode != 0:
-                log.error(f"❌ Logo overlay pass failed with return code: {result.returncode}")
-                log.error(f"❌ FFmpeg stderr: {result.stderr}")
-                log.error(f"❌ FFmpeg stdout: {result.stdout}")
-                return None
-            log.info(f"✅ Logo overlay completed in {time.time() - start:.2f}s")
-        except Exception as e:
-            log.error(f"❌ FFmpeg logo overlay error: {e}")
-            return None
-
-        # Step 2: Concat clean intro and logo-overlaid main
-        concat_output = raw_file.parent / f"concat_{raw_file.name}"
-        # Use simpler concat approach with file list
-        concat_list_file = raw_file.parent / "concat_list.txt"
-        
-        # First, re-encode the main video to fix DTS timestamp issues
-        log.info(f"🔧 Re-encoding main video to fix DTS timestamp issues...")
-        main_reencoded = raw_file.parent / f"reencoded_{main_with_logos.name}"
+        # Step 1: Re-encode the original merged video to fix DTS timestamp issues BEFORE logo overlay
+        log.info(f"🔧 Re-encoding original merged video to fix DTS timestamp issues...")
+        merged_reencoded = raw_file.parent / f"reencoded_{raw_file.name}"
         
         reencode_cmd = [
             'ffmpeg', '-y',
-            '-i', str(main_with_logos),
+            '-i', str(raw_file),
             '-c:v', 'libx264',
             '-preset', 'ultrafast',
             '-crf', '28',
             '-pix_fmt', 'yuv420p',
             '-avoid_negative_ts', 'make_zero',
             '-fflags', '+genpts',
-            str(main_reencoded)
+            str(merged_reencoded)
         ]
         
         log.info(f"🎬 Re-encode command: {' '.join(reencode_cmd)}")
@@ -787,18 +757,127 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.error(f"❌ Re-encode stderr: {reencode_stderr}")
             raise Exception(f"Re-encode failed: {reencode_stderr}")
         
-        # Use the re-encoded main video for concat
-        main_video_for_concat = main_reencoded if main_reencoded.exists() else main_with_logos
+        # Use the re-encoded video for logo overlay
+        video_for_logos = merged_reencoded if merged_reencoded.exists() else raw_file
+        
+        # Step 2: Overlay logos on the re-encoded video
+        log.info(f"[Two-pass] Pass 1: Overlaying logos on re-encoded recording...")
+        
+        # Get video dimensions for overlay positioning
+        video_info = get_video_info(video_for_logos)
+        if not video_info:
+            log.error(f"❌ Could not get video info for {video_for_logos}")
+            return None
+        
+        width, height = video_info[1], video_info[2]
+        log.info(f"📹 Video dimensions: {width}x{height}")
+        
+        # Build overlay filter chain
+        overlay_filters = []
+        input_count = 1  # Start with 1 input (the video)
+        
+        # Add logo inputs and build filter chain
+        logo_files = []
+        if (ASSETS_DIR / "ezrec_logo.png").exists():
+            logo_files.append(str(ASSETS_DIR / "ezrec_logo.png"))
+        if (ASSETS_DIR / "user_logo.png").exists():
+            logo_files.append(str(ASSETS_DIR / "user_logo.png"))
+        if (ASSETS_DIR / "sponsor_logo1.png").exists():
+            logo_files.append(str(ASSETS_DIR / "sponsor_logo1.png"))
+        if (ASSETS_DIR / "sponsor_logo2.png").exists():
+            logo_files.append(str(ASSETS_DIR / "sponsor_logo2.png"))
+        if (ASSETS_DIR / "sponsor_logo3.png").exists():
+            logo_files.append(str(ASSETS_DIR / "sponsor_logo3.png"))
+        
+        # Build complex filter for logo overlays
+        filter_parts = []
+        current_input = "[0:v]"
+        
+        for i, logo_file in enumerate(logo_files):
+            logo_input = f"[{i+1}:v]"
+            scaled_logo = f"[logo{i}_scaled]"
+            output_name = f"[logo{i}_out]"
+            
+            # Scale logo to 120x120
+            filter_parts.append(f"{logo_input}scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000{scaled_logo}")
+            
+            # Position logos: bottom-right, bottom-left, top-left, top-center, top-right
+            if i == 0:  # EZREC logo - bottom right
+                filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
+            elif i == 1:  # User logo - bottom right (stacked)
+                filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
+            elif i == 2:  # Sponsor 1 - bottom left
+                filter_parts.append(f"{current_input}{scaled_logo}overlay=10:main_h-overlay_h-10:format=auto{output_name}")
+            elif i == 3:  # Sponsor 2 - bottom right
+                filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
+            elif i == 4:  # Sponsor 3 - center bottom
+                filter_parts.append(f"{current_input}{scaled_logo}overlay=(main_w-overlay_w)/2:main_h-overlay_h-10:format=auto{output_name}")
+            
+            current_input = output_name
+        
+        # Add final SAR normalization
+        if filter_parts:
+            filter_parts.append(f"{current_input}setsar=1[finalout]")
+        
+        filter_complex = "; ".join(filter_parts)
+        log.info(f"🎨 Overlay filter chain: {filter_complex}")
+        
+        # Build FFmpeg command
+        ffmpeg_cmd = [
+            'ffmpeg', '-y',
+            '-i', str(video_for_logos)
+        ]
+        
+        # Add logo inputs
+        for logo_file in logo_files:
+            ffmpeg_cmd.extend(['-i', logo_file])
+        
+        # Add filter complex and output
+        ffmpeg_cmd.extend([
+            '-filter_complex', filter_complex,
+            '-map', '[finalout]',
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '28',
+            '-pix_fmt', 'yuv420p',
+            str(main_with_logos)
+        ])
+        
+        log.info(f"🎬 FFmpeg command: {' '.join(ffmpeg_cmd)}")
+        
+        # Run FFmpeg
+        start_time = time.time()
+        result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            log.info(f"✅ Logo overlay completed in {time.time() - start_time:.2f}s")
+        else:
+            log.error(f"❌ Logo overlay failed with return code: {result.returncode}")
+            log.error(f"❌ FFmpeg stderr: {result.stderr}")
+            return None
+        
+        # Clean up re-encoded video
+        try:
+            if merged_reencoded.exists():
+                merged_reencoded.unlink()
+                log.info(f"🧹 Cleaned up re-encoded video: {merged_reencoded}")
+        except Exception as e:
+            log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
+        
+        # Step 3: Concat clean intro and logo-overlaid main
+        concat_output = raw_file.parent / f"concat_{raw_file.name}"
+        # Use simpler concat approach with file list
+        concat_list_file = raw_file.parent / "concat_list.txt"
         
         # Use absolute paths to avoid path resolution issues
         concat_list_content = f"""file '{intro_path}'
-file '{main_video_for_concat}'"""
+file '{main_with_logos}'"""
         
         # Add detailed debugging for concat list creation
         log.info(f"📋 Creating concat list file: {concat_list_file}")
         log.info(f"📋 Concat list content:")
         log.info(f"📋   file '{intro_path}'")
-        log.info(f"📋   file '{main_video_for_concat}'")
+        log.info(f"📋   file '{main_with_logos}'")
         
         with open(concat_list_file, 'w') as f:
             f.write(concat_list_content)
@@ -818,20 +897,20 @@ file '{main_video_for_concat}'"""
             log.error(f"❌ Intro video does not exist: {intro_path}")
             raise Exception(f"Intro video does not exist: {intro_path}")
         
-        if not main_video_for_concat.exists():
-            log.error(f"❌ Main video for concat does not exist: {main_video_for_concat}")
-            raise Exception(f"Main video for concat does not exist: {main_video_for_concat}")
+        if not main_with_logos.exists():
+            log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
+            raise Exception(f"Main video with logos does not exist: {main_with_logos}")
         
         # Get detailed file info
         intro_size = intro_path.stat().st_size
-        main_size = main_video_for_concat.stat().st_size
+        main_size = main_with_logos.stat().st_size
         log.info(f"📊 File sizes:")
         log.info(f"📊   Intro video: {intro_size} bytes")
         log.info(f"📊   Main video: {main_size} bytes")
         
         # Check if main video is valid by running ffprobe
         try:
-            ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_video_for_concat)]
+            ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_with_logos)]
             result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
             if result.returncode == 0:
                 log.info(f"✅ Main video is valid (ffprobe check passed)")
@@ -888,19 +967,12 @@ file '{main_video_for_concat}'"""
             log.error(f"❌ FFmpeg stderr: {stderr}")
             raise Exception(f"FFmpeg concat failed: {stderr}")
         
-        # Clean up concat list file and re-encoded video
+        # Clean up concat list file
         try:
             concat_list_file.unlink()
             log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
         except Exception as e:
             log.warn(f"⚠️ Failed to clean up concat list file: {e}")
-        
-        try:
-            if main_reencoded.exists():
-                main_reencoded.unlink()
-                log.info(f"🧹 Cleaned up re-encoded video: {main_reencoded}")
-        except Exception as e:
-            log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
         
         # Verify the final video duration
         if concat_output.exists():
