@@ -174,12 +174,14 @@ except Exception:
 VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software encoder
 
 # Main logo config (always use this path)
-MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
+MAIN_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
 MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
-# Static logo config
-STATIC_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
+# Static logo config - updated to match deployment script paths
+STATIC_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
 STATIC_LOGO_POSITION = os.getenv("STATIC_LOGO_POSITION", "bottom_right")
+# Note: Static sponsor paths are not used since we download user assets dynamically
+# These are kept for backward compatibility but will be overridden by downloaded assets
 STATIC_SPONSOR_0_PATH = "/opt/ezrec-backend/static/sponsor_logo_1.png"
 STATIC_SPONSOR_1_PATH = "/opt/ezrec-backend/static/sponsor_logo_2.png"
 STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/static/sponsor_logo_3.png"
@@ -761,36 +763,34 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     # For static main logo, do not scale, just overlay at original size
     filter_parts = [f"[{main_video_idx}:v][1:v]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]"]
     last_output = "[staticlogo_out]"
-    static_logo_inputs = []
-    for i, static_sponsor_path in enumerate(static_sponsor_paths):
-        if static_sponsor_path.exists():
-            input_args.extend(["-i", str(static_sponsor_path)])
-            static_logo_inputs.append((f"staticsponsor{i}", video_inputs + len(static_logo_inputs) + 1, static_sponsor_positions[i]))
-    for name, idx, position in static_logo_inputs:
-        scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
-        filter_parts.append(scale_filter)
-        overlay_position = POSITION_MAP.get(position, "top_right")
-        overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
-        filter_parts.append(overlay_filter)
-        last_output = f"[{name}_out]"
+    
+    # Use downloaded user assets instead of static paths
     logo_inputs = []
     if logo_path and logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
-        logo_inputs.append(("logo", video_inputs + len(static_logo_inputs) + 1, LOGO_POSITION))
+        logo_inputs.append(("logo", video_inputs + len(logo_inputs) + 1, LOGO_POSITION))
+    
     sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
         if sponsor_path and sponsor_path.exists():
             input_args.extend(["-i", str(sponsor_path)])
-            logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
+            logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 1, sponsor_positions[i]))
+    
     # LOGGING: Print overlays and positions AFTER logo_inputs is built
     log.info("--- Overlay Chain (Single-pass, actual overlays to be applied) ---")
     log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
-    for i, static_sponsor_path in enumerate(static_sponsor_paths):
-        if static_sponsor_path.exists():
-            log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
     for name, idx, position in logo_inputs:
         log.info(f"Overlay: {name} (input idx {idx}) at {position}")
     log.info("------------------------------")
+    # Build filter chain for user assets
+    for name, idx, position in logo_inputs:
+        scale_filter = f"[{idx}:v]scale={LOGO_WIDTH}:{LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={LOGO_WIDTH}:{LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{name}_scaled]"
+        filter_parts.append(scale_filter)
+        overlay_position = POSITION_MAP.get(position, "bottom_right")
+        overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
+        filter_parts.append(overlay_filter)
+        last_output = f"[{name}_out]"
+    
     ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
     if filter_parts:
         filter_complex = ";".join(filter_parts)
