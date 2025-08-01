@@ -496,7 +496,7 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 result = subprocess.run([
                     'ffmpeg', '-i', str(backup_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero',
                     str(file)
-                ], capture_output=True, text=True, timeout=120)
+                ], capture_output=True, text=True)
                 
                 if result.returncode == 0 and file.exists():
                     log.info(f"✅ Successfully repaired video: {file}")
@@ -710,14 +710,13 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
         try:
             start = time.time()
-            result = subprocess.run(ffmpeg_cmd, capture_output=True, timeout=600)
+            result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
             if result.returncode != 0:
-                log.error(f"Logo overlay pass failed: {result.stderr.decode()}")
+                log.error(f"❌ Logo overlay pass failed with return code: {result.returncode}")
+                log.error(f"❌ FFmpeg stderr: {result.stderr}")
+                log.error(f"❌ FFmpeg stdout: {result.stdout}")
                 return None
             log.info(f"✅ Logo overlay completed in {time.time() - start:.2f}s")
-        except subprocess.TimeoutExpired:
-            log.error("❌ FFmpeg logo overlay step timed out.")
-            return None
         except Exception as e:
             log.error(f"❌ FFmpeg logo overlay error: {e}")
             return None
@@ -737,16 +736,20 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
         try:
             start = time.time()
-            result = subprocess.run(concat_cmd, capture_output=True, timeout=300)  # Increased to 5 minutes
+            log.info(f"🎬 Starting concat process...")
+            log.info(f"📋 Concat command: {' '.join(concat_cmd)}")
+            
+            result = subprocess.run(concat_cmd, capture_output=True, text=True)
+            
             if result.returncode != 0:
-                log.error(f"Concat pass failed: {result.stderr.decode()}")
+                log.error(f"❌ Concat pass failed with return code: {result.returncode}")
+                log.error(f"❌ FFmpeg stderr: {result.stderr}")
+                log.error(f"❌ FFmpeg stdout: {result.stdout}")
                 return None
+                
             log.info(f"✅ Concat completed in {time.time() - start:.2f}s")
-        except subprocess.TimeoutExpired:
-            log.error("❌ FFmpeg concat step timed out (5 minutes).")
-            return None
         except Exception as e:
-            log.error(f"❌ FFmpeg concat error: {e}")
+            log.error(f"❌ Concat process exception: {str(e)}")
             return None
 
         # Final output is concat_output
@@ -804,7 +807,7 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
     try:
         start_time = time.time()
-        result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True, timeout=1800)
+        result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True)
         end_time = time.time()
         processing_time = end_time - start_time
         log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using {VIDEO_ENCODER}")
@@ -814,12 +817,10 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.error("Output file missing or too small")
             return None
     except subprocess.CalledProcessError as e:
-        log.error(f"FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
-        log.error(f"FFmpeg error: {e.stderr}")
-    except subprocess.TimeoutExpired:
-        log.error(f"FFmpeg processing timed out after 30 minutes")
+        log.error(f"❌ FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
+        log.error(f"❌ FFmpeg error: {e.stderr}")
     except Exception as e:
-        log.error(f"FFmpeg error: {e}")
+        log.error(f"❌ FFmpeg error: {e}")
     log.error("FFmpeg processing failed. Video not processed.")
     return None
 
