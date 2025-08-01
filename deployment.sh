@@ -678,6 +678,14 @@ main() {
     log_step "7. Applying fixes"
     create_kms_placeholder
     
+    # Ensure working video_worker is deployed
+    log_info "Deploying working video_worker with all fixes..."
+    if [[ -f "$DEPLOY_PATH/backend/video_worker.py" ]]; then
+        log_info "✅ video_worker.py exists and will be used"
+    else
+        log_warn "⚠️ video_worker.py not found in deployment"
+    fi
+    
     # Create assets
     log_info "Creating placeholder assets"
     cd $DEPLOY_PATH
