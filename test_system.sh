@@ -299,9 +299,9 @@ log_step "9. Testing comprehensive recording workflow with real booking"
 if [ "$camera_test_passed" = true ]; then
     log_info "✅ Camera test passed, proceeding with comprehensive recording workflow test"
     
-    # Create a booking for 1 minute from now (shorter for testing)
-    START_TIME=$(date -d "+1 minute" -Iseconds)
-    END_TIME=$(date -d "+2 minutes" -Iseconds)
+    # Create a booking for 30 seconds from now and lasts 3 minutes (longer for testing)
+START_TIME=$(date -d "+30 seconds" -Iseconds)
+END_TIME=$(date -d "+3 minutes 30 seconds" -Iseconds)
     
     echo "Creating test booking:"
     echo "Start: $START_TIME"
@@ -321,8 +321,8 @@ if [ "$camera_test_passed" = true ]; then
         log_info "✅ Test booking created successfully"
         
         # Wait for recording to start and complete
-        log_info "⏳ Waiting for recording to start and complete..."
-        sleep 90  # Wait 1.5 minutes for recording to complete
+log_info "⏳ Waiting for recording to start and complete..."
+sleep 240  # Wait 4 minutes for recording to complete (3 minute booking + buffer)
         
         # Check if recording files were created
         log_info "🔍 Checking for recording files..."
