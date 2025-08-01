@@ -301,10 +301,12 @@ download_user_assets() {
     ASSETS_DIR="$DEPLOY_PATH/assets"
     sudo -u $DEPLOY_USER mkdir -p "$ASSETS_DIR"
     
-    # Download main company logo (always required)
+    # Download main company logo (always required) - try multiple possible names
     log_info "Downloading main company logo..."
     COMPANY_LOGO_PATH="$ASSETS_DIR/ezrec_logo.png"
-    COMPANY_LOGO_S3_KEY="main_ezrec_logo.png"
+    
+    # Try different possible company logo names
+    company_logo_names=("main_ezrec_logo.png" "company.png" "ezrec_logo.png" "logo.png")
     
     if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
@@ -324,10 +326,26 @@ secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 if all([bucket, region, access_key, secret_key]):
     try:
         s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-        s3.download_file(bucket, '$COMPANY_LOGO_S3_KEY', '$COMPANY_LOGO_PATH')
-        print('✅ Downloaded company logo')
+        
+        # Try different company logo names
+        company_logo_names = ['main_ezrec_logo.png', 'company.png', 'ezrec_logo.png', 'logo.png']
+        downloaded = False
+        
+        for logo_name in company_logo_names:
+            try:
+                s3.download_file(bucket, logo_name, '$COMPANY_LOGO_PATH')
+                print(f'✅ Downloaded company logo: {logo_name}')
+                downloaded = True
+                break
+            except Exception as e:
+                print(f'⚠️ Not found: {logo_name}')
+                continue
+        
+        if not downloaded:
+            print('❌ No company logo found with any of the expected names')
+            
     except Exception as e:
-        print(f'⚠️ Company logo not found: {e}')
+        print(f'⚠️ Error downloading company logo: {e}')
 else:
     print('⚠️ Missing AWS credentials for asset download')
 " 2>/dev/null; then
@@ -336,7 +354,7 @@ else:
         log_warn "⚠️ Company logo not found or download failed"
     fi
     
-    # Download user assets if they exist
+    # Download user assets if they exist - try multiple possible locations
     log_info "Checking for user assets..."
     if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
@@ -357,25 +375,52 @@ if all([bucket, region, access_key, secret_key]):
     try:
         s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
         
-        # Define user assets to check
+        # Define user assets to check - try multiple possible locations
         user_assets = [
+            # Try user-specific paths first
             ('$USER_ID/logo/logo.png', '$USER_MEDIA_DIR/logo.png'),
             ('$USER_ID/intro-video/intro.mp4', '$USER_MEDIA_DIR/intro.mp4'),
             ('$USER_ID/sponsor-logo1/logo1.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
             ('$USER_ID/sponsor-logo2/logo2.png', '$USER_MEDIA_DIR/sponsor_logo2.png'),
             ('$USER_ID/sponsor-logo3/logo3.png', '$USER_MEDIA_DIR/sponsor_logo3.png'),
+            # Try root-level assets
+            ('intro.mp4', '$USER_MEDIA_DIR/intro.mp4'),
+            ('sponsor.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
+            ('logo.png', '$USER_MEDIA_DIR/logo.png'),
+            # Try with different naming patterns
+            ('sponsor_logo.png', '$USER_MEDIA_DIR/sponsor_logo1.png'),
+            ('user_logo.png', '$USER_MEDIA_DIR/logo.png'),
         ]
         
         downloaded_count = 0
+        downloaded_files = set()  # Track what we've already downloaded
+        
         for s3_key, local_path in user_assets:
+            # Skip if we already downloaded this file type
+            if any(downloaded_files) and any(existing in local_path for existing in downloaded_files):
+                continue
+                
             try:
                 s3.download_file(bucket, s3_key, local_path)
                 print(f'✅ Downloaded: {s3_key}')
                 downloaded_count += 1
+                downloaded_files.add(local_path)
             except Exception as e:
                 print(f'⚠️ Not found: {s3_key}')
         
         print(f'📊 Downloaded {downloaded_count} user assets')
+        
+        # List all objects in bucket for debugging
+        try:
+            response = s3.list_objects_v2(Bucket=bucket, MaxKeys=20)
+            if 'Contents' in response:
+                print('📋 Available objects in bucket:')
+                for obj in response['Contents']:
+                    print(f'  - {obj[\"Key\"]}')
+            else:
+                print('📋 Bucket appears to be empty')
+        except Exception as e:
+            print(f'⚠️ Could not list bucket contents: {e}')
         
     except Exception as e:
         print(f'⚠️ Error checking user assets: {e}')
