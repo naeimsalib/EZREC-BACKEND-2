@@ -36,6 +36,7 @@ fi
 echo "📦 Installing Python dependencies..."
 source "$DEPLOY_DIR/backend/venv/bin/activate"
 pip install --upgrade pip
+pip install --upgrade "typing-extensions>=4.12.0"
 pip install -r "$CODE_DIR/requirements.txt"
 deactivate
 
@@ -51,11 +52,41 @@ chmod +x "$DEPLOY_DIR/backend/video_worker.py"
 echo "🔁 Restarting services..."
 systemctl daemon-reexec
 systemctl daemon-reload
-systemctl enable dual_recorder.service
-systemctl enable video_worker.service
-systemctl enable ezrec-api.service
-systemctl restart dual_recorder.service
-systemctl restart video_worker.service
-systemctl restart ezrec-api.service
+
+# Enable services
+systemctl enable dual_recorder.service || true
+systemctl enable video_worker.service || true
+systemctl enable ezrec-api.service || true
+
+# Restart services with error handling
+echo "🔄 Restarting dual_recorder.service..."
+if systemctl restart dual_recorder.service; then
+    echo "✅ dual_recorder.service restarted successfully"
+else
+    echo "⚠️ dual_recorder.service restart failed, checking status..."
+    systemctl status dual_recorder.service --no-pager -l
+fi
+
+echo "🔄 Restarting video_worker.service..."
+if systemctl restart video_worker.service; then
+    echo "✅ video_worker.service restarted successfully"
+else
+    echo "⚠️ video_worker.service restart failed, checking status..."
+    systemctl status video_worker.service --no-pager -l
+fi
+
+echo "🔄 Restarting ezrec-api.service..."
+if systemctl restart ezrec-api.service; then
+    echo "✅ ezrec-api.service restarted successfully"
+else
+    echo "⚠️ ezrec-api.service restart failed, checking status..."
+    systemctl status ezrec-api.service --no-pager -l
+fi
+
+# Final status check
+echo "📊 Final service status:"
+systemctl is-active dual_recorder.service && echo "✅ dual_recorder: ACTIVE" || echo "❌ dual_recorder: FAILED"
+systemctl is-active video_worker.service && echo "✅ video_worker: ACTIVE" || echo "❌ video_worker: FAILED"
+systemctl is-active ezrec-api.service && echo "✅ ezrec-api: ACTIVE" || echo "❌ ezrec-api: FAILED"
 
 echo "✅ Deployment complete."
