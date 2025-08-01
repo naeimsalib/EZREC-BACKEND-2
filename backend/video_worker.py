@@ -744,8 +744,24 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         concat_list_content = f"""file '{intro_path}'
 file '{main_with_logos}'"""
         
+        # Add detailed debugging for concat list creation
+        log.info(f"📋 Creating concat list file: {concat_list_file}")
+        log.info(f"📋 Concat list content:")
+        log.info(f"📋   file '{intro_path}'")
+        log.info(f"📋   file '{main_with_logos}'")
+        
         with open(concat_list_file, 'w') as f:
             f.write(concat_list_content)
+        
+        # Verify the concat list file was created correctly
+        if concat_list_file.exists():
+            log.info(f"✅ Concat list file created: {concat_list_file}")
+            with open(concat_list_file, 'r') as f:
+                content = f.read()
+                log.info(f"📋 Concat list file content: {content}")
+        else:
+            log.error(f"❌ Concat list file was not created: {concat_list_file}")
+            return None
         
         concat_cmd = [
             "ffmpeg", "-y", "-f", "concat", "-safe", "0",
@@ -900,19 +916,37 @@ file '{main_with_logos}'"""
             if concat_output.exists():
                 try:
                     output_duration = get_duration(concat_output)
+                    intro_duration = get_duration(intro_path)
+                    main_duration = get_duration(main_with_logos)
+                    expected_duration = intro_duration + main_duration
+                    
                     log.info(f"📊 Final video duration: {output_duration:.2f} seconds")
                     log.info(f"📊 Final video size: {concat_output.stat().st_size} bytes")
-                    
-                    # Check if duration is reasonable
-                    expected_duration = get_duration(intro_path) + get_duration(main_with_logos)
                     log.info(f"📊 Expected duration (intro + main): {expected_duration:.2f} seconds")
                     
-                    if output_duration < expected_duration * 0.8:  # If less than 80% of expected
+                    if output_duration < expected_duration * 0.9:  # Allow 10% tolerance
                         log.warn(f"⚠️ Final video duration ({output_duration:.2f}s) is shorter than expected ({expected_duration:.2f}s)")
+                        
+                        # Try to debug by checking the concat list file again
+                        if concat_list_file.exists():
+                            with open(concat_list_file, 'r') as f:
+                                content = f.read()
+                                log.info(f"📋 Concat list file still exists, content: {content}")
+                        else:
+                            log.error(f"❌ Concat list file was deleted during processing")
+                        
+                        # Check if the main video file still exists
+                        if main_with_logos.exists():
+                            log.info(f"✅ Main video file still exists: {main_with_logos}")
+                        else:
+                            log.error(f"❌ Main video file was deleted during processing: {main_with_logos}")
+                        
                 except Exception as e:
-                    log.error(f"❌ Could not verify output duration: {e}")
-            else:
-                log.error(f"❌ Concat output file does not exist: {concat_output}")
+                    log.error(f"❌ Error checking output duration: {e}")
+            
+            # Clean up the concat list file
+            if concat_list_file.exists():
+                concat_list_file.unlink()
                 
         except Exception as e:
             log.error(f"❌ Concat process exception: {str(e)}")
