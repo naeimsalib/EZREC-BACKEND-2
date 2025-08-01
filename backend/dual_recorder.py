@@ -349,16 +349,9 @@ class CameraRecorder:
                 self.picamera2.configure(config)
                 self.picamera2.start()
                 
-                # Create encoder with proper MP4 compatibility
+                # Create encoder with proper MP4 compatibility (matching working test script)
                 from picamera2.encoders import H264Encoder
-                self.encoder = H264Encoder(
-                    bitrate=6000000,
-                    repeat=False,
-                    iperiod=30,
-                    qp=25,
-                    profile="baseline",
-                    level="4.1"
-                )
+                self.encoder = H264Encoder(bitrate=6000000)
                 
                 self.logger.info(f"✅ {self.camera_name} camera initialized successfully")
                 return True
@@ -418,17 +411,10 @@ class CameraRecorder:
                 self.picamera2.start_recording(self.encoder, str(self.output_path))
             except Exception as e:
                 if "GLOBAL_HEADER" in str(e):
-                    # Try alternative encoder configuration
+                    # Try alternative encoder configuration (matching working test script)
                     self.logger.warning(f"⚠️ GLOBAL_HEADER error, trying alternative encoder config")
                     from picamera2.encoders import H264Encoder
-                    self.encoder = H264Encoder(
-                        bitrate=4000000,
-                        repeat=False,
-                        iperiod=30,
-                        qp=30,
-                        profile="baseline",
-                        level="4.0"
-                    )
+                    self.encoder = H264Encoder(bitrate=4000000)
                     self.picamera2.start_recording(self.encoder, str(self.output_path))
                 else:
                     raise e
