@@ -1,124 +1,297 @@
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
+Already up to date.
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # 2. Deploy the fix
+sudo cp backend/video_worker.py /opt/ezrec-backend/backend/video_worker.py
+
+# 3. Restart service
+sudo systemctl restart video_worker.service
 michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo journalctl -u video_worker.service -f
-Aug 01 05:29:06 raspberrypi systemd[1]: Stopping video_worker.service - EZREC Video Processing Worker Service...
-Aug 01 05:29:06 raspberrypi systemd[1]: video_worker.service: Deactivated successfully.
-Aug 01 05:29:06 raspberrypi systemd[1]: Stopped video_worker.service - EZREC Video Processing Worker Service.
-Aug 01 05:29:06 raspberrypi systemd[1]: Started video_worker.service - EZREC Video Processing Worker Service.
-Aug 01 05:29:07 raspberrypi python3[88394]: 2025-08-01 05:29:07,406:INFO - Video worker started and entering main loop
-Aug 01 05:29:07 raspberrypi python3[88394]: 2025-08-01 05:29:07,406:INFO - 🧹 Running startup cleanup of orphaned marker files...
-Aug 01 05:29:07 raspberrypi python3[88394]: 2025-08-01 05:29:07,407:INFO - ✅ Startup cleanup: no orphaned marker files found
-Aug 01 05:29:07 raspberrypi python3[88394]: 2025-08-01 05:29:07,434:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:29:22 raspberrypi python3[88394]: 2025-08-01 05:29:22,459:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:29:37 raspberrypi python3[88394]: 2025-08-01 05:29:37,484:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:29:52 raspberrypi python3[88394]: 2025-08-01 05:29:52,530:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:30:07 raspberrypi python3[88394]: 2025-08-01 05:30:07,557:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:30:22 raspberrypi python3[88394]: 2025-08-01 05:30:22,586:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:30:37 raspberrypi python3[88394]: 2025-08-01 05:30:37,613:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:30:52 raspberrypi python3[88394]: 2025-08-01 05:30:52,637:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:31:07 raspberrypi python3[88394]: 2025-08-01 05:31:07,666:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:31:07 raspberrypi python3[88394]: 2025-08-01 05:31:07,666:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:31:07 raspberrypi python3[88394]: 2025-08-01 05:31:07,666:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:07 raspberrypi python3[88394]: 2025-08-01 05:31:07,666:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:22 raspberrypi python3[88394]: 2025-08-01 05:31:22,695:INFO - 📊 Disk usage: 7.7% used, 101.9 GB free
-Aug 01 05:31:22 raspberrypi python3[88394]: 2025-08-01 05:31:22,695:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:31:22 raspberrypi python3[88394]: 2025-08-01 05:31:22,696:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:22 raspberrypi python3[88394]: 2025-08-01 05:31:22,696:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:37 raspberrypi python3[88394]: 2025-08-01 05:31:37,732:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:31:37 raspberrypi python3[88394]: 2025-08-01 05:31:37,732:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:31:37 raspberrypi python3[88394]: 2025-08-01 05:31:37,733:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:37 raspberrypi python3[88394]: 2025-08-01 05:31:37,733:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:52 raspberrypi python3[88394]: 2025-08-01 05:31:52,763:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:31:52 raspberrypi python3[88394]: 2025-08-01 05:31:52,764:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:31:52 raspberrypi python3[88394]: 2025-08-01 05:31:52,764:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:31:52 raspberrypi python3[88394]: 2025-08-01 05:31:52,764:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:07 raspberrypi python3[88394]: 2025-08-01 05:32:07,795:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:32:07 raspberrypi python3[88394]: 2025-08-01 05:32:07,796:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:32:07 raspberrypi python3[88394]: 2025-08-01 05:32:07,796:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:07 raspberrypi python3[88394]: 2025-08-01 05:32:07,796:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:22 raspberrypi python3[88394]: 2025-08-01 05:32:22,828:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:32:22 raspberrypi python3[88394]: 2025-08-01 05:32:22,829:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:32:22 raspberrypi python3[88394]: 2025-08-01 05:32:22,829:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:22 raspberrypi python3[88394]: 2025-08-01 05:32:22,829:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:22 raspberrypi python3[88394]: 2025-08-01 05:32:22,829:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:37 raspberrypi python3[88394]: 2025-08-01 05:32:37,868:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:32:37 raspberrypi python3[88394]: 2025-08-01 05:32:37,868:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:32:37 raspberrypi python3[88394]: 2025-08-01 05:32:37,869:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:37 raspberrypi python3[88394]: 2025-08-01 05:32:37,869:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:37 raspberrypi python3[88394]: 2025-08-01 05:32:37,869:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:32:52 raspberrypi python3[88394]: 2025-08-01 05:32:52,898:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:32:52 raspberrypi python3[88394]: 2025-08-01 05:32:52,898:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:32:52 raspberrypi python3[88394]: 2025-08-01 05:32:52,898:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=True, completed=False, lock=False, error=False, meta=True
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,348:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.e0ff66a0-a30d-4fa9-81d3-fbbdd0de7657 "HTTP/1.1 200 OK"
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,352:INFO - 📹 Processing merged dual camera video: 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,352:INFO - 📹 Processing video: 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 (8,484,395 bytes)
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,581:INFO - HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/1.1 200 OK"
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,616:INFO - 🔍 Found intro video: /opt/ezrec-backend/assets/intro.mp4
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,616:INFO - 📊 Intro video size: 1332881 bytes
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,778:INFO - 📹 Intro video info: codec=h264, size=1280x720, fps=29.97002997002997, pix_fmt=yuv420p
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,938:INFO - ✅ Intro video is valid and ready for concatenation
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,938:INFO - 🔍 Found user logo: /opt/ezrec-backend/assets/user_logo.png
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,953:INFO - ✅ User logo is valid
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,953:INFO - 🔍 Found sponsor logo 1: /opt/ezrec-backend/assets/sponsor_logo1.png
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,954:INFO - ✅ Sponsor logo 1 is valid
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,954:INFO - 🔍 Found sponsor logo 2: /opt/ezrec-backend/assets/sponsor_logo2.png
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,954:INFO - ✅ Sponsor logo 2 is valid
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,954:INFO - 🔍 Found sponsor logo 3: /opt/ezrec-backend/assets/sponsor_logo3.png
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,955:INFO - ✅ Sponsor logo 3 is valid
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,955:INFO - 🎬 Using two-pass approach with intro video
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,955:INFO - 🔧 Re-encoding original merged video to fix DTS timestamp issues...
-Aug 01 05:32:53 raspberrypi python3[88394]: 2025-08-01 05:32:53,956:INFO - 🎬 Re-encode command: ffmpeg -y -i /opt/ezrec-backend/recordings/2025-08-01/053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p -avoid_negative_ts make_zero -fflags +genpts /opt/ezrec-backend/recordings/2025-08-01/reencoded_053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:33:23 raspberrypi python3[88394]: 2025-08-01 05:33:23,996:INFO - ✅ Re-encode completed successfully in 30.04s
-Aug 01 05:33:23 raspberrypi python3[88394]: 2025-08-01 05:33:23,997:INFO - [Two-pass] Pass 1: Overlaying logos on re-encoded recording...
-Aug 01 05:33:24 raspberrypi python3[88394]: 2025-08-01 05:33:24,177:INFO - 📹 Video dimensions: 3840x1080
-Aug 01 05:33:24 raspberrypi python3[88394]: 2025-08-01 05:33:24,178:ERROR - ❌ Error in process_single_video: name 'ASSETS_DIR' is not defined
-Aug 01 05:33:24 raspberrypi python3[88394]: 2025-08-01 05:33:24,178:ERROR - ❌ Failed to process video 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,205:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,205:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,206:INFO - Checking reencoded_053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,206:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=True, completed=False, lock=False, error=False, meta=True
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,659:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.e0ff66a0-a30d-4fa9-81d3-fbbdd0de7657 "HTTP/1.1 200 OK"
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,663:INFO - 📹 Processing merged dual camera video: 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,663:INFO - 📹 Processing video: 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 (8,484,395 bytes)
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,858:INFO - HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/1.1 200 OK"
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,938:INFO - 🔍 Found intro video: /opt/ezrec-backend/assets/intro.mp4
-Aug 01 05:33:39 raspberrypi python3[88394]: 2025-08-01 05:33:39,938:INFO - 📊 Intro video size: 1332881 bytes
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,098:INFO - 📹 Intro video info: codec=h264, size=1280x720, fps=29.97002997002997, pix_fmt=yuv420p
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,258:INFO - ✅ Intro video is valid and ready for concatenation
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,258:INFO - 🔍 Found user logo: /opt/ezrec-backend/assets/user_logo.png
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,258:INFO - ✅ User logo is valid
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,258:INFO - 🔍 Found sponsor logo 1: /opt/ezrec-backend/assets/sponsor_logo1.png
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,258:INFO - ✅ Sponsor logo 1 is valid
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,258:INFO - 🔍 Found sponsor logo 2: /opt/ezrec-backend/assets/sponsor_logo2.png
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,259:INFO - ✅ Sponsor logo 2 is valid
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,259:INFO - 🔍 Found sponsor logo 3: /opt/ezrec-backend/assets/sponsor_logo3.png
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,260:INFO - ✅ Sponsor logo 3 is valid
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,260:INFO - 🎬 Using two-pass approach with intro video
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,260:INFO - 🔧 Re-encoding original merged video to fix DTS timestamp issues...
-Aug 01 05:33:40 raspberrypi python3[88394]: 2025-08-01 05:33:40,260:INFO - 🎬 Re-encode command: ffmpeg -y -i /opt/ezrec-backend/recordings/2025-08-01/053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p -avoid_negative_ts make_zero -fflags +genpts /opt/ezrec-backend/recordings/2025-08-01/reencoded_053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:34:10 raspberrypi python3[88394]: 2025-08-01 05:34:10,303:INFO - ✅ Re-encode completed successfully in 30.04s
-Aug 01 05:34:10 raspberrypi python3[88394]: 2025-08-01 05:34:10,303:INFO - [Two-pass] Pass 1: Overlaying logos on re-encoded recording...
-Aug 01 05:34:10 raspberrypi python3[88394]: 2025-08-01 05:34:10,516:INFO - 📹 Video dimensions: 3840x1080
-Aug 01 05:34:10 raspberrypi python3[88394]: 2025-08-01 05:34:10,516:ERROR - ❌ Error in process_single_video: name 'ASSETS_DIR' is not defined
-Aug 01 05:34:10 raspberrypi python3[88394]: 2025-08-01 05:34:10,517:ERROR - ❌ Failed to process video 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,541:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,542:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,542:INFO - Checking reencoded_053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,542:INFO - Checking 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=True, completed=False, lock=False, error=False, meta=True
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,949:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.e0ff66a0-a30d-4fa9-81d3-fbbdd0de7657 "HTTP/1.1 200 OK"
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,953:INFO - 📹 Processing merged dual camera video: 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
-Aug 01 05:34:25 raspberrypi python3[88394]: 2025-08-01 05:34:25,953:INFO - 📹 Processing video: 053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 (8,484,395 bytes)
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,279:INFO - HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/1.1 200 OK"
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,310:INFO - 🔍 Found intro video: /opt/ezrec-backend/assets/intro.mp4
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,310:INFO - 📊 Intro video size: 1332881 bytes
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,469:INFO - 📹 Intro video info: codec=h264, size=1280x720, fps=29.97002997002997, pix_fmt=yuv420p
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,631:INFO - ✅ Intro video is valid and ready for concatenation
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,631:INFO - 🔍 Found user logo: /opt/ezrec-backend/assets/user_logo.png
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,631:INFO - ✅ User logo is valid
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,631:INFO - 🔍 Found sponsor logo 1: /opt/ezrec-backend/assets/sponsor_logo1.png
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,632:INFO - ✅ Sponsor logo 1 is valid
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,632:INFO - 🔍 Found sponsor logo 2: /opt/ezrec-backend/assets/sponsor_logo2.png
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,632:INFO - ✅ Sponsor logo 2 is valid
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,632:INFO - 🔍 Found sponsor logo 3: /opt/ezrec-backend/assets/sponsor_logo3.png
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,633:INFO - ✅ Sponsor logo 3 is valid
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,633:INFO - 🎬 Using two-pass approach with intro video
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,633:INFO - 🔧 Re-encoding original merged video to fix DTS timestamp issues...
-Aug 01 05:34:26 raspberrypi python3[88394]: 2025-08-01 05:34:26,633:INFO - 🎬 Re-encode command: ffmpeg -y -i /opt/ezrec-backend/recordings/2025-08-01/053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p -avoid_negative_ts make_zero -fflags +genpts /opt/ezrec-backend/recordings/2025-08-01/reencoded_053100-053200_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
+Aug 01 05:48:52 raspberrypi python3[92074]: 2025-08-01 05:48:52,458:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:49:05 raspberrypi systemd[1]: Stopping video_worker.service - EZREC Video Processing Worker Service...
+Aug 01 05:49:05 raspberrypi systemd[1]: video_worker.service: Deactivated successfully.
+Aug 01 05:49:05 raspberrypi systemd[1]: Stopped video_worker.service - EZREC Video Processing Worker Service.
+Aug 01 05:49:06 raspberrypi systemd[1]: Started video_worker.service - EZREC Video Processing Worker Service.
+Aug 01 05:49:06 raspberrypi python3[92107]: 2025-08-01 05:49:06,728:INFO - Video worker started and entering main loop
+Aug 01 05:49:06 raspberrypi python3[92107]: 2025-08-01 05:49:06,729:INFO - 🧹 Running startup cleanup of orphaned marker files...
+Aug 01 05:49:06 raspberrypi python3[92107]: 2025-08-01 05:49:06,729:INFO - ✅ Startup cleanup: no orphaned marker files found
+Aug 01 05:49:06 raspberrypi python3[92107]: 2025-08-01 05:49:06,756:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
+Aug 01 05:49:06 raspberrypi python3[92107]: 2025-08-01 05:49:06,756:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:49:21 raspberrypi python3[92107]: 2025-08-01 05:49:21,785:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
+Aug 01 05:49:21 raspberrypi python3[92107]: 2025-08-01 05:49:21,785:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:49:36 raspberrypi python3[92107]: 2025-08-01 05:49:36,824:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
+Aug 01 05:49:36 raspberrypi python3[92107]: 2025-08-01 05:49:36,824:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:49:51 raspberrypi python3[92107]: 2025-08-01 05:49:51,854:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
+Aug 01 05:49:51 raspberrypi python3[92107]: 2025-08-01 05:49:51,854:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:50:06 raspberrypi python3[92107]: 2025-08-01 05:50:06,886:INFO - 📊 Disk usage: 7.8% used, 101.9 GB free
+Aug 01 05:50:06 raspberrypi python3[92107]: 2025-08-01 05:50:06,886:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:50:06 raspberrypi python3[92107]: 2025-08-01 05:50:06,887:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:06 raspberrypi python3[92107]: 2025-08-01 05:50:06,887:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:21 raspberrypi python3[92107]: 2025-08-01 05:50:21,915:INFO - 📊 Disk usage: 7.8% used, 101.8 GB free
+Aug 01 05:50:21 raspberrypi python3[92107]: 2025-08-01 05:50:21,915:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:50:21 raspberrypi python3[92107]: 2025-08-01 05:50:21,915:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:21 raspberrypi python3[92107]: 2025-08-01 05:50:21,915:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:36 raspberrypi python3[92107]: 2025-08-01 05:50:36,958:INFO - 📊 Disk usage: 7.8% used, 101.8 GB free
+Aug 01 05:50:36 raspberrypi python3[92107]: 2025-08-01 05:50:36,958:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:50:36 raspberrypi python3[92107]: 2025-08-01 05:50:36,959:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:36 raspberrypi python3[92107]: 2025-08-01 05:50:36,959:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:51 raspberrypi python3[92107]: 2025-08-01 05:50:51,996:INFO - 📊 Disk usage: 7.8% used, 101.8 GB free
+Aug 01 05:50:51 raspberrypi python3[92107]: 2025-08-01 05:50:51,996:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:50:51 raspberrypi python3[92107]: 2025-08-01 05:50:51,996:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:50:51 raspberrypi python3[92107]: 2025-08-01 05:50:51,996:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:07 raspberrypi python3[92107]: 2025-08-01 05:51:07,030:INFO - 📊 Disk usage: 7.9% used, 101.8 GB free
+Aug 01 05:51:07 raspberrypi python3[92107]: 2025-08-01 05:51:07,030:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:51:07 raspberrypi python3[92107]: 2025-08-01 05:51:07,031:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:07 raspberrypi python3[92107]: 2025-08-01 05:51:07,031:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:07 raspberrypi python3[92107]: 2025-08-01 05:51:07,031:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:22 raspberrypi python3[92107]: 2025-08-01 05:51:22,055:INFO - 📊 Disk usage: 7.9% used, 101.8 GB free
+Aug 01 05:51:22 raspberrypi python3[92107]: 2025-08-01 05:51:22,056:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:51:22 raspberrypi python3[92107]: 2025-08-01 05:51:22,056:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:22 raspberrypi python3[92107]: 2025-08-01 05:51:22,056:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:22 raspberrypi python3[92107]: 2025-08-01 05:51:22,056:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:37 raspberrypi python3[92107]: 2025-08-01 05:51:37,096:INFO - 📊 Disk usage: 7.9% used, 101.8 GB free
+Aug 01 05:51:37 raspberrypi python3[92107]: 2025-08-01 05:51:37,097:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:51:37 raspberrypi python3[92107]: 2025-08-01 05:51:37,109:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:37 raspberrypi python3[92107]: 2025-08-01 05:51:37,109:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:37 raspberrypi python3[92107]: 2025-08-01 05:51:37,110:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,135:INFO - 📊 Disk usage: 7.9% used, 101.8 GB free
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,135:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-08-01
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,135:INFO - Checking 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4: done=True, completed=False, lock=False, error=False, meta=True
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,544:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.af063040-7cce-490b-ab48-b55920c7c254 "HTTP/1.1 200 OK"
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,552:INFO - 📹 Processing merged dual camera video: 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,552:INFO - 📹 Processing video: 055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 (7,761,090 bytes)
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,849:INFO - HTTP Request: GET https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/user_settings?select=%2A&user_id=eq.65aa2e2a-e463-424d-b88f-0724bb0bea3a "HTTP/1.1 200 OK"
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,891:INFO - 🔍 Found intro video: /opt/ezrec-backend/assets/intro.mp4
+Aug 01 05:51:52 raspberrypi python3[92107]: 2025-08-01 05:51:52,892:INFO - 📊 Intro video size: 1332881 bytes
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,066:INFO - 📹 Intro video info: codec=h264, size=1280x720, fps=29.97002997002997, pix_fmt=yuv420p
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,226:INFO - ✅ Intro video is valid and ready for concatenation
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,227:INFO - 🔍 Found user logo: /opt/ezrec-backend/assets/user_logo.png
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,242:INFO - ✅ User logo is valid
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,242:INFO - 🔍 Found sponsor logo 1: /opt/ezrec-backend/assets/sponsor_logo1.png
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,242:INFO - ✅ Sponsor logo 1 is valid
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,242:INFO - 🔍 Found sponsor logo 2: /opt/ezrec-backend/assets/sponsor_logo2.png
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,242:INFO - ✅ Sponsor logo 2 is valid
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,242:INFO - 🔍 Found sponsor logo 3: /opt/ezrec-backend/assets/sponsor_logo3.png
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,243:INFO - ✅ Sponsor logo 3 is valid
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,243:INFO - 🎬 Using two-pass approach with intro video
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,243:INFO - 🔧 Re-encoding original merged video to fix DTS timestamp issues...
+Aug 01 05:51:53 raspberrypi python3[92107]: 2025-08-01 05:51:53,243:INFO - 🎬 Re-encode command: ffmpeg -y -i /opt/ezrec-backend/recordings/2025-08-01/055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p -avoid_negative_ts make_zero -fflags +genpts /opt/ezrec-backend/recordings/2025-08-01/reencoded_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
+Aug 01 05:52:21 raspberrypi python3[92107]: 2025-08-01 05:52:21,273:INFO - ✅ Re-encode completed successfully in 28.03s
+Aug 01 05:52:21 raspberrypi python3[92107]: 2025-08-01 05:52:21,273:INFO - [Two-pass] Pass 1: Overlaying logos on re-encoded recording...
+Aug 01 05:52:21 raspberrypi python3[92107]: 2025-08-01 05:52:21,440:INFO - 📹 Video dimensions: 3840x1080
+Aug 01 05:52:21 raspberrypi python3[92107]: 2025-08-01 05:52:21,440:INFO - 🎨 Overlay filter chain: [1:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo0_scaled]; [0:v][logo0_scaled]overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto[logo0_out]; [2:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo1_scaled]; [logo0_out][logo1_scaled]overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto[logo1_out]; [3:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo2_scaled]; [logo1_out][logo2_scaled]overlay=10:main_h-overlay_h-10:format=auto[logo2_out]; [4:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo3_scaled]; [logo2_out][logo3_scaled]overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto[logo3_out]; [5:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo4_scaled]; [logo3_out][logo4_scaled]overlay=(main_w-overlay_w)/2:main_h-overlay_h-10:format=auto[logo4_out]; [logo4_out]setsar=1[finalout]
+Aug 01 05:52:21 raspberrypi python3[92107]: 2025-08-01 05:52:21,441:INFO - 🎬 FFmpeg command: ffmpeg -y -i /opt/ezrec-backend/recordings/2025-08-01/reencoded_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4 -i /opt/ezrec-backend/assets/ezrec_logo.png -i /opt/ezrec-backend/assets/user_logo.png -i /opt/ezrec-backend/assets/sponsor_logo1.png -i /opt/ezrec-backend/assets/sponsor_logo2.png -i /opt/ezrec-backend/assets/sponsor_logo3.png -filter_complex [1:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo0_scaled]; [0:v][logo0_scaled]overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto[logo0_out]; [2:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo1_scaled]; [logo0_out][logo1_scaled]overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto[logo1_out]; [3:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo2_scaled]; [logo1_out][logo2_scaled]overlay=10:main_h-overlay_h-10:format=auto[logo2_out]; [4:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo3_scaled]; [logo2_out][logo3_scaled]overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto[logo3_out]; [5:v]scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000[logo4_scaled]; [logo3_out][logo4_scaled]overlay=(main_w-overlay_w)/2:main_h-overlay_h-10:format=auto[logo4_out]; [logo4_out]setsar=1[finalout] -map [finalout] -c:v libx264 -preset ultrafast -crf 28 -pix_fmt yuv420p /opt/ezrec-backend/recordings/2025-08-01/main_with_logos_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
+Aug 01 05:53:01 raspberrypi python3[92107]: 2025-08-01 05:53:01,741:INFO - ✅ Logo overlay completed in 40.30s
+Aug 01 05:53:01 raspberrypi python3[92107]: 2025-08-01 05:53:01,741:INFO - 🔎 Logo overlay output: /opt/ezrec-backend/recordings/2025-08-01/main_with_logos_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4, size: 729,333 bytes
+Aug 01 05:53:01 raspberrypi python3[92107]: 2025-08-01 05:53:01,741:INFO - 🧹 Cleaned up re-encoded video: /opt/ezrec-backend/recordings/2025-08-01/reencoded_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
+Aug 01 05:53:01 raspberrypi python3[92107]: 2025-08-01 05:53:01,742:INFO - 🔧 Re-encoding intro video to fix timestamp corruption...
+Aug 01 05:53:01 raspberrypi python3[92107]: 2025-08-01 05:53:01,742:INFO - 🎬 Intro re-encode command: ffmpeg -y -i /opt/ezrec-backend/assets/intro.mp4 -c:v libx264 -preset ultrafast -crf 23 -pix_fmt yuv420p -avoid_negative_ts make_zero -fflags +genpts /opt/ezrec-backend/recordings/2025-08-01/intro_reencoded_intro.mp4
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,743:INFO - ✅ Intro re-encode completed successfully in 2.00s
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,744:INFO - 📋 Intro re-encode stderr: ffmpeg version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2000-2024 the FFmpeg developers
+Aug 01 05:53:03 raspberrypi python3[92107]:   built with gcc 12 (Debian 12.2.0-14)
+Aug 01 05:53:03 raspberrypi python3[92107]:   configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
+Aug 01 05:53:03 raspberrypi python3[92107]:   WARNING: library configuration mismatch
+Aug 01 05:53:03 raspberrypi python3[92107]:   avcodec     configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared --enable-version3 --disable-doc --disable-programs --enable-libaribb24 --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libtesseract --enable-libvo_amrwbenc --enable-libsmbclient
+Aug 01 05:53:03 raspberrypi python3[92107]:   libavutil      57. 28.100 / 57. 28.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libavcodec     59. 37.100 / 59. 37.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libavformat    59. 27.100 / 59. 27.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libavdevice    59.  7.100 / 59.  7.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libavfilter     8. 44.100 /  8. 44.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libswscale      6.  7.100 /  6.  7.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libswresample   4.  7.100 /  4.  7.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   libpostproc    56.  6.100 / 56.  6.100
+Aug 01 05:53:03 raspberrypi python3[92107]: Input #0, mov,mp4,m4a,3gp,3g2,mj2, from '/opt/ezrec-backend/assets/intro.mp4':
+Aug 01 05:53:03 raspberrypi python3[92107]:   Metadata:
+Aug 01 05:53:03 raspberrypi python3[92107]:     major_brand     : iso5
+Aug 01 05:53:03 raspberrypi python3[92107]:     minor_version   : 512
+Aug 01 05:53:03 raspberrypi python3[92107]:     compatible_brands: iso5iso6mp41
+Aug 01 05:53:03 raspberrypi python3[92107]:     encoder         : Lavf58.45.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   Duration: 00:00:05.94, start: 0.000000, bitrate: 1795 kb/s
+Aug 01 05:53:03 raspberrypi python3[92107]:   Stream #0:0[0x1](eng): Video: h264 (High) (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], 1792 kb/s, 29.97 fps, 29.97 tbr, 30k tbn (default)
+Aug 01 05:53:03 raspberrypi python3[92107]:     Metadata:
+Aug 01 05:53:03 raspberrypi python3[92107]:       handler_name    : ?Mainconcept Video Media Handler
+Aug 01 05:53:03 raspberrypi python3[92107]:       vendor_id       : [0][0][0][0]
+Aug 01 05:53:03 raspberrypi python3[92107]: Stream mapping:
+Aug 01 05:53:03 raspberrypi python3[92107]:   Stream #0:0 -> #0:0 (h264 (native) -> h264 (libx264))
+Aug 01 05:53:03 raspberrypi python3[92107]: Press [q] to stop, [?] for help
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] using SAR=1/1
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] using cpu capabilities: ARMv8 NEON
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] profile Constrained Baseline, level 3.1, 4:2:0, 8-bit
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] 264 - core 164 r3095 baee400 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=0 ref=1 deblock=0:0:0 analyse=0:0 me=dia subme=0 psy=1 psy_rd=1.00:0.00 mixed_ref=0 me_range=16 chroma_me=1 trellis=0 8x8dct=0 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=0 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=0 weightp=0 keyint=250 keyint_min=25 scenecut=0 intra_refresh=0 rc=crf mbtree=0 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=0
+Aug 01 05:53:03 raspberrypi python3[92107]: Output #0, mp4, to '/opt/ezrec-backend/recordings/2025-08-01/intro_reencoded_intro.mp4':
+Aug 01 05:53:03 raspberrypi python3[92107]:   Metadata:
+Aug 01 05:53:03 raspberrypi python3[92107]:     major_brand     : iso5
+Aug 01 05:53:03 raspberrypi python3[92107]:     minor_version   : 512
+Aug 01 05:53:03 raspberrypi python3[92107]:     compatible_brands: iso5iso6mp41
+Aug 01 05:53:03 raspberrypi python3[92107]:     encoder         : Lavf59.27.100
+Aug 01 05:53:03 raspberrypi python3[92107]:   Stream #0:0(eng): Video: h264 (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], q=2-31, 29.97 fps, 30k tbn (default)
+Aug 01 05:53:03 raspberrypi python3[92107]:     Metadata:
+Aug 01 05:53:03 raspberrypi python3[92107]:       handler_name    : ?Mainconcept Video Media Handler
+Aug 01 05:53:03 raspberrypi python3[92107]:       vendor_id       : [0][0][0][0]
+Aug 01 05:53:03 raspberrypi python3[92107]:       encoder         : Lavc59.37.100 libx264
+Aug 01 05:53:03 raspberrypi python3[92107]:     Side data:
+Aug 01 05:53:03 raspberrypi python3[92107]:       cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+Aug 01 05:53:03 raspberrypi python3[92107]: frame=    1 fps=0.0 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x
+Aug 01 05:53:03 raspberrypi python3[92107]: frame=  100 fps=0.0 q=21.0 size=    1792kB time=00:00:03.06 bitrate=4782.3kbits/s speed=6.01x
+Aug 01 05:53:03 raspberrypi python3[92107]: frame=  178 fps=0.0 q=-1.0 Lsize=    2776kB time=00:00:05.90 bitrate=3850.1kbits/s speed=6.63x
+Aug 01 05:53:03 raspberrypi python3[92107]: video:2774kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.056852%
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] frame I:1     Avg QP:20.00  size:  2773
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] frame P:177   Avg QP:20.45  size: 16030
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] mb I  I16..4: 100.0%  0.0%  0.0%
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] mb P  I16..4:  9.3%  0.0%  0.0%  P16..4: 34.2%  0.0%  0.0%  0.0%  0.0%    skip:56.5%
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] coded y,uvDC,uvAC intra: 10.2% 45.5% 7.2% inter: 13.6% 24.3% 3.2%
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] i16 v,h,dc,p: 35% 24% 11% 30%
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] i8c dc,h,v,p: 41% 24% 16% 19%
+Aug 01 05:53:03 raspberrypi python3[92107]: [libx264 @ 0x55560d92fe30] kb/s:3825.52
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📋 Creating concat list file: /opt/ezrec-backend/recordings/2025-08-01/concat_list.txt
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📋 Concat list content:
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📋   file '/opt/ezrec-backend/assets/intro.mp4'
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📋   file '/opt/ezrec-backend/recordings/2025-08-01/main_with_logos_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4'
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - ✅ Concat list file created successfully: /opt/ezrec-backend/recordings/2025-08-01/concat_list.txt
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📋 Concat list file content: file '/opt/ezrec-backend/recordings/2025-08-01/intro_reencoded_intro.mp4'
+Aug 01 05:53:03 raspberrypi python3[92107]: file '/opt/ezrec-backend/recordings/2025-08-01/main_with_logos_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4'
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📊 File sizes:
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📊   Intro video: 2842314 bytes
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,745:INFO - 📊   Main video: 729333 bytes
+Aug 01 05:53:03 raspberrypi python3[92107]: 2025-08-01 05:53:03,908:INFO - ✅ Intro video validation passed
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:INFO - ✅ Main video validation passed
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:INFO - 📊 Video compatibility check:
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:INFO -    Intro: codec=h264, fps=1280, size=720xyuv420p, pix_fmt=30000/1001
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:INFO -    Main:  codec=h264, fps=3840, size=1080xyuv420p, pix_fmt=30/1
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:WARNING - ⚠️ Video properties don't match - re-encoding will fix this
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:INFO - ✅ Both input files exist, starting FFmpeg...
+Aug 01 05:53:04 raspberrypi python3[92107]: 2025-08-01 05:53:04,073:INFO - 🎬 Concat command: ffmpeg -y -f concat -safe 0 -i /opt/ezrec-backend/recordings/2025-08-01/concat_list.txt -c:v libx264 -preset fast -crf 23 -pix_fmt yuv420p /opt/ezrec-backend/recordings/2025-08-01/concat_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,102:INFO - ✅ Concat completed successfully in 31.03s
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,103:INFO - 📋 FFmpeg stderr: ffmpeg version 5.1.6-0+deb12u1+rpt3 Copyright (c) 2000-2024 the FFmpeg developers
+Aug 01 05:53:35 raspberrypi python3[92107]:   built with gcc 12 (Debian 12.2.0-14)
+Aug 01 05:53:35 raspberrypi python3[92107]:   configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared
+Aug 01 05:53:35 raspberrypi python3[92107]:   WARNING: library configuration mismatch
+Aug 01 05:53:35 raspberrypi python3[92107]:   avcodec     configuration: --prefix=/usr --extra-version=0+deb12u1+rpt3 --toolchain=hardened --incdir=/usr/include/aarch64-linux-gnu --enable-gpl --disable-stripping --disable-mmal --enable-gnutls --enable-ladspa --enable-libaom --enable-libass --enable-libbluray --enable-libbs2b --enable-libcaca --enable-libcdio --enable-libcodec2 --enable-libdav1d --enable-libflite --enable-libfontconfig --enable-libfreetype --enable-libfribidi --enable-libglslang --enable-libgme --enable-libgsm --enable-libjack --enable-libmp3lame --enable-libmysofa --enable-libopenjpeg --enable-libopenmpt --enable-libopus --enable-libpulse --enable-librabbitmq --enable-librist --enable-librubberband --enable-libshine --enable-libsnappy --enable-libsoxr --enable-libspeex --enable-libsrt --enable-libssh --enable-libsvtav1 --enable-libtheora --enable-libtwolame --enable-libvidstab --enable-libvorbis --enable-libvpx --enable-libwebp --enable-libx265 --enable-libxml2 --enable-libxvid --enable-libzimg --enable-libzmq --enable-libzvbi --enable-lv2 --enable-omx --enable-openal --enable-opencl --enable-opengl --enable-sand --enable-sdl2 --disable-sndio --enable-libjxl --enable-neon --enable-v4l2-request --enable-libudev --enable-epoxy --libdir=/usr/lib/aarch64-linux-gnu --arch=arm64 --enable-pocketsphinx --enable-librsvg --enable-libdc1394 --enable-libdrm --enable-vout-drm --enable-libiec61883 --enable-chromaprint --enable-frei0r --enable-libx264 --enable-libplacebo --enable-librav1e --enable-shared --enable-version3 --disable-doc --disable-programs --enable-libaribb24 --enable-libopencore_amrnb --enable-libopencore_amrwb --enable-libtesseract --enable-libvo_amrwbenc --enable-libsmbclient
+Aug 01 05:53:35 raspberrypi python3[92107]:   libavutil      57. 28.100 / 57. 28.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libavcodec     59. 37.100 / 59. 37.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libavformat    59. 27.100 / 59. 27.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libavdevice    59.  7.100 / 59.  7.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libavfilter     8. 44.100 /  8. 44.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libswscale      6.  7.100 /  6.  7.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libswresample   4.  7.100 /  4.  7.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   libpostproc    56.  6.100 / 56.  6.100
+Aug 01 05:53:35 raspberrypi python3[92107]: [mov,mp4,m4a,3gp,3g2,mj2 @ 0x555620fd7210] Auto-inserting h264_mp4toannexb bitstream filter
+Aug 01 05:53:35 raspberrypi python3[92107]: Input #0, concat, from '/opt/ezrec-backend/recordings/2025-08-01/concat_list.txt':
+Aug 01 05:53:35 raspberrypi python3[92107]:   Duration: N/A, start: 0.000000, bitrate: 3826 kb/s
+Aug 01 05:53:35 raspberrypi python3[92107]:   Stream #0:0(eng): Video: h264 (Constrained Baseline) (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], 3826 kb/s, 29.97 fps, 29.97 tbr, 30k tbn
+Aug 01 05:53:35 raspberrypi python3[92107]:     Metadata:
+Aug 01 05:53:35 raspberrypi python3[92107]:       handler_name    : ?Mainconcept Video Media Handler
+Aug 01 05:53:35 raspberrypi python3[92107]:       vendor_id       : [0][0][0][0]
+Aug 01 05:53:35 raspberrypi python3[92107]:       encoder         : Lavc59.37.100 libx264
+Aug 01 05:53:35 raspberrypi python3[92107]: Stream mapping:
+Aug 01 05:53:35 raspberrypi python3[92107]:   Stream #0:0 -> #0:0 (h264 (native) -> h264 (libx264))
+Aug 01 05:53:35 raspberrypi python3[92107]: Press [q] to stop, [?] for help
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] using SAR=1/1
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] using cpu capabilities: ARMv8 NEON
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] profile High, level 3.1, 4:2:0, 8-bit
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] 264 - core 164 r3095 baee400 - H.264/MPEG-4 AVC codec - Copyleft 2003-2022 - http://www.videolan.org/x264.html - options: cabac=1 ref=2 deblock=1:0:0 analyse=0x3:0x113 me=hex subme=6 psy=1 psy_rd=1.00:0.00 mixed_ref=1 me_range=16 chroma_me=1 trellis=1 8x8dct=1 cqm=0 deadzone=21,11 fast_pskip=1 chroma_qp_offset=-2 threads=6 lookahead_threads=1 sliced_threads=0 nr=0 decimate=1 interlaced=0 bluray_compat=0 constrained_intra=0 bframes=3 b_pyramid=2 b_adapt=1 b_bias=0 direct=1 weightb=1 open_gop=0 weightp=1 keyint=250 keyint_min=25 scenecut=40 intra_refresh=0 rc_lookahead=30 rc=crf mbtree=1 crf=23.0 qcomp=0.60 qpmin=0 qpmax=69 qpstep=4 ip_ratio=1.40 aq=1:1.00
+Aug 01 05:53:35 raspberrypi python3[92107]: Output #0, mp4, to '/opt/ezrec-backend/recordings/2025-08-01/concat_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4':
+Aug 01 05:53:35 raspberrypi python3[92107]:   Metadata:
+Aug 01 05:53:35 raspberrypi python3[92107]:     encoder         : Lavf59.27.100
+Aug 01 05:53:35 raspberrypi python3[92107]:   Stream #0:0(eng): Video: h264 (avc1 / 0x31637661), yuv420p(progressive), 1280x720 [SAR 1:1 DAR 16:9], q=2-31, 29.97 fps, 30k tbn
+Aug 01 05:53:35 raspberrypi python3[92107]:     Metadata:
+Aug 01 05:53:35 raspberrypi python3[92107]:       handler_name    : ?Mainconcept Video Media Handler
+Aug 01 05:53:35 raspberrypi python3[92107]:       vendor_id       : [0][0][0][0]
+Aug 01 05:53:35 raspberrypi python3[92107]:       encoder         : Lavc59.37.100 libx264
+Aug 01 05:53:35 raspberrypi python3[92107]:     Side data:
+Aug 01 05:53:35 raspberrypi python3[92107]:       cpb: bitrate max/min/avg: 0/0/0 buffer size: 0 vbv_delay: N/A
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=    1 fps=0.0 q=0.0 size=       0kB time=00:00:00.00 bitrate=N/A speed=   0x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=   52 fps=0.0 q=29.0 size=       0kB time=00:00:00.30 bitrate=   1.3kbits/s speed=0.578x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=   75 fps= 73 q=29.0 size=       0kB time=00:00:01.06 bitrate=   0.4kbits/s speed=1.05x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  100 fps= 63 q=29.0 size=     512kB time=00:00:01.90 bitrate=2205.5kbits/s speed= 1.2x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  123 fps= 59 q=29.0 size=     768kB time=00:00:02.66 bitrate=2357.1kbits/s speed=1.28x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  144 fps= 55 q=29.0 size=    1024kB time=00:00:03.37 bitrate=2489.3kbits/s speed=1.29x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  171 fps= 55 q=29.0 size=    1024kB time=00:00:04.27 bitrate=1964.2kbits/s speed=1.37x
+Aug 01 05:53:35 raspberrypi python3[92107]: [mov,mp4,m4a,3gp,3g2,mj2 @ 0x555620fd7210] Auto-inserting h264_mp4toannexb bitstream filter
+Aug 01 05:53:35 raspberrypi python3[92107]: [concat @ 0x555620fce4d0] DTS 91238 < 177177 out of order
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  178 fps= 49 q=29.0 size=    1280kB time=00:00:04.50 bitrate=2327.9kbits/s dup=0 drop=26 speed=1.24x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  178 fps= 43 q=29.0 size=    1280kB time=00:00:04.50 bitrate=2327.9kbits/s dup=0 drop=64 speed=1.09x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  178 fps= 38 q=29.0 size=    1280kB time=00:00:04.50 bitrate=2327.9kbits/s dup=0 drop=102 speed=0.973x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  178 fps= 35 q=29.0 size=    1280kB time=00:00:04.50 bitrate=2327.9kbits/s dup=0 drop=141 speed=0.877x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  183 fps= 32 q=29.0 size=    1280kB time=00:00:04.67 bitrate=2244.8kbits/s dup=0 drop=170 speed=0.829x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  197 fps= 32 q=29.0 size=    1280kB time=00:00:05.13 bitrate=2040.7kbits/s dup=0 drop=183 speed=0.836x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  211 fps= 32 q=29.0 size=    1280kB time=00:00:05.60 bitrate=1870.6kbits/s dup=0 drop=197 speed=0.841x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  227 fps= 32 q=29.0 size=    1280kB time=00:00:06.13 bitrate=1708.0kbits/s dup=0 drop=212 speed=0.856x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  244 fps= 32 q=29.0 size=    1280kB time=00:00:06.70 bitrate=1563.5kbits/s dup=0 drop=228 speed=0.873x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  259 fps= 32 q=29.0 size=    1280kB time=00:00:07.20 bitrate=1454.9kbits/s dup=0 drop=243 speed=0.881x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  272 fps= 31 q=29.0 size=    1280kB time=00:00:07.64 bitrate=1372.4kbits/s dup=0 drop=255 speed=0.879x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  285 fps= 31 q=29.0 size=    1280kB time=00:00:08.07 bitrate=1298.6kbits/s dup=0 drop=267 speed=0.878x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  299 fps= 31 q=29.0 size=    1280kB time=00:00:08.54 bitrate=1227.6kbits/s dup=0 drop=281 speed=0.88x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  313 fps= 31 q=29.0 size=    1280kB time=00:00:09.00 bitrate=1164.0kbits/s dup=0 drop=294 speed=0.881x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  328 fps= 31 q=29.0 size=    1280kB time=00:00:09.50 bitrate=1102.7kbits/s dup=0 drop=309 speed=0.886x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  344 fps= 31 q=29.0 size=    1280kB time=00:00:10.04 bitrate=1044.1kbits/s dup=0 drop=324 speed=0.894x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  361 fps= 31 q=29.0 size=    1280kB time=00:00:10.61 bitrate= 988.3kbits/s dup=0 drop=340 speed=0.903x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  377 fps= 31 q=29.0 size=    1280kB time=00:00:11.14 bitrate= 940.9kbits/s dup=0 drop=355 speed=0.91x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  393 fps= 31 q=29.0 size=    1280kB time=00:00:11.67 bitrate= 897.9kbits/s dup=0 drop=371 speed=0.916x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  409 fps= 31 q=29.0 size=    1280kB time=00:00:12.21 bitrate= 858.7kbits/s dup=0 drop=386 speed=0.922x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  425 fps= 31 q=29.0 size=    1280kB time=00:00:12.74 bitrate= 822.7kbits/s dup=0 drop=401 speed=0.927x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  442 fps= 31 q=29.0 size=    1280kB time=00:00:13.31 bitrate= 787.6kbits/s dup=0 drop=417 speed=0.933x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  458 fps= 31 q=29.0 size=    1280kB time=00:00:13.84 bitrate= 757.3kbits/s dup=0 drop=433 speed=0.938x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  474 fps= 31 q=29.0 size=    1280kB time=00:00:14.38 bitrate= 729.2kbits/s dup=0 drop=448 speed=0.942x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  489 fps= 31 q=29.0 size=    1280kB time=00:00:14.88 bitrate= 704.6kbits/s dup=0 drop=462 speed=0.943x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  502 fps= 31 q=29.0 size=    1280kB time=00:00:15.31 bitrate= 684.7kbits/s dup=0 drop=475 speed=0.94x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  516 fps= 31 q=29.0 size=    1280kB time=00:00:15.78 bitrate= 664.4kbits/s dup=0 drop=488 speed=0.939x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  529 fps= 31 q=29.0 size=    1280kB time=00:00:16.21 bitrate= 646.6kbits/s dup=0 drop=500 speed=0.936x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  542 fps= 30 q=29.0 size=    1280kB time=00:00:16.65 bitrate= 629.8kbits/s dup=0 drop=513 speed=0.933x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  559 fps= 30 q=29.0 size=    1280kB time=00:00:17.21 bitrate= 609.0kbits/s dup=0 drop=529 speed=0.938x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  575 fps= 30 q=29.0 size=    1280kB time=00:00:17.75 bitrate= 590.7kbits/s dup=0 drop=544 speed=0.941x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  591 fps= 31 q=29.0 size=    1280kB time=00:00:18.28 bitrate= 573.5kbits/s dup=0 drop=560 speed=0.945x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  608 fps= 31 q=29.0 size=    1280kB time=00:00:18.85 bitrate= 556.2kbits/s dup=0 drop=576 speed=0.949x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  624 fps= 31 q=29.0 size=    1280kB time=00:00:19.38 bitrate= 540.9kbits/s dup=0 drop=591 speed=0.952x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  641 fps= 31 q=29.0 size=    1280kB time=00:00:19.95 bitrate= 525.5kbits/s dup=0 drop=607 speed=0.956x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  656 fps= 31 q=29.0 size=    1280kB time=00:00:20.45 bitrate= 512.7kbits/s dup=0 drop=622 speed=0.957x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  673 fps= 31 q=29.0 size=    1280kB time=00:00:21.02 bitrate= 498.8kbits/s dup=0 drop=638 speed=0.96x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  689 fps= 31 q=29.0 size=    1280kB time=00:00:21.55 bitrate= 486.5kbits/s dup=0 drop=653 speed=0.962x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  705 fps= 31 q=29.0 size=    1280kB time=00:00:22.08 bitrate= 474.7kbits/s dup=0 drop=669 speed=0.964x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  718 fps= 31 q=29.0 size=    1280kB time=00:00:22.52 bitrate= 465.6kbits/s dup=0 drop=681 speed=0.961x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  733 fps= 31 q=29.0 size=    1280kB time=00:00:23.02 bitrate= 455.5kbits/s dup=0 drop=695 speed=0.962x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  746 fps= 31 q=29.0 size=    1280kB time=00:00:23.45 bitrate= 447.0kbits/s dup=0 drop=708 speed=0.959x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  759 fps= 30 q=29.0 size=    1280kB time=00:00:23.89 bitrate= 438.9kbits/s dup=0 drop=720 speed=0.957x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  774 fps= 30 q=29.0 size=    1280kB time=00:00:24.39 bitrate= 429.9kbits/s dup=0 drop=734 speed=0.958x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  790 fps= 30 q=29.0 size=    1280kB time=00:00:24.92 bitrate= 420.7kbits/s dup=0 drop=750 speed=0.96x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  807 fps= 30 q=29.0 size=    1280kB time=00:00:25.49 bitrate= 411.3kbits/s dup=0 drop=766 speed=0.963x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  823 fps= 31 q=29.0 size=    1280kB time=00:00:26.02 bitrate= 402.9kbits/s dup=0 drop=781 speed=0.965x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  839 fps= 31 q=29.0 size=    1280kB time=00:00:26.55 bitrate= 394.8kbits/s dup=0 drop=797 speed=0.966x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  856 fps= 31 q=29.0 size=    1280kB time=00:00:27.12 bitrate= 386.6kbits/s dup=0 drop=813 speed=0.969x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  872 fps= 31 q=29.0 size=    1280kB time=00:00:27.66 bitrate= 379.1kbits/s dup=0 drop=828 speed=0.97x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  889 fps= 31 q=29.0 size=    1280kB time=00:00:28.22 bitrate= 371.5kbits/s dup=0 drop=844 speed=0.973x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  905 fps= 31 q=29.0 size=    1280kB time=00:00:28.76 bitrate= 364.6kbits/s dup=0 drop=860 speed=0.974x
+Aug 01 05:53:35 raspberrypi python3[92107]: frame=  919 fps= 30 q=-1.0 Lsize=    1522kB time=00:00:30.56 bitrate= 407.9kbits/s dup=0 drop=873 speed=1.01x
+Aug 01 05:53:35 raspberrypi python3[92107]: video:1511kB audio:0kB subtitle:0kB other streams:0kB global headers:0kB muxing overhead: 0.709743%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] frame I:5     Avg QP: 9.90  size:  5552
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] frame P:328   Avg QP:16.93  size:  4020
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] frame B:586   Avg QP:18.31  size:   342
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] consecutive B-frames: 14.4%  1.7%  0.3% 83.6%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] mb I  I16..4: 94.3%  4.8%  0.9%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] mb P  I16..4:  3.2%  1.7%  0.1%  P16..4: 14.1%  1.8%  1.1%  0.0%  0.0%    skip:78.0%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] mb B  I16..4:  0.2%  0.1%  0.0%  B16..8:  1.0%  0.1%  0.0%  direct: 1.1%  skip:97.4%  L0:51.2% L1:38.6% BI:10.1%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] 8x8 transform intra:27.3% inter:56.2%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] coded y,uvDC,uvAC intra: 13.3% 50.4% 8.6% inter: 1.6% 4.6% 0.1%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] i16 v,h,dc,p: 43% 21% 10% 26%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] i8 v,h,dc,ddl,ddr,vr,hd,vl,hu: 25% 19% 48%  2%  1%  1%  1%  1%  1%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] i4 v,h,dc,ddl,ddr,vr,hd,vl,hu: 18% 18% 30%  5%  8%  6%  6%  5%  5%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] i8c dc,h,v,p: 55% 21% 14% 11%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] Weighted P-Frames: Y:1.5% UV:0.9%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] ref P L0: 81.1% 18.9%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] ref B L0: 84.0% 16.0%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] ref B L1: 96.7%  3.3%
+Aug 01 05:53:35 raspberrypi python3[92107]: [libx264 @ 0x555620ff04e0] kb/s:403.54
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,103:INFO - 🔎 Concat file created: /opt/ezrec-backend/recordings/2025-08-01/concat_055000-055100_65aa2e2a-e463-424d-b88f-0724bb0bea3a_d217e751-dfa5-5276-abbb-da5ad6c2626a_merged.mp4, size: 1,558,444 bytes
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,103:INFO - 🧹 Cleaned up concat list file: /opt/ezrec-backend/recordings/2025-08-01/concat_list.txt
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,103:INFO - 🧹 Cleaned up re-encoded intro video: /opt/ezrec-backend/recordings/2025-08-01/intro_reencoded_intro.mp4
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,642:INFO - 📊 Duration verification:
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,643:INFO - 📊   Intro video: 5.94s
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,643:INFO - 📊   Main video: 53.80s
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,643:INFO - 📊   Expected total: 59.74s
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,643:INFO - 📊   Final video: 30.66s
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,643:WARNING - ⚠️ Duration mismatch! Expected 59.74s, got 30.66s
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,838:INFO - ✅ Final video is valid (ffprobe check passed)
+Aug 01 05:53:35 raspberrypi python3[92107]: 2025-08-01 05:53:35,838:INFO - 📊 Final video size: 1558444 bytes
+Aug 01 05:53:36 raspberrypi python3[92107]: 2025-08-01 05:53:36,237:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.af063040-7cce-490b-ab48-b55920c7c254 "HTTP/1.1 200 OK"
+Aug 01 05:53:38 raspberrypi python3[92107]: 2025-08-01 05:53:38,414:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.af063040-7cce-490b-ab48-b55920c7c254 "HTTP/1.1 200 OK"
+Aug 01 05:53:38 raspberrypi python3[92107]: 2025-08-01 05:53:38,598:INFO - HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/bookings?id=eq.af063040-7cce-490b-ab48-b55920c7c254 "HTTP/1.1 200 OK"
+Aug 01 05:53:38 raspberrypi python3[92107]: 2025-08-01 05:53:38,599:INFO - 🗑️ Removed completed booking af063040-7cce-490b-ab48-b55920c7c254 from cache (video_worker)
