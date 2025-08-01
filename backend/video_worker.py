@@ -870,13 +870,68 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             except Exception as e:
                 log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
             
-            # Step 3: Concat clean intro and logo-overlaid main
+            # Step 3: Re-encode intro video to fix timestamp corruption
+            log.info(f"🔧 Re-encoding intro video to fix timestamp corruption...")
+            intro_reencoded = raw_file.parent / f"intro_reencoded_{intro_path.name}"
+            
+            intro_reencode_cmd = [
+                'ffmpeg', '-y',
+                '-i', str(intro_path),
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p',
+                '-avoid_negative_ts', 'make_zero',
+                '-fflags', '+genpts',
+                str(intro_reencoded)
+            ]
+            
+            log.info(f"🎬 Intro re-encode command: {' '.join(intro_reencode_cmd)}")
+            
+            # Run intro re-encode with timeout
+            try:
+                intro_reencode_process = subprocess.Popen(
+                    intro_reencode_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                intro_reencode_start_time = time.time()
+                intro_reencode_timeout = 300  # 5 minutes timeout
+                
+                while intro_reencode_process.poll() is None:
+                    if time.time() - intro_reencode_start_time > intro_reencode_timeout:
+                        log.error(f"❌ Intro re-encode timed out after {intro_reencode_timeout}s")
+                        intro_reencode_process.terminate()
+                        raise Exception(f"Intro re-encode timed out after {intro_reencode_timeout}s")
+                    time.sleep(1)
+                
+                intro_reencode_stdout, intro_reencode_stderr = intro_reencode_process.communicate()
+                
+                if intro_reencode_process.returncode == 0:
+                    log.info(f"✅ Intro re-encode completed successfully in {time.time() - intro_reencode_start_time:.2f}s")
+                    if intro_reencode_stderr:
+                        log.info(f"📋 Intro re-encode stderr: {intro_reencode_stderr}")
+                else:
+                    log.error(f"❌ Intro re-encode failed with return code {intro_reencode_process.returncode}")
+                    log.error(f"❌ Intro re-encode stderr: {intro_reencode_stderr}")
+                    raise Exception(f"Intro re-encode failed: {intro_reencode_stderr}")
+                    
+            except subprocess.TimeoutExpired:
+                log.error(f"❌ Intro re-encode timed out")
+                return None
+            except Exception as e:
+                log.error(f"❌ Intro re-encode error: {e}")
+                return None
+            
+            # Step 4: Concat clean intro and logo-overlaid main
             concat_output = raw_file.parent / f"concat_{raw_file.name}"
             # Use simpler concat approach with file list
             concat_list_file = raw_file.parent / "concat_list.txt"
             
             # Use absolute paths to avoid path resolution issues
-            concat_list_content = f"""file '{intro_path}'
+            concat_list_content = f"""file '{intro_reencoded}'
 file '{main_with_logos}'"""
             
             # Add detailed debugging for concat list creation
@@ -899,16 +954,16 @@ file '{main_with_logos}'"""
                 raise Exception(f"Failed to create concat list file: {concat_list_file}")
             
             # Verify both input files exist and get detailed info
-            if not intro_path.exists():
-                log.error(f"❌ Intro video does not exist: {intro_path}")
-                raise Exception(f"Intro video does not exist: {intro_path}")
+            if not intro_reencoded.exists():
+                log.error(f"❌ Re-encoded intro video does not exist: {intro_reencoded}")
+                raise Exception(f"Re-encoded intro video does not exist: {intro_reencoded}")
             
             if not main_with_logos.exists():
                 log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
                 raise Exception(f"Main video with logos does not exist: {main_with_logos}")
             
             # Get detailed file info
-            intro_size = intro_path.stat().st_size
+            intro_size = intro_reencoded.stat().st_size
             main_size = main_with_logos.stat().st_size
             log.info(f"📊 File sizes:")
             log.info(f"📊   Intro video: {intro_size} bytes")
@@ -917,7 +972,7 @@ file '{main_with_logos}'"""
             # Validate both videos with ffprobe before concat to ensure compatibility
             try:
                 # Check intro video
-                intro_ffprobe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,avg_frame_rate,width,height,pix_fmt', '-of', 'default=noprint_wrappers=1:nokey=1', str(intro_path)]
+                intro_ffprobe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,avg_frame_rate,width,height,pix_fmt', '-of', 'default=noprint_wrappers=1:nokey=1', str(intro_reencoded)]
                 intro_result = subprocess.run(intro_ffprobe_cmd, capture_output=True, text=True, timeout=30)
                 if intro_result.returncode != 0:
                     log.error(f"❌ Intro video validation failed: {intro_result.stderr}")
@@ -1030,10 +1085,17 @@ file '{main_with_logos}'"""
             except Exception as e:
                 log.warn(f"⚠️ Failed to clean up concat list file: {e}")
             
+            # Clean up re-encoded intro video
+            try:
+                intro_reencoded.unlink()
+                log.info(f"🧹 Cleaned up re-encoded intro video: {intro_reencoded}")
+            except Exception as e:
+                log.warn(f"⚠️ Failed to clean up re-encoded intro video: {e}")
+            
             # Verify the final video duration
             if concat_output.exists():
                 final_duration = get_duration(concat_output)
-                intro_duration = get_duration(intro_path)
+                intro_duration = get_duration(intro_reencoded) if intro_reencoded.exists() else get_duration(intro_path)
                 main_duration = get_duration(main_with_logos)
                 expected_duration = intro_duration + main_duration
                 
