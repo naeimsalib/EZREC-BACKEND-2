@@ -67,8 +67,8 @@ class EnhancedBooking:
         if self.camera_status is None:
             self.camera_status = CameraStatus()
         if self.created_at is None:
-            self.created_at = datetime.now().isoformat()
-        self.updated_at = datetime.now().isoformat()
+            self.created_at = datetime.now(pytz.timezone('America/New_York')).isoformat()
+        self.updated_at = datetime.now(pytz.timezone('America/New_York')).isoformat()
     
     def to_dict(self) -> dict:
         """Convert to dictionary for JSON serialization"""
@@ -136,7 +136,7 @@ class BookingManager:
         try:
             data = {
                 'bookings': [booking.to_dict() for booking in bookings],
-                'last_updated': datetime.now().isoformat(),
+                'last_updated': datetime.now(pytz.timezone('America/New_York')).isoformat(),
                 'user_id': self.user_id,
                 'camera_id': self.camera_id
             }
@@ -147,7 +147,7 @@ class BookingManager:
     
     def get_active_booking(self) -> Optional[EnhancedBooking]:
         """Get the currently active booking"""
-        now = datetime.now()
+        now = datetime.now(pytz.timezone('America/New_York'))  # Make timezone-aware
         bookings = self._load_bookings()
         
         for booking in bookings:
@@ -174,7 +174,7 @@ class BookingManager:
         for booking in bookings:
             if booking.id == booking_id:
                 booking.status = status
-                booking.updated_at = datetime.now().isoformat()
+                booking.updated_at = datetime.now(pytz.timezone('America/New_York')).isoformat()
                 
                 if error_message:
                     booking.error_message = error_message
@@ -184,9 +184,9 @@ class BookingManager:
                 
                 # Update recording timestamps
                 if status == BookingStatus.RECORDING and not booking.recording_start:
-                    booking.recording_start = datetime.now().isoformat()
+                    booking.recording_start = datetime.now(pytz.timezone('America/New_York')).isoformat()
                 elif status in [BookingStatus.COMPLETED, BookingStatus.FAILED] and not booking.recording_end:
-                    booking.recording_end = datetime.now().isoformat()
+                    booking.recording_end = datetime.now(pytz.timezone('America/New_York')).isoformat()
                 
                 # Handle retry logic
                 if status == BookingStatus.FAILED:
@@ -239,7 +239,7 @@ class BookingManager:
     
     def cleanup_old_bookings(self, days_to_keep: int = 7):
         """Remove old completed/failed bookings"""
-        cutoff_date = datetime.now() - timedelta(days=days_to_keep)
+        cutoff_date = datetime.now(pytz.timezone('America/New_York')) - timedelta(days=days_to_keep)
         bookings = self._load_bookings()
         
         original_count = len(bookings)
@@ -271,7 +271,7 @@ class BookingManager:
 
 def create_test_booking(user_id: str, camera_id: str, duration_minutes: int = 2) -> EnhancedBooking:
     """Create a test booking for debugging"""
-    now = datetime.now()
+    now = datetime.now(pytz.timezone('America/New_York'))
     start_time = now + timedelta(seconds=30)  # Start in 30 seconds
     end_time = start_time + timedelta(minutes=duration_minutes)
     
