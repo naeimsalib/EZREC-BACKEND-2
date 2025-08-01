@@ -334,13 +334,36 @@ def get_video_info(file: Path):
             "ffprobe", "-v", "error", "-select_streams", "v:0",
             "-show_entries", "stream=codec_name,width,height,avg_frame_rate,pix_fmt",
             "-of", "json", str(file)
-        ], capture_output=True, text=True)
+        ], capture_output=True, text=True, timeout=30)
+        
+        if result.returncode != 0:
+            log.error(f"❌ FFprobe failed for {file}: {result.stderr}")
+            return None
+            
         info = _json.loads(result.stdout)
+        if not info.get('streams') or len(info['streams']) == 0:
+            log.error(f"❌ No video streams found in {file}")
+            return None
+            
         stream = info['streams'][0]
         codec = stream.get('codec_name')
-        width = int(stream.get('width'))
-        height = int(stream.get('height'))
+        width = stream.get('width')
+        height = stream.get('height')
         pix_fmt = stream.get('pix_fmt')
+        
+        # Validate required fields
+        if not all([codec, width, height, pix_fmt]):
+            log.error(f"❌ Missing required video info for {file}: codec={codec}, width={width}, height={height}, pix_fmt={pix_fmt}")
+            return None
+            
+        # Convert to integers
+        try:
+            width = int(width)
+            height = int(height)
+        except (ValueError, TypeError):
+            log.error(f"❌ Invalid width/height for {file}: width={width}, height={height}")
+            return None
+        
         # avg_frame_rate is like '30/1'
         fr = stream.get('avg_frame_rate', '30/1')
         if '/' in fr:
@@ -348,10 +371,14 @@ def get_video_info(file: Path):
             fps = float(num) / float(den) if float(den) != 0 else 30.0
         else:
             fps = float(fr)
-        return codec, width, height, fps, pix_fmt
+            
+        return (codec, width, height, fps, pix_fmt)
+    except subprocess.TimeoutExpired:
+        log.error(f"❌ FFprobe timeout for {file}")
+        return None
     except Exception as e:
-        log.error(f"Could not get video info for {file}: {e}")
-        return None, None, None, None, None
+        log.error(f"❌ Could not get video info for {file}: {e}")
+        return None
 
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     """
@@ -458,628 +485,640 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     """
     Process a single video file (either single camera or already merged dual camera)
     """
-    output_file = PROCESSED_DIR / date_dir.name / raw_file.name
-    output_file.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        # Validate input file
+        if not raw_file.exists():
+            log.error(f"❌ Input file does not exist: {raw_file}")
+            return None
+            
+        if not is_file_readable(raw_file):
+            log.error(f"❌ Input file is not readable: {raw_file}")
+            return None
+            
+        # Check file size
+        file_size = raw_file.stat().st_size
+        if file_size == 0:
+            log.error(f"❌ Input file is empty: {raw_file}")
+            return None
+            
+        log.info(f"📹 Processing video: {raw_file.name} ({file_size:,} bytes)")
+        
+        output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+        output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    # Use simplified asset structure - all assets in single folder
-    assets_dir = Path("/opt/ezrec-backend/assets")
-    assets_dir.mkdir(parents=True, exist_ok=True)
-    
-    # Check for downloaded assets in the assets folder with correct names
-    intro_path = Path(INTRO_VIDEO_PATH)
-    logo_path = Path(USER_LOGO_PATH)
-    sponsor_paths = [Path(SPONSOR_LOGO_1_PATH), Path(SPONSOR_LOGO_2_PATH), Path(SPONSOR_LOGO_3_PATH)]
-    
-    # Also try to fetch from Supabase as fallback if local assets don't exist
-    intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
-    if intro_url and not intro_path.exists():
-        download_if_needed(intro_url, intro_path)
-    if logo_url and not logo_path.exists():
-        download_if_needed(logo_url, logo_path)
-    for i, sponsor_url in enumerate(sponsor_urls):
-        if sponsor_url and not sponsor_paths[i].exists():
-            download_if_needed(sponsor_url, sponsor_paths[i])
+        # Use simplified asset structure - all assets in single folder
+        assets_dir = Path("/opt/ezrec-backend/assets")
+        assets_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Check for downloaded assets in the assets folder with correct names
+        intro_path = Path(INTRO_VIDEO_PATH)
+        logo_path = Path(USER_LOGO_PATH)
+        sponsor_paths = [Path(SPONSOR_LOGO_1_PATH), Path(SPONSOR_LOGO_2_PATH), Path(SPONSOR_LOGO_3_PATH)]
+        
+        # Also try to fetch from Supabase as fallback if local assets don't exist
+        intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
+        if intro_url and not intro_path.exists():
+            download_if_needed(intro_url, intro_path)
+        if logo_url and not logo_path.exists():
+            download_if_needed(logo_url, logo_path)
+        for i, sponsor_url in enumerate(sponsor_urls):
+            if sponsor_url and not sponsor_paths[i].exists():
+                download_if_needed(sponsor_url, sponsor_paths[i])
 
-    # --- Validate intro and logo/sponsor files ---
-    def is_valid_video(file: Path):
-        try:
-            codec, w, h, fps, pix_fmt = get_video_info(file)
-            return None not in (codec, w, h, fps, pix_fmt)
-        except Exception as e:
-            log.warning(f"Video validation failed for {file}: {e}")
-            # Try to repair the video file
+        # --- Validate intro and logo/sponsor files ---
+        def is_valid_video(file: Path):
             try:
-                log.info(f"🔧 Attempting to repair corrupted video: {file}")
-                backup_path = file.with_suffix('.mp4.backup')
-                file.rename(backup_path)
-                
-                result = subprocess.run([
-                    'ffmpeg', '-i', str(backup_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero',
-                    str(file)
-                ], capture_output=True, text=True)
-                
-                if result.returncode == 0 and file.exists():
-                    log.info(f"✅ Successfully repaired video: {file}")
-                    backup_path.unlink()
-                    # Try validation again
-                    codec, w, h, fps, pix_fmt = get_video_info(file)
-                    return None not in (codec, w, h, fps, pix_fmt)
-                else:
-                    log.error(f"❌ Failed to repair video: {result.stderr}")
-                    # Restore original file
+                video_info = get_video_info(file)
+                if video_info is None:
+                    return False
+                codec, w, h, fps, pix_fmt = video_info
+                return None not in (codec, w, h, fps, pix_fmt)
+            except Exception as e:
+                log.warning(f"Video validation failed for {file}: {e}")
+                # Try to repair the video file
+                try:
+                    log.info(f"🔧 Attempting to repair corrupted video: {file}")
+                    backup_path = file.with_suffix('.mp4.backup')
+                    file.rename(backup_path)
+                    
+                    result = subprocess.run([
+                        'ffmpeg', '-i', str(backup_path), '-c', 'copy', '-avoid_negative_ts', 'make_zero',
+                        str(file)
+                    ], capture_output=True, text=True, timeout=300)
+                    
+                    if result.returncode == 0 and file.exists():
+                        log.info(f"✅ Successfully repaired video: {file}")
+                        backup_path.unlink()
+                        # Try validation again
+                        video_info = get_video_info(file)
+                        if video_info is None:
+                            return False
+                        codec, w, h, fps, pix_fmt = video_info
+                        return None not in (codec, w, h, fps, pix_fmt)
+                    else:
+                        log.error(f"❌ Failed to repair video: {result.stderr}")
+                        # Restore original file
+                        if backup_path.exists():
+                            backup_path.rename(file)
+                        return False
+                except Exception as repair_error:
+                    log.error(f"❌ Error during video repair: {repair_error}")
+                    # Restore original file if backup exists
+                    backup_path = file.with_suffix('.mp4.backup')
                     if backup_path.exists():
                         backup_path.rename(file)
                     return False
-            except Exception as repair_error:
-                log.error(f"❌ Error during video repair: {repair_error}")
-                # Restore original file if backup exists
-                backup_path = file.with_suffix('.mp4.backup')
-                if backup_path.exists():
-                    backup_path.rename(file)
+        
+        # Add a simple file validation function that doesn't require FFmpeg
+        def is_valid_image(file: Path):
+            try:
+                from PIL import Image
+                with Image.open(file) as img:
+                    img.verify()
+                return True
+            except Exception:
                 return False
-    
-    # Add a simple file validation function that doesn't require FFmpeg
-    def is_valid_image(file: Path):
-        try:
-            from PIL import Image
-            with Image.open(file) as img:
-                img.verify()
-            return True
-        except Exception:
-            return False
 
-    # Check intro
-    if intro_path.exists():
-        log.info(f"🔍 Found intro video: {intro_path}")
-        log.info(f"📊 Intro video size: {intro_path.stat().st_size} bytes")
-        
-        # Get video info for debugging
-        try:
-            codec, w, h, fps, pix_fmt = get_video_info(intro_path)
-            log.info(f"📹 Intro video info: codec={codec}, size={w}x{h}, fps={fps}, pix_fmt={pix_fmt}")
-        except Exception as e:
-            log.error(f"❌ Could not get intro video info: {e}")
-        
-        if not is_valid_video(intro_path):
-            log.error(f"❌ Intro video at {intro_path} is invalid or corrupted. Skipping intro for this video.")
+        # Check intro
+        if intro_path.exists():
+            log.info(f"🔍 Found intro video: {intro_path}")
+            log.info(f"📊 Intro video size: {intro_path.stat().st_size} bytes")
+            
+            # Get video info for debugging
             try:
-                intro_path.unlink()
-            except Exception:
-                pass
-            intro_path = None
-        else:
-            log.info(f"✅ Intro video is valid and ready for concatenation")
-    else:
-        log.warn(f"⚠️ Intro video not found at {intro_path}")
-        intro_path = None
-
-    # Check logo
-    if logo_path.exists() and not is_valid_image(logo_path):
-        log.error(f"Logo image at {logo_path} is invalid or corrupted. Skipping logo overlay.")
-        try:
-            logo_path.unlink()
-        except Exception:
-            pass
-        logo_path = None
-
-    # Check sponsor logos
-    for i, sponsor_path in enumerate(sponsor_paths):
-        if sponsor_path.exists() and not is_valid_image(sponsor_path):
-            log.error(f"Sponsor logo {i+1} at {sponsor_path} is invalid or corrupted. Skipping this sponsor overlay.")
-            try:
-                sponsor_path.unlink()
-            except Exception:
-                pass
-            sponsor_paths[i] = None
-
-    # --- Always add static main logo as overlay input ---
-    static_logo_path = Path(STATIC_LOGO_PATH)
-    if not static_logo_path.exists():
-        log.error(f"Static main logo not found at {STATIC_LOGO_PATH}. Skipping processing.")
-        return None
-    static_sponsor_paths = [Path(SPONSOR_LOGO_1_PATH), Path(SPONSOR_LOGO_2_PATH), Path(SPONSOR_LOGO_3_PATH)]
-    static_sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-
-    # --- Always add main_ezrec_logo.png as overlay input ---
-    main_logo_path = Path(MAIN_LOGO_PATH)
-    if not main_logo_path.exists():
-        log.error(f"Main logo not found at {MAIN_LOGO_PATH}. Skipping processing.")
-        return None
-
-    # Sanity check durations
-    # max_duration = 600  # 10 minutes in seconds
-    raw_duration = get_duration(raw_file)
-    # if raw_duration > max_duration:
-    #     log.warning(f"Main recording duration too long: {raw_duration:.2f}s. Skipping processing.")
-    #     return None
-    
-    # Check intro duration and trim if needed
-    if intro_path and intro_path.exists():
-        intro_duration = get_duration(intro_path)
-        if intro_duration > 600:
-            log.warning(f"Intro video duration too long: {intro_duration:.2f}s. Trimming to 600s.")
-            trimmed_intro = intro_path.with_name("intro_trimmed.mp4")
-            subprocess.run([
-                "ffmpeg", "-y", "-i", str(intro_path), "-t", "600", "-c", "copy", str(trimmed_intro)
-            ], check=True)
-            intro_path = trimmed_intro
-        # --- NEW: Check intro format and re-encode if needed ---
-        codec, w, h, fps, pix_fmt = get_video_info(intro_path)
-        needs_reencode = False
-        if codec != 'h264':
-            needs_reencode = True
-        if w != width or h != height:
-            needs_reencode = True
-        if abs(fps - 30) > 0.5:
-            needs_reencode = True
-        if pix_fmt != 'yuv420p':
-            needs_reencode = True
-        if needs_reencode:
-            log.info(f"Re-encoding intro video to H.264 1280x720 30fps yuv420p for fast concat...")
-            reencoded_intro = intro_path.with_name("intro_reencoded.mp4")
-            reencode_cmd = [
-                "ffmpeg", "-y", "-threads", "2", "-i", str(intro_path),
-                "-vf", f"scale={width}:{height},fps=30,setsar=1",
-                "-c:v", "libx264", "-preset", "veryfast", "-crf", "28",
-                "-pix_fmt", "yuv420p", str(reencoded_intro)
-            ]
-            result = subprocess.run(reencode_cmd, capture_output=True)
-            if result.returncode != 0:
-                log.error(f"Intro re-encode failed: {result.stderr.decode()}")
-                return None
-            intro_path = reencoded_intro
-
-    # --- Two-pass logic if intro video is present ---
-    if intro_path and intro_path.exists():
-        sponsor_logo_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-        # Step 1: Overlay logos on main recording only
-        overlay_files = []
-        overlay_specs = []
-        overlay_positions = []
-
-        # Always add static main logo if present
-        if os.path.exists(static_logo_path):
-            overlay_files.append(static_logo_path)
-            overlay_specs.append({
-                'name': 'staticlogo',
-                'position': STATIC_LOGO_POSITION,
-                'type': 'static_main',
-                'no_scale': False,  # <-- Always scale static main logo now
-                'width': MAIN_LOGO_WIDTH,
-                'height': MAIN_LOGO_HEIGHT
-            })
-            overlay_positions.append(STATIC_LOGO_POSITION)
-
-        # Add user logo if present
-        if logo_path and logo_path.exists():
-            overlay_files.append(logo_path)
-            overlay_specs.append({
-                'name': 'userlogo',
-                'position': LOGO_POSITION,
-                'type': 'user'
-            })
-            overlay_positions.append(LOGO_POSITION)
-
-        # Add sponsor logos if present
-        for idx, sponsor_logo_path in enumerate(sponsor_paths):
-            if sponsor_logo_path and sponsor_logo_path.exists():
-                overlay_files.append(sponsor_logo_path)
-                overlay_specs.append({
-                    'name': f'sponsor{idx}',
-                    'position': sponsor_logo_positions[idx],
-                    'type': 'sponsor',
-                    'idx': idx
-                })
-                overlay_positions.append(sponsor_logo_positions[idx])
-
-        # Build ffmpeg input args for main recording
-        ffmpeg_inputs = ['-i', str(raw_file)]
-        for file in overlay_files:
-            ffmpeg_inputs += ['-i', str(file)]
-
-        # Build filter chain for overlays (with transparent padding)
-        filter_chain = ''
-        last_out = '[0:v]'
-        for i, spec in enumerate(overlay_specs):
-            scaled = f"{spec['name']}_scaled"
-            out = f"{spec['name']}_out"
-            # Use per-logo width/height if present
-            w = spec.get('width', LOGO_WIDTH)
-            h = spec.get('height', LOGO_HEIGHT)
-            filter_chain += f"[{i+1}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
-            pos = spec['position']
-            if pos == 'bottom_right':
-                x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
-            elif pos == 'top_right':
-                x, y = 'main_w-overlay_w-10', '10'
-            elif pos == 'top_left':
-                x, y = '10', '10'
-            elif pos == 'bottom_left':
-                x, y = '10', 'main_h-overlay_h-10'
-            elif pos == 'top_center':
-                x, y = '(main_w-overlay_w)/2', '10'
-            elif pos == 'bottom_center':
-                x, y = '(main_w-overlay_w)/2', 'main_h-overlay_h-10'
-            else:
-                x, y = '10', '10'  # default
-            filter_chain += f"{last_out}[{scaled}]overlay={x}:{y}:format=auto[{out}]; "
-            last_out = f'[{out}]'
-        # Append setsar=1 to the last output
-        filter_chain += f"{last_out}setsar=1[finalout]"
-        last_out = '[finalout]'
-        filter_chain = filter_chain.strip().rstrip(';')
-
-        # Output path for logo-overlaid main recording
-        main_with_logos = raw_file.parent / f"main_with_logos_{raw_file.name}"
-
-        # Step 1: Re-encode the original merged video to fix DTS timestamp issues BEFORE logo overlay
-        log.info(f"🔧 Re-encoding original merged video to fix DTS timestamp issues...")
-        merged_reencoded = raw_file.parent / f"reencoded_{raw_file.name}"
-        
-        reencode_cmd = [
-            'ffmpeg', '-y',
-            '-i', str(raw_file),
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-crf', '28',
-            '-pix_fmt', 'yuv420p',
-            '-avoid_negative_ts', 'make_zero',
-            '-fflags', '+genpts',
-            str(merged_reencoded)
-        ]
-        
-        log.info(f"🎬 Re-encode command: {' '.join(reencode_cmd)}")
-        
-        # Run re-encode
-        reencode_process = subprocess.Popen(
-            reencode_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        
-        reencode_start_time = time.time()
-        reencode_timeout = 300  # 5 minutes timeout
-        
-        while reencode_process.poll() is None:
-            if time.time() - reencode_start_time > reencode_timeout:
-                log.error(f"❌ Re-encode timed out after {reencode_timeout}s")
-                reencode_process.terminate()
-                raise Exception(f"Re-encode timed out after {reencode_timeout}s")
-            time.sleep(1)
-        
-        reencode_stdout, reencode_stderr = reencode_process.communicate()
-        
-        if reencode_process.returncode == 0:
-            log.info(f"✅ Re-encode completed successfully in {time.time() - reencode_start_time:.2f}s")
-        else:
-            log.error(f"❌ Re-encode failed with return code {reencode_process.returncode}")
-            log.error(f"❌ Re-encode stderr: {reencode_stderr}")
-            raise Exception(f"Re-encode failed: {reencode_stderr}")
-        
-        # Use the re-encoded video for logo overlay
-        video_for_logos = merged_reencoded if merged_reencoded.exists() else raw_file
-        
-        # Step 2: Overlay logos on the re-encoded video
-        log.info(f"[Two-pass] Pass 1: Overlaying logos on re-encoded recording...")
-        
-        # Get video dimensions for overlay positioning
-        video_info = get_video_info(video_for_logos)
-        if not video_info:
-            log.error(f"❌ Could not get video info for {video_for_logos}")
-            return None
-        
-        width, height = video_info[1], video_info[2]
-        log.info(f"📹 Video dimensions: {width}x{height}")
-        
-        # Build overlay filter chain
-        overlay_filters = []
-        input_count = 1  # Start with 1 input (the video)
-        
-        # Add logo inputs and build filter chain
-        logo_files = []
-        if (ASSETS_DIR / "ezrec_logo.png").exists():
-            logo_files.append(str(ASSETS_DIR / "ezrec_logo.png"))
-        if (ASSETS_DIR / "user_logo.png").exists():
-            logo_files.append(str(ASSETS_DIR / "user_logo.png"))
-        if (ASSETS_DIR / "sponsor_logo1.png").exists():
-            logo_files.append(str(ASSETS_DIR / "sponsor_logo1.png"))
-        if (ASSETS_DIR / "sponsor_logo2.png").exists():
-            logo_files.append(str(ASSETS_DIR / "sponsor_logo2.png"))
-        if (ASSETS_DIR / "sponsor_logo3.png").exists():
-            logo_files.append(str(ASSETS_DIR / "sponsor_logo3.png"))
-        
-        # Build complex filter for logo overlays
-        filter_parts = []
-        current_input = "[0:v]"
-        
-        for i, logo_file in enumerate(logo_files):
-            logo_input = f"[{i+1}:v]"
-            scaled_logo = f"[logo{i}_scaled]"
-            output_name = f"[logo{i}_out]"
+                video_info = get_video_info(intro_path)
+                if video_info is not None:
+                    codec, w, h, fps, pix_fmt = video_info
+                    log.info(f"📹 Intro video info: codec={codec}, size={w}x{h}, fps={fps}, pix_fmt={pix_fmt}")
+                else:
+                    log.error(f"❌ Could not get intro video info")
+            except Exception as e:
+                log.error(f"❌ Could not get intro video info: {e}")
             
-            # Scale logo to 120x120
-            filter_parts.append(f"{logo_input}scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000{scaled_logo}")
-            
-            # Position logos: bottom-right, bottom-left, top-left, top-center, top-right
-            if i == 0:  # EZREC logo - bottom right
-                filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
-            elif i == 1:  # User logo - bottom right (stacked)
-                filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
-            elif i == 2:  # Sponsor 1 - bottom left
-                filter_parts.append(f"{current_input}{scaled_logo}overlay=10:main_h-overlay_h-10:format=auto{output_name}")
-            elif i == 3:  # Sponsor 2 - bottom right
-                filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
-            elif i == 4:  # Sponsor 3 - center bottom
-                filter_parts.append(f"{current_input}{scaled_logo}overlay=(main_w-overlay_w)/2:main_h-overlay_h-10:format=auto{output_name}")
-            
-            current_input = output_name
-        
-        # Add final SAR normalization
-        if filter_parts:
-            filter_parts.append(f"{current_input}setsar=1[finalout]")
-        
-        filter_complex = "; ".join(filter_parts)
-        log.info(f"🎨 Overlay filter chain: {filter_complex}")
-        
-        # Build FFmpeg command
-        ffmpeg_cmd = [
-            'ffmpeg', '-y',
-            '-i', str(video_for_logos)
-        ]
-        
-        # Add logo inputs
-        for logo_file in logo_files:
-            ffmpeg_cmd.extend(['-i', logo_file])
-        
-        # Add filter complex and output
-        ffmpeg_cmd.extend([
-            '-filter_complex', filter_complex,
-            '-map', '[finalout]',
-            '-c:v', 'libx264',
-            '-preset', 'ultrafast',
-            '-crf', '28',
-            '-pix_fmt', 'yuv420p',
-            str(main_with_logos)
-        ])
-        
-        log.info(f"🎬 FFmpeg command: {' '.join(ffmpeg_cmd)}")
-        
-        # Run FFmpeg
-        start_time = time.time()
-        result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True)
-        
-        if result.returncode == 0:
-            log.info(f"✅ Logo overlay completed in {time.time() - start_time:.2f}s")
-        else:
-            log.error(f"❌ Logo overlay failed with return code: {result.returncode}")
-            log.error(f"❌ FFmpeg stderr: {result.stderr}")
-            return None
-        
-        # Clean up re-encoded video
-        try:
-            if merged_reencoded.exists():
-                merged_reencoded.unlink()
-                log.info(f"🧹 Cleaned up re-encoded video: {merged_reencoded}")
-        except Exception as e:
-            log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
-        
-        # Step 3: Concat clean intro and logo-overlaid main
-        concat_output = raw_file.parent / f"concat_{raw_file.name}"
-        # Use simpler concat approach with file list
-        concat_list_file = raw_file.parent / "concat_list.txt"
-        
-        # Use absolute paths to avoid path resolution issues
-        concat_list_content = f"""file '{intro_path}'
-file '{main_with_logos}'"""
-        
-        # Add detailed debugging for concat list creation
-        log.info(f"📋 Creating concat list file: {concat_list_file}")
-        log.info(f"📋 Concat list content:")
-        log.info(f"📋   file '{intro_path}'")
-        log.info(f"📋   file '{main_with_logos}'")
-        
-        with open(concat_list_file, 'w') as f:
-            f.write(concat_list_content)
-        
-        # Verify the concat list file was created correctly
-        if concat_list_file.exists():
-            log.info(f"✅ Concat list file created successfully: {concat_list_file}")
-            with open(concat_list_file, 'r') as f:
-                content = f.read()
-                log.info(f"📋 Concat list file content: {content}")
-        else:
-            log.error(f"❌ Failed to create concat list file: {concat_list_file}")
-            raise Exception(f"Failed to create concat list file: {concat_list_file}")
-        
-        # Verify both input files exist and get detailed info
-        if not intro_path.exists():
-            log.error(f"❌ Intro video does not exist: {intro_path}")
-            raise Exception(f"Intro video does not exist: {intro_path}")
-        
-        if not main_with_logos.exists():
-            log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
-            raise Exception(f"Main video with logos does not exist: {main_with_logos}")
-        
-        # Get detailed file info
-        intro_size = intro_path.stat().st_size
-        main_size = main_with_logos.stat().st_size
-        log.info(f"📊 File sizes:")
-        log.info(f"📊   Intro video: {intro_size} bytes")
-        log.info(f"📊   Main video: {main_size} bytes")
-        
-        # Check if main video is valid by running ffprobe
-        try:
-            ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_with_logos)]
-            result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
-            if result.returncode == 0:
-                log.info(f"✅ Main video is valid (ffprobe check passed)")
-            else:
-                log.error(f"❌ Main video is corrupted (ffprobe failed): {result.stderr}")
-                raise Exception(f"Main video is corrupted: {result.stderr}")
-        except Exception as e:
-            log.error(f"❌ Error checking main video with ffprobe: {e}")
-            raise Exception(f"Error checking main video: {e}")
-        
-        log.info(f"✅ Both input files exist, starting FFmpeg...")
-        
-        # Run FFmpeg concat with absolute paths and detailed output
-        concat_cmd = [
-            'ffmpeg', '-y',
-            '-f', 'concat',
-            '-safe', '0',
-            '-i', str(concat_list_file),
-            '-c:v', 'copy',
-            str(concat_output)
-        ]
-        
-        log.info(f"🎬 Concat command: {' '.join(concat_cmd)}")
-        
-        # Run FFmpeg with progress monitoring and capture stderr for debugging
-        process = subprocess.Popen(
-            concat_cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True
-        )
-        
-        # Monitor progress with timeout
-        start_time = time.time()
-        timeout = 600  # 10 minutes timeout
-        
-        while process.poll() is None:
-            if time.time() - start_time > timeout:
-                log.error(f"❌ FFmpeg concat timed out after {timeout}s")
-                process.terminate()
-                raise Exception(f"FFmpeg concat timed out after {timeout}s")
-            time.sleep(1)
-        
-        # Get the result and stderr for debugging
-        stdout, stderr = process.communicate()
-        
-        # Check result
-        if process.returncode == 0:
-            log.info(f"✅ Concat completed successfully in {time.time() - start_time:.2f}s")
-            if stderr:
-                log.info(f"📋 FFmpeg stderr: {stderr}")
-        else:
-            log.error(f"❌ FFmpeg concat failed with return code {process.returncode}")
-            log.error(f"❌ FFmpeg stderr: {stderr}")
-            raise Exception(f"FFmpeg concat failed: {stderr}")
-        
-        # Clean up concat list file
-        try:
-            concat_list_file.unlink()
-            log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
-        except Exception as e:
-            log.warn(f"⚠️ Failed to clean up concat list file: {e}")
-        
-        # Verify the final video duration
-        if concat_output.exists():
-            final_duration = get_duration(concat_output)
-            intro_duration = get_duration(intro_path)
-            main_duration = get_duration(main_with_logos)
-            expected_duration = intro_duration + main_duration
-            
-            log.info(f"📊 Duration verification:")
-            log.info(f"📊   Intro video: {intro_duration:.2f}s")
-            log.info(f"📊   Main video: {main_duration:.2f}s")
-            log.info(f"📊   Expected total: {expected_duration:.2f}s")
-            log.info(f"📊   Final video: {final_duration:.2f}s")
-            
-            if abs(final_duration - expected_duration) > 1.0:
-                log.warning(f"⚠️ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
-                
-                # Try to debug by checking the actual concat output file
+            if not is_valid_video(intro_path):
+                log.error(f"❌ Intro video at {intro_path} is invalid or corrupted. Skipping intro for this video.")
                 try:
-                    ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(concat_output)]
-                    result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
-                    if result.returncode == 0:
-                        log.info(f"✅ Final video is valid (ffprobe check passed)")
-                        log.info(f"📊 Final video size: {concat_output.stat().st_size} bytes")
-                    else:
-                        log.error(f"❌ Final video is corrupted: {result.stderr}")
-                except Exception as e:
-                    log.error(f"❌ Error checking final video: {e}")
+                    intro_path.unlink()
+                except Exception:
+                    pass
+                intro_path = None
             else:
-                log.info(f"✅ Duration matches expected: {final_duration:.2f}s")
+                log.info(f"✅ Intro video is valid and ready for concatenation")
         else:
-            log.error(f"❌ Final concat video does not exist: {concat_output}")
-            raise Exception(f"Final concat video does not exist: {concat_output}")
+            log.warn(f"⚠️ Intro video not found at {intro_path}")
+            intro_path = None
 
-        # Final output is concat_output
-        output_file = PROCESSED_DIR / date_dir.name / raw_file.name
-        output_file.parent.mkdir(parents=True, exist_ok=True)
-        shutil.move(str(concat_output), str(output_file))
-        # Clean up temp files
-        if main_with_logos.exists():
-            main_with_logos.unlink()
-        if concat_list_file.exists():
-            concat_list_file.unlink()
-        return output_file
-    # --- Single-pass logic if no intro video ---
-    input_args = ["-i", str(raw_file), "-i", str(static_logo_path)]
-    main_video_idx = 0
-    video_inputs = 1
-    # For static main logo, do not scale, just overlay at original size
-    filter_parts = [f"[{main_video_idx}:v][1:v]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]"]
-    last_output = "[staticlogo_out]"
-    
-    # Use downloaded user assets with correct paths
-    logo_inputs = []
-    if logo_path and logo_path.exists():
-        input_args.extend(["-i", str(logo_path)])
-        logo_inputs.append(("userlogo", video_inputs + len(logo_inputs) + 1, LOGO_POSITION))
-    
-    sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
-    for i, sponsor_path in enumerate(sponsor_paths):
-        if sponsor_path and sponsor_path.exists():
-            input_args.extend(["-i", str(sponsor_path)])
-            logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 1, sponsor_positions[i]))
-    
-    # LOGGING: Print overlays and positions AFTER logo_inputs is built
-    log.info("--- Overlay Chain (Single-pass, actual overlays to be applied) ---")
-    log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
-    for name, idx, position in logo_inputs:
-        log.info(f"Overlay: {name} (input idx {idx}) at {position}")
-    log.info("------------------------------")
-    # Build filter chain for user assets
-    for name, idx, position in logo_inputs:
-        scale_filter = f"[{idx}:v]scale={LOGO_WIDTH}:{LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={LOGO_WIDTH}:{LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{name}_scaled]"
-        filter_parts.append(scale_filter)
-        overlay_position = POSITION_MAP.get(position, "bottom_right")
-        overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
-        filter_parts.append(overlay_filter)
-        last_output = f"[{name}_out]"
-    
-    ffmpeg_base_cmd = ["ffmpeg", "-y"] + input_args
-    if filter_parts:
-        filter_complex = ";".join(filter_parts)
-        ffmpeg_base_cmd.extend(["-filter_complex", filter_complex, "-map", last_output])
-    else:
-        ffmpeg_base_cmd.extend(["-map", f"{main_video_idx}:v"])
-        ffmpeg_base_cmd.extend(["-vf", f"scale={width}:{height}"])
-    ffmpeg_base_cmd += ["-c:v", "libx264", "-preset", "ultrafast", "-crf", "28", "-pix_fmt", "yuv420p", str(output_file)]
-    log.info(f"Using video encoder: {VIDEO_ENCODER}")
-    log.info(f"FFmpeg command: {' '.join(ffmpeg_base_cmd)}")
-    try:
-        start_time = time.time()
-        result = subprocess.run(ffmpeg_base_cmd, check=True, capture_output=True, text=True)
-        end_time = time.time()
-        processing_time = end_time - start_time
-        log.info(f"\u2705 Video processing completed in {processing_time:.1f}s using {VIDEO_ENCODER}")
-        if output_file.exists() and output_file.stat().st_size > 1024:
-            return output_file
+        # Check logo
+        if logo_path.exists():
+            log.info(f"🔍 Found user logo: {logo_path}")
+            if not is_valid_image(logo_path):
+                log.error(f"❌ User logo at {logo_path} is invalid. Skipping logo overlay.")
+                logo_path = None
+            else:
+                log.info(f"✅ User logo is valid")
         else:
-            log.error("Output file missing or too small")
-            return None
-    except subprocess.CalledProcessError as e:
-        log.error(f"❌ FFmpeg failed with {VIDEO_ENCODER}: {e.stderr}")
-        log.error(f"❌ FFmpeg error: {e.stderr}")
+            log.warn(f"⚠️ User logo not found at {logo_path}")
+            logo_path = None
+
+        # Check sponsor logos
+        valid_sponsor_paths = []
+        for i, sponsor_path in enumerate(sponsor_paths):
+            if sponsor_path.exists():
+                log.info(f"🔍 Found sponsor logo {i+1}: {sponsor_path}")
+                if not is_valid_image(sponsor_path):
+                    log.error(f"❌ Sponsor logo {i+1} at {sponsor_path} is invalid. Skipping.")
+                else:
+                    log.info(f"✅ Sponsor logo {i+1} is valid")
+                    valid_sponsor_paths.append(sponsor_path)
+            else:
+                log.warn(f"⚠️ Sponsor logo {i+1} not found at {sponsor_path}")
+
+        # --- PROCESSING LOGIC ---
+        # If we have an intro video, use the two-pass approach
+        if intro_path and intro_path.exists():
+            log.info(f"🎬 Using two-pass approach with intro video")
+            
+            # Build overlay specifications
+            overlay_specs = []
+            if logo_path:
+                overlay_specs.append({
+                    'name': 'user_logo',
+                    'path': logo_path,
+                    'position': 'bottom_right',
+                    'width': LOGO_WIDTH,
+                    'height': LOGO_HEIGHT
+                })
+            
+            # Add sponsor logos
+            for i, sponsor_path in enumerate(valid_sponsor_paths):
+                overlay_specs.append({
+                    'name': f'sponsor{i+1}',
+                    'path': sponsor_path,
+                    'position': ['bottom_left', 'bottom_right', 'bottom_center'][i % 3],
+                    'width': LOGO_WIDTH,
+                    'height': LOGO_HEIGHT
+                })
+            
+            # Build filter chain for logo overlays
+            filter_chain = ""
+            ffmpeg_inputs = ['-i', str(raw_file)]
+            last_out = '[0:v]'
+            
+            for i, spec in enumerate(overlay_specs):
+                scaled = f"{spec['name']}_scaled"
+                out = f"{spec['name']}_out"
+                # Use per-logo width/height if present
+                w = spec.get('width', LOGO_WIDTH)
+                h = spec.get('height', LOGO_HEIGHT)
+                filter_chain += f"[{i+1}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
+                pos = spec['position']
+                if pos == 'bottom_right':
+                    x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
+                elif pos == 'top_right':
+                    x, y = 'main_w-overlay_w-10', '10'
+                elif pos == 'top_left':
+                    x, y = '10', '10'
+                elif pos == 'bottom_left':
+                    x, y = '10', 'main_h-overlay_h-10'
+                elif pos == 'top_center':
+                    x, y = '(main_w-overlay_w)/2', '10'
+                elif pos == 'bottom_center':
+                    x, y = '(main_w-overlay_w)/2', 'main_h-overlay_h-10'
+                else:
+                    x, y = '10', '10'  # default
+                filter_chain += f"{last_out}[{scaled}]overlay={x}:{y}:format=auto[{out}]; "
+                last_out = f'[{out}]'
+            # Append setsar=1 to the last output
+            filter_chain += f"{last_out}setsar=1[finalout]"
+            last_out = '[finalout]'
+            filter_chain = filter_chain.strip().rstrip(';')
+
+            # Output path for logo-overlaid main recording
+            main_with_logos = raw_file.parent / f"main_with_logos_{raw_file.name}"
+
+            # Step 1: Re-encode the original merged video to fix DTS timestamp issues BEFORE logo overlay
+            log.info(f"🔧 Re-encoding original merged video to fix DTS timestamp issues...")
+            merged_reencoded = raw_file.parent / f"reencoded_{raw_file.name}"
+            
+            reencode_cmd = [
+                'ffmpeg', '-y',
+                '-i', str(raw_file),
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-crf', '28',
+                '-pix_fmt', 'yuv420p',
+                '-avoid_negative_ts', 'make_zero',
+                '-fflags', '+genpts',
+                str(merged_reencoded)
+            ]
+            
+            log.info(f"🎬 Re-encode command: {' '.join(reencode_cmd)}")
+            
+            # Run re-encode with timeout
+            try:
+                reencode_process = subprocess.Popen(
+                    reencode_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                reencode_start_time = time.time()
+                reencode_timeout = 300  # 5 minutes timeout
+                
+                while reencode_process.poll() is None:
+                    if time.time() - reencode_start_time > reencode_timeout:
+                        log.error(f"❌ Re-encode timed out after {reencode_timeout}s")
+                        reencode_process.terminate()
+                        raise Exception(f"Re-encode timed out after {reencode_timeout}s")
+                    time.sleep(1)
+                
+                reencode_stdout, reencode_stderr = reencode_process.communicate()
+                
+                if reencode_process.returncode == 0:
+                    log.info(f"✅ Re-encode completed successfully in {time.time() - reencode_start_time:.2f}s")
+                else:
+                    log.error(f"❌ Re-encode failed with return code {reencode_process.returncode}")
+                    log.error(f"❌ Re-encode stderr: {reencode_stderr}")
+                    raise Exception(f"Re-encode failed: {reencode_stderr}")
+            except Exception as e:
+                log.error(f"❌ Re-encode error: {e}")
+                return None
+            
+            # Use the re-encoded video for logo overlay
+            video_for_logos = merged_reencoded if merged_reencoded.exists() else raw_file
+            
+            # Step 2: Overlay logos on the re-encoded video
+            log.info(f"[Two-pass] Pass 1: Overlaying logos on re-encoded recording...")
+            
+            # Get video dimensions for overlay positioning
+            video_info = get_video_info(video_for_logos)
+            if video_info is None:
+                log.error(f"❌ Could not get video info for {video_for_logos}")
+                return None
+            
+            codec, width, height, fps, pix_fmt = video_info
+            log.info(f"📹 Video dimensions: {width}x{height}")
+            
+            # Build overlay filter chain
+            overlay_filters = []
+            input_count = 1  # Start with 1 input (the video)
+            
+            # Add logo inputs and build filter chain
+            logo_files = []
+            if (ASSETS_DIR / "ezrec_logo.png").exists():
+                logo_files.append(str(ASSETS_DIR / "ezrec_logo.png"))
+            if (ASSETS_DIR / "user_logo.png").exists():
+                logo_files.append(str(ASSETS_DIR / "user_logo.png"))
+            if (ASSETS_DIR / "sponsor_logo1.png").exists():
+                logo_files.append(str(ASSETS_DIR / "sponsor_logo1.png"))
+            if (ASSETS_DIR / "sponsor_logo2.png").exists():
+                logo_files.append(str(ASSETS_DIR / "sponsor_logo2.png"))
+            if (ASSETS_DIR / "sponsor_logo3.png").exists():
+                logo_files.append(str(ASSETS_DIR / "sponsor_logo3.png"))
+            
+            # Build complex filter for logo overlays
+            filter_parts = []
+            current_input = "[0:v]"
+            
+            for i, logo_file in enumerate(logo_files):
+                logo_input = f"[{i+1}:v]"
+                scaled_logo = f"[logo{i}_scaled]"
+                output_name = f"[logo{i}_out]"
+                
+                # Scale logo to 120x120
+                filter_parts.append(f"{logo_input}scale=120:120:force_original_aspect_ratio=decrease,pad=120:120:(ow-iw)/2:(oh-ih)/2:color=0x00000000{scaled_logo}")
+                
+                # Position logos: bottom-right, bottom-left, top-left, top-center, top-right
+                if i == 0:  # EZREC logo - bottom right
+                    filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
+                elif i == 1:  # User logo - bottom right (stacked)
+                    filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
+                elif i == 2:  # Sponsor 1 - bottom left
+                    filter_parts.append(f"{current_input}{scaled_logo}overlay=10:main_h-overlay_h-10:format=auto{output_name}")
+                elif i == 3:  # Sponsor 2 - bottom right
+                    filter_parts.append(f"{current_input}{scaled_logo}overlay=main_w-overlay_w-10:main_h-overlay_h-10:format=auto{output_name}")
+                elif i == 4:  # Sponsor 3 - center bottom
+                    filter_parts.append(f"{current_input}{scaled_logo}overlay=(main_w-overlay_w)/2:main_h-overlay_h-10:format=auto{output_name}")
+                
+                current_input = output_name
+            
+            # Add final SAR normalization
+            if filter_parts:
+                filter_parts.append(f"{current_input}setsar=1[finalout]")
+            
+            filter_complex = "; ".join(filter_parts)
+            log.info(f"🎨 Overlay filter chain: {filter_complex}")
+            
+            # Build FFmpeg command
+            ffmpeg_cmd = [
+                'ffmpeg', '-y',
+                '-i', str(video_for_logos)
+            ]
+            
+            # Add logo inputs
+            for logo_file in logo_files:
+                ffmpeg_cmd.extend(['-i', logo_file])
+            
+            # Add filter complex and output
+            ffmpeg_cmd.extend([
+                '-filter_complex', filter_complex,
+                '-map', '[finalout]',
+                '-c:v', 'libx264',
+                '-preset', 'ultrafast',
+                '-crf', '28',
+                '-pix_fmt', 'yuv420p',
+                str(main_with_logos)
+            ])
+            
+            log.info(f"🎬 FFmpeg command: {' '.join(ffmpeg_cmd)}")
+            
+            # Run FFmpeg with timeout
+            try:
+                start_time = time.time()
+                result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True, timeout=600)
+                
+                if result.returncode == 0:
+                    log.info(f"✅ Logo overlay completed in {time.time() - start_time:.2f}s")
+                else:
+                    log.error(f"❌ Logo overlay failed with return code: {result.returncode}")
+                    log.error(f"❌ FFmpeg stderr: {result.stderr}")
+                    return None
+            except subprocess.TimeoutExpired:
+                log.error(f"❌ Logo overlay timed out")
+                return None
+            except Exception as e:
+                log.error(f"❌ Logo overlay error: {e}")
+                return None
+            
+            # Clean up re-encoded video
+            try:
+                if merged_reencoded.exists():
+                    merged_reencoded.unlink()
+                    log.info(f"🧹 Cleaned up re-encoded video: {merged_reencoded}")
+            except Exception as e:
+                log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
+            
+            # Step 3: Concat clean intro and logo-overlaid main
+            concat_output = raw_file.parent / f"concat_{raw_file.name}"
+            # Use simpler concat approach with file list
+            concat_list_file = raw_file.parent / "concat_list.txt"
+            
+            # Use absolute paths to avoid path resolution issues
+            concat_list_content = f"""file '{intro_path}'
+file '{main_with_logos}'"""
+            
+            # Add detailed debugging for concat list creation
+            log.info(f"📋 Creating concat list file: {concat_list_file}")
+            log.info(f"📋 Concat list content:")
+            log.info(f"📋   file '{intro_path}'")
+            log.info(f"📋   file '{main_with_logos}'")
+            
+            with open(concat_list_file, 'w') as f:
+                f.write(concat_list_content)
+            
+            # Verify the concat list file was created correctly
+            if concat_list_file.exists():
+                log.info(f"✅ Concat list file created successfully: {concat_list_file}")
+                with open(concat_list_file, 'r') as f:
+                    content = f.read()
+                    log.info(f"📋 Concat list file content: {content}")
+            else:
+                log.error(f"❌ Failed to create concat list file: {concat_list_file}")
+                raise Exception(f"Failed to create concat list file: {concat_list_file}")
+            
+            # Verify both input files exist and get detailed info
+            if not intro_path.exists():
+                log.error(f"❌ Intro video does not exist: {intro_path}")
+                raise Exception(f"Intro video does not exist: {intro_path}")
+            
+            if not main_with_logos.exists():
+                log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
+                raise Exception(f"Main video with logos does not exist: {main_with_logos}")
+            
+            # Get detailed file info
+            intro_size = intro_path.stat().st_size
+            main_size = main_with_logos.stat().st_size
+            log.info(f"📊 File sizes:")
+            log.info(f"📊   Intro video: {intro_size} bytes")
+            log.info(f"📊   Main video: {main_size} bytes")
+            
+            # Check if main video is valid by running ffprobe
+            try:
+                ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_with_logos)]
+                result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
+                if result.returncode == 0:
+                    log.info(f"✅ Main video is valid (ffprobe check passed)")
+                else:
+                    log.error(f"❌ Main video is corrupted (ffprobe failed): {result.stderr}")
+                    raise Exception(f"Main video is corrupted: {result.stderr}")
+            except Exception as e:
+                log.error(f"❌ Error checking main video with ffprobe: {e}")
+                raise Exception(f"Error checking main video: {e}")
+            
+            log.info(f"✅ Both input files exist, starting FFmpeg...")
+            
+            # Run FFmpeg concat with absolute paths and detailed output
+            concat_cmd = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', str(concat_list_file),
+                '-c:v', 'copy',
+                str(concat_output)
+            ]
+            
+            log.info(f"🎬 Concat command: {' '.join(concat_cmd)}")
+            
+            # Run FFmpeg with progress monitoring and capture stderr for debugging
+            try:
+                process = subprocess.Popen(
+                    concat_cmd,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True
+                )
+                
+                # Monitor progress with timeout
+                start_time = time.time()
+                timeout = 600  # 10 minutes timeout
+                
+                while process.poll() is None:
+                    if time.time() - start_time > timeout:
+                        log.error(f"❌ FFmpeg concat timed out after {timeout}s")
+                        process.terminate()
+                        raise Exception(f"FFmpeg concat timed out after {timeout}s")
+                    time.sleep(1)
+                
+                # Get the result and stderr for debugging
+                stdout, stderr = process.communicate()
+                
+                # Check result
+                if process.returncode == 0:
+                    log.info(f"✅ Concat completed successfully in {time.time() - start_time:.2f}s")
+                    if stderr:
+                        log.info(f"📋 FFmpeg stderr: {stderr}")
+                else:
+                    log.error(f"❌ FFmpeg concat failed with return code {process.returncode}")
+                    log.error(f"❌ FFmpeg stderr: {stderr}")
+                    raise Exception(f"FFmpeg concat failed: {stderr}")
+            except subprocess.TimeoutExpired:
+                log.error(f"❌ FFmpeg concat timed out")
+                return None
+            except Exception as e:
+                log.error(f"❌ FFmpeg concat error: {e}")
+                return None
+            
+            # Clean up concat list file
+            try:
+                concat_list_file.unlink()
+                log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
+            except Exception as e:
+                log.warn(f"⚠️ Failed to clean up concat list file: {e}")
+            
+            # Verify the final video duration
+            if concat_output.exists():
+                final_duration = get_duration(concat_output)
+                intro_duration = get_duration(intro_path)
+                main_duration = get_duration(main_with_logos)
+                expected_duration = intro_duration + main_duration
+                
+                log.info(f"📊 Duration verification:")
+                log.info(f"📊   Intro video: {intro_duration:.2f}s")
+                log.info(f"📊   Main video: {main_duration:.2f}s")
+                log.info(f"📊   Expected total: {expected_duration:.2f}s")
+                log.info(f"📊   Final video: {final_duration:.2f}s")
+                
+                if abs(final_duration - expected_duration) > 1.0:
+                    log.warning(f"⚠️ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+                    
+                    # Try to debug by checking the actual concat output file
+                    try:
+                        ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(concat_output)]
+                        result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
+                        if result.returncode == 0:
+                            log.info(f"✅ Final video is valid (ffprobe check passed)")
+                            log.info(f"📊 Final video size: {concat_output.stat().st_size} bytes")
+                        else:
+                            log.error(f"❌ Final video is corrupted: {result.stderr}")
+                    except Exception as e:
+                        log.error(f"❌ Error checking final video: {e}")
+                else:
+                    log.info(f"✅ Duration matches expected: {final_duration:.2f}s")
+            else:
+                log.error(f"❌ Final concat video does not exist: {concat_output}")
+                raise Exception(f"Final concat video does not exist: {concat_output}")
+
+            # Final output is concat_output
+            output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(concat_output), str(output_file))
+            # Clean up temp files
+            if main_with_logos.exists():
+                main_with_logos.unlink()
+            if concat_list_file.exists():
+                concat_list_file.unlink()
+            return output_file
+            
+        else:
+            # No intro video - use single-pass approach
+            log.info(f"🎬 Using single-pass approach without intro video")
+            
+            # Build overlay specifications
+            overlay_specs = []
+            if logo_path:
+                overlay_specs.append({
+                    'name': 'user_logo',
+                    'path': logo_path,
+                    'position': 'bottom_right',
+                    'width': LOGO_WIDTH,
+                    'height': LOGO_HEIGHT
+                })
+            
+            # Add sponsor logos
+            for i, sponsor_path in enumerate(valid_sponsor_paths):
+                overlay_specs.append({
+                    'name': f'sponsor{i+1}',
+                    'path': sponsor_path,
+                    'position': ['bottom_left', 'bottom_right', 'bottom_center'][i % 3],
+                    'width': LOGO_WIDTH,
+                    'height': LOGO_HEIGHT
+                })
+            
+            # Build filter chain for logo overlays
+            filter_chain = ""
+            ffmpeg_inputs = ['-i', str(raw_file)]
+            last_out = '[0:v]'
+            
+            for i, spec in enumerate(overlay_specs):
+                scaled = f"{spec['name']}_scaled"
+                out = f"{spec['name']}_out"
+                # Use per-logo width/height if present
+                w = spec.get('width', LOGO_WIDTH)
+                h = spec.get('height', LOGO_HEIGHT)
+                filter_chain += f"[{i+1}:v]scale={w}:{h}:force_original_aspect_ratio=decrease,pad={w}:{h}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[{scaled}]; "
+                pos = spec['position']
+                if pos == 'bottom_right':
+                    x, y = 'main_w-overlay_w-10', 'main_h-overlay_h-10'
+                elif pos == 'top_right':
+                    x, y = 'main_w-overlay_w-10', '10'
+                elif pos == 'top_left':
+                    x, y = '10', '10'
+                elif pos == 'bottom_left':
+                    x, y = '10', 'main_h-overlay_h-10'
+                elif pos == 'top_center':
+                    x, y = '(main_w-overlay_w)/2', '10'
+                elif pos == 'bottom_center':
+                    x, y = '(main_w-overlay_w)/2', 'main_h-overlay_h-10'
+                else:
+                    x, y = '10', '10'  # default
+                filter_chain += f"{last_out}[{scaled}]overlay={x}:{y}:format=auto[{out}]; "
+                last_out = f'[{out}]'
+            # Append setsar=1 to the last output
+            filter_chain += f"{last_out}setsar=1[finalout]"
+            last_out = '[finalout]'
+            filter_chain = filter_chain.strip().rstrip(';')
+
+            # Output path for logo-overlaid main recording
+            main_with_logos = raw_file.parent / f"main_with_logos_{raw_file.name}"
+
+            # Run FFmpeg to overlay logos on main recording only
+            log.info("[Two-pass] Pass 1: Overlaying logos on main recording only...")
+            log.info(f"Overlay filter chain: {filter_chain}")
+            ffmpeg_cmd = [
+                'ffmpeg', '-y',
+                *ffmpeg_inputs,
+                '-filter_complex', filter_chain,
+                '-map', last_out,
+                '-c:v', 'libx264', '-preset', 'ultrafast', '-crf', '28', '-pix_fmt', 'yuv420p',
+                str(main_with_logos)
+            ]
+            log.info(f"FFmpeg command: {' '.join(ffmpeg_cmd)}")
+            try:
+                start = time.time()
+                result = subprocess.run(ffmpeg_cmd, capture_output=True, text=True, timeout=600)
+                if result.returncode != 0:
+                    log.error(f"❌ Logo overlay pass failed with return code: {result.returncode}")
+                    log.error(f"❌ FFmpeg stderr: {result.stderr}")
+                    log.error(f"❌ FFmpeg stdout: {result.stdout}")
+                    return None
+                log.info(f"✅ Logo overlay completed in {time.time() - start:.2f}s")
+            except subprocess.TimeoutExpired:
+                log.error(f"❌ Logo overlay timed out")
+                return None
+            except Exception as e:
+                log.error(f"❌ FFmpeg logo overlay error: {e}")
+                return None
+
+            # Final output is main_with_logos
+            output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+            output_file.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(main_with_logos), str(output_file))
+            return output_file
+            
     except Exception as e:
-        log.error(f"❌ FFmpeg error: {e}")
-    log.error("FFmpeg processing failed. Video not processed.")
-    return None
+        log.error(f"❌ Error in process_single_video: {e}")
+        return None
 
 def insert_video_metadata(payload: dict) -> bool:
     headers = {
