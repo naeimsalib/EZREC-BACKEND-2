@@ -765,7 +765,7 @@ file '{main_with_logos}'"""
             log.error(f"❌ Failed to create concat list file: {concat_list_file}")
             raise Exception(f"Failed to create concat list file: {concat_list_file}")
         
-        # Verify both input files exist
+        # Verify both input files exist and get detailed info
         if not intro_path.exists():
             log.error(f"❌ Intro video does not exist: {intro_path}")
             raise Exception(f"Intro video does not exist: {intro_path}")
@@ -774,9 +774,29 @@ file '{main_with_logos}'"""
             log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
             raise Exception(f"Main video with logos does not exist: {main_with_logos}")
         
+        # Get detailed file info
+        intro_size = intro_path.stat().st_size
+        main_size = main_with_logos.stat().st_size
+        log.info(f"📊 File sizes:")
+        log.info(f"📊   Intro video: {intro_size} bytes")
+        log.info(f"📊   Main video: {main_size} bytes")
+        
+        # Check if main video is valid by running ffprobe
+        try:
+            ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_with_logos)]
+            result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
+            if result.returncode == 0:
+                log.info(f"✅ Main video is valid (ffprobe check passed)")
+            else:
+                log.error(f"❌ Main video is corrupted (ffprobe failed): {result.stderr}")
+                raise Exception(f"Main video is corrupted: {result.stderr}")
+        except Exception as e:
+            log.error(f"❌ Error checking main video with ffprobe: {e}")
+            raise Exception(f"Error checking main video: {e}")
+        
         log.info(f"✅ Both input files exist, starting FFmpeg...")
         
-        # Run FFmpeg concat with absolute paths
+        # Run FFmpeg concat with absolute paths and detailed output
         concat_cmd = [
             'ffmpeg', '-y',
             '-f', 'concat',
@@ -788,7 +808,7 @@ file '{main_with_logos}'"""
         
         log.info(f"🎬 Concat command: {' '.join(concat_cmd)}")
         
-        # Run FFmpeg with progress monitoring
+        # Run FFmpeg with progress monitoring and capture stderr for debugging
         process = subprocess.Popen(
             concat_cmd,
             stdout=subprocess.PIPE,
@@ -807,11 +827,15 @@ file '{main_with_logos}'"""
                 raise Exception(f"FFmpeg concat timed out after {timeout}s")
             time.sleep(1)
         
+        # Get the result and stderr for debugging
+        stdout, stderr = process.communicate()
+        
         # Check result
         if process.returncode == 0:
             log.info(f"✅ Concat completed successfully in {time.time() - start_time:.2f}s")
+            if stderr:
+                log.info(f"📋 FFmpeg stderr: {stderr}")
         else:
-            stdout, stderr = process.communicate()
             log.error(f"❌ FFmpeg concat failed with return code {process.returncode}")
             log.error(f"❌ FFmpeg stderr: {stderr}")
             raise Exception(f"FFmpeg concat failed: {stderr}")
@@ -837,7 +861,19 @@ file '{main_with_logos}'"""
             log.info(f"📊   Final video: {final_duration:.2f}s")
             
             if abs(final_duration - expected_duration) > 1.0:
-                log.warn(f"⚠️ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+                log.warning(f"⚠️ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+                
+                # Try to debug by checking the actual concat output file
+                try:
+                    ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(concat_output)]
+                    result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
+                    if result.returncode == 0:
+                        log.info(f"✅ Final video is valid (ffprobe check passed)")
+                        log.info(f"📊 Final video size: {concat_output.stat().st_size} bytes")
+                    else:
+                        log.error(f"❌ Final video is corrupted: {result.stderr}")
+                except Exception as e:
+                    log.error(f"❌ Error checking final video: {e}")
             else:
                 log.info(f"✅ Duration matches expected: {final_duration:.2f}s")
         else:
