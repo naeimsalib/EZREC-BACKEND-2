@@ -1542,9 +1542,10 @@ def main():
                 
                 if current_session:
                     end_time = parser.isoparse(current_session.booking["end_time"]).astimezone(LOCAL_TZ)
-                    # Add overlap protection: only stop if end time has passed AND session is active
-                    if now > end_time and current_session.active:
-                        logger.info(f"🛑 Booking ended, stopping recording")
+                    logger.info(f"📊 Session status - Active: {current_session.active}, End time: {end_time}, Current time: {now}")
+                    # Stop if end time has passed (regardless of active status)
+                    if now > end_time:
+                        logger.info(f"🛑 Booking ended at {end_time}, stopping recording (current time: {now})")
                         current_session.stop()
                         current_session = None
                         
