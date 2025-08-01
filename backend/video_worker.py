@@ -739,15 +739,19 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
 
         # Step 2: Concat clean intro and logo-overlaid main
         concat_output = raw_file.parent / f"concat_{raw_file.name}"
+        # Use simpler concat approach with file list
+        concat_list_file = raw_file.parent / "concat_list.txt"
+        concat_list_content = f"""file '{intro_path}'
+file '{main_with_logos}'"""
+        
+        with open(concat_list_file, 'w') as f:
+            f.write(concat_list_content)
+        
         concat_cmd = [
-            "ffmpeg", "-y", "-threads", "4",  # Increased threads
-            "-i", str(intro_path), "-i", str(main_with_logos),
-            "-filter_complex",
-            f"[0:v]scale={width}:{height},format=yuv420p,setsar=1[intro];"
-            f"[1:v]scale={width}:{height},format=yuv420p,setsar=1[main];"
-            f"[intro][main]concat=n=2:v=1:a=0[concat]",
-            "-map", "[concat]",
-            "-c:v", "libx264", "-crf", "28", "-preset", "ultrafast", "-movflags", "+faststart", str(concat_output)
+            "ffmpeg", "-y", "-f", "concat", "-safe", "0",
+            "-i", str(concat_list_file),
+            "-c:v", "copy",  # Use copy for faster processing
+            str(concat_output)
         ]
         log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
         log.info(f"📹 Intro video: {intro_path}")
@@ -768,6 +772,28 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 return None
                 
             log.info(f"✅ Both input files exist, starting FFmpeg...")
+            
+            # Check video compatibility before concat
+            try:
+                intro_info = get_video_info(intro_path)
+                main_info = get_video_info(main_with_logos)
+                log.info(f"📹 Intro video: codec={intro_info[0]}, size={intro_info[1]}x{intro_info[2]}, fps={intro_info[3]}")
+                log.info(f"📹 Main video: codec={main_info[0]}, size={main_info[1]}x{main_info[2]}, fps={main_info[3]}")
+                
+                # Check if videos are compatible for concat
+                if intro_info[0] != main_info[0]:
+                    log.warn(f"⚠️ Video codecs don't match: intro={intro_info[0]}, main={main_info[0]}")
+                    log.warn(f"⚠️ Using fallback: main video without intro")
+                    output_file = PROCESSED_DIR / date_dir.name / raw_file.name
+                    output_file.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.move(str(main_with_logos), str(output_file))
+                    if concat_list_file.exists():
+                        concat_list_file.unlink()
+                    return output_file
+                    
+            except Exception as e:
+                log.error(f"❌ Error checking video compatibility: {e}")
+                # Continue with concat anyway
             
             # Add progress monitoring with timeout
             log.info(f"⏱️ Starting FFmpeg with progress monitoring...")
@@ -837,9 +863,11 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         output_file = PROCESSED_DIR / date_dir.name / raw_file.name
         output_file.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(concat_output), str(output_file))
-        # Clean up temp file
+        # Clean up temp files
         if main_with_logos.exists():
             main_with_logos.unlink()
+        if concat_list_file.exists():
+            concat_list_file.unlink()
         return output_file
     # --- Single-pass logic if no intro video ---
     input_args = ["-i", str(raw_file), "-i", str(static_logo_path)]
