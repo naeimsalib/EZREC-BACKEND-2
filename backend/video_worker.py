@@ -728,8 +728,8 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             "ffmpeg", "-y", "-threads", "2",
             "-i", str(intro_path), "-i", str(main_with_logos),
             "-filter_complex",
-            f"[0:v]scale={width}:{height},format=yuv420p[intro];"
-            f"[1:v]scale={width}:{height},format=yuv420p[main];"
+            f"[0:v]scale={width}:{height},format=yuv420p,setsar=1[intro];"
+            f"[1:v]scale={width}:{height},format=yuv420p,setsar=1[main];"
             f"[intro][main]concat=n=2:v=1:a=0[concat]",
             "-map", "[concat]",
             "-c:v", "libx264", "-crf", "23", "-preset", "ultrafast", str(concat_output)
