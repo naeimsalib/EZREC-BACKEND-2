@@ -704,8 +704,8 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 'ffmpeg', '-y',
                 '-i', str(raw_file),
                 '-c:v', 'libx264',
-                '-preset', 'ultrafast',
-                '-crf', '28',
+                '-preset', 'fast',
+                '-crf', '23',
                 '-pix_fmt', 'yuv420p',
                 '-avoid_negative_ts', 'make_zero',
                 '-fflags', '+genpts',
@@ -996,8 +996,9 @@ file '{main_with_logos}'"""
                 log.info(f"📊   Expected total: {expected_duration:.2f}s")
                 log.info(f"📊   Final video: {final_duration:.2f}s")
                 
-                if abs(final_duration - expected_duration) > 1.0:
-                    log.warning(f"⚠️ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+                if abs(final_duration - expected_duration) > 2.0:
+                    log.error(f"❌ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+                    log.error(f"❌ This indicates the concat failed - video may be truncated")
                     
                     # Try to debug by checking the actual concat output file
                     try:
@@ -1010,8 +1011,17 @@ file '{main_with_logos}'"""
                             log.error(f"❌ Final video is corrupted: {result.stderr}")
                     except Exception as e:
                         log.error(f"❌ Error checking final video: {e}")
+                    return None
                 else:
                     log.info(f"✅ Duration matches expected: {final_duration:.2f}s")
+                    
+                # Additional quality check
+                output_size = concat_output.stat().st_size
+                if output_size < 1024 * 1024:  # Less than 1MB
+                    log.error(f"❌ Final video too small: {output_size:,} bytes")
+                    return None
+                else:
+                    log.info(f"✅ Final video size: {output_size:,} bytes")
             else:
                 log.error(f"❌ Final concat video does not exist: {concat_output}")
                 raise Exception(f"Final concat video does not exist: {concat_output}")

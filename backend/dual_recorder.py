@@ -636,18 +636,15 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             return False
         
         if method == 'side_by_side':
-            # Side-by-side merge (horizontal stack)
+            # Side-by-side merge (horizontal stack) - seamless like dual_record_test.py
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', '[0:v][1:v]hstack=inputs=2[v]',
-                '-map', '[v]',
-                '-an',  # 🚫 disable audio to avoid errors
-                '-c:v', 'libx264',
-                '-preset', 'ultrafast',
+                '-filter_complex', 'hstack=inputs=2',
+                '-c:v', 'libx264', 
+                '-preset', 'fast',
                 '-crf', '23',
-                '-movflags', '+faststart',  # ✅ Ensure proper MP4 moov atom
                 str(output_path)
             ]
         elif method == 'stacked':
