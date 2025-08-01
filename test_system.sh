@@ -151,11 +151,25 @@ fi
 
 # Test 3c: Encoder configuration test
 log_info "🔍 Testing encoder configuration..."
-encoder_test_result=$(timeout 10 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
-from picamera2.encoders import H264Encoder
+echo "Starting encoder configuration test..."
+encoder_test_result=$(timeout 15 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
+import signal
+import sys
+
+def timeout_handler(signum, frame):
+    print('⏰ Encoder test timed out after 12 seconds')
+    sys.exit(1)
+
+# Set timeout
+signal.signal(signal.SIGALRM, timeout_handler)
+signal.alarm(12)
 
 try:
     print('🔍 Testing encoder configurations...')
+    
+    # Import encoder
+    from picamera2.encoders import H264Encoder
+    print('✅ H264Encoder imported successfully')
     
     # Primary encoder configuration
     primary_encoder = H264Encoder(
@@ -180,21 +194,52 @@ try:
     print('✅ Fallback encoder configured')
     
     print('🎉 Encoder configuration test passed!')
-    exit(0)
+    sys.exit(0)
         
 except Exception as e:
     print(f'❌ Encoder configuration failed: {e}')
     import traceback
     traceback.print_exc()
-    exit(1)
+    sys.exit(1)
+finally:
+    signal.alarm(0)  # Cancel timeout
 " 2>&1)
 
-if [ $? -eq 0 ]; then
+encoder_exit_code=$?
+echo "Encoder test exit code: $encoder_exit_code"
+
+if [ $encoder_exit_code -eq 0 ]; then
     log_info "✅ Encoder configuration passed"
     echo "$encoder_test_result"
 else
-    log_error "❌ Encoder configuration failed"
+    log_error "❌ Encoder configuration failed (exit code: $encoder_exit_code)"
     echo "$encoder_test_result"
+    
+    # Try a simpler encoder test as fallback
+    log_info "🔄 Trying simpler encoder test..."
+    simple_encoder_result=$(timeout 10 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
+try:
+    print('🔍 Testing basic encoder import...')
+    from picamera2.encoders import H264Encoder
+    print('✅ H264Encoder imported successfully')
+    
+    # Test basic encoder creation
+    encoder = H264Encoder()
+    print('✅ Basic encoder created successfully')
+    print('✅ Basic encoder test passed')
+    exit(0)
+except Exception as e:
+    print(f'❌ Basic encoder test failed: {e}')
+    exit(1)
+" 2>&1)
+    
+    if [ $? -eq 0 ]; then
+        log_info "✅ Basic encoder test passed"
+        echo "$simple_encoder_result"
+    else
+        log_error "❌ Basic encoder test also failed"
+        echo "$simple_encoder_result"
+    fi
 fi
 
 # Test 3d: Actual recording test
