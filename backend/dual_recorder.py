@@ -108,7 +108,7 @@ SUPABASE_KEY = os.getenv('SUPABASE_SERVICE_ROLE_KEY')
 BOOKING_CACHE_FILE = Path('/opt/ezrec-backend/api/local_data/bookings.json')
 RECORDINGS_DIR = Path('/opt/ezrec-backend/recordings/')
 LOG_FILE = Path('/opt/ezrec-backend/logs/dual_recorder.log')
-CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '3'))  # Changed to 3s for more responsive booking detection
+CHECK_INTERVAL = int(os.getenv('BOOKING_CHECK_INTERVAL', '5'))  # Check every 5 seconds
 
 # Camera configuration
 CAMERA_0_SERIAL = os.getenv('CAMERA_0_SERIAL', '88000')
