@@ -86,6 +86,21 @@ kill_processes() {
     done
 }
 
+# Test Python import
+test_python_import() {
+    local venv_path=$1
+    local module=$2
+    local description=$3
+    
+    if sudo -u $DEPLOY_USER $venv_path/bin/python3 -c "import $module; print('✅ $description imported successfully')" 2>/dev/null; then
+        log_info "✅ $description import test passed"
+        return 0
+    else
+        log_warn "⚠️ $description import test failed"
+        return 1
+    fi
+}
+
 # =============================================================================
 # SETUP FUNCTIONS
 # =============================================================================
@@ -166,25 +181,32 @@ setup_venv() {
     sudo rm -rf venv 2>/dev/null || true
     sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
     
-    # Install dependencies
+    # Install dependencies with better error handling
     sudo -u $DEPLOY_USER venv/bin/pip install --upgrade pip
     sudo -u $DEPLOY_USER venv/bin/pip install -r ../requirements.txt
+    
+    # Fix typing-extensions conflict
     sudo -u $DEPLOY_USER venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
-    sudo -u $DEPLOY_USER venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg
+    
+    # Install simplejpeg with proper error handling
+    if ! sudo -u $DEPLOY_USER venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg; then
+        log_warn "Failed to install simplejpeg, trying alternative method"
+        sudo -u $DEPLOY_USER venv/bin/pip install simplejpeg
+    fi
     
     log_info "$name virtual environment ready"
 }
 
-# Create kms.py placeholder for picamera2 compatibility
+# Create improved kms.py placeholder for picamera2 compatibility
 create_kms_placeholder() {
-    log_info "Creating kms.py placeholder for picamera2 compatibility"
+    log_info "Creating improved kms.py placeholder for picamera2 compatibility"
     
     cd $DEPLOY_PATH/backend
     SITE_PACKAGES=$(sudo -u $DEPLOY_USER venv/bin/python3 -c "import distutils.sysconfig as s; print(s.get_python_lib())")
     
     sudo -u $DEPLOY_USER tee "$SITE_PACKAGES/kms.py" > /dev/null << 'EOF'
 """
-Placeholder kms module for picamera2 compatibility
+Improved placeholder kms module for picamera2 compatibility
 """
 import sys
 import warnings
@@ -193,11 +215,17 @@ warnings.warn("Using placeholder kms module – picamera2 may not work correctly
 
 class PixelFormat:
     XRGB8888 = "XRGB8888"
+    XBGR8888 = "XBGR8888"  # Added missing attribute
     RGB888 = "RGB888"
     BGR888 = "BGR888"
     YUV420 = "YUV420"
     NV12 = "NV12"
     NV21 = "NV21"
+    # Add more formats that picamera2 might need
+    RGB565 = "RGB565"
+    BGR565 = "BGR565"
+    YUYV = "YUYV"
+    UYVY = "UYVY"
 
 class KMS:
     def __init__(self):
@@ -205,15 +233,28 @@ class KMS:
     
     def close(self):
         pass
+    
+    def create_framebuffer(self, width, height, pixel_format):
+        return None
+    
+    def create_connector(self):
+        return None
 
 def create_kms():
     return KMS()
 
-__all__ = ['KMS', 'create_kms', 'PixelFormat']
+# Add more functions that picamera2 might need
+def get_connector_info(connector):
+    return None
+
+def get_crtc_info(crtc):
+    return None
+
+__all__ = ['KMS', 'create_kms', 'PixelFormat', 'get_connector_info', 'get_crtc_info']
 EOF
     
     sudo -u $DEPLOY_USER ln -sf "$SITE_PACKAGES/kms.py" "$SITE_PACKAGES/pykms.py"
-    log_info "kms.py placeholder created"
+    log_info "Improved kms.py placeholder created"
 }
 
 # Setup files and permissions
@@ -281,17 +322,23 @@ setup_cron() {
     log_info "Cron jobs configured"
 }
 
-# Start services
+# Start services with improved error handling
 start_services() {
     log_step "Starting services"
     
     # Start main services
     for service in "${SERVICES[@]}"; do
-        sudo systemctl start ${service}.service
+        log_info "Starting $service.service"
+        if ! sudo systemctl start ${service}.service; then
+            log_error "Failed to start $service.service"
+            # Try to get more details about the failure
+            sudo systemctl status ${service}.service --no-pager -l
+        fi
     done
     
     # Start timers
     for timer in "${TIMER_SERVICES[@]}"; do
+        log_info "Starting $timer.timer"
         sudo systemctl start ${timer}.timer
     done
     
@@ -305,6 +352,7 @@ start_services() {
     
     # Restart services to ensure they use new virtual environments
     for service in "${SERVICES[@]}"; do
+        log_info "Restarting $service.service"
         sudo systemctl restart ${service}.service
     done
     
@@ -314,15 +362,22 @@ start_services() {
     log_info "Services started"
 }
 
-# Validate deployment
+# Enhanced validation with detailed checks
 validate_deployment() {
     log_step "Validating deployment"
     
-    # Check service status
+    # Check service status with detailed reporting
     local failed_services=()
+    local successful_services=()
+    
     for service in "${SERVICES[@]}"; do
-        if ! check_service_status ${service}.service; then
+        if check_service_status ${service}.service; then
+            successful_services+=($service)
+        else
             failed_services+=($service)
+            # Show detailed status for failed services
+            log_error "Detailed status for $service:"
+            sudo systemctl status ${service}.service --no-pager -l
         fi
     done
     
@@ -341,9 +396,15 @@ validate_deployment() {
         fi
     done
     
+    # Test Python imports
+    log_info "Testing Python imports..."
+    test_python_import "$DEPLOY_PATH/backend/venv" "picamera2" "picamera2"
+    test_python_import "$DEPLOY_PATH/api/venv" "fastapi" "FastAPI"
+    
     # Report results
     if [[ ${#failed_services[@]} -eq 0 && ${#missing_files[@]} -eq 0 ]]; then
         log_info "✅ Deployment validation passed"
+        log_info "✅ Successful services: ${successful_services[*]}"
         return 0
     else
         log_error "❌ Deployment validation failed"
@@ -353,14 +414,29 @@ validate_deployment() {
     fi
 }
 
-# Test picamera2 import
+# Test picamera2 import with detailed error reporting
 test_picamera2() {
-    log_info "Testing picamera2 import"
+    log_info "Testing picamera2 import with detailed error reporting"
     
     if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null; then
         log_info "✅ picamera2 import test passed"
     else
-        log_warn "⚠️ picamera2 import test failed - check system packages"
+        log_warn "⚠️ picamera2 import test failed - showing detailed error:"
+        sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "import picamera2" 2>&1 || true
+    fi
+}
+
+# Test system_status service manually
+test_system_status() {
+    log_info "Testing system_status service manually"
+    
+    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 $DEPLOY_PATH/backend/system_status.py 2>/dev/null; then
+        log_info "✅ system_status service test passed"
+        return 0
+    else
+        log_warn "⚠️ system_status service test failed - showing detailed error:"
+        sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 $DEPLOY_PATH/backend/system_status.py 2>&1 || true
+        return 1
     fi
 }
 
@@ -433,6 +509,7 @@ main() {
     # 10. Validate deployment
     validate_deployment
     test_picamera2
+    test_system_status
     
     # 11. Final checks
     log_step "11. Final checks"
@@ -459,11 +536,18 @@ main() {
     log_info "Assets:"
     ls -la $DEPLOY_PATH/assets/
     
+    # Show service status
+    log_info "Service status:"
+    for service in "${SERVICES[@]}"; do
+        sudo systemctl is-active --quiet ${service}.service && log_info "✅ $service: ACTIVE" || log_error "❌ $service: FAILED"
+    done
+    
     log_info "🎉 EZREC deployment completed successfully!"
     log_info ""
     log_info "Next steps:"
     log_info "1. Configure your .env file with your actual credentials"
     log_info "2. Check service logs: sudo journalctl -u dual_recorder.service -f"
+    log_info "3. Test system: sudo systemctl status system_status.service"
     log_info ""
     log_info "Services are now running and will start automatically on boot."
 }
