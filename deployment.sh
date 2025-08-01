@@ -40,6 +40,37 @@ pip install --upgrade "typing-extensions>=4.12.0"
 pip install -r "$CODE_DIR/requirements.txt"
 deactivate
 
+# Ensure .env file exists
+echo "🔧 Setting up environment file..."
+if [ ! -f "$DEPLOY_DIR/.env" ]; then
+    echo "⚠️ .env file not found, creating template..."
+    cat > "$DEPLOY_DIR/.env" << 'EOF'
+# Supabase Configuration
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
+
+# AWS S3 Configuration
+AWS_ACCESS_KEY_ID=your_aws_access_key_here
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key_here
+AWS_DEFAULT_REGION=us-east-1
+S3_BUCKET_NAME=your_s3_bucket_name_here
+
+# Application Configuration
+RECORDING_DIR=/opt/ezrec-backend/recordings
+PROCESSED_DIR=/opt/ezrec-backend/processed
+ASSETS_DIR=/opt/ezrec-backend/assets
+EOF
+    echo "⚠️ Please update the .env file with your actual credentials"
+fi
+
+# Ensure required directories exist
+echo "📁 Creating required directories..."
+mkdir -p "$DEPLOY_DIR/recordings"
+mkdir -p "$DEPLOY_DIR/processed"
+mkdir -p "$DEPLOY_DIR/assets"
+mkdir -p "$DEPLOY_DIR/backend/logs"
+
 # ----------------------------------------
 # ✅ Deploy updated video_worker.py
 # ----------------------------------------
@@ -65,6 +96,18 @@ if systemctl restart dual_recorder.service; then
 else
     echo "⚠️ dual_recorder.service restart failed, checking status..."
     systemctl status dual_recorder.service --no-pager -l
+    echo "🔍 Checking dual_recorder logs..."
+    journalctl -u dual_recorder.service -n 10 --no-pager
+    echo "🔧 Attempting to fix dual_recorder service..."
+    systemctl stop dual_recorder.service || true
+    sleep 2
+    systemctl start dual_recorder.service || true
+    sleep 2
+    if systemctl is-active dual_recorder.service; then
+        echo "✅ dual_recorder.service is now active"
+    else
+        echo "❌ dual_recorder.service still failed to start"
+    fi
 fi
 
 echo "🔄 Restarting video_worker.service..."
