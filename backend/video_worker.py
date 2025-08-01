@@ -529,12 +529,28 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             return False
 
     # Check intro
-    if intro_path.exists() and not is_valid_video(intro_path):
-        log.error(f"Intro video at {intro_path} is invalid or corrupted. Skipping intro for this video.")
+    if intro_path.exists():
+        log.info(f"🔍 Found intro video: {intro_path}")
+        log.info(f"📊 Intro video size: {intro_path.stat().st_size} bytes")
+        
+        # Get video info for debugging
         try:
-            intro_path.unlink()
-        except Exception:
-            pass
+            codec, w, h, fps, pix_fmt = get_video_info(intro_path)
+            log.info(f"📹 Intro video info: codec={codec}, size={w}x{h}, fps={fps}, pix_fmt={pix_fmt}")
+        except Exception as e:
+            log.error(f"❌ Could not get intro video info: {e}")
+        
+        if not is_valid_video(intro_path):
+            log.error(f"❌ Intro video at {intro_path} is invalid or corrupted. Skipping intro for this video.")
+            try:
+                intro_path.unlink()
+            except Exception:
+                pass
+            intro_path = None
+        else:
+            log.info(f"✅ Intro video is valid and ready for concatenation")
+    else:
+        log.warn(f"⚠️ Intro video not found at {intro_path}")
         intro_path = None
 
     # Check logo
@@ -734,10 +750,24 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             "-c:v", "libx264", "-crf", "28", "-preset", "ultrafast", "-movflags", "+faststart", str(concat_output)
         ]
         log.info(f"[Two-pass] Pass 2: Concatenating intro and logo-overlaid main video to {concat_output}")
+        log.info(f"📹 Intro video: {intro_path}")
+        log.info(f"📹 Main video: {main_with_logos}")
+        log.info(f"📹 Output: {concat_output}")
+        
         try:
             start = time.time()
             log.info(f"🎬 Starting concat process...")
             log.info(f"📋 Concat command: {' '.join(concat_cmd)}")
+            
+            # Check if input files exist
+            if not intro_path.exists():
+                log.error(f"❌ Intro video does not exist: {intro_path}")
+                return None
+            if not main_with_logos.exists():
+                log.error(f"❌ Main video does not exist: {main_with_logos}")
+                return None
+                
+            log.info(f"✅ Both input files exist, starting FFmpeg...")
             
             result = subprocess.run(concat_cmd, capture_output=True, text=True)
             
