@@ -840,6 +840,17 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 
                 if result.returncode == 0:
                     log.info(f"✅ Logo overlay completed in {time.time() - start_time:.2f}s")
+                    
+                    # Check for silent failures in logo overlay
+                    if main_with_logos.exists():
+                        logo_output_size = main_with_logos.stat().st_size
+                        log.info(f"🔎 Logo overlay output: {main_with_logos}, size: {logo_output_size:,} bytes")
+                        if logo_output_size == 0:
+                            log.error(f"❌ Logo overlay output file is empty!")
+                            return None
+                    else:
+                        log.error(f"❌ Logo overlay output file does not exist: {main_with_logos}")
+                        return None
                 else:
                     log.error(f"❌ Logo overlay failed with return code: {result.returncode}")
                     log.error(f"❌ FFmpeg stderr: {result.stderr}")
@@ -903,28 +914,60 @@ file '{main_with_logos}'"""
             log.info(f"📊   Intro video: {intro_size} bytes")
             log.info(f"📊   Main video: {main_size} bytes")
             
-            # Check if main video is valid by running ffprobe
+            # Validate both videos with ffprobe before concat to ensure compatibility
             try:
-                ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_with_logos)]
-                result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
-                if result.returncode == 0:
-                    log.info(f"✅ Main video is valid (ffprobe check passed)")
-                else:
-                    log.error(f"❌ Main video is corrupted (ffprobe failed): {result.stderr}")
-                    raise Exception(f"Main video is corrupted: {result.stderr}")
+                # Check intro video
+                intro_ffprobe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,avg_frame_rate,width,height,pix_fmt', '-of', 'default=noprint_wrappers=1:nokey=1', str(intro_path)]
+                intro_result = subprocess.run(intro_ffprobe_cmd, capture_output=True, text=True, timeout=30)
+                if intro_result.returncode != 0:
+                    log.error(f"❌ Intro video validation failed: {intro_result.stderr}")
+                    raise Exception(f"Intro video validation failed: {intro_result.stderr}")
+                log.info(f"✅ Intro video validation passed")
+                
+                # Check main video
+                main_ffprobe_cmd = ['ffprobe', '-v', 'error', '-show_entries', 'stream=codec_name,avg_frame_rate,width,height,pix_fmt', '-of', 'default=noprint_wrappers=1:nokey=1', str(main_with_logos)]
+                main_result = subprocess.run(main_ffprobe_cmd, capture_output=True, text=True, timeout=30)
+                if main_result.returncode != 0:
+                    log.error(f"❌ Main video validation failed: {main_result.stderr}")
+                    raise Exception(f"Main video validation failed: {main_result.stderr}")
+                log.info(f"✅ Main video validation passed")
+                
+                # Compare video properties to ensure compatibility
+                intro_info = intro_result.stdout.strip().split('\n')
+                main_info = main_result.stdout.strip().split('\n')
+                
+                if len(intro_info) >= 5 and len(main_info) >= 5:
+                    log.info(f"📊 Video compatibility check:")
+                    log.info(f"   Intro: codec={intro_info[0]}, fps={intro_info[1]}, size={intro_info[2]}x{intro_info[3]}, pix_fmt={intro_info[4]}")
+                    log.info(f"   Main:  codec={main_info[0]}, fps={main_info[1]}, size={main_info[2]}x{main_info[3]}, pix_fmt={main_info[4]}")
+                    
+                    # Check if properties match (they should for safe concat)
+                    if (intro_info[0] != main_info[0] or 
+                        intro_info[1] != main_info[1] or 
+                        intro_info[2] != main_info[2] or 
+                        intro_info[3] != main_info[3] or 
+                        intro_info[4] != main_info[4]):
+                        log.warning(f"⚠️ Video properties don't match - re-encoding will fix this")
+                    else:
+                        log.info(f"✅ Video properties match - safe for concat")
+                        
             except Exception as e:
-                log.error(f"❌ Error checking main video with ffprobe: {e}")
-                raise Exception(f"Error checking main video: {e}")
+                log.error(f"❌ Error validating videos with ffprobe: {e}")
+                raise Exception(f"Error validating videos: {e}")
             
             log.info(f"✅ Both input files exist, starting FFmpeg...")
             
             # Run FFmpeg concat with absolute paths and detailed output
+            # Use re-encoding instead of copy to ensure proper timestamps and container structure
             concat_cmd = [
                 'ffmpeg', '-y',
                 '-f', 'concat',
                 '-safe', '0',
                 '-i', str(concat_list_file),
-                '-c:v', 'copy',
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p',
                 str(concat_output)
             ]
             
@@ -958,6 +1001,17 @@ file '{main_with_logos}'"""
                     log.info(f"✅ Concat completed successfully in {time.time() - start_time:.2f}s")
                     if stderr:
                         log.info(f"📋 FFmpeg stderr: {stderr}")
+                    
+                    # Verify the concat output file
+                    if concat_output.exists():
+                        output_size = concat_output.stat().st_size
+                        log.info(f"🔎 Concat file created: {concat_output}, size: {output_size:,} bytes")
+                        if output_size == 0:
+                            log.error(f"❌ Concat output file is empty!")
+                            raise Exception("Concat output file is empty")
+                    else:
+                        log.error(f"❌ Concat output file does not exist: {concat_output}")
+                        raise Exception(f"Concat output file does not exist: {concat_output}")
                 else:
                     log.error(f"❌ FFmpeg concat failed with return code {process.returncode}")
                     log.error(f"❌ FFmpeg stderr: {stderr}")
