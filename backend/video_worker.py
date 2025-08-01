@@ -742,15 +742,63 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         # Use simpler concat approach with file list
         concat_list_file = raw_file.parent / "concat_list.txt"
         
+        # First, re-encode the main video to fix DTS timestamp issues
+        log.info(f"🔧 Re-encoding main video to fix DTS timestamp issues...")
+        main_reencoded = raw_file.parent / f"reencoded_{main_with_logos.name}"
+        
+        reencode_cmd = [
+            'ffmpeg', '-y',
+            '-i', str(main_with_logos),
+            '-c:v', 'libx264',
+            '-preset', 'ultrafast',
+            '-crf', '28',
+            '-pix_fmt', 'yuv420p',
+            '-avoid_negative_ts', 'make_zero',
+            '-fflags', '+genpts',
+            str(main_reencoded)
+        ]
+        
+        log.info(f"🎬 Re-encode command: {' '.join(reencode_cmd)}")
+        
+        # Run re-encode
+        reencode_process = subprocess.Popen(
+            reencode_cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
+        )
+        
+        reencode_start_time = time.time()
+        reencode_timeout = 300  # 5 minutes timeout
+        
+        while reencode_process.poll() is None:
+            if time.time() - reencode_start_time > reencode_timeout:
+                log.error(f"❌ Re-encode timed out after {reencode_timeout}s")
+                reencode_process.terminate()
+                raise Exception(f"Re-encode timed out after {reencode_timeout}s")
+            time.sleep(1)
+        
+        reencode_stdout, reencode_stderr = reencode_process.communicate()
+        
+        if reencode_process.returncode == 0:
+            log.info(f"✅ Re-encode completed successfully in {time.time() - reencode_start_time:.2f}s")
+        else:
+            log.error(f"❌ Re-encode failed with return code {reencode_process.returncode}")
+            log.error(f"❌ Re-encode stderr: {reencode_stderr}")
+            raise Exception(f"Re-encode failed: {reencode_stderr}")
+        
+        # Use the re-encoded main video for concat
+        main_video_for_concat = main_reencoded if main_reencoded.exists() else main_with_logos
+        
         # Use absolute paths to avoid path resolution issues
         concat_list_content = f"""file '{intro_path}'
-file '{main_with_logos}'"""
+file '{main_video_for_concat}'"""
         
         # Add detailed debugging for concat list creation
         log.info(f"📋 Creating concat list file: {concat_list_file}")
         log.info(f"📋 Concat list content:")
         log.info(f"📋   file '{intro_path}'")
-        log.info(f"📋   file '{main_with_logos}'")
+        log.info(f"📋   file '{main_video_for_concat}'")
         
         with open(concat_list_file, 'w') as f:
             f.write(concat_list_content)
@@ -770,20 +818,20 @@ file '{main_with_logos}'"""
             log.error(f"❌ Intro video does not exist: {intro_path}")
             raise Exception(f"Intro video does not exist: {intro_path}")
         
-        if not main_with_logos.exists():
-            log.error(f"❌ Main video with logos does not exist: {main_with_logos}")
-            raise Exception(f"Main video with logos does not exist: {main_with_logos}")
+        if not main_video_for_concat.exists():
+            log.error(f"❌ Main video for concat does not exist: {main_video_for_concat}")
+            raise Exception(f"Main video for concat does not exist: {main_video_for_concat}")
         
         # Get detailed file info
         intro_size = intro_path.stat().st_size
-        main_size = main_with_logos.stat().st_size
+        main_size = main_video_for_concat.stat().st_size
         log.info(f"📊 File sizes:")
         log.info(f"📊   Intro video: {intro_size} bytes")
         log.info(f"📊   Main video: {main_size} bytes")
         
         # Check if main video is valid by running ffprobe
         try:
-            ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_with_logos)]
+            ffprobe_cmd = ['ffprobe', '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', str(main_video_for_concat)]
             result = subprocess.run(ffprobe_cmd, capture_output=True, text=True, timeout=30)
             if result.returncode == 0:
                 log.info(f"✅ Main video is valid (ffprobe check passed)")
@@ -840,12 +888,19 @@ file '{main_with_logos}'"""
             log.error(f"❌ FFmpeg stderr: {stderr}")
             raise Exception(f"FFmpeg concat failed: {stderr}")
         
-        # Clean up concat list file
+        # Clean up concat list file and re-encoded video
         try:
             concat_list_file.unlink()
             log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
         except Exception as e:
             log.warn(f"⚠️ Failed to clean up concat list file: {e}")
+        
+        try:
+            if main_reencoded.exists():
+                main_reencoded.unlink()
+                log.info(f"🧹 Cleaned up re-encoded video: {main_reencoded}")
+        except Exception as e:
+            log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
         
         # Verify the final video duration
         if concat_output.exists():
