@@ -180,13 +180,15 @@ MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 # Static logo config - updated to match deployment script paths
 STATIC_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
 STATIC_LOGO_POSITION = os.getenv("STATIC_LOGO_POSITION", "bottom_right")
-# Simplified asset paths - all assets in single folder
-STATIC_SPONSOR_0_PATH = "/opt/ezrec-backend/assets/sponsor_logo1.png"
-STATIC_SPONSOR_1_PATH = "/opt/ezrec-backend/assets/sponsor_logo2.png"
-STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/assets/sponsor_logo3.png"
-STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
-STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
-STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
+# User asset paths - all assets in single assets folder
+USER_LOGO_PATH = "/opt/ezrec-backend/assets/user_logo.png"
+INTRO_VIDEO_PATH = "/opt/ezrec-backend/assets/intro.mp4"
+SPONSOR_LOGO_1_PATH = "/opt/ezrec-backend/assets/sponsor_logo1.png"
+SPONSOR_LOGO_2_PATH = "/opt/ezrec-backend/assets/sponsor_logo2.png"
+SPONSOR_LOGO_3_PATH = "/opt/ezrec-backend/assets/sponsor_logo3.png"
+SPONSOR_0_POSITION = os.getenv("SPONSOR_0_POSITION", "bottom_left")
+SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_right")
+SPONSOR_2_POSITION = os.getenv("SPONSOR_2_POSITION", "bottom_center")
 
 LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
 LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
@@ -463,12 +465,12 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     assets_dir = Path("/opt/ezrec-backend/assets")
     assets_dir.mkdir(parents=True, exist_ok=True)
     
-    # Check for downloaded assets in the assets folder
-    intro_path = assets_dir / "intro.mp4"
-    logo_path = assets_dir / "user_logo.png"
-    sponsor_paths = [assets_dir / f"sponsor_logo{i+1}.png" for i in range(3)]
+    # Check for downloaded assets in the assets folder with correct names
+    intro_path = Path(INTRO_VIDEO_PATH)
+    logo_path = Path(USER_LOGO_PATH)
+    sponsor_paths = [Path(SPONSOR_LOGO_1_PATH), Path(SPONSOR_LOGO_2_PATH), Path(SPONSOR_LOGO_3_PATH)]
     
-    # Also try to fetch from Supabase as fallback
+    # Also try to fetch from Supabase as fallback if local assets don't exist
     intro_url, logo_url, sponsor_urls = fetch_user_media(user_id)
     if intro_url and not intro_path.exists():
         download_if_needed(intro_url, intro_path)
@@ -559,8 +561,8 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     if not static_logo_path.exists():
         log.error(f"Static main logo not found at {STATIC_LOGO_PATH}. Skipping processing.")
         return None
-    static_sponsor_paths = [Path(STATIC_SPONSOR_0_PATH), Path(STATIC_SPONSOR_1_PATH), Path(STATIC_SPONSOR_2_PATH)]
-    static_sponsor_positions = [STATIC_SPONSOR_0_POSITION, STATIC_SPONSOR_1_POSITION, STATIC_SPONSOR_2_POSITION]
+    static_sponsor_paths = [Path(SPONSOR_LOGO_1_PATH), Path(SPONSOR_LOGO_2_PATH), Path(SPONSOR_LOGO_3_PATH)]
+    static_sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
 
     # --- Always add main_ezrec_logo.png as overlay input ---
     main_logo_path = Path(MAIN_LOGO_PATH)
@@ -763,11 +765,11 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     filter_parts = [f"[{main_video_idx}:v][1:v]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]"]
     last_output = "[staticlogo_out]"
     
-    # Use downloaded user assets instead of static paths
+    # Use downloaded user assets with correct paths
     logo_inputs = []
     if logo_path and logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
-        logo_inputs.append(("logo", video_inputs + len(logo_inputs) + 1, LOGO_POSITION))
+        logo_inputs.append(("userlogo", video_inputs + len(logo_inputs) + 1, LOGO_POSITION))
     
     sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):

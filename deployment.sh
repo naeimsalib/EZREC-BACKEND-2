@@ -297,12 +297,9 @@ download_user_assets() {
     ASSETS_DIR="$DEPLOY_PATH/assets"
     sudo -u $DEPLOY_USER mkdir -p "$ASSETS_DIR"
     
-    # Download main company logo (always required) - try multiple possible names
+    # Download main company logo (always required) - from root of bucket
     log_info "Downloading main company logo..."
     COMPANY_LOGO_PATH="$ASSETS_DIR/ezrec_logo.png"
-    
-    # Try different possible company logo names
-    company_logo_names=("main_ezrec_logo.png" "company.png" "ezrec_logo.png" "logo.png")
     
     if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
@@ -323,22 +320,12 @@ if all([bucket, region, access_key, secret_key]):
     try:
         s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
         
-        # Try different company logo names
-        company_logo_names = ['main_ezrec_logo.png', 'company.png', 'ezrec_logo.png', 'logo.png']
-        downloaded = False
-        
-        for logo_name in company_logo_names:
-            try:
-                s3.download_file(bucket, logo_name, '$COMPANY_LOGO_PATH')
-                print(f'✅ Downloaded company logo: {logo_name}')
-                downloaded = True
-                break
-            except Exception as e:
-                print(f'⚠️ Not found: {logo_name}')
-                continue
-        
-        if not downloaded:
-            print('❌ No company logo found with any of the expected names')
+        # Download company logo from root of bucket
+        try:
+            s3.download_file(bucket, 'main_ezrec_logo.png', '$COMPANY_LOGO_PATH')
+            print('✅ Downloaded company logo: main_ezrec_logo.png')
+        except Exception as e:
+            print(f'❌ Company logo not found: {e}')
             
     except Exception as e:
         print(f'⚠️ Error downloading company logo: {e}')
@@ -350,8 +337,8 @@ else:
         log_warn "⚠️ Company logo not found or download failed"
     fi
     
-    # Download user assets if they exist - simplified to single assets folder
-    log_info "Checking for user assets..."
+    # Download user assets from user-specific folders
+    log_info "Checking for user assets in user folder..."
     if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
 import os
@@ -371,37 +358,25 @@ if all([bucket, region, access_key, secret_key]):
     try:
         s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
         
-        # Simplified asset mapping - all assets go to single assets folder
+        # Define user assets with correct paths based on S3 structure
         user_assets = [
-            # Company logo (already downloaded above)
-            ('company.png', '$ASSETS_DIR/company_logo.png'),
-            ('ezrec_logo.png', '$ASSETS_DIR/ezrec_logo.png'),
-            ('logo.png', '$ASSETS_DIR/user_logo.png'),
-            # User assets
-            ('intro.mp4', '$ASSETS_DIR/intro.mp4'),
-            ('sponsor.png', '$ASSETS_DIR/sponsor_logo1.png'),
-            ('sponsor_logo.png', '$ASSETS_DIR/sponsor_logo1.png'),
-            ('sponsor_logo1.png', '$ASSETS_DIR/sponsor_logo1.png'),
-            ('sponsor_logo2.png', '$ASSETS_DIR/sponsor_logo2.png'),
-            ('sponsor_logo3.png', '$ASSETS_DIR/sponsor_logo3.png'),
-            # Alternative names
-            ('user_logo.png', '$ASSETS_DIR/user_logo.png'),
-            ('user_logo1.png', '$ASSETS_DIR/user_logo.png'),
+            # User logo from logo folder
+            ('$USER_ID/logo/logo.png', '$ASSETS_DIR/user_logo.png'),
+            # Intro video from intro-video folder
+            ('$USER_ID/intro-video/intro.mp4', '$ASSETS_DIR/intro.mp4'),
+            # Sponsor logos from sponsor-logo folders
+            ('$USER_ID/sponsor-logo1/logo1.png', '$ASSETS_DIR/sponsor_logo1.png'),
+            ('$USER_ID/sponsor-logo2/logo2.png', '$ASSETS_DIR/sponsor_logo2.png'),
+            ('$USER_ID/sponsor-logo3/logo3.png', '$ASSETS_DIR/sponsor_logo3.png'),
         ]
         
         downloaded_count = 0
-        downloaded_files = set()  # Track what we've already downloaded
         
         for s3_key, local_path in user_assets:
-            # Skip if we already downloaded this file type
-            if any(downloaded_files) and any(existing in local_path for existing in downloaded_files):
-                continue
-                
             try:
                 s3.download_file(bucket, s3_key, local_path)
                 print(f'✅ Downloaded: {s3_key} -> {local_path}')
                 downloaded_count += 1
-                downloaded_files.add(local_path)
             except Exception as e:
                 print(f'⚠️ Not found: {s3_key}')
         
@@ -409,7 +384,7 @@ if all([bucket, region, access_key, secret_key]):
         
         # List all objects in bucket for debugging
         try:
-            response = s3.list_objects_v2(Bucket=bucket, MaxKeys=20)
+            response = s3.list_objects_v2(Bucket=bucket, MaxKeys=50)
             if 'Contents' in response:
                 print('📋 Available objects in bucket:')
                 for obj in response['Contents']:
