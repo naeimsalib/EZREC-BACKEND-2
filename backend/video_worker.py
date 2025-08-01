@@ -758,13 +758,8 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.info(f"✅ Using re-encoded video directly: {main_with_logos}")
             log.info(f"✅ Skipped logo overlay to preserve video integrity")
             
-            # Clean up re-encoded video
-            try:
-                if merged_reencoded.exists():
-                    merged_reencoded.unlink()
-                    log.info(f"🧹 Cleaned up re-encoded video: {merged_reencoded}")
-            except Exception as e:
-                log.warn(f"⚠️ Failed to clean up re-encoded video: {e}")
+            # DON'T clean up re-encoded video - we need it for concat!
+            log.info(f"🔧 Keeping re-encoded video for concat: {merged_reencoded}")
             
             # Step 3: Re-encode intro video to fix timestamp corruption
             log.info(f"🔧 Re-encoding intro video to fix timestamp corruption...")
@@ -1025,11 +1020,21 @@ file '{main_with_logos}'"""
             output_file = PROCESSED_DIR / date_dir.name / raw_file.name
             output_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.move(str(concat_output), str(output_file))
+            
             # Clean up temp files
-            if main_with_logos.exists():
-                main_with_logos.unlink()
-            if concat_list_file.exists():
-                concat_list_file.unlink()
+            try:
+                if merged_reencoded.exists():
+                    merged_reencoded.unlink()
+                    log.info(f"🧹 Cleaned up re-encoded video: {merged_reencoded}")
+                if intro_reencoded.exists():
+                    intro_reencoded.unlink()
+                    log.info(f"🧹 Cleaned up re-encoded intro: {intro_reencoded}")
+                if concat_list_file.exists():
+                    concat_list_file.unlink()
+                    log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
+            except Exception as e:
+                log.warn(f"⚠️ Failed to clean up temp files: {e}")
+            
             return output_file
             
         else:
