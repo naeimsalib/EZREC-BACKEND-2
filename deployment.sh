@@ -5,9 +5,9 @@ set -e
 echo "🚀 Starting EZREC backend deployment..."
 
 # Define variables
-CODE_DIR="$HOME/EZREC-BACKEND-2"
+CODE_DIR="/home/michomanoly14892/EZREC-BACKEND-2"
 DEPLOY_DIR="/opt/ezrec-backend"
-USER="pi"
+USER="michomanoly14892"
 
 # Stop services
 echo "🛑 Stopping all EZREC services..."
