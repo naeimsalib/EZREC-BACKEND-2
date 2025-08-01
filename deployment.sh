@@ -36,7 +36,7 @@ fi
 echo "📦 Installing Python dependencies..."
 source "$DEPLOY_DIR/backend/venv/bin/activate"
 pip install --upgrade pip
-pip install -r "$CODE_DIR/backend/requirements.txt"
+pip install -r "$CODE_DIR/requirements.txt"
 deactivate
 
 # ----------------------------------------
