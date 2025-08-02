@@ -292,9 +292,9 @@ EOF
     log_info "Improved kms.py placeholder created"
 }
 
-# Download user assets and company logo
+# Download user assets and company logo with smart checking
 download_user_assets() {
-    log_info "Downloading user assets and company logo"
+    log_info "Checking and downloading user assets (smart mode)"
     
     cd $DEPLOY_PATH
     
@@ -309,12 +309,8 @@ download_user_assets() {
     ASSETS_DIR="$DEPLOY_PATH/assets"
     sudo -u $DEPLOY_USER mkdir -p "$ASSETS_DIR"
     
-    # Download main company logo (always required) - from root of bucket
-    log_info "Downloading main company logo..."
-    COMPANY_LOGO_PATH="$ASSETS_DIR/ezrec_logo.png"
-    
-    # Capture the actual download result with proper error handling
-    COMPANY_LOGO_RESULT=$(sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
+    # Smart asset download with existence checking
+    SMART_DOWNLOAD_RESULT=$(sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
 import os
 import sys
@@ -337,109 +333,78 @@ try:
 
     s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     
-    # Download company logo from root of bucket
-    try:
-        s3.download_file(bucket, 'main_ezrec_logo.png', '$COMPANY_LOGO_PATH')
-        print('✅ Downloaded company logo: main_ezrec_logo.png')
-        sys.exit(0)
-    except Exception as e:
-        print(f'❌ Company logo not found: {e}')
-        sys.exit(1)
-        
-except Exception as e:
-    print(f'⚠️ Error downloading company logo: {e}')
-    sys.exit(1)
-" 2>/dev/null)
-    
-    if [[ $? -eq 0 ]]; then
-        log_info "✅ Company logo downloaded successfully"
-    else
-        log_warn "⚠️ Company logo download failed: $COMPANY_LOGO_RESULT"
-    fi
-    
-    # Download user assets from user-specific folders
-    log_info "Checking for user assets in user folder..."
-    USER_ASSETS_RESULT=$(sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
-import boto3
-import os
-import sys
-from pathlib import Path
-
-try:
-    # Load environment
-    from dotenv import load_dotenv
-    load_dotenv('/opt/ezrec-backend/.env')
-
-    # Get AWS credentials
-    bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
-    region = os.getenv('AWS_REGION')
-    access_key = os.getenv('AWS_ACCESS_KEY_ID')
-    secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-
-    if not all([bucket, region, access_key, secret_key]):
-        print('❌ Missing AWS credentials for asset download')
-        sys.exit(1)
-
-    s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
-    
-    # Define user assets with correct paths based on S3 structure
-    user_assets = [
-        # User logo from logo folder
+    # Define all assets to check/download
+    assets_to_check = [
+        # Company logo (always check)
+        ('main_ezrec_logo.png', '$ASSETS_DIR/ezrec_logo.png'),
+        # User assets
         ('$USER_ID/logo/logo.png', '$ASSETS_DIR/user_logo.png'),
-        # Intro video from intro-video folder
         ('$USER_ID/intro-video/intro.mp4', '$ASSETS_DIR/intro.mp4'),
-        # Sponsor logos from sponsor-logo folders
         ('$USER_ID/sponsor-logo1/logo1.png', '$ASSETS_DIR/sponsor_logo1.png'),
         ('$USER_ID/sponsor-logo2/logo2.png', '$ASSETS_DIR/sponsor_logo2.png'),
         ('$USER_ID/sponsor-logo3/logo3.png', '$ASSETS_DIR/sponsor_logo3.png'),
     ]
     
     downloaded_count = 0
+    skipped_count = 0
+    failed_count = 0
     
-    for s3_key, local_path in user_assets:
+    print(f'🔍 Checking {len(assets_to_check)} assets in bucket: {bucket}')
+    
+    for s3_key, local_path in assets_to_check:
+        local_file = Path(local_path)
+        
+        # Check if file already exists and has reasonable size (>1KB)
+        if local_file.exists() and local_file.stat().st_size > 1024:
+            print(f'⏭️  Skipping {s3_key} - already exists ({local_file.stat().st_size:,} bytes)')
+            skipped_count += 1
+            continue
+        
+        # Try to download
         try:
             s3.download_file(bucket, s3_key, local_path)
-            print(f'✅ Downloaded: {s3_key} -> {local_path}')
+            file_size = Path(local_path).stat().st_size
+            print(f'✅ Downloaded: {s3_key} -> {local_path} ({file_size:,} bytes)')
             downloaded_count += 1
         except Exception as e:
-            print(f'⚠️ Not found: {s3_key}')
+            print(f'⚠️  Not found in S3: {s3_key}')
+            failed_count += 1
     
-    print(f'📊 Downloaded {downloaded_count} user assets')
+    print(f'📊 Asset check complete:')
+    print(f'  - Downloaded: {downloaded_count}')
+    print(f'  - Skipped (already exists): {skipped_count}')
+    print(f'  - Not found in S3: {failed_count}')
     
-    # List all objects in bucket for debugging
-    try:
-        response = s3.list_objects_v2(Bucket=bucket, MaxKeys=50)
-        if 'Contents' in response:
-            print('📋 Available objects in bucket:')
-            for obj in response['Contents']:
-                print(f'  - {obj[\"Key\"]}')
-        else:
-            print('📋 Bucket appears to be empty')
-    except Exception as e:
-        print(f'⚠️ Could not list bucket contents: {e}')
+    # Show final asset status
+    print(f'\\n📁 Final assets directory:')
+    assets_dir = Path('$ASSETS_DIR')
+    for asset in assets_dir.glob('*'):
+        if asset.is_file():
+            print(f'  - {asset.name}: {asset.stat().st_size:,} bytes')
     
-    # Exit with success if at least one asset was downloaded
-    if downloaded_count > 0:
+    # Exit with success if we have at least some assets
+    if downloaded_count > 0 or skipped_count > 0:
         sys.exit(0)
     else:
+        print('⚠️  No assets found or downloaded')
         sys.exit(1)
         
 except Exception as e:
-    print(f'⚠️ Error checking user assets: {e}')
+    print(f'❌ Error during asset download: {e}')
     sys.exit(1)
 " 2>/dev/null)
     
     if [[ $? -eq 0 ]]; then
-        log_info "✅ User asset download completed successfully"
+        log_info "✅ Asset check/download completed successfully"
     else
-        log_warn "⚠️ User asset download failed or no assets found: $USER_ASSETS_RESULT"
+        log_warn "⚠️ Asset check/download failed: $SMART_DOWNLOAD_RESULT"
     fi
     
     # Set proper permissions
     sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$ASSETS_DIR"
     sudo chmod -R 755 "$ASSETS_DIR"
     
-    log_info "Asset download process completed"
+    log_info "Smart asset download process completed"
     return 0  # Always return success to continue deployment
 }
 
@@ -774,15 +739,15 @@ main() {
         log_warn "⚠️ video_worker.py not found in deployment"
     fi
     
-    # Create assets
-    log_info "Creating placeholder assets"
+    # Create assets directory (no placeholders)
+    log_info "Setting up assets directory"
     cd $DEPLOY_PATH
-    sudo -u $DEPLOY_USER python3 backend/create_assets.py
+    sudo -u $DEPLOY_USER mkdir -p assets
     
     # Download user assets and company logo with timeout
     log_info "Starting asset download with timeout protection..."
     cd $DEPLOY_PATH
-    if timeout 60 bash -c "download_user_assets" 2>/dev/null; then
+    if timeout 300 bash -c "download_user_assets" 2>/dev/null; then
         log_info "✅ Asset download completed"
     else
         log_warn "⚠️ Asset download timed out or failed, continuing with deployment..."
