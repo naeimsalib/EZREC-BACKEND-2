@@ -826,6 +826,8 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 '-preset', 'fast',
                 '-crf', '23',
                 '-pix_fmt', 'yuv420p',
+                '-avoid_negative_ts', 'make_zero',
+                '-fflags', '+genpts',
                 str(main_with_logos)
             ]
             
@@ -1004,8 +1006,8 @@ file '{main_with_logos}'"""
                 
                 if len(intro_info) >= 5 and len(main_info) >= 5:
                     log.info(f"📊 Video compatibility check:")
-                    log.info(f"   Intro: codec={intro_info[0]}, fps={intro_info[1]}, size={intro_info[2]}x{intro_info[3]}, pix_fmt={intro_info[4]}")
-                    log.info(f"   Main:  codec={main_info[0]}, fps={main_info[1]}, size={main_info[2]}x{main_info[3]}, pix_fmt={main_info[4]}")
+                    log.info(f"   Intro: codec={intro_info[0]}, fps={intro_info[1]}, width={intro_info[2]}, height={intro_info[3]}, pix_fmt={intro_info[4]}")
+                    log.info(f"   Main:  codec={main_info[0]}, fps={main_info[1]}, width={main_info[2]}, height={main_info[3]}, pix_fmt={main_info[4]}")
                     
                     # Check if properties match (they should for safe concat)
                     if (intro_info[0] != main_info[0] or 
