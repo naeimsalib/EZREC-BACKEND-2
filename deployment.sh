@@ -702,6 +702,34 @@ main() {
     # 9. Start services
     start_services
     
+    # ----------------------------------------
+    # ✅ Deploy updated video_worker.py
+    # ----------------------------------------
+    log_info "📦 Deploying updated video_worker.py..."
+    
+    if [[ -f "$DEPLOY_PATH/backend/video_worker.py" ]]; then
+        log_info "✅ video_worker.py exists and will be used"
+    else
+        log_warn "⚠️ video_worker.py not found in deployment"
+    fi
+    
+    # Ensure working video_worker is deployed
+    log_info "Deploying working video_worker with all fixes..."
+    if [[ -f "$DEPLOY_PATH/backend/video_worker.py" ]]; then
+        log_info "✅ video_worker.py exists and will be used"
+    else
+        log_warn "⚠️ video_worker.py not found in deployment"
+    fi
+    
+    # Restart video_worker service specifically
+    log_info "🔁 Restarting video_worker.service..."
+    if sudo systemctl restart video_worker.service; then
+        log_info "✅ video_worker.service restarted successfully"
+    else
+        log_error "❌ video_worker.service restart failed"
+        sudo systemctl status video_worker.service --no-pager -l
+    fi
+    
     # 10. Validate deployment
     validate_deployment
     test_picamera2
