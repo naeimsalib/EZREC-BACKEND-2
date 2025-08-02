@@ -160,7 +160,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Initialize Supabase client with proper error handling
+try:
+    supabase = create_client(SUPABASE_URL, SUPABASE_ANON_KEY)
+    logger.info("✅ Supabase client initialized successfully")
+except Exception as e:
+    logger.warning(f"⚠️ Failed to initialize Supabase client: {e}")
+    logger.warning("⚠️ System will work in local mode only")
+    supabase = None
 
 logger.info(f"📡 Dual Recorder started [Timezone: {TIMEZONE_NAME}]")
 logger.info(f"📄 Watching bookings cache: {BOOKING_CACHE_FILE}")

@@ -111,10 +111,17 @@ for var in required_env_vars:
     if not os.getenv(var):
         raise RuntimeError(f"Missing env: {var}")
 
-supabase = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-)
+# Initialize Supabase client with proper error handling
+try:
+    supabase = create_client(
+        os.getenv("SUPABASE_URL"),
+        os.getenv("SUPABASE_ANON_KEY")
+    )
+    log.info("✅ Supabase client initialized successfully")
+except Exception as e:
+    log.warning(f"⚠️ Failed to initialize Supabase client: {e}")
+    log.warning("⚠️ System will work in local mode only")
+    supabase = None
 
 s3 = boto3.client(
     "s3",
@@ -1260,8 +1267,8 @@ file '{main_with_logos}'"""
 
 def insert_video_metadata(payload: dict) -> bool:
     headers = {
-        "apikey": os.getenv("SUPABASE_SERVICE_ROLE_KEY"),
-        "Authorization": f"Bearer {os.getenv('SUPABASE_SERVICE_ROLE_KEY')}",
+        "apikey": os.getenv("SUPABASE_ANON_KEY"),
+        "Authorization": f"Bearer {os.getenv('SUPABASE_ANON_KEY')}",
         "Content-Type": "application/json",
         "Prefer": "return=representation"
     }
