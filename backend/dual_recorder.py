@@ -645,12 +645,19 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             return False
         
         if method == 'side_by_side':
-            # Side-by-side merge (horizontal stack) - seamless like dual_record_test.py
+            # Advanced feathered blend merge for seamless wide-angle effect
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', 'hstack=inputs=2',  # REMOVED shortest=1
+                '-filter_complex', (
+                    '[0:v]crop=in_w*0.7:in_h:0:0[left_raw]; '
+                    '[1:v]crop=in_w*0.7:in_h:in_w*0.3:0[right_raw]; '
+                    '[left_raw]pad=iw*1.4:ih:0:0[left_padded]; '
+                    '[right_raw]pad=iw*1.4:ih:iw*0.7:0[right_padded]; '
+                    '[left_padded][right_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+                ),
+                '-map', '[out]',
                 '-c:v', 'libx264', 
                 '-preset', 'fast',
                 '-crf', '23',
@@ -658,12 +665,19 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 str(output_path)
             ]
         elif method == 'stacked':
-            # Top-bottom merge (vertical stack)
+            # Top-bottom merge with advanced feathered blend
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', 'vstack=inputs=2',  # REMOVED shortest=1
+                '-filter_complex', (
+                    '[0:v]crop=in_w:in_h*0.7:0:0[top_raw]; '
+                    '[1:v]crop=in_w:in_h*0.7:0:in_h*0.3[bottom_raw]; '
+                    '[top_raw]pad=iw:ih*1.4:0:0[top_padded]; '
+                    '[bottom_raw]pad=iw:ih*1.4:0:ih*0.7[bottom_padded]; '
+                    '[top_padded][bottom_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+                ),
+                '-map', '[out]',
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-crf', '23',
@@ -1483,23 +1497,43 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
     target_bitrate = "8000k"  # 8 Mbps for dual camera
     
     if method == 'side_by_side':
-        # Side-by-side merge (clean, no overlays) - like dual_record_test.py
-        filter_complex = 'hstack=inputs=2'
-        output_width *= 2  # Double width for side-by-side
+        # Advanced feathered blend merge for seamless wide-angle effect
+        # Creates smooth alpha-blended transition in the overlap region
+        filter_complex = (
+            '[0:v]crop=in_w*0.7:in_h:0:0[left_raw]; '
+            '[1:v]crop=in_w*0.7:in_h:in_w*0.3:0[right_raw]; '
+            '[left_raw]pad=iw*1.4:ih:0:0[left_padded]; '
+            '[right_raw]pad=iw*1.4:ih:iw*0.7:0[right_padded]; '
+            '[left_padded][right_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+        )
+        output_width = int(output_width * 1.4)  # 40% overlap for smooth blend
     elif method == 'stacked':
-        # Top-bottom merge (clean, no overlays)
-        filter_complex = 'vstack=inputs=2'
-        output_height *= 2  # Double height for stacked
+        # Top-bottom merge with feathered blend
+        filter_complex = (
+            '[0:v]crop=in_w:in_h*0.7:0:0[top_raw]; '
+            '[1:v]crop=in_w:in_h*0.7:0:in_h*0.3[bottom_raw]; '
+            '[top_raw]pad=iw:ih*1.4:0:0[top_padded]; '
+            '[bottom_raw]pad=iw:ih*1.4:0:ih*0.7[bottom_padded]; '
+            '[top_padded][bottom_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+        )
+        output_height = int(output_height * 1.4)  # 40% overlap for smooth blend
     else:
-        # Default to side-by-side (clean, no overlays)
-        filter_complex = 'hstack=inputs=2'
-        output_width *= 2
+        # Default to advanced feathered side-by-side
+        filter_complex = (
+            '[0:v]crop=in_w*0.7:in_h:0:0[left_raw]; '
+            '[1:v]crop=in_w*0.7:in_h:in_w*0.3:0[right_raw]; '
+            '[left_raw]pad=iw*1.4:ih:0:0[left_padded]; '
+            '[right_raw]pad=iw*1.4:ih:iw*0.7:0[right_padded]; '
+            '[left_padded][right_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+        )
+        output_width = int(output_width * 1.4)
     
     cmd = [
         'ffmpeg', '-y',  # Overwrite output file
         '-i', str(video1_path),
         '-i', str(video2_path),
         '-filter_complex', filter_complex,
+        '-map', '[out]',  # Map the output from our filter
         '-c:v', 'libx264',
         '-preset', 'fast',  # Match dual_record_test.py
         '-crf', '23',  # Good quality
