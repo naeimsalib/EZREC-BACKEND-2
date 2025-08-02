@@ -795,6 +795,32 @@ main() {
         sudo systemctl status video_worker.service --no-pager -l
     fi
     
+    # ----------------------------------------
+    # ✅ Deploy updated dual_recorder.py and enhanced_merge.py
+    # ----------------------------------------
+    log_info "📦 Deploying updated dual_recorder.py and enhanced_merge.py..."
+    
+    if [[ -f "$DEPLOY_PATH/backend/dual_recorder.py" ]]; then
+        log_info "✅ dual_recorder.py exists and will be used"
+    else
+        log_warn "⚠️ dual_recorder.py not found in deployment"
+    fi
+    
+    if [[ -f "$DEPLOY_PATH/backend/enhanced_merge.py" ]]; then
+        log_info "✅ enhanced_merge.py exists and will be used"
+    else
+        log_warn "⚠️ enhanced_merge.py not found in deployment"
+    fi
+    
+    # Restart dual_recorder service specifically
+    log_info "🔁 Restarting dual_recorder.service..."
+    if sudo systemctl restart dual_recorder.service; then
+        log_info "✅ dual_recorder.service restarted successfully"
+    else
+        log_error "❌ dual_recorder.service restart failed"
+        sudo systemctl status dual_recorder.service --no-pager -l
+    fi
+    
     # 10. Validate deployment
     validate_deployment
     test_picamera2
