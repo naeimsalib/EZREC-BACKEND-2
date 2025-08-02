@@ -266,40 +266,53 @@ class EnhancedVideoMerger:
         # Calculate bitrate (higher for dual camera)
         target_bitrate = "8000k"  # 8 Mbps for dual camera
         
+        # Dynamic feather width with edge trimming for lens distortion
+        feather_width = 100  # Can be made configurable
+        edge_trim = 5  # Crop 5px from edges to mask lens distortion
+        
+        self.logger.info(f"🎨 Using feathered blend merge:")
+        self.logger.info(f"   - Feather width: {feather_width}px")
+        self.logger.info(f"   - Edge trim: {edge_trim}px")
+        self.logger.info(f"   - Method: {method}")
+        self.logger.info(f"   - Output dimensions: {output_width}x{output_height}")
+        
         if method == 'side_by_side':
             # Advanced feathered blend merge for seamless wide-angle effect
-            # Creates 100px feathered overlap with linear alpha gradient
+            # Creates dynamic feathered overlap with linear alpha gradient
+            crop_width = output_width - feather_width
             filter_complex = (
-                '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
-                '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
-                '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
-                '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
-                '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
-                '[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+                f'[0:v]crop=w={crop_width - edge_trim}:h={output_height}:x=0:y=0[left]; '
+                f'[0:v]crop=w={feather_width}:h={output_height}:x={crop_width - edge_trim}:y=0[overlapL]; '
+                f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
+                f'[1:v]crop=w={crop_width - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
+                f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
             )
-            output_width = (output_width * 2) - 100  # Account for 100px overlap
+            output_width = (output_width * 2) - feather_width  # Account for overlap
         elif method == 'stacked':
-            # Top-bottom merge with 100px feathered blend
+            # Top-bottom merge with dynamic feathered blend
+            crop_height = output_height - feather_width
             filter_complex = (
-                '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
-                '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
-                '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
-                '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
-                '[overlapT][overlapB]blend=all_expr=\'A*(1-Y/H)+B*(Y/H)\'[blended]; '
-                '[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
+                f'[0:v]crop=w={output_width}:h={crop_height - edge_trim}:x=0:y=0[top]; '
+                f'[0:v]crop=w={output_width}:h={feather_width}:x=0:y={crop_height - edge_trim}[overlapT]; '
+                f'[1:v]crop=w={output_width}:h={feather_width}:x=0:y=0[overlapB]; '
+                f'[1:v]crop=w={output_width}:h={crop_height - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
+                f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
+                f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
             )
-            output_height = (output_height * 2) - 100  # Account for 100px overlap
+            output_height = (output_height * 2) - feather_width  # Account for overlap
         else:
-            # Default to side-by-side with feathered blend
+            # Default to side-by-side with dynamic feathered blend
+            crop_width = output_width - feather_width
             filter_complex = (
-                '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
-                '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
-                '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
-                '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
-                '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
-                '[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+                f'[0:v]crop=w={crop_width - edge_trim}:h={output_height}:x=0:y=0[left]; '
+                f'[0:v]crop=w={feather_width}:h={output_height}:x={crop_width - edge_trim}:y=0[overlapL]; '
+                f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
+                f'[1:v]crop=w={crop_width - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
+                f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
             )
-            output_width = (output_width * 2) - 100  # Account for 100px overlap
+            output_width = (output_width * 2) - feather_width  # Account for overlap
         
         cmd = [
             'ffmpeg', '-y',  # Overwrite output file
