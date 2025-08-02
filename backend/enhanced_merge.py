@@ -267,17 +267,39 @@ class EnhancedVideoMerger:
         target_bitrate = "8000k"  # 8 Mbps for dual camera
         
         if method == 'side_by_side':
-            # Side-by-side merge (horizontal stack)
-            filter_complex = f'[0:v][1:v]hstack=inputs=2:shortest=1[v]'
-            output_width *= 2  # Double width for side-by-side
+            # Advanced feathered blend merge for seamless wide-angle effect
+            # Creates 100px feathered overlap with linear alpha gradient
+            filter_complex = (
+                '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
+                '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
+                '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
+                '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
+                '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
+                '[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+            )
+            output_width = (output_width * 2) - 100  # Account for 100px overlap
         elif method == 'stacked':
-            # Top-bottom merge (vertical stack)
-            filter_complex = f'[0:v][1:v]vstack=inputs=2:shortest=1[v]'
-            output_height *= 2  # Double height for stacked
+            # Top-bottom merge with 100px feathered blend
+            filter_complex = (
+                '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
+                '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
+                '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
+                '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
+                '[overlapT][overlapB]blend=all_expr=\'A*(1-Y/H)+B*(Y/H)\'[blended]; '
+                '[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
+            )
+            output_height = (output_height * 2) - 100  # Account for 100px overlap
         else:
-            # Default to side-by-side
-            filter_complex = f'[0:v][1:v]hstack=inputs=2:shortest=1[v]'
-            output_width *= 2
+            # Default to side-by-side with feathered blend
+            filter_complex = (
+                '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
+                '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
+                '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
+                '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
+                '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
+                '[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+            )
+            output_width = (output_width * 2) - 100  # Account for 100px overlap
         
         cmd = [
             'ffmpeg', '-y',  # Overwrite output file
