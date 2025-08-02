@@ -654,7 +654,6 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 '-c:v', 'libx264', 
                 '-preset', 'fast',
                 '-crf', '23',
-                '-r', '30',  # Explicit frame rate to ensure consistency
                 '-pix_fmt', 'yuv420p',
                 str(output_path)
             ]
@@ -664,15 +663,11 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', '[0:v][1:v]vstack=inputs=2[v]',  # REMOVED shortest=1
-                '-map', '[v]',
-                '-an',  # 🚫 disable audio to avoid errors
+                '-filter_complex', 'vstack=inputs=2',  # REMOVED shortest=1
                 '-c:v', 'libx264',
-                '-preset', 'ultrafast',
+                '-preset', 'fast',
                 '-crf', '23',
-                '-r', '30',  # Explicit frame rate to ensure consistency
                 '-pix_fmt', 'yuv420p',
-                '-movflags', '+faststart',  # ✅ Ensure proper MP4 moov atom
                 str(output_path)
             ]
 
@@ -1488,34 +1483,16 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
     target_bitrate = "8000k"  # 8 Mbps for dual camera
     
     if method == 'side_by_side':
-        # Side-by-side merge with timestamp overlay for debugging
-        filter_complex = (
-            f'[0:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
-            f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
-            f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
-            f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
-            f'[v1][v2]hstack=inputs=2[v]'  # REMOVED shortest=1 - this was causing truncation!
-        )
+        # Side-by-side merge (clean, no overlays) - like dual_record_test.py
+        filter_complex = 'hstack=inputs=2'
         output_width *= 2  # Double width for side-by-side
     elif method == 'stacked':
-        # Top-bottom merge with timestamp overlay
-        filter_complex = (
-            f'[0:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
-            f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
-            f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
-            f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
-            f'[v1][v2]vstack=inputs=2[v]'  # REMOVED shortest=1 - this was causing truncation!
-        )
+        # Top-bottom merge (clean, no overlays)
+        filter_complex = 'vstack=inputs=2'
         output_height *= 2  # Double height for stacked
     else:
-        # Default to side-by-side with timestamp overlay
-        filter_complex = (
-            f'[0:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
-            f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
-            f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
-            f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
-            f'[v1][v2]hstack=inputs=2[v]'  # REMOVED shortest=1 - this was causing truncation!
-        )
+        # Default to side-by-side (clean, no overlays)
+        filter_complex = 'hstack=inputs=2'
         output_width *= 2
     
     cmd = [
@@ -1523,19 +1500,10 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
         '-i', str(video1_path),
         '-i', str(video2_path),
         '-filter_complex', filter_complex,
-        '-map', '[v]',
-        '-an',  # No audio to avoid errors
         '-c:v', 'libx264',
-        '-preset', 'ultrafast',  # Fast encoding
+        '-preset', 'fast',  # Match dual_record_test.py
         '-crf', '23',  # Good quality
-        '-b:v', target_bitrate,
-        '-maxrate', target_bitrate,
-        '-bufsize', '16000k',
         '-pix_fmt', 'yuv420p',  # Ensure compatibility
-        '-movflags', '+faststart',  # Optimize for streaming
-        '-metadata', f'merge_method={method}',
-        '-metadata', f'camera1={video1_path.name}',
-        '-metadata', f'camera2={video2_path.name}',
         str(output_path)
     ]
     
