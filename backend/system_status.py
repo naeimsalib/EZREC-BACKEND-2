@@ -78,7 +78,7 @@ LOG_FILE = "/opt/ezrec-backend/logs/system_status.log"
 STATUS_FILE = "/opt/ezrec-backend/status.json"
 
 # Required environment variables
-REQUIRED_VARS = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID"]
+REQUIRED_VARS = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "USER_ID", "CAMERA_ID"]
 missing_vars = [var for var in REQUIRED_VARS if not os.getenv(var)]
 if missing_vars:
     print(f"❌ Missing required environment variables: {missing_vars}")
@@ -91,7 +91,7 @@ SUPABASE_RATE_LIMIT_SECONDS = int(os.getenv("SUPABASE_RATE_LIMIT_SECONDS", "300"
 # Initialize Supabase client
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    os.getenv("SUPABASE_ANON_KEY")
 )
 
 # Setup logging
@@ -521,16 +521,23 @@ class SystemStatusMonitor:
                 "status": report["overall_status"]
             }
             
-            # Update Supabase using the global client
-            response = supabase.table("cameras").update(basic_data).eq("id", camera_id).execute()
-            
-            if hasattr(response, 'data') and response.data:
-                logger.info("✅ Camera status updated in Supabase")
-            else:
-                logger.warning("⚠️ No data returned from Supabase update")
+            # Update Supabase using the global client with better error handling
+            try:
+                response = supabase.table("cameras").update(basic_data).eq("id", camera_id).execute()
+                
+                if hasattr(response, 'data') and response.data:
+                    logger.info("✅ Camera status updated in Supabase")
+                else:
+                    logger.warning("⚠️ No data returned from Supabase update")
+                    
+            except Exception as supabase_error:
+                logger.error(f"❌ Supabase connection error: {supabase_error}")
+                # Don't fail the entire health check due to Supabase issues
+                return
                 
         except Exception as e:
             logger.error(f"❌ Error updating Supabase status: {e}")
+            # Don't fail the entire health check due to Supabase issues
     
     def run_health_check(self):
         """Run complete health check and report"""

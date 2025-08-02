@@ -769,9 +769,13 @@ main() {
     
     # Download user assets and company logo with timeout
     log_info "Starting asset download with timeout protection..."
-    timeout 300 download_user_assets || {
+    if timeout 300 bash -c "source $0; download_user_assets" || {
         log_warn "⚠️ Asset download timed out or failed, continuing with deployment..."
-    }
+    }; then
+        log_info "✅ Asset download completed"
+    else
+        log_warn "⚠️ Asset download failed, continuing with deployment..."
+    fi
     
     # 8. Setup files and services
     setup_files
