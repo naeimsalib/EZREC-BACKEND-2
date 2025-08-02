@@ -164,7 +164,7 @@ RECORDINGS_DIR.mkdir(parents=True, exist_ok=True)
 # Initialize Supabase client with proper error handling
 try:
     # Use SERVICE_ROLE_KEY for write operations (updates to cameras table)
-    supabase = create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+    supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
     logger.info("✅ Supabase client initialized successfully with service role key")
 except Exception as e:
     logger.warning(f"⚠️ Failed to initialize Supabase client: {e}")

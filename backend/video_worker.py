@@ -940,31 +940,11 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             
             # Step 4: Concat clean intro and logo-overlaid main
             concat_output = raw_file.parent / f"concat_{raw_file.name}"
-            # Use simpler concat approach with file list
-            concat_list_file = raw_file.parent / "concat_list.txt"
             
-            # Use absolute paths to avoid path resolution issues
-            concat_list_content = f"""file '{intro_reencoded}'
-file '{main_with_logos}'"""
-            
-            # Add detailed debugging for concat list creation
-            log.info(f"📋 Creating concat list file: {concat_list_file}")
-            log.info(f"📋 Concat list content:")
-            log.info(f"📋   file '{intro_reencoded}'")
-            log.info(f"📋   file '{main_with_logos}'")
-            
-            with open(concat_list_file, 'w') as f:
-                f.write(concat_list_content)
-            
-            # Verify the concat list file was created correctly
-            if concat_list_file.exists():
-                log.info(f"✅ Concat list file created successfully: {concat_list_file}")
-                with open(concat_list_file, 'r') as f:
-                    content = f.read()
-                    log.info(f"📋 Concat list file content: {content}")
-            else:
-                log.error(f"❌ Failed to create concat list file: {concat_list_file}")
-                raise Exception(f"Failed to create concat list file: {concat_list_file}")
+            # Using filter-based concat instead of demuxer - no concat list file needed
+            log.info(f"📋 Using filter-based concat for different resolutions")
+            log.info(f"📋   Intro video: {intro_reencoded}")
+            log.info(f"📋   Main video: {main_with_logos}")
             
             # Verify both input files exist and get detailed info
             if not intro_reencoded.exists():
@@ -1025,13 +1005,14 @@ file '{main_with_logos}'"""
             
             log.info(f"✅ Both input files exist, starting FFmpeg...")
             
-            # Run FFmpeg concat with absolute paths and detailed output
-            # Use re-encoding instead of copy to ensure proper timestamps and container structure
+            # Run FFmpeg concat with filter instead of demuxer to handle different resolutions
+            # This will scale videos to match and prevent truncation
             concat_cmd = [
                 'ffmpeg', '-y',
-                '-f', 'concat',
-                '-safe', '0',
-                '-i', str(concat_list_file),
+                '-i', str(intro_reencoded),
+                '-i', str(main_with_logos),
+                '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[out]',
+                '-map', '[out]',
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-crf', '23',
@@ -1091,12 +1072,7 @@ file '{main_with_logos}'"""
                 log.error(f"❌ FFmpeg concat error: {e}")
                 return None
             
-            # Clean up concat list file
-            try:
-                concat_list_file.unlink()
-                log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
-            except Exception as e:
-                log.warn(f"⚠️ Failed to clean up concat list file: {e}")
+
             
             # Clean up re-encoded intro video
             try:
@@ -1161,9 +1137,7 @@ file '{main_with_logos}'"""
                 if intro_reencoded.exists():
                     intro_reencoded.unlink()
                     log.info(f"🧹 Cleaned up re-encoded intro: {intro_reencoded}")
-                if concat_list_file.exists():
-                    concat_list_file.unlink()
-                    log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
+
             except Exception as e:
                 log.warn(f"⚠️ Failed to clean up temp files: {e}")
             
