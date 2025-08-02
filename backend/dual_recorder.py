@@ -1511,34 +1511,34 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
         # Advanced feathered blend merge for seamless wide-angle effect
         # Creates 100px feathered overlap with linear alpha gradient
         filter_complex = (
-            '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
-            '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
-            '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
-            '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
-            '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
-            '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
+            f'[0:v]crop=w={output_width - 100}:h={output_height}:x=0:y=0[left]; '
+            f'[0:v]crop=w=100:h={output_height}:x={output_width - 100}:y=0[overlapL]; '
+            f'[1:v]crop=w=100:h={output_height}:x=0:y=0[overlapR]; '
+            f'[1:v]crop=w={output_width - 100}:h={output_height}:x=100:y=0[right]; '
+            f'[overlapL][overlapR]blend=all_expr=A*(1-x/w)+B*(x/w)[blended]; '
+            f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
         )
         output_width = int(output_width * 1.8)  # 80% overlap for seamless blend
     elif method == 'stacked':
         # Top-bottom merge with 100px feathered blend
         filter_complex = (
-            '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
-            '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
-            '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
-            '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
-            '[overlapT][overlapB]blend=all_expr=\'A*(1-Y/H)+B*(Y/H)\'[blended]; '
-            '[top][blended][bottom]vstack=inputs=3,format=yuv420p[out]'
+            f'[0:v]crop=w={output_width}:h={output_height - 100}:x=0:y=0[top]; '
+            f'[0:v]crop=w={output_width}:h=100:x=0:y={output_height - 100}[overlapT]; '
+            f'[1:v]crop=w={output_width}:h=100:x=0:y=0[overlapB]; '
+            f'[1:v]crop=w={output_width}:h={output_height - 100}:x=0:y=100[bottom]; '
+            f'[overlapT][overlapB]blend=all_expr=A*(1-y/h)+B*(y/h)[blended]; '
+            f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
         )
         output_height = int(output_height * 1.8)  # 80% overlap for seamless blend
     else:
         # Default to advanced feathered side-by-side
         filter_complex = (
-            '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
-            '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
-            '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
-            '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
-            '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
-            '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
+            f'[0:v]crop=w={output_width - 100}:h={output_height}:x=0:y=0[left]; '
+            f'[0:v]crop=w=100:h={output_height}:x={output_width - 100}:y=0[overlapL]; '
+            f'[1:v]crop=w=100:h={output_height}:x=0:y=0[overlapR]; '
+            f'[1:v]crop=w={output_width - 100}:h={output_height}:x=100:y=0[right]; '
+            f'[overlapL][overlapR]blend=all_expr=A*(1-x/w)+B*(x/w)[blended]; '
+            f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
         )
         output_width = int(output_width * 1.8)
     
@@ -1547,7 +1547,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
         '-i', str(video1_path),
         '-i', str(video2_path),
         '-filter_complex', filter_complex,
-        '-map', '[out]',  # Map the output from our filter
+        '-map', '[v]',  # Map the output from our filter
         '-c:v', 'libx264',
         '-preset', 'fast',  # Match dual_record_test.py
         '-crf', '23',  # Good quality
