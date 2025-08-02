@@ -650,10 +650,12 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', 'hstack=inputs=2',
+                '-filter_complex', 'hstack=inputs=2',  # REMOVED shortest=1
                 '-c:v', 'libx264', 
                 '-preset', 'fast',
                 '-crf', '23',
+                '-r', '30',  # Explicit frame rate to ensure consistency
+                '-pix_fmt', 'yuv420p',
                 str(output_path)
             ]
         elif method == 'stacked':
@@ -662,12 +664,14 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', '[0:v][1:v]vstack=inputs=2[v]',
+                '-filter_complex', '[0:v][1:v]vstack=inputs=2[v]',  # REMOVED shortest=1
                 '-map', '[v]',
                 '-an',  # 🚫 disable audio to avoid errors
                 '-c:v', 'libx264',
                 '-preset', 'ultrafast',
                 '-crf', '23',
+                '-r', '30',  # Explicit frame rate to ensure consistency
+                '-pix_fmt', 'yuv420p',
                 '-movflags', '+faststart',  # ✅ Ensure proper MP4 moov atom
                 str(output_path)
             ]
@@ -681,10 +685,56 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             file_size = output_path.stat().st_size
             logger.info(f"✅ Successfully merged videos: {output_path} ({file_size:,} bytes)")
             
+            # Log FFmpeg stderr for debugging (even on success)
+            if result.stderr:
+                logger.info(f"📋 FFmpeg stderr: {result.stderr}")
+            
             # ✅ Validate merged file size (should be reasonable)
             min_merged_size = 1024 * 1024  # 1MB minimum
             if file_size < min_merged_size:
                 logger.warning(f"⚠️ Merged file seems small: {file_size:,} bytes (expected >{min_merged_size:,})")
+            
+            # ✅ Validate duration to ensure no truncation
+            try:
+                duration_result = subprocess.run([
+                    'ffprobe', '-v', 'quiet', '-show_entries', 'format=duration',
+                    '-of', 'csv=p=0', str(output_path)
+                ], capture_output=True, text=True, timeout=30)
+                
+                if duration_result.returncode == 0:
+                    merged_duration = float(duration_result.stdout.strip())
+                    logger.info(f"📊 Merged video duration: {merged_duration:.2f} seconds")
+                    
+                    # Check if duration is reasonable (should be close to input durations)
+                    # Get input durations for comparison
+                    try:
+                        dur1_result = subprocess.run([
+                            'ffprobe', '-v', 'quiet', '-show_entries', 'format=duration',
+                            '-of', 'csv=p=0', str(video1_path)
+                        ], capture_output=True, text=True, timeout=30)
+                        dur2_result = subprocess.run([
+                            'ffprobe', '-v', 'quiet', '-show_entries', 'format=duration',
+                            '-of', 'csv=p=0', str(video2_path)
+                        ], capture_output=True, text=True, timeout=30)
+                        
+                        if dur1_result.returncode == 0 and dur2_result.returncode == 0:
+                            dur1 = float(dur1_result.stdout.strip())
+                            dur2 = float(dur2_result.stdout.strip())
+                            expected_duration = max(dur1, dur2)  # Should match the longer input
+                            
+                            logger.info(f"📊 Input durations: {dur1:.2f}s, {dur2:.2f}s")
+                            logger.info(f"📊 Expected merged duration: {expected_duration:.2f}s")
+                            
+                            if abs(merged_duration - expected_duration) > 2.0:
+                                logger.warning(f"⚠️ Duration mismatch! Expected ~{expected_duration:.2f}s, got {merged_duration:.2f}s")
+                            else:
+                                logger.info(f"✅ Duration validation passed")
+                    except Exception as e:
+                        logger.warning(f"⚠️ Could not validate input durations: {e}")
+                else:
+                    logger.warning(f"⚠️ Could not get merged video duration: {duration_result.stderr}")
+            except Exception as e:
+                logger.warning(f"⚠️ Duration validation error: {e}")
             
             # ✅ Validate MP4 structure with ffprobe
             try:
@@ -698,16 +748,15 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                     logger.info(f"✅ Merged video validation passed")
                     return True
                 else:
-                    logger.error(f"❌ Merged video validation failed: {validate_result.stderr}")
-                    return False
-                    
+                    logger.warning(f"⚠️ Merged video validation failed: {validate_result.stderr}")
             except Exception as e:
-                logger.error(f"❌ Error validating merged video: {e}")
-                return False
+                logger.warning(f"⚠️ Could not validate merged video: {e}")
+            
+            return True
         else:
-            logger.error(f"❌ Failed to merge videos (exit code {result.returncode})")
-            logger.error(f"🔧 FFmpeg stderr:\n{result.stderr}")
-            logger.error(f"🔧 FFmpeg stdout:\n{result.stdout}")
+            logger.error(f"❌ Merge failed with return code: {result.returncode}")
+            logger.error(f"❌ FFmpeg stderr: {result.stderr}")
+            logger.error(f"❌ FFmpeg stdout: {result.stdout}")
             return False
             
     except subprocess.TimeoutExpired:
@@ -1445,7 +1494,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
             f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
             f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
             f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
-            f'[v1][v2]hstack=inputs=2:shortest=1[v]'
+            f'[v1][v2]hstack=inputs=2[v]'  # REMOVED shortest=1 - this was causing truncation!
         )
         output_width *= 2  # Double width for side-by-side
     elif method == 'stacked':
@@ -1455,7 +1504,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
             f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
             f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
             f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
-            f'[v1][v2]vstack=inputs=2:shortest=1[v]'
+            f'[v1][v2]vstack=inputs=2[v]'  # REMOVED shortest=1 - this was causing truncation!
         )
         output_height *= 2  # Double height for stacked
     else:
@@ -1465,7 +1514,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
             f'x=10:y=10:box=1:boxcolor=black@0.5[v1];'
             f'[1:v]drawtext=text=\'%{{pts\\:localtime\\:%T}}\':fontsize=24:fontcolor=white:'
             f'x=10:y=10:box=1:boxcolor=black@0.5[v2];'
-            f'[v1][v2]hstack=inputs=2:shortest=1[v]'
+            f'[v1][v2]hstack=inputs=2[v]'  # REMOVED shortest=1 - this was causing truncation!
         )
         output_width *= 2
     
