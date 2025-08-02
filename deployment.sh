@@ -654,9 +654,26 @@ main() {
     # Remove everything EXCEPT .env
     log_info "🧹 Cleaning up old installation (preserving .env)..."
     if [[ -d "$DEPLOY_PATH" ]]; then
-        # Remove everything except .env
-        sudo find $DEPLOY_PATH -mindepth 1 -not -name '.env' -delete 2>/dev/null || true
-        log_info "✅ Cleaned up old files (preserved .env)"
+        # DOUBLE PROTECTION: Check if .env exists before cleanup
+        if [[ -f "$DEPLOY_PATH/.env" ]]; then
+            log_info "🔒 .env file found - will preserve it during cleanup"
+            # Remove everything except .env
+            sudo find $DEPLOY_PATH -mindepth 1 -not -name '.env' -delete 2>/dev/null || true
+            log_info "✅ Cleaned up old files (preserved .env)"
+            
+            # Verify .env still exists after cleanup
+            if [[ -f "$DEPLOY_PATH/.env" ]]; then
+                log_info "✅ .env file successfully preserved"
+            else
+                log_error "❌ .env file was accidentally removed during cleanup!"
+                return 1
+            fi
+        else
+            log_warn "⚠️ No .env file found in deployment directory"
+            sudo rm -rf $DEPLOY_PATH
+            sudo mkdir -p $DEPLOY_PATH
+            log_info "✅ Created new deployment directory"
+        fi
     else
         sudo mkdir -p $DEPLOY_PATH
         log_info "✅ Created new deployment directory"
@@ -677,6 +694,48 @@ main() {
     else
         log_warn "⚠️ No .env backup found to restore"
     fi
+    
+    # Ensure required environment variables are present
+    ensure_env_variables() {
+        log_info "🔧 Ensuring required environment variables are present..."
+        local env_file="$DEPLOY_PATH/.env"
+        
+        if [[ ! -f "$env_file" ]]; then
+            log_error "❌ .env file not found at $env_file"
+            return 1
+        fi
+        
+        # Check for required variables
+        local required_vars=(
+            "SUPABASE_URL"
+            "SUPABASE_ANON_KEY" 
+            "SUPABASE_SERVICE_ROLE_KEY"
+            "SUPABASE_KEY"
+            "RECORDING_DIR"
+            "PROCESSED_DIR"
+            "ASSETS_DIR"
+            "USER_ID"
+            "CAMERA_ID"
+        )
+        
+        local missing_vars=()
+        for var in "${required_vars[@]}"; do
+            if ! grep -q "^${var}=" "$env_file"; then
+                missing_vars+=("$var")
+            fi
+        done
+        
+        if [[ ${#missing_vars[@]} -gt 0 ]]; then
+            log_warn "⚠️ Missing required environment variables: ${missing_vars[*]}"
+            log_info "📝 Please add these variables to your .env file manually"
+            return 1
+        else
+            log_info "✅ All required environment variables are present"
+        fi
+    }
+    
+    # Run environment variable check
+    ensure_env_variables
     
     # 4. Install dependencies
     install_dependencies
