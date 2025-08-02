@@ -664,7 +664,7 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                     '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
                     '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
                     '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
-                    '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
+                    '[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
                     '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
                 ),
                 '-map', '[out]',
@@ -685,7 +685,7 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                     '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
                     '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
                     '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
-                    '[overlapT][overlapB]blend=all_expr=\'A*(1-Y/H)+B*(Y/H)\'[blended]; '
+                    '[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
                     '[top][blended][bottom]vstack=inputs=3,format=yuv420p[out]'
                 ),
                 '-map', '[out]',
@@ -1515,7 +1515,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
             f'[0:v]crop=w=100:h={output_height}:x={output_width - 100}:y=0[overlapL]; '
             f'[1:v]crop=w=100:h={output_height}:x=0:y=0[overlapR]; '
             f'[1:v]crop=w={output_width - 100}:h={output_height}:x=100:y=0[right]; '
-            f'[overlapL][overlapR]blend=all_expr=A*(1-x/w)+B*(x/w)[blended]; '
+            f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
             f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
         )
         output_width = int(output_width * 1.8)  # 80% overlap for seamless blend
@@ -1526,7 +1526,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
             f'[0:v]crop=w={output_width}:h=100:x=0:y={output_height - 100}[overlapT]; '
             f'[1:v]crop=w={output_width}:h=100:x=0:y=0[overlapB]; '
             f'[1:v]crop=w={output_width}:h={output_height - 100}:x=0:y=100[bottom]; '
-            f'[overlapT][overlapB]blend=all_expr=A*(1-y/h)+B*(y/h)[blended]; '
+            f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
             f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
         )
         output_height = int(output_height * 1.8)  # 80% overlap for seamless blend
@@ -1537,7 +1537,7 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
             f'[0:v]crop=w=100:h={output_height}:x={output_width - 100}:y=0[overlapL]; '
             f'[1:v]crop=w=100:h={output_height}:x=0:y=0[overlapR]; '
             f'[1:v]crop=w={output_width - 100}:h={output_height}:x=100:y=0[right]; '
-            f'[overlapL][overlapR]blend=all_expr=A*(1-x/w)+B*(x/w)[blended]; '
+            f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
             f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
         )
         output_width = int(output_width * 1.8)

@@ -285,7 +285,7 @@ class EnhancedVideoMerger:
                 f'[0:v]crop=w={feather_width}:h={output_height}:x={crop_width - edge_trim}:y=0[overlapL]; '
                 f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
                 f'[1:v]crop=w={crop_width - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                f'[overlapL][overlapR]blend=all_expr=A*(1-x/w)+B*(x/w)[blended]; '
+                f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
                 f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
             )
             output_width = (output_width * 2) - feather_width  # Account for overlap
@@ -297,7 +297,7 @@ class EnhancedVideoMerger:
                 f'[0:v]crop=w={output_width}:h={feather_width}:x=0:y={crop_height - edge_trim}[overlapT]; '
                 f'[1:v]crop=w={output_width}:h={feather_width}:x=0:y=0[overlapB]; '
                 f'[1:v]crop=w={output_width}:h={crop_height - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
-                f'[overlapT][overlapB]blend=all_expr=A*(1-y/h)+B*(y/h)[blended]; '
+                f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
                 f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
             )
             output_height = (output_height * 2) - feather_width  # Account for overlap
@@ -309,7 +309,7 @@ class EnhancedVideoMerger:
                 f'[0:v]crop=w={feather_width}:h={output_height}:x={crop_width - edge_trim}:y=0[overlapL]; '
                 f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
                 f'[1:v]crop=w={crop_width - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                f'[overlapL][overlapR]blend=all_expr=A*(1-x/w)+B*(x/w)[blended]; '
+                f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
                 f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
             )
             output_width = (output_width * 2) - feather_width  # Account for overlap
