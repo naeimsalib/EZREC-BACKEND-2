@@ -654,16 +654,18 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
         
         if method == 'side_by_side':
             # Advanced feathered blend merge for seamless wide-angle effect
+            # Creates 100px feathered overlap with linear alpha gradient
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
                 '-filter_complex', (
-                    '[0:v]crop=in_w*0.7:in_h:0:0[left_raw]; '
-                    '[1:v]crop=in_w*0.7:in_h:in_w*0.3:0[right_raw]; '
-                    '[left_raw]pad=iw*1.4:ih:0:0[left_padded]; '
-                    '[right_raw]pad=iw*1.4:ih:iw*0.7:0[right_padded]; '
-                    '[left_padded][right_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+                    '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
+                    '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
+                    '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
+                    '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
+                    '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
+                    '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
                 ),
                 '-map', '[out]',
                 '-c:v', 'libx264', 
@@ -673,17 +675,18 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
                 str(output_path)
             ]
         elif method == 'stacked':
-            # Top-bottom merge with advanced feathered blend
+            # Top-bottom merge with 100px feathered blend
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
                 '-filter_complex', (
-                    '[0:v]crop=in_w:in_h*0.7:0:0[top_raw]; '
-                    '[1:v]crop=in_w:in_h*0.7:0:in_h*0.3[bottom_raw]; '
-                    '[top_raw]pad=iw:ih*1.4:0:0[top_padded]; '
-                    '[bottom_raw]pad=iw:ih*1.4:0:ih*0.7[bottom_padded]; '
-                    '[top_padded][bottom_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+                    '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
+                    '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
+                    '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
+                    '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
+                    '[overlapT][overlapB]blend=all_expr=\'A*(1-Y/H)+B*(Y/H)\'[blended]; '
+                    '[top][blended][bottom]vstack=inputs=3,format=yuv420p[out]'
                 ),
                 '-map', '[out]',
                 '-c:v', 'libx264',
@@ -1506,35 +1509,38 @@ def _create_merge_command(video1_path: Path, video2_path: Path,
     
     if method == 'side_by_side':
         # Advanced feathered blend merge for seamless wide-angle effect
-        # Creates smooth alpha-blended transition in the overlap region
+        # Creates 100px feathered overlap with linear alpha gradient
         filter_complex = (
-            '[0:v]crop=in_w*0.7:in_h:0:0[left_raw]; '
-            '[1:v]crop=in_w*0.7:in_h:in_w*0.3:0[right_raw]; '
-            '[left_raw]pad=iw*1.4:ih:0:0[left_padded]; '
-            '[right_raw]pad=iw*1.4:ih:iw*0.7:0[right_padded]; '
-            '[left_padded][right_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+            '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
+            '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
+            '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
+            '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
+            '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
+            '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
         )
-        output_width = int(output_width * 1.4)  # 40% overlap for smooth blend
+        output_width = int(output_width * 1.8)  # 80% overlap for seamless blend
     elif method == 'stacked':
-        # Top-bottom merge with feathered blend
+        # Top-bottom merge with 100px feathered blend
         filter_complex = (
-            '[0:v]crop=in_w:in_h*0.7:0:0[top_raw]; '
-            '[1:v]crop=in_w:in_h*0.7:0:in_h*0.3[bottom_raw]; '
-            '[top_raw]pad=iw:ih*1.4:0:0[top_padded]; '
-            '[bottom_raw]pad=iw:ih*1.4:0:ih*0.7[bottom_padded]; '
-            '[top_padded][bottom_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+            '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
+            '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
+            '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
+            '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
+            '[overlapT][overlapB]blend=all_expr=\'A*(1-Y/H)+B*(Y/H)\'[blended]; '
+            '[top][blended][bottom]vstack=inputs=3,format=yuv420p[out]'
         )
-        output_height = int(output_height * 1.4)  # 40% overlap for smooth blend
+        output_height = int(output_height * 1.8)  # 80% overlap for seamless blend
     else:
         # Default to advanced feathered side-by-side
         filter_complex = (
-            '[0:v]crop=in_w*0.7:in_h:0:0[left_raw]; '
-            '[1:v]crop=in_w*0.7:in_h:in_w*0.3:0[right_raw]; '
-            '[left_raw]pad=iw*1.4:ih:0:0[left_padded]; '
-            '[right_raw]pad=iw*1.4:ih:iw*0.7:0[right_padded]; '
-            '[left_padded][right_padded]blend=all_mode=overlay:all_opacity=0.5,format=yuv420p[out]'
+            '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
+            '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
+            '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
+            '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
+            '[overlapL][overlapR]blend=all_expr=\'A*(1-X/W)+B*(X/W)\'[blended]; '
+            '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
         )
-        output_width = int(output_width * 1.4)
+        output_width = int(output_width * 1.8)
     
     cmd = [
         'ffmpeg', '-y',  # Overwrite output file
