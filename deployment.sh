@@ -447,6 +447,11 @@ except Exception as e:
 setup_files() {
     log_step "Setting up files and permissions"
     
+    # Ensure logs directory exists
+    sudo mkdir -p $DEPLOY_PATH/logs
+    sudo chown $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH/logs
+    sudo chmod 755 $DEPLOY_PATH/logs
+    
     # Create log files
     sudo -u $DEPLOY_USER touch $DEPLOY_PATH/logs/dual_recorder.log
     sudo -u $DEPLOY_USER touch $DEPLOY_PATH/logs/video_worker.log
@@ -682,8 +687,15 @@ main() {
     
     # 3. Copy project files
     log_step "3. Copying project files"
-    sudo cp -r . $DEPLOY_PATH/
-    sudo chown -R $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH
+    # Only copy if we're not already in the deployment directory
+    if [[ "$(pwd)" != "$DEPLOY_PATH" ]]; then
+        sudo cp -r . $DEPLOY_PATH/
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH
+    else
+        log_info "✅ Already in deployment directory, skipping copy"
+        # Ensure proper ownership even if we're in the deployment directory
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH
+    fi
     
     # Restore .env if it existed
     if [[ -f "/tmp/ezrec_env_backup" ]]; then
@@ -769,12 +781,11 @@ main() {
     
     # Download user assets and company logo with timeout
     log_info "Starting asset download with timeout protection..."
-    if timeout 300 bash -c "source $0; download_user_assets" || {
-        log_warn "⚠️ Asset download timed out or failed, continuing with deployment..."
-    }; then
+    cd $DEPLOY_PATH
+    if timeout 60 bash -c "download_user_assets" 2>/dev/null; then
         log_info "✅ Asset download completed"
     else
-        log_warn "⚠️ Asset download failed, continuing with deployment..."
+        log_warn "⚠️ Asset download timed out or failed, continuing with deployment..."
     fi
     
     # 8. Setup files and services
