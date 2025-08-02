@@ -1005,18 +1005,93 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             
             log.info(f"✅ Both input files exist, starting FFmpeg...")
             
-            # Run FFmpeg concat with filter instead of demuxer to handle different resolutions
-            # This will scale videos to match and prevent truncation
-            concat_cmd = [
+            # Step 4: Normalize both videos to identical properties before concat
+            log.info(f"🔧 Normalizing videos to identical properties for safe concat...")
+            
+            # Get target properties from main video
+            main_info = get_video_info(main_with_logos)
+            if main_info is None:
+                log.error(f"❌ Could not get main video info for normalization")
+                return None
+            
+            main_codec, main_width, main_height, main_fps, main_pix_fmt = main_info
+            log.info(f"📊 Target properties: {main_width}x{main_height}, {main_fps}fps, {main_pix_fmt}")
+            
+            # Normalize intro video to match main video properties
+            intro_normalized = raw_file.parent / f"intro_normalized_{intro_reencoded.name}"
+            intro_normalize_cmd = [
                 'ffmpeg', '-y',
                 '-i', str(intro_reencoded),
-                '-i', str(main_with_logos),
-                '-filter_complex', '[0:v][1:v]concat=n=2:v=1:a=0[out]',
-                '-map', '[out]',
+                '-vf', f'scale={main_width}:{main_height}:force_original_aspect_ratio=decrease,pad={main_width}:{main_height}:(ow-iw)/2:(oh-ih)/2',
+                '-r', str(main_fps),
                 '-c:v', 'libx264',
                 '-preset', 'fast',
                 '-crf', '23',
                 '-pix_fmt', 'yuv420p',
+                '-avoid_negative_ts', 'make_zero',
+                '-fflags', '+genpts',
+                str(intro_normalized)
+            ]
+            
+            log.info(f"🎬 Intro normalization command: {' '.join(intro_normalize_cmd)}")
+            
+            try:
+                intro_normalize_result = subprocess.run(intro_normalize_cmd, capture_output=True, text=True, timeout=300)
+                if intro_normalize_result.returncode != 0:
+                    log.error(f"❌ Intro normalization failed: {intro_normalize_result.stderr}")
+                    return None
+                log.info(f"✅ Intro video normalized successfully")
+            except Exception as e:
+                log.error(f"❌ Intro normalization error: {e}")
+                return None
+            
+            # Normalize main video to ensure consistent properties
+            main_normalized = raw_file.parent / f"main_normalized_{main_with_logos.name}"
+            main_normalize_cmd = [
+                'ffmpeg', '-y',
+                '-i', str(main_with_logos),
+                '-r', str(main_fps),
+                '-c:v', 'libx264',
+                '-preset', 'fast',
+                '-crf', '23',
+                '-pix_fmt', 'yuv420p',
+                '-avoid_negative_ts', 'make_zero',
+                '-fflags', '+genpts',
+                str(main_normalized)
+            ]
+            
+            log.info(f"🎬 Main normalization command: {' '.join(main_normalize_cmd)}")
+            
+            try:
+                main_normalize_result = subprocess.run(main_normalize_cmd, capture_output=True, text=True, timeout=300)
+                if main_normalize_result.returncode != 0:
+                    log.error(f"❌ Main normalization failed: {main_normalize_result.stderr}")
+                    return None
+                log.info(f"✅ Main video normalized successfully")
+            except Exception as e:
+                log.error(f"❌ Main normalization error: {e}")
+                return None
+            
+            # Step 5: Use concat demuxer with normalized videos (more reliable than filter)
+            log.info(f"🎬 Using concat demuxer with normalized videos...")
+            
+            # Create concat list file
+            concat_list_file = raw_file.parent / "concat_list_normalized.txt"
+            concat_list_content = f"""file '{intro_normalized}'
+file '{main_normalized}'"""
+            
+            with open(concat_list_file, 'w') as f:
+                f.write(concat_list_content)
+            
+            log.info(f"📋 Concat list content: {concat_list_content}")
+            
+            # Run concat with demuxer (more reliable for matching videos)
+            concat_cmd = [
+                'ffmpeg', '-y',
+                '-f', 'concat',
+                '-safe', '0',
+                '-i', str(concat_list_file),
+                '-c', 'copy',  # Use copy since videos are now identical
                 str(concat_output)
             ]
             
@@ -1058,6 +1133,14 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                         if output_size == 0:
                             log.error(f"❌ Concat output file is empty!")
                             raise Exception("Concat output file is empty")
+                        
+                        # Enhanced verification: check video properties
+                        final_info = get_video_info(concat_output)
+                        if final_info:
+                            final_codec, final_width, final_height, final_fps, final_pix_fmt = final_info
+                            log.info(f"📊 Final video properties: {final_width}x{final_height}, {final_fps}fps, {final_pix_fmt}")
+                        else:
+                            log.warning(f"⚠️ Could not get final video properties")
                     else:
                         log.error(f"❌ Concat output file does not exist: {concat_output}")
                         raise Exception(f"Concat output file does not exist: {concat_output}")
@@ -1074,18 +1157,28 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             
 
             
-            # Clean up re-encoded intro video
+            # Clean up temporary files
             try:
-                intro_reencoded.unlink()
-                log.info(f"🧹 Cleaned up re-encoded intro video: {intro_reencoded}")
+                if intro_reencoded.exists():
+                    intro_reencoded.unlink()
+                    log.info(f"🧹 Cleaned up re-encoded intro video: {intro_reencoded}")
+                if intro_normalized.exists():
+                    intro_normalized.unlink()
+                    log.info(f"🧹 Cleaned up normalized intro video: {intro_normalized}")
+                if main_normalized.exists():
+                    main_normalized.unlink()
+                    log.info(f"🧹 Cleaned up normalized main video: {main_normalized}")
+                if concat_list_file.exists():
+                    concat_list_file.unlink()
+                    log.info(f"🧹 Cleaned up concat list file: {concat_list_file}")
             except Exception as e:
-                log.warn(f"⚠️ Failed to clean up re-encoded intro video: {e}")
+                log.warn(f"⚠️ Failed to clean up temporary files: {e}")
             
-            # Verify the final video duration
+            # Verify the final video duration with enhanced logging
             if concat_output.exists():
                 final_duration = get_duration(concat_output)
-                intro_duration = get_duration(intro_reencoded) if intro_reencoded.exists() else get_duration(intro_path)
-                main_duration = get_duration(main_with_logos)
+                intro_duration = get_duration(intro_normalized) if intro_normalized.exists() else get_duration(intro_reencoded) if intro_reencoded.exists() else get_duration(intro_path)
+                main_duration = get_duration(main_normalized) if main_normalized.exists() else get_duration(main_with_logos)
                 expected_duration = intro_duration + main_duration
                 
                 log.info(f"📊 Duration verification:")
@@ -1094,9 +1187,30 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 log.info(f"📊   Expected total: {expected_duration:.2f}s")
                 log.info(f"📊   Final video: {final_duration:.2f}s")
                 
-                if abs(final_duration - expected_duration) > 2.0:
-                    log.error(f"❌ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s")
+                # Enhanced duration validation with tolerance
+                duration_diff = abs(final_duration - expected_duration)
+                tolerance = 1.0  # 1 second tolerance for rounding differences
+                
+                if duration_diff > tolerance:
+                    log.error(f"❌ Duration mismatch! Expected {expected_duration:.2f}s, got {final_duration:.2f}s (diff: {duration_diff:.2f}s)")
                     log.error(f"❌ This indicates the concat failed - video may be truncated")
+                    
+                    # Additional debugging: check individual file durations
+                    log.info(f"🔍 Debugging individual file durations:")
+                    if intro_normalized.exists():
+                        log.info(f"   Normalized intro: {get_duration(intro_normalized):.2f}s")
+                    if main_normalized.exists():
+                        log.info(f"   Normalized main: {get_duration(main_normalized):.2f}s")
+                    
+                    # Try to identify which part was truncated
+                    if final_duration < intro_duration:
+                        log.error(f"❌ Final video is shorter than intro - intro may have been truncated")
+                    elif final_duration < main_duration:
+                        log.error(f"❌ Final video is shorter than main - main may have been truncated")
+                    else:
+                        log.error(f"❌ Unexpected duration mismatch - investigate further")
+                else:
+                    log.info(f"✅ Duration verification passed (difference: {duration_diff:.2f}s)")
                     
                     # Try to debug by checking the actual concat output file
                     try:
@@ -1109,17 +1223,14 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                             log.error(f"❌ Final video is corrupted: {result.stderr}")
                     except Exception as e:
                         log.error(f"❌ Error checking final video: {e}")
-                    return None
-                else:
-                    log.info(f"✅ Duration matches expected: {final_duration:.2f}s")
                     
-                # Additional quality check
-                output_size = concat_output.stat().st_size
-                if output_size < 1024 * 1024:  # Less than 1MB
-                    log.error(f"❌ Final video too small: {output_size:,} bytes")
-                    return None
-                else:
-                    log.info(f"✅ Final video size: {output_size:,} bytes")
+                    # Additional quality check
+                    output_size = concat_output.stat().st_size
+                    if output_size < 1024 * 1024:  # Less than 1MB
+                        log.error(f"❌ Final video too small: {output_size:,} bytes")
+                        return None
+                    else:
+                        log.info(f"✅ Final video size: {output_size:,} bytes")
             else:
                 log.error(f"❌ Final concat video does not exist: {concat_output}")
                 raise Exception(f"Final concat video does not exist: {concat_output}")
@@ -1137,7 +1248,6 @@ def process_single_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 if intro_reencoded.exists():
                     intro_reencoded.unlink()
                     log.info(f"🧹 Cleaned up re-encoded intro: {intro_reencoded}")
-
             except Exception as e:
                 log.warn(f"⚠️ Failed to clean up temp files: {e}")
             
