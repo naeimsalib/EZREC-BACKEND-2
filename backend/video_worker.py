@@ -142,6 +142,7 @@ CHECK_INTERVAL = int(os.getenv("VIDEO_WORKER_CHECK_INTERVAL", "15"))
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 MEDIA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
+# Setup logging BEFORE Supabase client initialization
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
