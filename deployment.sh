@@ -641,13 +641,26 @@ main() {
     
     # 2. Backup and cleanup old installation
     log_step "2. Cleaning up old installation"
+    
+    # PROTECT .env FILE - NEVER DELETE IT
     if [[ -f "$DEPLOY_PATH/.env" ]]; then
-        log_info "Backing up existing .env file"
+        log_info "🔒 Backing up existing .env file"
         sudo cp $DEPLOY_PATH/.env /tmp/ezrec_env_backup
+        log_info "✅ .env file backed up successfully"
+    else
+        log_warn "⚠️ No .env file found to backup"
     fi
     
-    sudo rm -rf $DEPLOY_PATH
-    sudo mkdir -p $DEPLOY_PATH
+    # Remove everything EXCEPT .env
+    log_info "🧹 Cleaning up old installation (preserving .env)..."
+    if [[ -d "$DEPLOY_PATH" ]]; then
+        # Remove everything except .env
+        sudo find $DEPLOY_PATH -mindepth 1 -not -name '.env' -delete 2>/dev/null || true
+        log_info "✅ Cleaned up old files (preserved .env)"
+    else
+        sudo mkdir -p $DEPLOY_PATH
+        log_info "✅ Created new deployment directory"
+    fi
     
     # 3. Copy project files
     log_step "3. Copying project files"
@@ -656,10 +669,13 @@ main() {
     
     # Restore .env if it existed
     if [[ -f "/tmp/ezrec_env_backup" ]]; then
-        log_info "Restoring .env file"
+        log_info "🔒 Restoring .env file"
         sudo cp /tmp/ezrec_env_backup $DEPLOY_PATH/.env
         sudo chown $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH/.env
         sudo chmod 644 $DEPLOY_PATH/.env
+        log_info "✅ .env file restored successfully"
+    else
+        log_warn "⚠️ No .env backup found to restore"
     fi
     
     # 4. Install dependencies
