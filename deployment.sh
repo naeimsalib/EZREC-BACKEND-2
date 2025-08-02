@@ -298,6 +298,10 @@ download_user_assets() {
     
     cd $DEPLOY_PATH
     
+    # Debug: Check if we're in the right directory
+    log_info "Current directory: $(pwd)"
+    log_info "Checking if .env exists: $(ls -la .env 2>/dev/null || echo 'NOT FOUND')"
+    
     # Get user_id from .env file
     USER_ID=$(grep "^USER_ID=" .env | cut -d'=' -f2)
     if [[ -z "$USER_ID" ]]; then
@@ -747,10 +751,12 @@ main() {
     # Download user assets and company logo with timeout
     log_info "Starting asset download with timeout protection..."
     cd $DEPLOY_PATH
-    if timeout 300 bash -c "download_user_assets" 2>/dev/null; then
+    
+    # Call the function directly from the script
+    if download_user_assets; then
         log_info "✅ Asset download completed"
     else
-        log_warn "⚠️ Asset download timed out or failed, continuing with deployment..."
+        log_warn "⚠️ Asset download failed, continuing with deployment..."
     fi
     
     # 8. Setup files and services
