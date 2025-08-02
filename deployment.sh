@@ -302,7 +302,7 @@ download_user_assets() {
     USER_ID=$(grep "^USER_ID=" .env | cut -d'=' -f2)
     if [[ -z "$USER_ID" ]]; then
         log_warn "USER_ID not found in .env file, skipping user asset download"
-        return
+        return 0  # Don't exit script, just return
     fi
     
     # Create single assets directory for all assets
@@ -313,28 +313,28 @@ download_user_assets() {
     log_info "Downloading main company logo..."
     COMPANY_LOGO_PATH="$ASSETS_DIR/ezrec_logo.png"
     
-    # Capture the actual download result
+    # Capture the actual download result with proper error handling
     COMPANY_LOGO_RESULT=$(sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
 import boto3
 import os
 import sys
 from pathlib import Path
 
-# Load environment
-from dotenv import load_dotenv
-load_dotenv('/opt/ezrec-backend/.env')
-
-# Get AWS credentials
-bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
-region = os.getenv('AWS_REGION')
-access_key = os.getenv('AWS_ACCESS_KEY_ID')
-secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-
-if not all([bucket, region, access_key, secret_key]):
-    print('❌ Missing AWS credentials for asset download')
-    sys.exit(1)
-
 try:
+    # Load environment
+    from dotenv import load_dotenv
+    load_dotenv('/opt/ezrec-backend/.env')
+
+    # Get AWS credentials
+    bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
+    region = os.getenv('AWS_REGION')
+    access_key = os.getenv('AWS_ACCESS_KEY_ID')
+    secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+    if not all([bucket, region, access_key, secret_key]):
+        print('❌ Missing AWS credentials for asset download')
+        sys.exit(1)
+
     s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     
     # Download company logo from root of bucket
@@ -365,21 +365,21 @@ import os
 import sys
 from pathlib import Path
 
-# Load environment
-from dotenv import load_dotenv
-load_dotenv('/opt/ezrec-backend/.env')
-
-# Get AWS credentials
-bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
-region = os.getenv('AWS_REGION')
-access_key = os.getenv('AWS_ACCESS_KEY_ID')
-secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-
-if not all([bucket, region, access_key, secret_key]):
-    print('❌ Missing AWS credentials for asset download')
-    sys.exit(1)
-
 try:
+    # Load environment
+    from dotenv import load_dotenv
+    load_dotenv('/opt/ezrec-backend/.env')
+
+    # Get AWS credentials
+    bucket = os.getenv('AWS_USER_MEDIA_BUCKET') or os.getenv('AWS_S3_BUCKET')
+    region = os.getenv('AWS_REGION')
+    access_key = os.getenv('AWS_ACCESS_KEY_ID')
+    secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+
+    if not all([bucket, region, access_key, secret_key]):
+        print('❌ Missing AWS credentials for asset download')
+        sys.exit(1)
+
     s3 = boto3.client('s3', region_name=region, aws_access_key_id=access_key, aws_secret_access_key=secret_key)
     
     # Define user assets with correct paths based on S3 structure
@@ -440,6 +440,7 @@ except Exception as e:
     sudo chmod -R 755 "$ASSETS_DIR"
     
     log_info "Asset download process completed"
+    return 0  # Always return success to continue deployment
 }
 
 # Setup files and permissions
@@ -766,8 +767,11 @@ main() {
     cd $DEPLOY_PATH
     sudo -u $DEPLOY_USER python3 backend/create_assets.py
     
-    # Download user assets and company logo
-    download_user_assets
+    # Download user assets and company logo with timeout
+    log_info "Starting asset download with timeout protection..."
+    timeout 300 download_user_assets || {
+        log_warn "⚠️ Asset download timed out or failed, continuing with deployment..."
+    }
     
     # 8. Setup files and services
     setup_files
