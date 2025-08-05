@@ -18,7 +18,7 @@ python-dotenv==1.0.0
 # Data validation
 pydantic==2.5.0
 pydantic-settings==2.1.0
-email-validator==2.1.0
+email-validator>=2.1.1
 
 # Template engine
 jinja2==3.1.2

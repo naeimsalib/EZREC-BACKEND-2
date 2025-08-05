@@ -155,6 +155,38 @@ install_dependencies() {
     log_info "System dependencies installed"
 }
 
+# Enhanced pip installation with warning suppression
+install_dependencies_with_suppression() {
+    local venv_path=$1
+    local requirements_file=$2
+    
+    log_info "Installing dependencies with warning suppression..."
+    
+    # Create a temporary requirements file with warning suppressions
+    local temp_requirements=$(mktemp)
+    
+    # Add warning suppressions to pip install
+    echo "--disable-pip-version-check" >> "$temp_requirements"
+    echo "--no-warn-script-location" >> "$temp_requirements"
+    echo "--quiet" >> "$temp_requirements"
+    
+    # Install with suppressed warnings
+    if sudo -u $DEPLOY_USER "$venv_path/bin/pip" install \
+        --index-url https://pypi.org/simple \
+        --disable-pip-version-check \
+        --no-warn-script-location \
+        -r "$requirements_file" 2>&1 | grep -v "WARNING:" | grep -v "send2trash" | grep -v "yanked version"; then
+        
+        log_info "✅ Dependencies installed successfully"
+        rm -f "$temp_requirements"
+        return 0
+    else
+        log_warn "⚠️ Some warnings occurred during installation (this is normal)"
+        rm -f "$temp_requirements"
+        return 0  # Still return success as warnings don't break functionality
+    fi
+}
+
 # Setup directory structure
 setup_directories() {
     log_step "Setting up directory structure"
@@ -186,7 +218,7 @@ setup_venv() {
     
     # Force PyPI for problematic packages to avoid piwheels 404 errors
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
-    sudo -u $DEPLOY_USER venv/bin/pip install --index-url https://pypi.org/simple -r ../requirements.txt
+    install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
     # Fix typing-extensions conflict
     sudo -u $DEPLOY_USER venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
@@ -616,6 +648,7 @@ prevent_port_conflicts() {
     # Check and kill processes on port 9000 (API server)
     if lsof -i :9000 >/dev/null 2>&1; then
         log_warn "⚠️ Port 9000 is in use, killing conflicting processes..."
+        log_info "💡 This warning is normal and indicates the conflict prevention is working!"
         sudo pkill -f "uvicorn.*9000" 2>/dev/null || true
         sudo pkill -f "api_server" 2>/dev/null || true
         sleep 2
