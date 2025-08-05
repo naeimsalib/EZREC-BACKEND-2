@@ -229,6 +229,22 @@ install_cloudflared() {
     sudo mkdir -p ~/.cloudflared
     sudo chown $DEPLOY_USER:$DEPLOY_USER ~/.cloudflared
     
+    # Check if already authenticated
+    if [[ -f ~/.cloudflared/cert.pem ]]; then
+        log_info "✅ Cloudflared already authenticated"
+    else
+        log_info "Authenticating with Cloudflare..."
+        log_info "📋 This will open a browser window for authentication"
+        log_info "📋 If no browser opens, visit the URL manually"
+        
+        # Authenticate with Cloudflare
+        if cloudflared tunnel login; then
+            log_info "✅ Cloudflared authentication successful"
+        else
+            log_warn "⚠️ Authentication may have failed, but continuing..."
+        fi
+    fi
+    
     # Check if tunnel already exists
     if cloudflared tunnel list | grep -q "ezrec-tunnel"; then
         log_info "✅ Tunnel 'ezrec-tunnel' already exists"
@@ -242,6 +258,11 @@ install_cloudflared() {
     
     if [[ -z "$TUNNEL_ID" ]]; then
         log_error "❌ Failed to get tunnel ID"
+        log_info "📋 Manual setup required:"
+        log_info "1. Run: cloudflared tunnel login"
+        log_info "2. Run: cloudflared tunnel create ezrec-tunnel"
+        log_info "3. Run: cloudflared tunnel route dns ezrec-tunnel api.ezrec.org"
+        log_info "4. Update ~/.cloudflared/config.yml manually"
         return 1
     fi
     
