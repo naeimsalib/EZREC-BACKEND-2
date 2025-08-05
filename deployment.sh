@@ -1050,6 +1050,11 @@ main() {
     sudo pkill cloudflared 2>/dev/null || true
     sleep 2
     
+    # Create cloudflared log file with proper permissions
+    sudo touch /tmp/cloudflared.log
+    sudo chmod 666 /tmp/cloudflared.log
+    sudo chown $DEPLOY_USER:$DEPLOY_USER /tmp/cloudflared.log
+    
     # Start the tunnel as a systemd service if available
     if sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
         log_info "🔄 Restarting cloudflared systemd service..."
