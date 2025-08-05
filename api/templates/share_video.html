@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shared Video - EZREC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Montserrat', Arial, sans-serif;
+            background: #101014;
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+        .navbar {
+            width: 100%;
+            background: #18181c;
+            padding: 0.5rem 0;
+            box-shadow: 0 2px 8px #0002;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            color: #fff;
+            display: flex;
+            align-items: center;
+        }
+        .logo .red-dot {
+            color: #ff2d2d;
+            font-size: 2.2rem;
+            margin-left: 2px;
+        }
+        .container {
+            margin: 48px auto 0 auto;
+            background: #18181c;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px #0004;
+            max-width: 480px;
+            padding: 36px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        h2 {
+            color: #fff;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        video {
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            background: #222;
+            box-shadow: 0 2px 8px #0003;
+        }
+        .download-btn {
+            display: inline-block;
+            margin-top: 10px;
+            padding: 14px 32px;
+            background: linear-gradient(90deg, #0077ff 60%, #0056cc 100%);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: 600;
+            letter-spacing: 1px;
+            transition: background 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #0002;
+        }
+        .download-btn:hover {
+            background: linear-gradient(90deg, #0056cc 60%, #0077ff 100%);
+        }
+        .error {
+            color: #ff2d2d;
+            background: #2a181a;
+            padding: 16px;
+            border-radius: 6px;
+            margin: 16px 0;
+            font-weight: 600;
+        }
+        .analytics, .share-info {
+            margin-top: 18px;
+            padding: 14px;
+            background: #15151a;
+            border-radius: 6px;
+            font-size: 1em;
+            color: #b0b0b0;
+            width: 100%;
+            text-align: center;
+        }
+        .analytics strong, .share-info strong {
+            color: #fff;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #222;
+            border-top: 3px solid #0077ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 18px 4vw 18px 4vw;
+                max-width: 98vw;
+            }
+            video {
+                max-width: 98vw;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <span class="logo">EZREC<span class="red-dot">&bull;</span></span>
+    </div>
+    <div class="container">
+        <h2>Shared Video</h2>
+        {% if error %}
+            <div class="error">
+                {{ error }}
+            </div>
+        {% else %}
+            {% if video_url %}
+                <video controls>
+                    <source src="{{ video_url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+                <button class="download-btn" onclick="downloadVideo()">
+                    Download Video
+                </button>
+                <div id="expiry-info" class="share-info"></div>
+                <div class="analytics">
+                    <p>📊 <strong>{{ access_count }}</strong> views</p>
+                    {% if last_accessed %}
+                    <p>🕒 Last accessed: <strong>{{ last_accessed }}</strong></p>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="error">
+                    Video not available.
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+    <script>
+        // Expiry timer logic
+        (function() {
+            const expiresAt = "{{ expires_at }}";
+            if (expiresAt) {
+                const expiryDiv = document.getElementById('expiry-info');
+                const expiryDate = new Date(expiresAt);
+                function updateCountdown() {
+                    const now = new Date();
+                    const diff = expiryDate - now;
+                    if (diff <= 0) {
+                        expiryDiv.innerHTML = '<span style="color:#ff2d2d">This link has expired.</span>';
+                        return;
+                    }
+                    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                    const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                    const seconds = Math.floor((diff / 1000) % 60);
+                    expiryDiv.innerHTML = `<strong>Expires:</strong> ${expiryDate.toLocaleString()}<br><strong>Time left:</strong> ${days}d ${hours}h ${minutes}m ${seconds}s`;
+                }
+                updateCountdown();
+                setInterval(updateCountdown, 1000);
+            }
+        })();
+
+        function downloadVideo() {
+            const downloadBtn = document.querySelector('.download-btn');
+            const originalText = downloadBtn.textContent;
+            // Show loading state
+            downloadBtn.innerHTML = '<span class="loading"></span> Downloading...';
+            downloadBtn.disabled = true;
+            // Track download
+            fetch('/share/{{ token }}/download', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                // Always try to get a fresh download URL
+                return fetch(`/share/{{ token }}/download_url`);
+            }).then(res => res.json())
+            .then(data => {
+                if (data.url) {
+                    // Trigger download
+                    const link = document.createElement('a');
+                    link.href = data.url;
+                    link.download = 'shared_video.mp4';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    // Update button
+                    downloadBtn.textContent = '✓ Downloaded!';
+                    setTimeout(() => {
+                        downloadBtn.textContent = originalText;
+                        downloadBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    throw new Error('Failed to get download URL');
+                }
+            }).catch(error => {
+                console.error('Error downloading video:', error);
+                downloadBtn.textContent = originalText;
+                downloadBtn.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html> 

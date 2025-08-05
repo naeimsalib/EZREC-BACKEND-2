@@ -1,0 +1,11 @@
+[Unit]
+Description=EZREC System Status Monitor Timer
+After=network.target
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=5m
+Unit=system_status.service
+
+[Install]
+WantedBy=timers.target 

@@ -1,0 +1,19 @@
+[Unit]
+Description=EZREC Dual Camera Recorder Service
+After=network.target
+
+[Service]
+User=michomanoly14892
+EnvironmentFile=/opt/ezrec-backend/.env
+Group=video
+# run in the backend folder so "import dual_recorder" etc. works
+WorkingDirectory=/opt/ezrec-backend/backend
+# call Python from your venv, giving the full script path
+ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target 

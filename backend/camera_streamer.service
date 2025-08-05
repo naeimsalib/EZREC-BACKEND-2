@@ -1,0 +1,34 @@
+[Unit]
+Description=EZREC OpenCV Camera Streamer
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=michomanoly14892
+Group=video
+WorkingDirectory=/opt/ezrec-backend/backend
+Environment=PATH=/opt/ezrec-backend/api/venv/bin
+ExecStart=/opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/backend/camera_streamer.py
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+# Camera and video device access
+SupplementaryGroups=video
+DeviceAllow=/dev/video* rw
+DeviceAllow=/dev/media* rw
+
+# Resource limits
+LimitNOFILE=65536
+MemoryMax=512M
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/opt/ezrec-backend/logs /opt/ezrec-backend/backend
+
+[Install]
+WantedBy=multi-user.target 
