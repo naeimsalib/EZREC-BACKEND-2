@@ -2,11 +2,11 @@ from supabase import create_client
 from fastapi import FastAPI, HTTPException, Query, Request, Body, Header, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
-<<<<<<< HEAD
+
 from typing import List, Optional
-=======
+
 from typing import List, Optional, Union
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 import json
@@ -27,7 +27,7 @@ from email.message import EmailMessage
 import psutil
 import time
 import numpy as np
-<<<<<<< HEAD
+
 try:
     from picamera2 import Picamera2
     PICAMERA2_AVAILABLE = True
@@ -37,7 +37,7 @@ except ImportError:
 import io
 import threading
 import pytz
-=======
+
 # Remove the picamera2/cv2 import since API server doesn't need camera functionality
 import io
 import threading
@@ -51,7 +51,7 @@ except ImportError:
         """Fallback function if booking_utils is not available"""
         logger.warning(f"⚠️ update_booking_status not available for booking {booking_id}")
         return False
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 
 # --------------------------
 # LOAD .env FILE
@@ -75,9 +75,9 @@ logger = logging.getLogger("EZREC")
 # --------------------------
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-<<<<<<< HEAD
+
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
-=======
+
 
 # Initialize Supabase client with error handling
 supabase = None
@@ -90,7 +90,7 @@ try:
 except Exception as e:
     logger.warning(f"⚠️ Failed to initialize Supabase client: {e}")
     logger.warning("⚠️ System will work in local mode only")
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 
 # --------------------------
 # FASTAPI INIT
@@ -156,10 +156,10 @@ class Booking(BaseModel):
     date: Optional[str] = None
     camera_id: Optional[str] = None
     recording_id: Optional[str] = None
-<<<<<<< HEAD
+
     booking_id: str
-=======
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
+
     email: Optional[str] = None
 
 class SystemSettings(BaseModel):
@@ -883,7 +883,7 @@ def send_share_email(req: SendShareEmailRequest):
 
     return {"status": "ok"}
 
-<<<<<<< HEAD
+
 LIVE_PREVIEW_TOKEN = os.getenv("LIVE_PREVIEW_TOKEN", "changeme")
 
 # Helper to check if recording is active
@@ -975,13 +975,11 @@ status_path = Path("/opt/ezrec-backend/status.json")
 def read_status():
     if status_path.exists():
         with open(status_path) as f:
-=======
-STATUS_FILE = Path("/opt/ezrec-backend/status.json")
-
-def read_status():
+            return json.load(f)
+    return {}
     if STATUS_FILE.exists():
         with open(STATUS_FILE) as f:
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
             return json.load(f)
     return {}
 
@@ -1081,9 +1079,9 @@ def get_next_booking():
         return {"start_time": None}
     try:
         with open(bookings_file) as f:
-<<<<<<< HEAD
+
             bookings = json.load(f)
-=======
+
             data = json.load(f)
         
         # Handle both old and new booking formats
@@ -1094,7 +1092,7 @@ def get_next_booking():
         else:
             return {"start_time": None}
         
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
         # Find the next booking with start_time > now
         next_b = None
         for b in bookings:
@@ -1117,7 +1115,7 @@ def get_next_booking():
     except Exception:
         return {"start_time": None}
 
-<<<<<<< HEAD
+
 # --------------------------
 # SERVER STARTUP
 # --------------------------
@@ -1131,7 +1129,7 @@ if __name__ == "__main__":
         log_level="info",
         access_log=True
     )
-=======
+
 @app.get("/recording-logs")
 def get_recording_logs(limit: int = 10):
     """Get recent recording logs and status"""
@@ -1265,4 +1263,4 @@ async def health():
     """Health check endpoint"""
     # Just report that this API is up
     return {"status": "healthy", "warnings": []}
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+

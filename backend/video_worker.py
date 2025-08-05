@@ -20,8 +20,8 @@ import pytz
 from dotenv import load_dotenv
 from supabase import create_client
 import socket
-<<<<<<< HEAD
-=======
+
+
 from enhanced_merge import merge_videos_with_retry, MergeResult
 
 # Try to import file locking library, fallback to simple file-based locking
@@ -32,7 +32,7 @@ except ImportError:
     HAS_PORTALOCKER = False
     log = logging.getLogger("video_worker")
     log.warning("⚠️ portalocker not available, using simple file-based locking")
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 
 # ✅ Fix the import path for booking_utils.py
 API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
@@ -154,7 +154,7 @@ CHECK_INTERVAL = int(os.getenv("VIDEO_WORKER_CHECK_INTERVAL", "15"))
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
 MEDIA_CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-<<<<<<< HEAD
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(message)s',
@@ -165,8 +165,8 @@ logging.basicConfig(
 )
 log = logging.getLogger("video_worker")
 
-=======
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
+
 user_media_s3 = boto3.client(
     "s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
@@ -199,7 +199,7 @@ except Exception:
 VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software encoder
 
 # Main logo config (always use this path)
-<<<<<<< HEAD
+
 MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
 MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
@@ -217,7 +217,6 @@ LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
 LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
 MAIN_LOGO_WIDTH = int(os.getenv('MAIN_LOGO_WIDTH', '400'))
 MAIN_LOGO_HEIGHT = int(os.getenv('MAIN_LOGO_HEIGHT', '400'))
-=======
 MAIN_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
 MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
 
@@ -251,7 +250,7 @@ def is_file_readable(file: Path) -> bool:
         return size > 100 * 1024
     except Exception:
         return False
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 
 def get_duration(file: Path) -> float:
     try:
@@ -379,16 +378,14 @@ def get_video_info(file: Path):
             "ffprobe", "-v", "error", "-select_streams", "v:0",
             "-show_entries", "stream=codec_name,width,height,avg_frame_rate,pix_fmt",
             "-of", "json", str(file)
-<<<<<<< HEAD
-        ], capture_output=True, text=True)
+
+        ], capture_output=True, text=True, timeout=30)
         info = _json.loads(result.stdout)
         stream = info['streams'][0]
         codec = stream.get('codec_name')
         width = int(stream.get('width'))
         height = int(stream.get('height'))
         pix_fmt = stream.get('pix_fmt')
-=======
-        ], capture_output=True, text=True, timeout=30)
         
         if result.returncode != 0:
             log.error(f"❌ FFprobe failed for {file}: {result.stderr}")
@@ -418,7 +415,7 @@ def get_video_info(file: Path):
             log.error(f"❌ Invalid width/height for {file}: width={width}, height={height}")
             return None
         
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
         # avg_frame_rate is like '30/1'
         fr = stream.get('avg_frame_rate', '30/1')
         if '/' in fr:
@@ -426,12 +423,12 @@ def get_video_info(file: Path):
             fps = float(num) / float(den) if float(den) != 0 else 30.0
         else:
             fps = float(fr)
-<<<<<<< HEAD
+
         return codec, width, height, fps, pix_fmt
     except Exception as e:
         log.error(f"Could not get video info for {file}: {e}")
         return None, None, None, None, None
-=======
+
             
         return (codec, width, height, fps, pix_fmt)
     except subprocess.TimeoutExpired:
@@ -440,15 +437,15 @@ def get_video_info(file: Path):
     except Exception as e:
         log.error(f"❌ Could not get video info for {file}: {e}")
         return None
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 
 def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
     """
     Optimized video processing with hardware acceleration and single-pass operation.
-<<<<<<< HEAD
+
     Ensures compatibility with OpenCV-generated MP4 files.
-=======
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
+
     Tries multiple encoders in order: h264_v4l2m2m, h264_omx, libx264.
     Logs full FFmpeg error output for each attempt.
     """
@@ -497,7 +494,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             log.error(f"❌ Video conversion error: {e}")
             return None
 
-<<<<<<< HEAD
+
     # Use local cache for user media
     user_media_dir = MEDIA_CACHE_DIR / user_id
     user_media_dir.mkdir(parents=True, exist_ok=True)
@@ -826,7 +823,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         log.error(f"FFmpeg error: {e}")
     log.error("FFmpeg processing failed. Video not processed.")
     return None
-=======
+
     # Check if this is a dual camera recording that needs merging
     if "_merged.mp4" in raw_file.name:
         # This is already a merged file, process normally
@@ -1781,7 +1778,7 @@ file '{main_normalized}'"""
     except Exception as e:
         log.error(f"❌ Error in process_single_video: {e}")
         return None
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 
 def insert_video_metadata(payload: dict) -> bool:
     headers = {
@@ -1850,8 +1847,8 @@ def retry_pending_uploads():
     if not new_queue:
         PENDING_UPLOADS_FILE.unlink()
 
-<<<<<<< HEAD
-=======
+
+
 def check_disk_space():
     """Check available disk space and return percentage used"""
     try:
@@ -1974,7 +1971,7 @@ def cleanup_orphaned_markers():
     else:
         log.info("✅ Startup cleanup: no orphaned marker files found")
 
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
 def main():
     log.info("Video worker started and entering main loop")
     
@@ -1983,7 +1980,7 @@ def main():
     
     while True:
         retry_pending_uploads()
-<<<<<<< HEAD
+
         for date_dir in RECORDINGS_DIR.glob("*/"):
             log.info(f"Scanning directory: {date_dir}")
             for raw_file in date_dir.glob("*.mp4"):
@@ -2064,7 +2061,7 @@ def main():
                 finally:
                     if lock.exists():
                         lock.unlink()
-=======
+
         cleanup_old_files() # Run cleanup at the start of each interval
         for date_dir in RECORDINGS_DIR.glob("*/"):
             try:
@@ -2212,7 +2209,7 @@ def main():
                 log.error(f"❌ Error processing directory {date_dir}: {e}")
                 continue
         
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
         time.sleep(CHECK_INTERVAL)
 
 if __name__ == "__main__":
