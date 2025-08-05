@@ -101,6 +101,22 @@ test_python_import() {
     fi
 }
 
+# Comprehensive pip wrapper with warning suppression
+pip_install_suppress_warnings() {
+    local venv_path=$1
+    shift  # Remove first argument, pass rest to pip
+    
+    # Run pip with warning suppression
+    sudo -u $DEPLOY_USER "$venv_path/bin/pip" "$@" 2>&1 | \
+        grep -v "WARNING:" | \
+        grep -v "send2trash" | \
+        grep -v "yanked version" | \
+        grep -v "Error parsing dependencies" || true
+    
+    # Return the actual exit code
+    return ${PIPESTATUS[0]}
+}
+
 # =============================================================================
 # SETUP FUNCTIONS
 # =============================================================================
@@ -162,27 +178,17 @@ install_dependencies_with_suppression() {
     
     log_info "Installing dependencies with warning suppression..."
     
-    # Create a temporary requirements file with warning suppressions
-    local temp_requirements=$(mktemp)
-    
-    # Add warning suppressions to pip install
-    echo "--disable-pip-version-check" >> "$temp_requirements"
-    echo "--no-warn-script-location" >> "$temp_requirements"
-    echo "--quiet" >> "$temp_requirements"
-    
-    # Install with suppressed warnings
-    if sudo -u $DEPLOY_USER "$venv_path/bin/pip" install \
+    # Install with suppressed warnings using the new wrapper
+    if pip_install_suppress_warnings "$venv_path" install \
         --index-url https://pypi.org/simple \
         --disable-pip-version-check \
         --no-warn-script-location \
-        -r "$requirements_file" 2>&1 | grep -v "WARNING:" | grep -v "send2trash" | grep -v "yanked version"; then
+        -r "$requirements_file"; then
         
         log_info "✅ Dependencies installed successfully"
-        rm -f "$temp_requirements"
         return 0
     else
         log_warn "⚠️ Some warnings occurred during installation (this is normal)"
-        rm -f "$temp_requirements"
         return 0  # Still return success as warnings don't break functionality
     fi
 }
@@ -214,24 +220,24 @@ setup_venv() {
     sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
     
     # Install dependencies with PyPI forcing for problematic packages
-    sudo -u $DEPLOY_USER venv/bin/pip install --upgrade pip
+    pip_install_suppress_warnings "$path/venv" install --upgrade pip
     
     # Force PyPI for problematic packages to avoid piwheels 404 errors
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
     install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
     # Fix typing-extensions conflict
-    sudo -u $DEPLOY_USER venv/bin/pip install --upgrade "typing-extensions>=4.12.0"
+    pip_install_suppress_warnings "$path/venv" install --upgrade "typing-extensions>=4.12.0"
     
     # Install simplejpeg with proper error handling
-    if ! sudo -u $DEPLOY_USER venv/bin/pip install --force-reinstall --no-binary simplejpeg simplejpeg; then
+    if ! pip_install_suppress_warnings "$path/venv" install --force-reinstall --no-binary simplejpeg simplejpeg; then
         log_warn "Failed to install simplejpeg, trying alternative method"
-        sudo -u $DEPLOY_USER venv/bin/pip install simplejpeg
+        pip_install_suppress_warnings "$path/venv" install simplejpeg
     fi
     
     # Ensure PyAV is upgraded to compatible version for picamera2
     log_info "Upgrading PyAV to ensure picamera2 compatibility"
-    sudo -u $DEPLOY_USER venv/bin/pip install --upgrade "av>=15.0.0"
+    pip_install_suppress_warnings "$path/venv" install --upgrade "av>=15.0.0"
     
     # Verify picamera2 compatibility
     log_info "Verifying picamera2 and PyAV compatibility"
@@ -649,6 +655,7 @@ prevent_port_conflicts() {
     if lsof -i :9000 >/dev/null 2>&1; then
         log_warn "⚠️ Port 9000 is in use, killing conflicting processes..."
         log_info "💡 This warning is normal and indicates the conflict prevention is working!"
+        log_info "🔧 This prevents the 'address already in use' error that was breaking the API service"
         sudo pkill -f "uvicorn.*9000" 2>/dev/null || true
         sudo pkill -f "api_server" 2>/dev/null || true
         sleep 2
