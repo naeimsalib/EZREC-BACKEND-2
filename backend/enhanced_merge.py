@@ -40,7 +40,7 @@ class MergeResult:
 class EnhancedVideoMerger:
     """Enhanced video merger with retry logic and validation"""
     
-    def __init__(self, max_retries: int = 3, timeout: int = 300, feather_width: int = 100, edge_trim: int = 5, target_bitrate: str = "8000k", output_resolution: tuple = None):
+    def __init__(self, max_retries: int = 3, timeout: int = 300, feather_width: int = 100, edge_trim: int = 5, target_bitrate: str = "8000k", output_resolution: tuple = None, enable_distortion_correction: bool = True):
         self.max_retries = max_retries
         self.timeout = timeout
         self.feather_width = feather_width
@@ -48,6 +48,7 @@ class EnhancedVideoMerger:
         self.logger = logging.getLogger(__name__)
         self.target_bitrate = target_bitrate
         self.output_resolution = output_resolution
+        self.enable_distortion_correction = enable_distortion_correction
         
         # Validate FFmpeg availability
         if not self._check_ffmpeg():
@@ -286,24 +287,43 @@ class EnhancedVideoMerger:
         # Calculate bitrate (higher for dual camera)
         target_bitrate = self.target_bitrate
         
+        # Get optimal lens correction parameters
+        lens_correction = ""
+        if self.enable_distortion_correction:
+            lens_correction = self._get_optimal_lens_correction(video1_path, video2_path)
+            self.logger.info(f"🔧 Using lens correction: {lens_correction}")
+        
         self.logger.info(f"🎨 Using feathered blend merge:")
         self.logger.info(f"   - Source dimensions: {width1}x{height1}, {width2}x{height2}")
         self.logger.info(f"   - Feather width: {feather_width}px")
         self.logger.info(f"   - Edge trim: {edge_trim}px")
         self.logger.info(f"   - Method: {method}")
         self.logger.info(f"   - Left visible: {left_visible}px, Right visible: {right_visible}px")
+        self.logger.info(f"   - Distortion correction: {'enabled' if self.enable_distortion_correction else 'disabled'}")
         
         if method == 'side_by_side':
             # FIXED: Advanced feathered blend merge with correct crop calculations
             # Creates 100px feathered overlap with linear alpha gradient
-            filter_complex = (
-                f'[0:v]crop=w={left_visible - edge_trim}:h={output_height}:x=0:y=0[left]; '
-                f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
-                f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
-                f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
-                f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
-            )
+            # Plus post-merge distortion correction for natural look
+            if self.enable_distortion_correction:
+                filter_complex = (
+                    f'[0:v]crop=w={left_visible - edge_trim}:h={output_height}:x=0:y=0[left]; '
+                    f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
+                    f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
+                    f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[merged]; '
+                    f'[merged]lenscorrection={lens_correction}[v]'
+                )
+            else:
+                filter_complex = (
+                    f'[0:v]crop=w={left_visible - edge_trim}:h={output_height}:x=0:y=0[left]; '
+                    f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
+                    f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
+                    f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+                )
             # Calculate final output width correctly
             final_width = (left_visible - edge_trim) + feather_width + (right_visible - edge_trim)
         elif method == 'stacked':
@@ -317,26 +337,48 @@ class EnhancedVideoMerger:
                 if h <= 0 or h > max_h:
                     raise ValueError(f"{name} height={h} invalid for source dimensions (max: {max_h})")
             
-            filter_complex = (
-                f'[0:v]crop=w={width1}:h={top_visible - edge_trim}:x=0:y=0[top]; '
-                f'[0:v]crop=w={width1}:h={feather_width}:x=0:y={top_visible - edge_trim}[overlapT]; '
-                f'[1:v]crop=w={width2}:h={feather_width}:x=0:y=0[overlapB]; '
-                f'[1:v]crop=w={width2}:h={bottom_visible - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
-                f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
-                f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
-            )
+            if self.enable_distortion_correction:
+                filter_complex = (
+                    f'[0:v]crop=w={width1}:h={top_visible - edge_trim}:x=0:y=0[top]; '
+                    f'[0:v]crop=w={width1}:h={feather_width}:x=0:y={top_visible - edge_trim}[overlapT]; '
+                    f'[1:v]crop=w={width2}:h={feather_width}:x=0:y=0[overlapB]; '
+                    f'[1:v]crop=w={width2}:h={bottom_visible - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
+                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
+                    f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[merged]; '
+                    f'[merged]lenscorrection={lens_correction}[v]'
+                )
+            else:
+                filter_complex = (
+                    f'[0:v]crop=w={width1}:h={top_visible - edge_trim}:x=0:y=0[top]; '
+                    f'[0:v]crop=w={width1}:h={feather_width}:x=0:y={top_visible - edge_trim}[overlapT]; '
+                    f'[1:v]crop=w={width2}:h={feather_width}:x=0:y=0[overlapB]; '
+                    f'[1:v]crop=w={width2}:h={bottom_visible - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
+                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
+                    f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
+                )
             # Calculate final output height correctly
             final_height = (top_visible - edge_trim) + feather_width + (bottom_visible - edge_trim)
         else:
             # Default to side-by-side with FIXED calculations
-            filter_complex = (
-                f'[0:v]crop=w={left_visible - edge_trim}:h={output_height}:x=0:y=0[left]; '
-                f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
-                f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
-                f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
-                f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
-            )
+            if self.enable_distortion_correction:
+                filter_complex = (
+                    f'[0:v]crop=w={left_visible - edge_trim}:h={output_height}:x=0:y=0[left]; '
+                    f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
+                    f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
+                    f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[merged]; '
+                    f'[merged]lenscorrection={lens_correction}[v]'
+                )
+            else:
+                filter_complex = (
+                    f'[0:v]crop=w={left_visible - edge_trim}:h={output_height}:x=0:y=0[left]; '
+                    f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
+                    f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
+                    f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+                )
             final_width = (left_visible - edge_trim) + feather_width + (right_visible - edge_trim)
         
         # Log the complete filter for debugging
@@ -616,6 +658,40 @@ class EnhancedVideoMerger:
         except Exception as e:
             self.logger.error(f"❌ Fallback merge error: {e}")
             return False
+
+    def _get_optimal_lens_correction(self, video1_path: Path, video2_path: Path) -> str:
+        """Get optimal lens correction parameters based on video characteristics"""
+        try:
+            # Get video info to determine optimal correction
+            info1 = self._get_video_info(video1_path)
+            info2 = self._get_video_info(video2_path)
+            
+            # Default correction for Raspberry Pi cameras (slight barrel distortion)
+            # cx, cy: center of distortion (0.5 = center of frame)
+            # k1, k2: distortion coefficients (positive = barrel, negative = pincushion)
+            # For Pi cameras, typically slight barrel distortion
+            correction_params = "cx=0.5:cy=0.5:k1=0.1:k2=0.05"
+            
+            # Check if we can detect camera type from metadata
+            if info1.get('format', {}).get('tags', {}).get('device', '').lower().find('pi') != -1:
+                # Raspberry Pi camera - apply stronger correction
+                correction_params = "cx=0.5:cy=0.5:k1=0.15:k2=0.08"
+                self.logger.info("🎥 Detected Raspberry Pi camera - applying enhanced distortion correction")
+            elif info1.get('format', {}).get('tags', {}).get('device', '').lower().find('usb') != -1:
+                # USB camera - apply moderate correction
+                correction_params = "cx=0.5:cy=0.5:k1=0.08:k2=0.03"
+                self.logger.info("🎥 Detected USB camera - applying moderate distortion correction")
+            else:
+                # Generic camera - apply light correction
+                correction_params = "cx=0.5:cy=0.5:k1=0.05:k2=0.02"
+                self.logger.info("🎥 Generic camera - applying light distortion correction")
+            
+            return correction_params
+            
+        except Exception as e:
+            self.logger.warning(f"⚠️ Could not determine optimal lens correction: {e}")
+            # Return safe default
+            return "cx=0.5:cy=0.5:k1=0.1:k2=0.05"
 
 def merge_videos_with_retry(video1_path: Path, video2_path: Path, 
                           output_path: Path, method: str = 'side_by_side',

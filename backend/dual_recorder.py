@@ -97,6 +97,10 @@ else:
 TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "America/New_York"
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
+# Merge configuration
+MERGE_METHOD = os.getenv("MERGE_METHOD", "side_by_side")
+ENABLE_DISTORTION_CORRECTION = os.getenv("ENABLE_DISTORTION_CORRECTION", "true").lower() == "true"
+
 REQUIRED_KEYS = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID"]
 missing = [k for k in REQUIRED_KEYS if not os.getenv(k)]
 if missing:
@@ -133,7 +137,6 @@ CAMERA_1_SERIAL = os.getenv('CAMERA_1_SERIAL', '80000')
 CAMERA_0_NAME = os.getenv('CAMERA_0_NAME', 'left')
 CAMERA_1_NAME = os.getenv('CAMERA_1_NAME', 'right')
 DUAL_CAMERA_MODE = os.getenv('DUAL_CAMERA_MODE', 'true').lower() == 'true'
-MERGE_METHOD = os.getenv('MERGE_METHOD', 'side_by_side')
 AUTO_UPLOAD = os.getenv('AUTO_UPLOAD', 'false').lower() == 'true'
 
 # Avoid double processes
@@ -624,7 +627,20 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
         # Use enhanced merge with retry logic
         try:
             logger.info(f"🎬 Using enhanced merge for {video1_path.name} and {video2_path.name}")
-            result = merge_videos_with_retry(video1_path, video2_path, output_path, method, max_retries=3)
+            logger.info(f"🔧 Merge method: {method}")
+            logger.info(f"🔧 Distortion correction: {'enabled' if ENABLE_DISTORTION_CORRECTION else 'disabled'}")
+            
+            # Create enhanced merger with distortion correction setting
+            from enhanced_merge import EnhancedVideoMerger
+            merger = EnhancedVideoMerger(
+                max_retries=3,
+                timeout=300,
+                feather_width=100,
+                edge_trim=5,
+                enable_distortion_correction=ENABLE_DISTORTION_CORRECTION
+            )
+            
+            result = merger.merge_videos(video1_path, video2_path, output_path, method)
             
             if result.success:
                 logger.info(f"✅ Enhanced merge successful: {result.file_size:,} bytes")
