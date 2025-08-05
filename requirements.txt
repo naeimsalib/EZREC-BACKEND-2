@@ -1,26 +1,3 @@
-<<<<<<< HEAD
-python-dotenv
-pytz
-psutil
-supabase
-gotrue
-httpx
-postgrest
-realtime
-storage3
-supafunc
-# picamera2  # Replaced with OpenCV for better reliability
-ffmpeg-python
-Flask
-Pillow
-numpy
-requests
-boto3
-fastapi
-uvicorn
-opencv-python
-speedtest-cli
-=======
 # Core web framework
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
@@ -28,7 +5,8 @@ uvicorn[standard]==0.24.0
 # HTTP requests
 requests==2.31.0
 
-# Database and cloud
+# Database and cloud - Force PyPI for these packages to avoid piwheels 404 errors
+--index-url https://pypi.org/simple
 supabase==2.0.2
 boto3==1.34.0
 botocore==1.34.0
@@ -79,4 +57,14 @@ attrs==23.1.0
 # Camera and image processing
 # Note: picamera2 is installed via apt system packages
 PiDNG==4.0.9
->>>>>>> 7f4d06de69b6359ae09f590d27a614501e93bf81
+
+# Additional dependencies for EZREC backend
+gotrue
+httpx
+postgrest
+realtime
+storage3
+supafunc
+ffmpeg-python
+Flask
+speedtest-cli
