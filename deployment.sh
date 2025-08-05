@@ -171,6 +171,107 @@ install_dependencies() {
     log_info "System dependencies installed"
 }
 
+# Install and configure cloudflared
+install_cloudflared() {
+    log_step "Installing and configuring cloudflared"
+    
+    # Check if cloudflared is already installed
+    if command -v cloudflared &> /dev/null; then
+        log_info "Cloudflared found, checking for conflicts..."
+        
+        # Clean up any problematic installation
+        log_info "Cleaning up existing cloudflared installation..."
+        sudo apt remove --purge cloudflared 2>/dev/null || true
+        sudo apt autoremove 2>/dev/null || true
+        sudo apt clean 2>/dev/null || true
+        
+        # Remove leftover files
+        sudo rm -f /usr/local/bin/cloudflared 2>/dev/null || true
+        sudo rm -rf /etc/cloudflared 2>/dev/null || true
+        
+        # Fix package system
+        sudo dpkg --configure -a 2>/dev/null || true
+        sudo apt-get install -f 2>/dev/null || true
+        
+        log_info "✅ Cloudflared cleanup completed"
+    fi
+    
+    # Install cloudflared properly
+    log_info "Installing cloudflared..."
+    
+    # Download the latest version
+    wget -q https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-arm64.deb
+    
+    # Install the package
+    if sudo dpkg -i cloudflared-linux-arm64.deb; then
+        log_info "✅ Cloudflared package installed successfully"
+    else
+        log_warn "⚠️ Package installation had issues, fixing dependencies..."
+        sudo apt-get install -f
+    fi
+    
+    # Clean up the downloaded file
+    rm -f cloudflared-linux-arm64.deb
+    
+    # Verify installation
+    if cloudflared --version &> /dev/null; then
+        log_info "✅ Cloudflared installed and working"
+        cloudflared --version
+    else
+        log_error "❌ Cloudflared installation failed"
+        return 1
+    fi
+    
+    # Configure cloudflared tunnel if not already configured
+    log_info "Setting up cloudflared tunnel configuration..."
+    
+    # Create config directory
+    sudo mkdir -p ~/.cloudflared
+    sudo chown $DEPLOY_USER:$DEPLOY_USER ~/.cloudflared
+    
+    # Check if tunnel already exists
+    if cloudflared tunnel list | grep -q "ezrec-tunnel"; then
+        log_info "✅ Tunnel 'ezrec-tunnel' already exists"
+    else
+        log_info "Creating new tunnel 'ezrec-tunnel'..."
+        cloudflared tunnel create ezrec-tunnel
+    fi
+    
+    # Get tunnel ID
+    TUNNEL_ID=$(cloudflared tunnel list | grep "ezrec-tunnel" | awk '{print $1}' | head -n1)
+    
+    if [[ -z "$TUNNEL_ID" ]]; then
+        log_error "❌ Failed to get tunnel ID"
+        return 1
+    fi
+    
+    log_info "Tunnel ID: $TUNNEL_ID"
+    
+    # Create tunnel configuration
+    cat > ~/.cloudflared/config.yml << EOF
+tunnel: $TUNNEL_ID
+credentials-file: ~/.cloudflared/$TUNNEL_ID.json
+
+ingress:
+  - hostname: api.ezrec.org
+    service: http://localhost:8000
+  - service: http_status:404
+EOF
+    
+    # Set proper permissions
+    sudo chown $DEPLOY_USER:$DEPLOY_USER ~/.cloudflared/config.yml
+    sudo chmod 644 ~/.cloudflared/config.yml
+    
+    # Route DNS if not already done
+    if ! cloudflared tunnel route dns ezrec-tunnel api.ezrec.org 2>/dev/null; then
+        log_warn "⚠️ DNS route may already exist or failed to set"
+    else
+        log_info "✅ DNS route configured for api.ezrec.org"
+    fi
+    
+    log_info "✅ Cloudflared installation and configuration completed"
+}
+
 # Enhanced pip installation with warning suppression
 install_dependencies_with_suppression() {
     local venv_path=$1
@@ -834,6 +935,9 @@ main() {
     # 4. Install dependencies
     install_dependencies
     
+    # 4.5. Install and configure cloudflared
+    install_cloudflared
+    
     # 5. Setup users and directories
     setup_users
     setup_directories
@@ -878,6 +982,30 @@ main() {
     
     # 9. Start services
     start_services
+    
+    # 9.5. Start cloudflared tunnel
+    log_step "9.5. Starting cloudflared tunnel"
+    log_info "Starting cloudflared tunnel in background..."
+    
+    # Kill any existing tunnel processes
+    sudo pkill cloudflared 2>/dev/null || true
+    sleep 2
+    
+    # Start the tunnel
+    nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &
+    
+    # Wait for tunnel to start
+    sleep 10
+    
+    # Check if tunnel is running
+    if ps aux | grep -q "cloudflared tunnel run"; then
+        log_info "✅ Cloudflared tunnel started successfully"
+        log_info "📋 Tunnel logs: tail -f /tmp/cloudflared.log"
+        log_info "📋 To stop tunnel: sudo pkill cloudflared"
+    else
+        log_warn "⚠️ Cloudflared tunnel may not have started properly"
+        log_info "📋 Check logs: tail -f /tmp/cloudflared.log"
+    fi
     
     # ----------------------------------------
     # ✅ Deploy updated video_worker.py
