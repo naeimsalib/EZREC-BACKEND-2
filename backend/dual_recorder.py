@@ -673,18 +673,19 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
         if method == 'side_by_side':
             # Advanced feathered blend merge for seamless wide-angle effect
             # Creates 100px feathered overlap with linear alpha gradient
+            filter_complex = (
+                '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
+                '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
+                '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
+                '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
+                '[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
+            )
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', (
-                    '[0:v]crop=w=in_w-100:h=in_h:x=0:y=0[left]; '
-                    '[0:v]crop=w=100:h=in_h:x=in_w-100:y=0[overlapL]; '
-                    '[1:v]crop=w=100:h=in_h:x=0:y=0[overlapR]; '
-                    '[1:v]crop=w=in_w-100:h=in_h:x=100:y=0[right]; '
-                    '[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
-                    '[left][blended][right]hstack=inputs=3,format=yuv420p[out]'
-                ),
+                '-filter_complex', filter_complex,
                 '-map', '[out]',
                 '-c:v', 'libx264', 
                 '-preset', 'fast',
@@ -694,18 +695,19 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
             ]
         elif method == 'stacked':
             # Top-bottom merge with 100px feathered blend
+            filter_complex = (
+                '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
+                '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
+                '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
+                '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
+                '[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
+                '[top][blended][bottom]vstack=inputs=3,format=yuv420p[out]'
+            )
             cmd = [
                 'ffmpeg', '-y',
                 '-i', str(video1_path),
                 '-i', str(video2_path),
-                '-filter_complex', (
-                    '[0:v]crop=w=in_w:h=in_h-100:x=0:y=0[top]; '
-                    '[0:v]crop=w=in_w:h=100:x=0:y=in_h-100[overlapT]; '
-                    '[1:v]crop=w=in_w:h=100:x=0:y=0[overlapB]; '
-                    '[1:v]crop=w=in_w:h=in_h-100:x=0:y=100[bottom]; '
-                    '[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
-                    '[top][blended][bottom]vstack=inputs=3,format=yuv420p[out]'
-                ),
+                '-filter_complex', filter_complex,
                 '-map', '[out]',
                 '-c:v', 'libx264',
                 '-preset', 'fast',
