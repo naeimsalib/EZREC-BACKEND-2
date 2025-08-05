@@ -1050,20 +1050,40 @@ main() {
     sudo pkill cloudflared 2>/dev/null || true
     sleep 2
     
-    # Start the tunnel
-    nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &
+    # Start the tunnel as a systemd service if available
+    if sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
+        log_info "🔄 Restarting cloudflared systemd service..."
+        sudo systemctl restart cloudflared.service
+        sleep 5
+    else
+        log_info "🚀 Starting cloudflared tunnel manually..."
+        # Start the tunnel
+        nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &
+        sleep 5
+    fi
     
-    # Wait for tunnel to start
+    # Wait for tunnel to start and verify
+    log_info "⏳ Waiting for tunnel to establish connection..."
     sleep 10
     
     # Check if tunnel is running
-    if ps aux | grep -q "cloudflared tunnel run"; then
+    if ps aux | grep -q "cloudflared tunnel run" || sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
         log_info "✅ Cloudflared tunnel started successfully"
         log_info "📋 Tunnel logs: tail -f /tmp/cloudflared.log"
         log_info "📋 To stop tunnel: sudo pkill cloudflared"
+        
+        # Test external API to verify tunnel is working
+        log_info "🧪 Testing external API connection..."
+        if curl -s --max-time 10 https://api.ezrec.org/status > /dev/null 2>&1; then
+            log_info "✅ External API is accessible via tunnel"
+        else
+            log_warn "⚠️ External API not accessible yet, tunnel may still be connecting..."
+            log_info "💡 This is normal - tunnel can take up to 30 seconds to fully establish"
+        fi
     else
-        log_warn "⚠️ Cloudflared tunnel may not have started properly"
+        log_error "❌ Cloudflared tunnel failed to start"
         log_info "📋 Check logs: tail -f /tmp/cloudflared.log"
+        log_info "💡 Manual tunnel start: nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &"
     fi
     
     # ----------------------------------------
@@ -1233,6 +1253,41 @@ main() {
         echo "💡 Check API server status:"
         echo "   sudo systemctl status ezrec-api.service"
         echo "   sudo journalctl -u ezrec-api.service -n 20"
+    fi
+    
+    # Test Cloudflare tunnel and external API
+    echo -e "\n--- CLOUDFLARE TUNNEL TEST ---"
+    echo "Testing Cloudflare tunnel status:"
+    if ps aux | grep -q "cloudflared tunnel run" || sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
+        echo "✅ Cloudflare tunnel is running"
+    else
+        echo "❌ Cloudflare tunnel is not running"
+        echo "💡 Start tunnel manually: nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &"
+    fi
+    
+    echo "Testing external API (https://api.ezrec.org):"
+    if curl -s --max-time 10 https://api.ezrec.org/status > /dev/null 2>&1; then
+        echo "✅ External API is accessible"
+        echo "Response: $(curl -s --max-time 10 https://api.ezrec.org/status)"
+    else
+        echo "❌ External API is not accessible"
+        echo "💡 This may be due to:"
+        echo "   - Tunnel not fully established (wait 30 seconds)"
+        echo "   - Tunnel configuration issues"
+        echo "   - Check tunnel logs: tail -f /tmp/cloudflared.log"
+    fi
+    
+    # Test CORS headers
+    echo -e "\n--- CORS TEST ---"
+    echo "Testing CORS headers on external API:"
+    if curl -s --max-time 10 -H "Origin: https://d3p0722z34ceid.cloudfront.net" \
+        -H "Access-Control-Request-Method: GET" \
+        -H "Access-Control-Request-Headers: X-Requested-With" \
+        -X OPTIONS https://api.ezrec.org/status > /dev/null 2>&1; then
+        echo "✅ CORS preflight request successful"
+    else
+        echo "❌ CORS preflight request failed"
+        echo "💡 This may indicate tunnel or API server issues"
     fi
     
     log_info "Comprehensive system check completed!"
