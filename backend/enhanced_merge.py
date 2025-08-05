@@ -405,7 +405,7 @@ class EnhancedVideoMerger:
             str(output_path)
         ]
         
-
+        return cmd
     
     def merge_videos(self, video1_path: Path, video2_path: Path, 
                     output_path: Path, method: str = 'side_by_side') -> MergeResult:
