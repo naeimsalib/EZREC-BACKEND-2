@@ -9,7 +9,7 @@ import time
 from datetime import datetime, timedelta
 
 # Local API base URL
-API_BASE = "http://localhost:9000"
+API_BASE = "http://localhost:8000"
 
 def test_endpoint(endpoint, method="GET", data=None):
     """Test an API endpoint"""
@@ -52,6 +52,21 @@ def create_test_booking():
 def main():
     print("🧪 Testing Local EZREC API")
     print("=" * 40)
+    
+    # Check if API server is running
+    print("\n0. Checking API Server Status:")
+    try:
+        response = requests.get(f"{API_BASE}/test-alive", timeout=3)
+        if response.status_code == 200:
+            print("✅ API server is running on port 8000")
+        else:
+            print(f"⚠️ API server responded with status {response.status_code}")
+    except Exception as e:
+        print(f"❌ API server not accessible: {e}")
+        print("💡 Make sure the API server is running:")
+        print("   sudo systemctl status ezrec-api.service")
+        print("   sudo systemctl restart ezrec-api.service")
+        return
     
     # Test basic endpoints
     print("\n1. Testing Basic Endpoints:")

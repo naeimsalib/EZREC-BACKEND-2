@@ -147,8 +147,8 @@ setup_users() {
 install_dependencies() {
     log_step "Installing system dependencies"
     
-    sudo apt update
-    sudo apt install -y \
+    sudo DEBIAN_FRONTEND=noninteractive apt update -y
+    sudo DEBIAN_FRONTEND=noninteractive apt install -y \
         build-essential libjpeg-dev \
         ffmpeg \
         v4l-utils \
@@ -181,9 +181,9 @@ install_cloudflared() {
         
         # Clean up any problematic installation
         log_info "Cleaning up existing cloudflared installation..."
-        sudo apt remove --purge cloudflared 2>/dev/null || true
-        sudo apt autoremove 2>/dev/null || true
-        sudo apt clean 2>/dev/null || true
+        sudo DEBIAN_FRONTEND=noninteractive apt remove --purge -y cloudflared 2>/dev/null || true
+        sudo DEBIAN_FRONTEND=noninteractive apt autoremove -y 2>/dev/null || true
+        sudo DEBIAN_FRONTEND=noninteractive apt clean 2>/dev/null || true
         
         # Remove leftover files
         sudo rm -f /usr/local/bin/cloudflared 2>/dev/null || true
@@ -191,7 +191,7 @@ install_cloudflared() {
         
         # Fix package system
         sudo dpkg --configure -a 2>/dev/null || true
-        sudo apt-get install -f 2>/dev/null || true
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y 2>/dev/null || true
         
         log_info "✅ Cloudflared cleanup completed"
     fi
@@ -207,7 +207,7 @@ install_cloudflared() {
         log_info "✅ Cloudflared package installed successfully"
     else
         log_warn "⚠️ Package installation had issues, fixing dependencies..."
-        sudo apt-get install -f
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -f -y
     fi
     
     # Clean up the downloaded file
@@ -1183,6 +1183,20 @@ main() {
     
     echo -e "\n--- FINAL SUMMARY ---"
     echo "All services should be ACTIVE and all tests should pass ✅"
+    
+    # Test API server specifically
+    echo -e "\n--- API SERVER TEST ---"
+    echo "Testing API server on port 8000:"
+    if curl -s http://localhost:8000/test-alive > /dev/null; then
+        echo "✅ API server responding on port 8000"
+        curl -s http://localhost:8000/test-alive
+    else
+        echo "❌ API server not responding on port 8000"
+        echo "💡 Check API server status:"
+        echo "   sudo systemctl status ezrec-api.service"
+        echo "   sudo journalctl -u ezrec-api.service -n 20"
+    fi
+    
     log_info "Comprehensive system check completed!"
 }
 
