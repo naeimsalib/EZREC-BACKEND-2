@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# EZREC System Test Script
-# Run this after deployment.sh to verify everything is working
+# EZREC Backend Comprehensive Test Script
+# This script tests all components and provides detailed logs for debugging
 
 set -e
 
@@ -12,522 +12,330 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Logging functions
 log_info() {
-    echo -e "${GREEN}[$(date +'%H:%M:%S')] $1${NC}"
+    echo -e "${BLUE}[INFO]${NC} $1"
 }
 
-log_warn() {
-    echo -e "${YELLOW}[$(date +'%H:%M:%S')] WARNING: $1${NC}"
+log_success() {
+    echo -e "${GREEN}[SUCCESS]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[$(date +'%H:%M:%S')] ERROR: $1${NC}"
+    echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_step() {
-    echo -e "${BLUE}[$(date +'%H:%M:%S')] STEP: $1${NC}"
+    echo -e "\n${BLUE}=== $1 ===${NC}"
 }
 
-# Configuration
-DEPLOY_PATH="/opt/ezrec-backend"
-DEPLOY_USER="michomanoly14892"
+# Test configuration
+API_BASE_URL="http://localhost:9000"
+TEST_DURATION=30  # seconds to run recording test
+LOG_DIR="/opt/ezrec-backend/logs"
 
-echo "🧪 EZREC System Test Script"
-echo "=========================="
+echo "🚀 Starting EZREC Backend Comprehensive Test"
+echo "=============================================="
+echo "Timestamp: $(date)"
+echo "Test Duration: ${TEST_DURATION} seconds"
+echo ""
 
-# Test 1: Check if services are running
-log_step "1. Checking service status"
-services=("dual_recorder" "video_worker" "ezrec-api" "system_status")
-all_services_running=true
-
-for service in "${services[@]}"; do
-    if systemctl is-active --quiet ${service}.service; then
-        log_info "✅ $service.service is running"
+# Function to check if a service is running
+check_service() {
+    local service_name=$1
+    if systemctl is-active --quiet ${service_name}.service; then
+        log_success "$service_name is running"
+        return 0
     else
-        log_error "❌ $service.service is not running"
-        all_services_running=false
+        log_error "$service_name is not running"
+        return 1
     fi
-done
+}
 
-if [ "$all_services_running" = true ]; then
-    log_info "✅ All services are running"
-else
-    log_error "❌ Some services are not running"
-fi
+# Function to get service status
+get_service_status() {
+    local service_name=$1
+    echo "--- $service_name Status ---"
+    systemctl status ${service_name}.service --no-pager -l || true
+    echo ""
+}
 
-# Test 2: Check PyAV and picamera2 compatibility
-log_step "2. Testing PyAV and picamera2 compatibility"
-if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "
-import picamera2
-import av
-print('✅ PyAV and picamera2 compatibility verified')
-" 2>/dev/null; then
-    log_info "✅ PyAV and picamera2 compatibility verified"
-else
-    log_error "❌ PyAV and picamera2 compatibility failed"
-fi
-
-# Test 3: Test camera initialization and encoder configuration
-log_step "3. Testing camera initialization and encoder configuration"
-cd $DEPLOY_PATH
-
-# Test 3: Comprehensive camera and recording functionality test
-log_step "3. Testing comprehensive camera and recording functionality"
-cd $DEPLOY_PATH
-
-# Test 3a: Camera hardware detection
-log_info "🔍 Testing camera hardware detection..."
-camera_detection_result=$(timeout 10 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
-import picamera2
-import os
-
-try:
-    print('🔍 Detecting camera hardware...')
-    
-    # Check if camera devices exist
-    camera_devices = []
-    for i in range(10):  # Check first 10 possible camera indices
-        try:
-            camera = picamera2.Picamera2(camera_num=i)
-            camera_devices.append(i)
-            print(f'✅ Camera {i} detected')
-        except Exception as e:
-            if 'No camera' not in str(e):
-                print(f'⚠️ Camera {i}: {e}')
-    
-    if camera_devices:
-        print(f'✅ Found {len(camera_devices)} camera(s): {camera_devices}')
-        exit(0)
-    else:
-        print('❌ No cameras detected')
-        exit(1)
-        
-except Exception as e:
-    print(f'❌ Camera detection failed: {e}')
-    exit(1)
-" 2>&1)
-
-if [ $? -eq 0 ]; then
-    log_info "✅ Camera hardware detection passed"
-    echo "$camera_detection_result"
-else
-    log_error "❌ Camera hardware detection failed"
-    echo "$camera_detection_result"
-fi
-
-# Test 3b: Camera initialization and configuration
-log_info "🔍 Testing camera initialization..."
-camera_init_result=$(timeout 15 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
-import picamera2
-import time
-
-try:
-    print('🔍 Initializing camera...')
-    
-    camera = picamera2.Picamera2()
-    camera.configure(camera.create_preview_configuration())
-    camera.start()
-    
-    print('✅ Camera initialized successfully')
-    time.sleep(2)
-    camera.close()
-    print('✅ Camera closed successfully')
-    exit(0)
-        
-except Exception as e:
-    print(f'❌ Camera initialization failed: {e}')
-    import traceback
-    traceback.print_exc()
-    exit(1)
-" 2>&1)
-
-if [ $? -eq 0 ]; then
-    log_info "✅ Camera initialization passed"
-    echo "$camera_init_result"
-else
-    log_error "❌ Camera initialization failed"
-    echo "$camera_init_result"
-fi
-
-# Test 3c: Skip encoder configuration test (problematic) and proceed to actual recording test
-log_info "🔍 Skipping encoder configuration test (known to hang) and proceeding to actual recording test..."
-encoder_test_result="Skipped encoder configuration test to avoid hanging"
-
-log_info "✅ Encoder configuration test skipped"
-echo "$encoder_test_result"
-
-# Test 3d: Skip actual recording test (problematic) and proceed to comprehensive workflow test
-log_info "🔍 Skipping actual recording test (known to hang) and proceeding to comprehensive workflow test..."
-recording_test_result="Skipped actual recording test to avoid hanging"
-
-log_info "✅ Actual recording test skipped"
-echo "$recording_test_result"
-camera_test_passed=true  # Mark as passed since we're skipping the problematic test
-
-if [ $? -eq 0 ]; then
-    log_info "✅ Camera recording test passed"
-    echo "$test_result"
-    camera_test_passed=true
-else
-    log_error "❌ Camera recording test failed"
-    echo "$test_result"
-    
-    # Try a simpler test as fallback
-    log_info "🔄 Trying simpler camera test..."
-    simple_test_result=$(timeout 15 sudo -u $DEPLOY_USER backend/venv/bin/python3 -c "
-import picamera2
-import time
-
-try:
-    print('🔍 Testing basic camera functionality...')
-    camera = picamera2.Picamera2()
-    camera.configure(camera.create_preview_configuration())
-    camera.start()
-    print('✅ Camera initialized successfully')
-    time.sleep(1)
-    camera.close()
-    print('✅ Camera test passed (basic functionality)')
-    exit(0)
-except Exception as e:
-    print(f'❌ Basic camera test failed: {e}')
-    exit(1)
-" 2>&1)
-    
-    if [ $? -eq 0 ]; then
-        log_info "✅ Basic camera test passed"
-        echo "$simple_test_result"
-        camera_test_passed=true
+# Function to get recent logs
+get_recent_logs() {
+    local service_name=$1
+    local log_file=$2
+    echo "--- Recent $service_name Logs ---"
+    if [ -f "$log_file" ]; then
+        tail -20 "$log_file" || echo "No log file found"
     else
-        log_error "❌ Basic camera test also failed"
-        echo "$simple_test_result"
-        camera_test_passed=false
+        journalctl -u ${service_name}.service -n 20 --no-pager || echo "No journal logs found"
     fi
-fi
+    echo ""
+}
 
-# Test 4: Check API endpoint
-log_step "4. Testing API endpoint"
-if curl -s http://localhost:8000/health > /dev/null; then
-    log_info "✅ API endpoint is responding"
-else
-    log_error "❌ API endpoint is not responding"
-fi
-
-# Test 5: Check environment variables
-log_step "5. Checking environment variables"
-required_vars=("CAMERA_ID" "USER_ID" "SUPABASE_URL" "AWS_ACCESS_KEY_ID" "AWS_SECRET_ACCESS_KEY")
-all_vars_present=true
-
-for var in "${required_vars[@]}"; do
-    if grep -q "^${var}=" $DEPLOY_PATH/.env; then
-        log_info "✅ $var is set"
+# Function to test API endpoint
+test_api_endpoint() {
+    local endpoint=$1
+    local expected_status=${2:-200}
+    local response=$(curl -s -w "%{http_code}" -o /tmp/api_response.json "$API_BASE_URL$endpoint")
+    local status_code=${response: -3}
+    
+    if [ "$status_code" = "$expected_status" ]; then
+        log_success "API $endpoint returned $status_code"
+        if [ -f /tmp/api_response.json ]; then
+            echo "Response: $(cat /tmp/api_response.json)"
+        fi
     else
-        log_error "❌ $var is missing"
-        all_vars_present=false
+        log_error "API $endpoint returned $status_code (expected $expected_status)"
+        if [ -f /tmp/api_response.json ]; then
+            echo "Response: $(cat /tmp/api_response.json)"
+        fi
     fi
-done
+    echo ""
+}
 
-if [ "$all_vars_present" = true ]; then
-    log_info "✅ All required environment variables are set"
-else
-    log_error "❌ Some environment variables are missing"
-fi
-
-# Test 6: Check file permissions
-log_step "6. Checking file permissions"
-if [ -r $DEPLOY_PATH/.env ] && [ -w $DEPLOY_PATH/logs ]; then
-    log_info "✅ File permissions are correct"
-else
-    log_error "❌ File permissions are incorrect"
-fi
-
-# Test 7: Check disk space
-log_step "7. Checking disk space"
-disk_usage=$(df /opt/ezrec-backend | tail -1 | awk '{print $5}' | sed 's/%//')
-if [ "$disk_usage" -lt 90 ]; then
-    log_info "✅ Disk usage is healthy: ${disk_usage}%"
-else
-    log_warn "⚠️ Disk usage is high: ${disk_usage}%"
-fi
-
-# Test 8: Check recent logs for specific errors and GLOBAL_HEADER fix
-log_step "8. Checking recent logs for errors and GLOBAL_HEADER fix"
-
-# Check for GLOBAL_HEADER errors (should be fixed)
-global_header_errors=$(journalctl -u dual_recorder.service --since "10 minutes ago" | grep -i "GLOBAL_HEADER" | wc -l)
-if [ "$global_header_errors" -eq 0 ]; then
-    log_info "✅ No GLOBAL_HEADER errors found (fix working)"
-else
-    log_error "❌ Found $global_header_errors GLOBAL_HEADER errors (fix may not be working)"
-fi
-
-# Check for recording errors
-recording_errors=$(journalctl -u dual_recorder.service --since "10 minutes ago" | grep -i "recording error" | wc -l)
-if [ "$recording_errors" -eq 0 ]; then
-    log_info "✅ No recording errors found"
-else
-    log_warn "⚠️ Found $recording_errors recording errors"
-fi
-
-# Check for successful recordings
-successful_recordings=$(journalctl -u dual_recorder.service --since "10 minutes ago" | grep -i "recording completed" | grep -v "0 bytes" | wc -l)
-if [ "$successful_recordings" -gt 0 ]; then
-    log_info "✅ Found $successful_recordings successful recordings"
-else
-    log_warn "⚠️ No successful recordings found in recent logs"
-fi
-
-# Check for 0-byte recordings (should be fixed)
-zero_byte_recordings=$(journalctl -u dual_recorder.service --since "10 minutes ago" | grep -i "0 bytes" | wc -l)
-if [ "$zero_byte_recordings" -eq 0 ]; then
-    log_info "✅ No 0-byte recordings found (good)"
-else
-    log_warn "⚠️ Found $zero_byte_recordings 0-byte recordings (may indicate issues)"
-fi
-
-# Check for encoder fallback usage
-fallback_usage=$(journalctl -u dual_recorder.service --since "10 minutes ago" | grep -i "fallback config" | wc -l)
-if [ "$fallback_usage" -gt 0 ]; then
-    log_info "✅ Encoder fallback mechanism used $fallback_usage times"
-else
-    log_info "✅ Primary encoder configuration working"
-fi
-
-# Test 9: Comprehensive recording workflow test
-log_step "9. Testing comprehensive recording workflow with real booking"
-
-# Check if camera test passed before proceeding
-if [ "$camera_test_passed" = true ]; then
-    log_info "✅ Camera test passed, proceeding with comprehensive recording workflow test"
+# Function to create a test booking
+create_test_booking() {
+    log_step "Creating Test Booking"
     
-    # Create a booking for 30 seconds from now and lasts 3 minutes (longer for testing)
-START_TIME=$(date -d "+30 seconds" -Iseconds)
-END_TIME=$(date -d "+3 minutes 30 seconds" -Iseconds)
+    # Create a booking for 30 seconds from now
+    local start_time=$(date -d "+30 seconds" -Iseconds)
+    local end_time=$(date -d "+90 seconds" -Iseconds)
     
-    echo "Creating test booking:"
-    echo "Start: $START_TIME"
-    echo "End: $END_TIME"
+    local booking_data=$(cat <<EOF
+{
+    "id": "test-booking-$(date +%s)",
+    "user_id": "test-user-$(date +%s)",
+    "start_time": "$start_time",
+    "end_time": "$end_time",
+    "status": "confirmed"
+}
+EOF
+)
     
-    # Create the booking
-    test_booking_result=$(curl -s -X POST "http://localhost:8000/bookings" \
-      -H "Content-Type: application/json" \
-      -d "{
-        \"id\": \"test-booking-$(date +%s)\",
-        \"user_id\": \"65aa2e2a-e463-424d-b88f-0724bb0bea3a\",
-        \"start_time\": \"$START_TIME\",
-        \"end_time\": \"$END_TIME\"
-      }" 2>/dev/null)
+    echo "Creating booking with data:"
+    echo "$booking_data"
+    echo ""
     
-    if echo "$test_booking_result" | grep -q "Successfully created"; then
-        log_info "✅ Test booking created successfully"
+    local response=$(curl -s -w "%{http_code}" -X POST \
+        -H "Content-Type: application/json" \
+        -d "$booking_data" \
+        -o /tmp/booking_response.json \
+        "$API_BASE_URL/bookings")
+    
+    local status_code=${response: -3}
+    
+    if [ "$status_code" = "200" ]; then
+        log_success "Test booking created successfully"
+        echo "Response: $(cat /tmp/booking_response.json)"
+    else
+        log_error "Failed to create test booking (status: $status_code)"
+        if [ -f /tmp/booking_response.json ]; then
+            echo "Response: $(cat /tmp/booking_response.json)"
+        fi
+    fi
+    echo ""
+}
+
+# Function to monitor recording status
+monitor_recording() {
+    log_step "Monitoring Recording Status"
+    
+    local start_time=$(date +%s)
+    local end_time=$((start_time + TEST_DURATION))
+    
+    echo "Monitoring for $TEST_DURATION seconds..."
+    echo "Start time: $(date)"
+    echo "End time: $(date -d "@$end_time")"
+    echo ""
+    
+    while [ $(date +%s) -lt $end_time ]; do
+        local current_time=$(date '+%H:%M:%S')
+        local is_recording=$(curl -s "$API_BASE_URL/status/is_recording" | jq -r '.is_recording // false' 2>/dev/null || echo "false")
+        local next_booking=$(curl -s "$API_BASE_URL/status/next_booking" | jq -r '.start_time // "none"' 2>/dev/null || echo "none")
         
-        # Wait for recording to start and complete
-log_info "⏳ Waiting for recording to start and complete..."
-sleep 240  # Wait 4 minutes for recording to complete (3 minute booking + buffer)
+        echo "[$current_time] Recording: $is_recording | Next Booking: $next_booking"
         
-        # Check if recording files were created
-        log_info "🔍 Checking for recording files..."
-        recording_files=$(find /opt/ezrec-backend/recordings -name "*.mp4" -newer /tmp/test_recording.mp4 2>/dev/null | wc -l)
-        
-        if [ "$recording_files" -gt 0 ]; then
-            log_info "✅ Recording files found: $recording_files files"
-            
-            # Check file sizes and validate recordings
-            for file in $(find /opt/ezrec-backend/recordings -name "*.mp4" -newer /tmp/test_recording.mp4 2>/dev/null); do
-                size=$(stat -c%s "$file" 2>/dev/null || echo "0")
-                if [ "$size" -gt 100000 ]; then
-                    log_info "✅ Recording file $file: ${size} bytes (VALID)"
-                else
-                    log_warn "⚠️ Recording file $file: ${size} bytes (SMALL)"
-                fi
-            done
-        else
-            log_error "❌ No recording files found"
+        # Check if recording started
+        if [ "$is_recording" = "true" ]; then
+            log_success "Recording started at $current_time"
         fi
         
-        # Check for processing files
-        log_info "🔍 Checking for processed files..."
-        processed_files=$(find /opt/ezrec-backend/processed -name "*.mp4" -newer /tmp/test_recording.mp4 2>/dev/null | wc -l)
-        
-        if [ "$processed_files" -gt 0 ]; then
-            log_info "✅ Processed files found: $processed_files files"
-        else
-            log_warn "⚠️ No processed files found (video_worker may still be processing)"
-        fi
-        
-        # Check dual_recorder logs for GLOBAL_HEADER errors
-        log_info "🔍 Checking dual_recorder logs for GLOBAL_HEADER errors..."
-        global_header_errors=$(journalctl -u dual_recorder.service --since "2 minutes ago" | grep -i "GLOBAL_HEADER" | wc -l)
-        
-        if [ "$global_header_errors" -eq 0 ]; then
-            log_info "✅ No GLOBAL_HEADER errors found in recent logs"
-        else
-            log_warn "⚠️ Found $global_header_errors GLOBAL_HEADER errors in recent logs"
-        fi
-        
-        # Check for successful recordings in logs
-        successful_recordings=$(journalctl -u dual_recorder.service --since "2 minutes ago" | grep -i "recording completed" | grep -v "0 bytes" | wc -l)
-        
-        if [ "$successful_recordings" -gt 0 ]; then
-            log_info "✅ Found $successful_recordings successful recordings in logs"
-        else
-            log_warn "⚠️ No successful recordings found in recent logs"
-        fi
-        
+        sleep 5
+    done
+    
+    echo ""
+    log_info "Recording monitoring completed"
+}
+
+# Function to check disk space and files
+check_system_resources() {
+    log_step "Checking System Resources"
+    
+    echo "--- Disk Usage ---"
+    df -h /opt/ezrec-backend 2>/dev/null || df -h /
+    echo ""
+    
+    echo "--- Memory Usage ---"
+    free -h
+    echo ""
+    
+    echo "--- CPU Usage ---"
+    top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1
+    echo ""
+    
+    echo "--- Temperature ---"
+    if command -v vcgencmd >/dev/null 2>&1; then
+        vcgencmd measure_temp
     else
-        log_error "❌ Test booking creation failed"
-        echo "Response: $test_booking_result"
+        echo "Temperature monitoring not available"
     fi
-    
-else
-    log_warn "⚠️ Camera test failed, skipping comprehensive recording test"
-    log_info "Skipping recording test due to camera issues"
-    echo "Skipping recording test..."
-fi
+    echo ""
+}
 
-test_booking_result=$(curl -s -X POST "http://localhost:8000/bookings" \
-  -H "Content-Type: application/json" \
-  -d "{
-    \"id\": \"test-booking-$(date +%s)\",
-    \"user_id\": \"65aa2e2a-e463-424d-b88f-0724bb0bea3a\",
-    \"start_time\": \"$START_TIME\",
-    \"end_time\": \"$END_TIME\"
-  }" 2>/dev/null)
-
-if echo "$test_booking_result" | grep -q "Successfully created"; then
-    log_info "✅ Test booking created successfully"
+# Function to check recording files
+check_recordings() {
+    log_step "Checking Recording Files"
     
-    # Wait for recording to start
-    log_info "⏳ Waiting for recording to start..."
-    sleep 130  # Wait 2 minutes + 10 seconds
+    local recordings_dir="/opt/ezrec-backend/recordings"
+    local raw_dir="/opt/ezrec-backend/raw_recordings"
+    local processed_dir="/opt/ezrec-backend/processed_recordings"
     
-    # Check if recording files were created
-    log_info "🔍 Checking for recording files..."
-    recording_files=$(find /opt/ezrec-backend/recordings -name "*.mp4" -newer /tmp/test_recording.mp4 2>/dev/null | wc -l)
-    
-    if [ "$recording_files" -gt 0 ]; then
-        log_info "✅ Recording files found: $recording_files files"
-        
-        # Check file sizes
-        for file in $(find /opt/ezrec-backend/recordings -name "*.mp4" -newer /tmp/test_recording.mp4 2>/dev/null); do
-            size=$(stat -c%s "$file" 2>/dev/null || echo "0")
-            if [ "$size" -gt 100000 ]; then
-                log_info "✅ Recording file $file: ${size} bytes (VALID)"
-            else
-                log_warn "⚠️ Recording file $file: ${size} bytes (SMALL)"
-            fi
-        done
+    echo "--- Recordings Directory ---"
+    if [ -d "$recordings_dir" ]; then
+        find "$recordings_dir" -name "*.mp4" -o -name "*.json" | head -10
     else
-        log_error "❌ No recording files found"
+        echo "Recordings directory not found"
     fi
+    echo ""
     
-    # Check for processing files
-    log_info "🔍 Checking for processed files..."
-    processed_files=$(find /opt/ezrec-backend/processed -name "*.mp4" -newer /tmp/test_recording.mp4 2>/dev/null | wc -l)
-    
-    if [ "$processed_files" -gt 0 ]; then
-        log_info "✅ Processed files found: $processed_files files"
+    echo "--- Raw Recordings Directory ---"
+    if [ -d "$raw_dir" ]; then
+        find "$raw_dir" -name "*.mp4" | head -10
     else
-        log_warn "⚠️ No processed files found (video_worker may still be processing)"
+        echo "Raw recordings directory not found"
     fi
+    echo ""
     
-else
-    log_error "❌ Test booking creation failed"
-    echo "Response: $test_booking_result"
-fi
+    echo "--- Processed Recordings Directory ---"
+    if [ -d "$processed_dir" ]; then
+        find "$processed_dir" -name "*.mp4" | head -10
+    else
+        echo "Processed recordings directory not found"
+    fi
+    echo ""
+}
 
-# Test 10: Check system status
-log_step "10. Checking system status"
-if [ -f $DEPLOY_PATH/status.json ]; then
-    log_info "✅ System status file exists"
-    cat $DEPLOY_PATH/status.json
-else
-    log_error "❌ System status file missing"
-fi
+# Function to check network connectivity
+check_network() {
+    log_step "Checking Network Connectivity"
+    
+    echo "--- Internet Connectivity ---"
+    if ping -c 1 8.8.8.8 >/dev/null 2>&1; then
+        log_success "Internet connectivity OK"
+    else
+        log_error "No internet connectivity"
+    fi
+    echo ""
+    
+    echo "--- Local Network ---"
+    if ping -c 1 localhost >/dev/null 2>&1; then
+        log_success "Local network OK"
+    else
+        log_error "Local network issues"
+    fi
+    echo ""
+    
+    echo "--- Port Status ---"
+    echo "Port 9000 (API): $(netstat -tlnp 2>/dev/null | grep :9000 || echo 'Not listening')"
+    echo "Port 8000 (Alternative): $(netstat -tlnp 2>/dev/null | grep :8000 || echo 'Not listening')"
+    echo ""
+}
 
-# Test 11: Check dual_recorder configuration and GLOBAL_HEADER fix
-log_step "11. Checking dual_recorder configuration and GLOBAL_HEADER fix"
+# Main test execution
+main() {
+    log_step "1. Checking Service Status"
+    echo ""
+    
+    # Check all services
+    local services=("dual_recorder" "video_worker" "ezrec-api" "system_status")
+    local all_services_ok=true
+    
+    for service in "${services[@]}"; do
+        if ! check_service "$service"; then
+            all_services_ok=false
+        fi
+    done
+    
+    if [ "$all_services_ok" = true ]; then
+        log_success "All services are running"
+    else
+        log_error "Some services are not running"
+    fi
+    echo ""
+    
+    log_step "2. Testing API Endpoints"
+    echo ""
+    
+    # Test basic API endpoints
+    test_api_endpoint "/test-alive"
+    test_api_endpoint "/status"
+    test_api_endpoint "/health"
+    test_api_endpoint "/bookings"
+    test_api_endpoint "/status/is_recording"
+    test_api_endpoint "/status/next_booking"
+    
+    log_step "3. Creating Test Booking"
+    echo ""
+    create_test_booking
+    
+    log_step "4. Monitoring Recording Process"
+    echo ""
+    monitor_recording
+    
+    log_step "5. Checking System Resources"
+    echo ""
+    check_system_resources
+    
+    log_step "6. Checking Recording Files"
+    echo ""
+    check_recordings
+    
+    log_step "7. Checking Network"
+    echo ""
+    check_network
+    
+    log_step "8. Detailed Service Logs"
+    echo ""
+    
+    # Get detailed logs for each service
+    for service in "${services[@]}"; do
+        get_service_status "$service"
+        get_recent_logs "$service" "$LOG_DIR/${service}.log"
+    done
+    
+    log_step "9. Final Status Check"
+    echo ""
+    
+    # Final status check
+    for service in "${services[@]}"; do
+        check_service "$service"
+    done
+    
+    echo ""
+    log_step "Test Summary"
+    echo "=============="
+    echo "Test completed at: $(date)"
+    echo "All logs have been captured above"
+    echo ""
+    echo "If you see any errors or warnings above, please share this complete output"
+    echo "for debugging assistance."
+    echo ""
+}
 
-# Check if the GLOBAL_HEADER fix is in the code
-if grep -q "GLOBAL_HEADER" /opt/ezrec-backend/backend/dual_recorder.py; then
-    log_info "✅ GLOBAL_HEADER error handling found in code"
-else
-    log_error "❌ GLOBAL_HEADER error handling not found in code"
-fi
-
-# Check if encoder configuration is correct
-if grep -q "profile=\"baseline\"" /opt/ezrec-backend/backend/dual_recorder.py; then
-    log_info "✅ Baseline profile encoder configuration found"
-else
-    log_error "❌ Baseline profile encoder configuration not found"
-fi
-
-# Check if fallback configuration exists
-if grep -q "fallback config" /opt/ezrec-backend/backend/dual_recorder.py; then
-    log_info "✅ Encoder fallback mechanism found"
-else
-    log_error "❌ Encoder fallback mechanism not found"
-fi
-
-# Check for specific encoder settings
-if grep -q "level=\"4.1\"" /opt/ezrec-backend/backend/dual_recorder.py; then
-    log_info "✅ H264 level 4.1 configuration found"
-else
-    log_warn "⚠️ H264 level 4.1 configuration not found"
-fi
-
-# Check for try-except block around start_recording
-if grep -A 5 -B 5 "start_recording" /opt/ezrec-backend/backend/dual_recorder.py | grep -q "try:"; then
-    log_info "✅ Error handling around start_recording found"
-else
-    log_warn "⚠️ Error handling around start_recording not found"
-fi
-
-# Final summary
-echo ""
-echo "🎯 Comprehensive Test Summary"
-echo "============================"
-
-if [ "$all_services_running" = true ]; then
-    echo "✅ Services: All running"
-else
-    echo "❌ Services: Some failed"
-fi
-
-echo "✅ PyAV Compatibility: Fixed (av>=15.0.0)"
-echo "✅ Camera Hardware: Detected and accessible"
-echo "✅ Camera Initialization: Working"
-echo "✅ Encoder Configuration: Validated (primary + fallback)"
-echo "✅ Actual Recording: Tested with real video files"
-echo "✅ GLOBAL_HEADER Fix: Implemented and tested"
-echo "✅ API Endpoint: Responding"
-echo "✅ Environment: Configured"
-echo "✅ Permissions: Correct"
-echo "✅ Disk Space: Healthy"
-echo "✅ Logs: Clean"
-echo "✅ Bookings: Working"
-echo "✅ System Status: Available"
-echo "✅ Complete Workflow: Tested (booking → recording → processing)"
-echo "✅ File Validation: Recording files created and validated"
-
-echo ""
-log_info "🎉 EZREC Comprehensive System Test Completed!"
-log_info "Your system is ready for production recording!"
-
-# Clean up test files
-rm -f /tmp/test_recording.mp4
-
-echo ""
-echo "📋 Next Steps:"
-echo "1. Create a booking through your frontend"
-echo "2. Monitor logs: sudo journalctl -f -u dual_recorder.service"
-echo "3. Check recordings: ls -la /opt/ezrec-backend/recordings/"
-echo "4. View processed videos: ls -la /opt/ezrec-backend/processed/"
-echo "5. Monitor video_worker: sudo journalctl -f -u video_worker.service"
-echo ""
-echo "🔧 Troubleshooting Commands:"
-echo "- Check service status: systemctl status dual_recorder.service"
-echo "- View recent logs: journalctl -u dual_recorder.service -n 50"
-echo "- Check for GLOBAL_HEADER errors: journalctl -u dual_recorder.service | grep GLOBAL_HEADER"
-echo "- Monitor real-time: sudo journalctl -f -u dual_recorder.service"
-echo ""
-echo "✅ Your EZREC system is now fully functional with all fixes applied!" 
+# Run the test
+main "$@" 

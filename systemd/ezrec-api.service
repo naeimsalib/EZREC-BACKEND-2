@@ -9,7 +9,7 @@ EnvironmentFile=/opt/ezrec-backend/.env
 Group=video
 WorkingDirectory=/opt/ezrec-backend/api
 Environment=PATH=/opt/ezrec-backend/api/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 9000
+ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

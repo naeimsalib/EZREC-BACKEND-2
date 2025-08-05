@@ -652,34 +652,34 @@ prevent_port_conflicts() {
     # Kill any existing processes on our ports
     log_info "🔧 Checking for port conflicts..."
     
-    # Check and kill processes on port 9000 (API server)
-    if lsof -i :9000 >/dev/null 2>&1; then
-        log_warn "⚠️ Port 9000 is in use, killing conflicting processes..."
+    # Check and kill processes on port 8000 (API server)
+    if lsof -i :8000 >/dev/null 2>&1; then
+        log_warn "⚠️ Port 8000 is in use, killing conflicting processes..."
         log_info "💡 This warning is normal and indicates the conflict prevention is working!"
         log_info "🔧 This prevents the 'address already in use' error that was breaking the API service"
-        sudo pkill -f "uvicorn.*9000" 2>/dev/null || true
+        sudo pkill -f "uvicorn.*8000" 2>/dev/null || true
         sudo pkill -f "api_server" 2>/dev/null || true
         sleep 2
     fi
     
-    # Check and kill processes on port 8000 (alternative API port)
-    if lsof -i :8000 >/dev/null 2>&1; then
-        log_warn "⚠️ Port 8000 is in use, killing conflicting processes..."
-        sudo pkill -f "uvicorn.*8000" 2>/dev/null || true
+    # Check and kill processes on port 9000 (alternative API port)
+    if lsof -i :9000 >/dev/null 2>&1; then
+        log_warn "⚠️ Port 9000 is in use, killing conflicting processes..."
+        sudo pkill -f "uvicorn.*9000" 2>/dev/null || true
         sleep 2
     fi
     
     # Verify ports are free
-    if ! lsof -i :9000 >/dev/null 2>&1; then
-        log_info "✅ Port 9000 is now free"
-    else
-        log_error "❌ Port 9000 is still in use after cleanup"
-    fi
-    
     if ! lsof -i :8000 >/dev/null 2>&1; then
         log_info "✅ Port 8000 is now free"
     else
         log_error "❌ Port 8000 is still in use after cleanup"
+    fi
+    
+    if ! lsof -i :9000 >/dev/null 2>&1; then
+        log_info "✅ Port 9000 is now free"
+    else
+        log_error "❌ Port 9000 is still in use after cleanup"
     fi
     
     log_info "Port conflict prevention completed"
@@ -693,20 +693,20 @@ verify_api_server() {
     log_info "Waiting for API server to start..."
     sleep 5
     
-    # Test API server on port 9000
-    if curl -s http://localhost:9000/test-alive >/dev/null 2>&1; then
-        log_info "✅ API server is responding on port 9000"
+    # Test API server on port 8000
+    if curl -s http://localhost:8000/test-alive >/dev/null 2>&1; then
+        log_info "✅ API server is responding on port 8000"
         return 0
     else
-        log_warn "⚠️ API server not responding on port 9000, checking port 8000..."
+        log_warn "⚠️ API server not responding on port 8000, checking port 9000..."
         
-        # Test API server on port 8000 (fallback)
-        if curl -s http://localhost:8000/test-alive >/dev/null 2>&1; then
-            log_warn "⚠️ API server is running on port 8000 instead of 9000"
+        # Test API server on port 9000 (fallback)
+        if curl -s http://localhost:9000/test-alive >/dev/null 2>&1; then
+            log_warn "⚠️ API server is running on port 9000 instead of 8000"
             log_info "This is acceptable but not optimal"
             return 0
         else
-            log_error "❌ API server is not responding on either port 9000 or 8000"
+            log_error "❌ API server is not responding on either port 8000 or 9000"
             return 1
         fi
     fi
