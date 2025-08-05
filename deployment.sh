@@ -689,6 +689,12 @@ start_services() {
                 sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
                 sleep 2
             fi
+            # Additional aggressive cleanup for API server
+            log_info "🔧 Final API server port cleanup..."
+            sudo pkill -f "uvicorn" 2>/dev/null || true
+            sudo pkill -f "api_server" 2>/dev/null || true
+            sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
+            sleep 3
         fi
         
         sudo systemctl restart ${service}.service
