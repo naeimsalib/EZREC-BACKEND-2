@@ -180,6 +180,7 @@ install_dependencies_with_suppression() {
     
     # Install with suppressed warnings using the new wrapper
     if pip_install_suppress_warnings "$venv_path" install \
+        --no-cache-dir \
         --index-url https://pypi.org/simple \
         --disable-pip-version-check \
         --no-warn-script-location \
@@ -220,24 +221,24 @@ setup_venv() {
     sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
     
     # Install dependencies with PyPI forcing for problematic packages
-    pip_install_suppress_warnings "$path/venv" install --upgrade pip
+    pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade pip
     
     # Force PyPI for problematic packages to avoid piwheels 404 errors
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
     install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
     # Fix typing-extensions conflict
-    pip_install_suppress_warnings "$path/venv" install --upgrade "typing-extensions>=4.12.0"
+    pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade "typing-extensions>=4.12.0"
     
     # Install simplejpeg with proper error handling
-    if ! pip_install_suppress_warnings "$path/venv" install --force-reinstall --no-binary simplejpeg simplejpeg; then
+    if ! pip_install_suppress_warnings "$path/venv" install --no-cache-dir --force-reinstall --no-binary simplejpeg simplejpeg; then
         log_warn "Failed to install simplejpeg, trying alternative method"
-        pip_install_suppress_warnings "$path/venv" install simplejpeg
+        pip_install_suppress_warnings "$path/venv" install --no-cache-dir simplejpeg
     fi
     
     # Ensure PyAV is upgraded to compatible version for picamera2
     log_info "Upgrading PyAV to ensure picamera2 compatibility"
-    pip_install_suppress_warnings "$path/venv" install --upgrade "av>=15.0.0"
+    pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade "av>=15.0.0"
     
     # Verify picamera2 compatibility
     log_info "Verifying picamera2 and PyAV compatibility"
