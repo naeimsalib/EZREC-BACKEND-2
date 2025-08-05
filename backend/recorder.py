@@ -28,7 +28,13 @@ API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
 if API_DIR not in sys.path:
     sys.path.append(API_DIR)
 
-from booking_utils import update_booking_status
+try:
+    from booking_utils import update_booking_status
+except ImportError:
+    def update_booking_status(booking_id: str, status: str) -> bool:
+        """Fallback function if booking_utils is not available"""
+        print(f"⚠️ update_booking_status not available for booking {booking_id}")
+        return False
 
 dotenv_path = "/opt/ezrec-backend/.env"
 if os.path.exists(dotenv_path):

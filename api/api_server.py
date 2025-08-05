@@ -3,8 +3,6 @@ from fastapi import FastAPI, HTTPException, Query, Request, Body, Header, Depend
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 
-from typing import List, Optional
-
 from typing import List, Optional, Union
 
 from pathlib import Path
@@ -27,16 +25,6 @@ from email.message import EmailMessage
 import psutil
 import time
 import numpy as np
-
-try:
-    from picamera2 import Picamera2
-    PICAMERA2_AVAILABLE = True
-except ImportError:
-    import cv2
-    PICAMERA2_AVAILABLE = False
-import io
-import threading
-import pytz
 
 # Remove the picamera2/cv2 import since API server doesn't need camera functionality
 import io
@@ -75,9 +63,6 @@ logger = logging.getLogger("EZREC")
 # --------------------------
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-
-supabase = create_client(SUPABASE_URL, SUPABASE_KEY) if SUPABASE_URL and SUPABASE_KEY else None
-
 
 # Initialize Supabase client with error handling
 supabase = None
@@ -156,9 +141,6 @@ class Booking(BaseModel):
     date: Optional[str] = None
     camera_id: Optional[str] = None
     recording_id: Optional[str] = None
-
-    booking_id: str
-
 
     email: Optional[str] = None
 
