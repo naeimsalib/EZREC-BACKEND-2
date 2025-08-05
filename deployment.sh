@@ -680,6 +680,17 @@ start_services() {
     # Restart services to ensure they use new virtual environments
     for service in "${SERVICES[@]}"; do
         log_info "Restarting $service.service"
+        
+        # Additional port conflict check for API server
+        if [[ "$service" == "ezrec-api" ]]; then
+            log_info "🔧 Double-checking port 8000 is free before starting API server..."
+            if lsof -i :8000 >/dev/null 2>&1; then
+                log_warn "⚠️ Port 8000 still in use, forcing cleanup..."
+                sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
+                sleep 2
+            fi
+        fi
+        
         sudo systemctl restart ${service}.service
     done
     
@@ -774,34 +785,61 @@ prevent_port_conflicts() {
     # Kill any existing processes on our ports
     log_info "🔧 Checking for port conflicts..."
     
-    # Check and kill processes on port 8000 (API server)
+    # More aggressive cleanup - kill all possible API server processes
+    log_info "🧹 Cleaning up any existing API server processes..."
+    
+    # Kill uvicorn processes (API server)
+    sudo pkill -f "uvicorn" 2>/dev/null || true
+    sudo pkill -f "api_server" 2>/dev/null || true
+    sudo pkill -f "python.*api_server" 2>/dev/null || true
+    
+    # Kill any Python processes that might be holding the ports
+    sudo pkill -f "python.*8000" 2>/dev/null || true
+    sudo pkill -f "python.*9000" 2>/dev/null || true
+    
+    # Kill any processes using our ports
     if lsof -i :8000 >/dev/null 2>&1; then
         log_warn "⚠️ Port 8000 is in use, killing conflicting processes..."
         log_info "💡 This warning is normal and indicates the conflict prevention is working!"
         log_info "🔧 This prevents the 'address already in use' error that was breaking the API service"
-        sudo pkill -f "uvicorn.*8000" 2>/dev/null || true
-        sudo pkill -f "api_server" 2>/dev/null || true
+        
+        # Get PIDs of processes using port 8000 and kill them
+        sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
         sleep 2
     fi
     
-    # Check and kill processes on port 9000 (alternative API port)
     if lsof -i :9000 >/dev/null 2>&1; then
         log_warn "⚠️ Port 9000 is in use, killing conflicting processes..."
-        sudo pkill -f "uvicorn.*9000" 2>/dev/null || true
+        sudo lsof -ti :9000 | xargs -r sudo kill -9 2>/dev/null || true
         sleep 2
     fi
+    
+    # Additional cleanup - kill any remaining systemd services that might be holding ports
+    sudo systemctl stop ezrec-api.service 2>/dev/null || true
+    sudo systemctl stop video_worker.service 2>/dev/null || true
+    sudo systemctl stop dual_recorder.service 2>/dev/null || true
+    sudo systemctl stop system_status.service 2>/dev/null || true
+    
+    # Wait a bit more for processes to fully terminate
+    sleep 3
     
     # Verify ports are free
     if ! lsof -i :8000 >/dev/null 2>&1; then
         log_info "✅ Port 8000 is now free"
     else
         log_error "❌ Port 8000 is still in use after cleanup"
+        # Show what's still using the port
+        log_info "📋 Processes still using port 8000:"
+        sudo lsof -i :8000 2>/dev/null || true
     fi
     
     if ! lsof -i :9000 >/dev/null 2>&1; then
         log_info "✅ Port 9000 is now free"
     else
         log_error "❌ Port 9000 is still in use after cleanup"
+        # Show what's still using the port
+        log_info "📋 Processes still using port 9000:"
+        sudo lsof -i :9000 2>/dev/null || true
     fi
     
     log_info "Port conflict prevention completed"
