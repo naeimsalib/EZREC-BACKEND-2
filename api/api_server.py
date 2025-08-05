@@ -99,6 +99,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://d3p0722z34ceid.cloudfront.net",
+        "https://ezrec.org",
+        "https://www.ezrec.org",
         "http://localhost:3000",
         "http://127.0.0.1:3000"
     ],
@@ -141,7 +143,7 @@ class Booking(BaseModel):
     date: Optional[str] = None
     camera_id: Optional[str] = None
     recording_id: Optional[str] = None
-
+    status: Optional[str] = None
     email: Optional[str] = None
 
 class SystemSettings(BaseModel):

@@ -41,7 +41,7 @@ def create_test_booking():
     
     booking_data = {
         "id": f"test-booking-{int(time.time())}",
-        "user_id": f"test-user-{int(time.time())}",
+        "user_id": "65aa2e2a-e463-424d-b88f-0724bb0bea3a",  # Use the expected user ID
         "start_time": start_time,
         "end_time": end_time,
         "status": "confirmed"
