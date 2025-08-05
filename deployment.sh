@@ -2,6 +2,10 @@
 
 # EZREC Backend Deployment Script
 # Clean, efficient deployment with proper error handling and modular structure
+# 
+# NOTE: This script focuses ONLY on EZREC services and does NOT touch
+# Cloudflare tunnel configuration. The tunnel should be set up separately
+# and will be preserved during deployment.
 
 set -e  # Exit on any error
 
@@ -1016,9 +1020,6 @@ main() {
     # 4. Install dependencies
     install_dependencies
     
-    # 4.5. Install and configure cloudflared
-    install_cloudflared
-    
     # 5. Setup users and directories
     setup_users
     setup_directories
@@ -1063,55 +1064,6 @@ main() {
     
     # 9. Start services
     start_services
-    
-    # 9.5. Start cloudflared tunnel
-    log_step "9.5. Starting cloudflared tunnel"
-    log_info "Starting cloudflared tunnel in background..."
-    
-    # Kill any existing tunnel processes
-    sudo pkill cloudflared 2>/dev/null || true
-    sleep 2
-    
-    # Create cloudflared log file with proper permissions
-    sudo touch /tmp/cloudflared.log
-    sudo chmod 666 /tmp/cloudflared.log
-    sudo chown $DEPLOY_USER:$DEPLOY_USER /tmp/cloudflared.log
-    
-    # Start the tunnel as a systemd service if available
-    if sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
-        log_info "🔄 Restarting cloudflared systemd service..."
-        sudo systemctl restart cloudflared.service
-        sleep 5
-    else
-        log_info "🚀 Starting cloudflared tunnel manually..."
-        # Start the tunnel
-        nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &
-        sleep 5
-    fi
-    
-    # Wait for tunnel to start and verify
-    log_info "⏳ Waiting for tunnel to establish connection..."
-    sleep 10
-    
-    # Check if tunnel is running
-    if ps aux | grep -q "cloudflared tunnel run" || sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
-        log_info "✅ Cloudflared tunnel started successfully"
-        log_info "📋 Tunnel logs: tail -f /tmp/cloudflared.log"
-        log_info "📋 To stop tunnel: sudo pkill cloudflared"
-        
-        # Test external API to verify tunnel is working
-        log_info "🧪 Testing external API connection..."
-        if curl -s --max-time 10 https://api.ezrec.org/status > /dev/null 2>&1; then
-            log_info "✅ External API is accessible via tunnel"
-        else
-            log_warn "⚠️ External API not accessible yet, tunnel may still be connecting..."
-            log_info "💡 This is normal - tunnel can take up to 30 seconds to fully establish"
-        fi
-    else
-        log_error "❌ Cloudflared tunnel failed to start"
-        log_info "📋 Check logs: tail -f /tmp/cloudflared.log"
-        log_info "💡 Manual tunnel start: nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &"
-    fi
     
     # ----------------------------------------
     # ✅ Deploy updated video_worker.py
@@ -1174,100 +1126,7 @@ main() {
     verify_api_server
     
     # 11. Final checks
-    log_step "11. Final checks"
-    
-    # Check .env file
-    if [[ -f "$DEPLOY_PATH/.env" ]]; then
-        log_info "✅ .env file exists"
-    else
-        log_warn "⚠️ .env file not found - create it manually:"
-        log_info "sudo cp $DEPLOY_PATH/env.example $DEPLOY_PATH/.env"
-        log_info "sudo nano $DEPLOY_PATH/.env"
-    fi
-    
-    # Show directory structure
-    log_info "Directory structure:"
-    ls -la $DEPLOY_PATH/
-    
-    # Show virtual environments
-    log_info "Virtual environments:"
-    ls -la $DEPLOY_PATH/backend/venv/bin/python3
-    ls -la $DEPLOY_PATH/api/venv/bin/python3
-    
-    # Show assets
-    log_info "Assets:"
-    ls -la $DEPLOY_PATH/assets/
-    
-    # Show service status
-    log_info "Service status:"
-    for service in "${SERVICES[@]}"; do
-        sudo systemctl is-active --quiet ${service}.service && log_info "✅ $service: ACTIVE" || log_error "❌ $service: FAILED"
-    done
-    
-    log_info "🎉 EZREC deployment completed successfully!"
-    log_info ""
-    log_info "Next steps:"
-    log_info "1. Configure your .env file with your actual credentials"
-    log_info "2. Check service logs: sudo journalctl -u dual_recorder.service -f"
-    log_info "3. Test system: sudo systemctl status system_status.service"
-    log_info ""
-    log_info "Services are now running and will start automatically on boot."
-    
-    # Final comprehensive system check
-    log_step "12. Final comprehensive system check"
-    log_info "Running comprehensive system health check..."
-    
-    # Service status check
-    echo "=== FULL SYSTEM HEALTH CHECK ==="
-    echo "--- SERVICE STATUS ---"
-    systemctl status dual_recorder.service video_worker.service ezrec-api.service system_status.service --no-pager
-    
-    echo -e "\n--- SERVICE VALIDATION ---"
-    for service in dual_recorder video_worker ezrec-api system_status; do
-        echo "Testing $service:"
-        if sudo systemctl is-active --quiet ${service}.service; then
-            echo "✅ $service: ACTIVE"
-        else
-            echo "❌ $service: FAILED"
-        fi
-    done
-    
-    echo -e "\n--- PYTHON IMPORT TESTS ---"
-    echo "Testing picamera2 import:"
-    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "import picamera2; print('✅ picamera2 imported successfully')" 2>/dev/null; then
-        echo "✅ picamera2 import test passed"
-    else
-        echo "❌ picamera2 import test failed"
-    fi
-    
-    echo "Testing system_status script:"
-    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 $DEPLOY_PATH/backend/system_status.py 2>/dev/null; then
-        echo "✅ system_status script executed successfully"
-    else
-        echo "❌ system_status script failed"
-    fi
-    
-    echo -e "\n--- LOG FILES CHECK ---"
-    ls -la $DEPLOY_PATH/logs/
-    
-    echo -e "\n--- RECENT LOGS (Last 5 entries each) ---"
-    for service in dual_recorder video_worker ezrec-api system_status; do
-        echo "--- $service LOGS ---"
-        journalctl -u ${service}.service --no-pager -n 5
-    done
-    
-    echo -e "\n--- SYSTEM STATUS FILE ---"
-    cat $DEPLOY_PATH/status.json
-    
-    echo -e "\n--- KMS.PY CHECK ---"
-    if sudo -u $DEPLOY_USER $DEPLOY_PATH/backend/venv/bin/python3 -c "import kms; print('✅ kms.py imported successfully'); print('XBGR8888 available:', hasattr(kms.PixelFormat, 'XBGR8888')); print('YVU420 available:', hasattr(kms.PixelFormat, 'YVU420'))" 2>/dev/null; then
-        echo "✅ kms.py placeholder working correctly"
-    else
-        echo "❌ kms.py placeholder has issues"
-    fi
-    
-    echo -e "\n--- FINAL SUMMARY ---"
-    echo "All services should be ACTIVE and all tests should pass ✅"
+    log_step "11. Final system checks"
     
     # Test API server specifically
     echo -e "\n--- API SERVER TEST ---"
@@ -1282,39 +1141,26 @@ main() {
         echo "   sudo journalctl -u ezrec-api.service -n 20"
     fi
     
-    # Test Cloudflare tunnel and external API
-    echo -e "\n--- CLOUDFLARE TUNNEL TEST ---"
-    echo "Testing Cloudflare tunnel status:"
+    # Test Cloudflare tunnel and external API (read-only check)
+    echo -e "\n--- CLOUDFLARE TUNNEL STATUS ---"
+    echo "Checking existing Cloudflare tunnel status:"
     if ps aux | grep -q "cloudflared tunnel run" || sudo systemctl is-active --quiet cloudflared.service 2>/dev/null; then
         echo "✅ Cloudflare tunnel is running"
+        echo "📋 Tunnel logs: tail -f /tmp/cloudflared.log"
+        echo "📋 To stop tunnel: sudo pkill cloudflared"
+        
+        # Test external API (read-only)
+        echo "🧪 Testing external API connection..."
+        if curl -s --max-time 10 https://api.ezrec.org/status > /dev/null 2>&1; then
+            echo "✅ External API is accessible via tunnel"
+        else
+            echo "⚠️ External API not accessible - tunnel may need manual restart"
+            echo "💡 Manual tunnel restart: sudo systemctl restart cloudflared.service"
+        fi
     else
-        echo "❌ Cloudflare tunnel is not running"
-        echo "💡 Start tunnel manually: nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &"
-    fi
-    
-    echo "Testing external API (https://api.ezrec.org):"
-    if curl -s --max-time 10 https://api.ezrec.org/status > /dev/null 2>&1; then
-        echo "✅ External API is accessible"
-        echo "Response: $(curl -s --max-time 10 https://api.ezrec.org/status)"
-    else
-        echo "❌ External API is not accessible"
-        echo "💡 This may be due to:"
-        echo "   - Tunnel not fully established (wait 30 seconds)"
-        echo "   - Tunnel configuration issues"
-        echo "   - Check tunnel logs: tail -f /tmp/cloudflared.log"
-    fi
-    
-    # Test CORS headers
-    echo -e "\n--- CORS TEST ---"
-    echo "Testing CORS headers on external API:"
-    if curl -s --max-time 10 -H "Origin: https://d3p0722z34ceid.cloudfront.net" \
-        -H "Access-Control-Request-Method: GET" \
-        -H "Access-Control-Request-Headers: X-Requested-With" \
-        -X OPTIONS https://api.ezrec.org/status > /dev/null 2>&1; then
-        echo "✅ CORS preflight request successful"
-    else
-        echo "❌ CORS preflight request failed"
-        echo "💡 This may indicate tunnel or API server issues"
+        echo "⚠️ Cloudflare tunnel not running"
+        echo "💡 Manual tunnel start: sudo systemctl start cloudflared.service"
+        echo "💡 Or: nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &"
     fi
     
     log_info "Comprehensive system check completed!"
