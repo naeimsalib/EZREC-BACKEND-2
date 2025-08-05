@@ -785,6 +785,13 @@ prevent_port_conflicts() {
     # Kill any existing processes on our ports
     log_info "🔧 Checking for port conflicts..."
     
+    # Stop all EZREC services first
+    log_info "🛑 Stopping all EZREC services..."
+    sudo systemctl stop ezrec-api.service 2>/dev/null || true
+    sudo systemctl stop video_worker.service 2>/dev/null || true
+    sudo systemctl stop dual_recorder.service 2>/dev/null || true
+    sudo systemctl stop system_status.service 2>/dev/null || true
+    
     # More aggressive cleanup - kill all possible API server processes
     log_info "🧹 Cleaning up any existing API server processes..."
     
@@ -823,6 +830,11 @@ prevent_port_conflicts() {
     # Wait a bit more for processes to fully terminate
     sleep 3
     
+    # Final aggressive cleanup - kill any remaining processes
+    log_info "🔧 Final cleanup - killing any remaining processes on our ports..."
+    sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
+    sudo lsof -ti :9000 | xargs -r sudo kill -9 2>/dev/null || true
+    
     # Verify ports are free
     if ! lsof -i :8000 >/dev/null 2>&1; then
         log_info "✅ Port 8000 is now free"
@@ -831,6 +843,8 @@ prevent_port_conflicts() {
         # Show what's still using the port
         log_info "📋 Processes still using port 8000:"
         sudo lsof -i :8000 2>/dev/null || true
+        # Force kill one more time
+        sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
     fi
     
     if ! lsof -i :9000 >/dev/null 2>&1; then
@@ -840,6 +854,8 @@ prevent_port_conflicts() {
         # Show what's still using the port
         log_info "📋 Processes still using port 9000:"
         sudo lsof -i :9000 2>/dev/null || true
+        # Force kill one more time
+        sudo lsof -ti :9000 | xargs -r sudo kill -9 2>/dev/null || true
     fi
     
     log_info "Port conflict prevention completed"
