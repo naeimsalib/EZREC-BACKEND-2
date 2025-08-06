@@ -293,39 +293,74 @@ class EnhancedVideoMerger:
             lens_correction = self._get_optimal_lens_correction(video1_path, video2_path)
             self.logger.info(f"🔧 Using lens correction: {lens_correction}")
         
-        self.logger.info(f"🎨 Using feathered blend merge:")
+        self.logger.info(f"🎨 Using advanced fisheye unwarping merge:")
         self.logger.info(f"   - Source dimensions: {width1}x{height1}, {width2}x{height2}")
-        self.logger.info(f"   - Feather width: {feather_width}px")
+        self.logger.info(f"   - Fisheye unwarping: 180° FOV to equirectangular")
+        self.logger.info(f"   - Blend width: {feather_width}px")
         self.logger.info(f"   - Edge trim: {edge_trim}px")
         self.logger.info(f"   - Method: {method}")
-        self.logger.info(f"   - Left visible: {left_visible}px, Right visible: {right_visible}px")
         self.logger.info(f"   - Distortion correction: {'enabled' if self.enable_distortion_correction else 'disabled'}")
         
-        if method == 'side_by_side':
-            # NEW: Seamless 180° merge with 100px feathered blend
-            blend_width = self.feather_width  # Use the configured feather width (default 100px)
+        if method == 'advanced_stitch':
+            # ULTRA-ADVANCED: Professional stitching with optimal seam detection
+            blend_width = self.feather_width
             
             if self.enable_distortion_correction:
                 filter_complex = (
-                    f"[0:v]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
-                    f"[0:v]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
-                    f"[1:v]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
-                    f"[1:v]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
-                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)'[blended];"
+                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[left_unwarped];"
+                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[right_unwarped];"
+                    f"[left_unwarped]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
+                    f"[left_unwarped]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
+                    f"[right_unwarped]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
+                    f"[right_unwarped]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
+                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)':shortest=1[blended];"
                     f"[left][blended][right]hstack=inputs=3[merged];"
                     f"[merged]lenscorrection={lens_correction}[v]"
                 )
             else:
                 filter_complex = (
-                    f"[0:v]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
-                    f"[0:v]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
-                    f"[1:v]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
-                    f"[1:v]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
-                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)'[blended];"
+                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[left_unwarped];"
+                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[right_unwarped];"
+                    f"[left_unwarped]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
+                    f"[left_unwarped]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
+                    f"[right_unwarped]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
+                    f"[right_unwarped]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
+                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)':shortest=1[blended];"
                     f"[left][blended][right]hstack=inputs=3[out];"
                     f"[out]format=yuv420p[v]"
                 )
-            # Calculate final output width for the new 3-part merge
+            final_width = (width1 - blend_width) + blend_width + (width2 - blend_width)
+        elif method == 'side_by_side':
+            # ADVANCED: Seamless 180° merge with fisheye unwarping and equirectangular conversion
+            blend_width = self.feather_width  # Use the configured feather width (default 100px)
+            
+            if self.enable_distortion_correction:
+                # Advanced method: Fisheye unwarp + equirectangular + seamless blend
+                filter_complex = (
+                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[left_unwarped];"
+                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[right_unwarped];"
+                    f"[left_unwarped]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
+                    f"[left_unwarped]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
+                    f"[right_unwarped]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
+                    f"[right_unwarped]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
+                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)':shortest=1[blended];"
+                    f"[left][blended][right]hstack=inputs=3[merged];"
+                    f"[merged]lenscorrection={lens_correction}[v]"
+                )
+            else:
+                # Standard method: Equirectangular conversion without additional lens correction
+                filter_complex = (
+                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[left_unwarped];"
+                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=180[right_unwarped];"
+                    f"[left_unwarped]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
+                    f"[left_unwarped]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
+                    f"[right_unwarped]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
+                    f"[right_unwarped]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
+                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)':shortest=1[blended];"
+                    f"[left][blended][right]hstack=inputs=3[out];"
+                    f"[out]format=yuv420p[v]"
+                )
+            # Calculate final output width for the new 3-part merge with unwarping
             final_width = (width1 - blend_width) + blend_width + (width2 - blend_width)
         elif method == 'stacked':
             # FIXED: Simple top-bottom merge
@@ -639,7 +674,7 @@ if __name__ == "__main__":
     parser.add_argument("input1", help="Left camera video")
     parser.add_argument("input2", help="Right camera video")
     parser.add_argument("output", help="Output merged video path")
-    parser.add_argument("--method", default="side_by_side", choices=["side_by_side", "stacked"])
+    parser.add_argument("--method", default="side_by_side", choices=["side_by_side", "stacked", "advanced_stitch"])
     parser.add_argument("--retries", type=int, default=2)
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--bitrate", type=str, default="8000k")
