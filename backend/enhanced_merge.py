@@ -311,7 +311,7 @@ class EnhancedVideoMerger:
                     f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
                     f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T)+B*T\'[blended]; '
                     f'[left][blended][right]hstack=inputs=3,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
@@ -321,7 +321,7 @@ class EnhancedVideoMerger:
                     f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
                     f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T)+B*T\'[blended]; '
                     f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
                 )
             # Calculate final output width correctly
@@ -343,7 +343,7 @@ class EnhancedVideoMerger:
                     f'[0:v]crop=w={width1}:h={feather_width}:x=0:y={top_visible - edge_trim}[overlapT]; '
                     f'[1:v]crop=w={width2}:h={feather_width}:x=0:y=0[overlapB]; '
                     f'[1:v]crop=w={width2}:h={bottom_visible - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
-                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
+                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-T)+B*T\'[blended]; '
                     f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
@@ -353,7 +353,7 @@ class EnhancedVideoMerger:
                     f'[0:v]crop=w={width1}:h={feather_width}:x=0:y={top_visible - edge_trim}[overlapT]; '
                     f'[1:v]crop=w={width2}:h={feather_width}:x=0:y=0[overlapB]; '
                     f'[1:v]crop=w={width2}:h={bottom_visible - edge_trim}:x=0:y={feather_width + edge_trim}[bottom]; '
-                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-y/h)+B*(y/h)\'[blended]; '
+                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-T)+B*T\'[blended]; '
                     f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
                 )
             # Calculate final output height correctly
@@ -366,7 +366,7 @@ class EnhancedVideoMerger:
                     f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
                     f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T)+B*T\'[blended]; '
                     f'[left][blended][right]hstack=inputs=3,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
@@ -376,7 +376,7 @@ class EnhancedVideoMerger:
                     f'[0:v]crop=w={feather_width}:h={output_height}:x={left_visible - edge_trim}:y=0[overlapL]; '
                     f'[1:v]crop=w={feather_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={right_visible - edge_trim}:h={output_height}:x={feather_width + edge_trim}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-x/w)+B*(x/w)\'[blended]; '
+                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T)+B*T\'[blended]; '
                     f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
                 )
             final_width = (left_visible - edge_trim) + feather_width + (right_visible - edge_trim)
@@ -492,18 +492,6 @@ class EnhancedVideoMerger:
                     self.logger.error(f"❌ FFmpeg failed on attempt {attempt + 1}")
                     self.logger.error(f"🔧 FFmpeg stderr:\n{process.stderr}")
                     self.logger.error(f"🔧 FFmpeg stdout:\n{process.stdout}")
-                    
-                    # Try fallback method on last attempt
-                    if attempt == self.max_retries - 1:
-                        self.logger.warning(f"⚠️ Trying fallback simple merge method...")
-                        fallback_result = self._try_fallback_merge(video1_path, video2_path, output_path, method)
-                        if fallback_result:
-                            result.success = True
-                            result.status = MergeStatus.COMPLETED
-                            result.file_size = output_path.stat().st_size
-                            result.merge_time = time.time() - start_time
-                            result.error_message = "Used fallback merge method"
-                            return result
                 
                 # Clean up failed output
                 if output_path.exists():
@@ -602,62 +590,13 @@ class EnhancedVideoMerger:
             return False
     
     def cleanup_failed_merge(self, output_path: Path):
-        """Clean up failed merge output file"""
+        """Clean up failed merge output files"""
         try:
             if output_path.exists():
                 output_path.unlink()
-                self.logger.info(f"🧹 Cleaned up failed merge output: {output_path}")
+                self.logger.info(f"🗑️ Cleaned up failed output: {output_path}")
         except Exception as e:
-            self.logger.warning(f"⚠️ Failed to cleanup {output_path}: {e}")
-    
-    def _try_fallback_merge(self, video1_path: Path, video2_path: Path, 
-                           output_path: Path, method: str) -> bool:
-        """Try a simple fallback merge method"""
-        try:
-            if method == 'side_by_side':
-                # Simple side-by-side merge without feathered blend
-                cmd = [
-                    'ffmpeg', '-y',
-                    '-i', str(video1_path),
-                    '-i', str(video2_path),
-                    '-filter_complex', '[0:v][1:v]hstack=inputs=2,format=yuv420p[v]',
-                    '-map', '[v]',
-                    '-c:v', 'libx264',
-                    '-preset', 'ultrafast',
-                    '-crf', '23',
-                    '-pix_fmt', 'yuv420p',
-                    str(output_path)
-                ]
-            elif method == 'stacked':
-                # Simple stacked merge without feathered blend
-                cmd = [
-                    'ffmpeg', '-y',
-                    '-i', str(video1_path),
-                    '-i', str(video2_path),
-                    '-filter_complex', '[0:v][1:v]vstack=inputs=2,format=yuv420p[v]',
-                    '-map', '[v]',
-                    '-c:v', 'libx264',
-                    '-preset', 'ultrafast',
-                    '-crf', '23',
-                    '-pix_fmt', 'yuv420p',
-                    str(output_path)
-                ]
-            else:
-                return False
-            
-            self.logger.info(f"🔄 Trying fallback merge method: {method}")
-            process = subprocess.run(cmd, capture_output=True, text=True, timeout=60)
-            
-            if process.returncode == 0 and output_path.exists():
-                self.logger.info(f"✅ Fallback merge successful")
-                return True
-            else:
-                self.logger.error(f"❌ Fallback merge failed: {process.stderr}")
-                return False
-                
-        except Exception as e:
-            self.logger.error(f"❌ Fallback merge error: {e}")
-            return False
+            self.logger.warning(f"⚠️ Failed to clean up {output_path}: {e}")
 
     def _get_optimal_lens_correction(self, video1_path: Path, video2_path: Path) -> str:
         """Get optimal lens correction parameters based on video characteristics"""
