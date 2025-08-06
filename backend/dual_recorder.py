@@ -99,7 +99,12 @@ TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
 # Camera rotation configuration
-CAMERA_ROTATION = int(os.getenv("CAMERA_ROTATION", "45"))  # 45 degrees anti-clockwise by default
+CAMERA_ROTATION = int(os.getenv("CAMERA_ROTATION", "90"))  # 90 degrees anti-clockwise by default
+
+# Validate rotation value (only 0, 90, 180, 270 are valid)
+if CAMERA_ROTATION not in [0, 90, 180, 270]:
+    print(f"⚠️ Invalid CAMERA_ROTATION={CAMERA_ROTATION}. Using 90 degrees instead.")
+    CAMERA_ROTATION = 90
 
 # Merge configuration
 MERGE_METHOD = os.getenv("MERGE_METHOD", "side_by_side")
