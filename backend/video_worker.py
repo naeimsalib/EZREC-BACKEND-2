@@ -232,15 +232,7 @@ SPONSOR_LOGO_HEIGHT = int(os.getenv('SPONSOR_LOGO_HEIGHT', '120'))
 # Intro video path
 INTRO_VIDEO_PATH = os.getenv("INTRO_VIDEO_PATH", "/opt/ezrec-backend/assets/intro.mp4")
 
-# Static logo config
-STATIC_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
-STATIC_LOGO_POSITION = os.getenv("STATIC_LOGO_POSITION", "bottom_right")
-STATIC_SPONSOR_0_PATH = "/opt/ezrec-backend/static/sponsor_logo_1.png"
-STATIC_SPONSOR_1_PATH = "/opt/ezrec-backend/static/sponsor_logo_2.png"
-STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/static/sponsor_logo_3.png"
-STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
-STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
-STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
+# Remove old static logo config - use environment variables instead
 
 # Add a simple file validation function that doesn't require FFmpeg
 def is_file_readable(file: Path) -> bool:
@@ -253,7 +245,6 @@ def is_file_readable(file: Path) -> bool:
         return size > 100 * 1024
     except Exception:
         return False
-
 
 def get_duration(file: Path) -> float:
     try:
@@ -558,15 +549,7 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
                 pass
             sponsor_paths[i] = None
 
-    # --- Always add static main logo as overlay input ---
-    static_logo_path = Path(STATIC_LOGO_PATH)
-    if not static_logo_path.exists():
-        log.error(f"Static main logo not found at {STATIC_LOGO_PATH}. Skipping processing.")
-        return None
-    static_sponsor_paths = [Path(STATIC_SPONSOR_0_PATH), Path(STATIC_SPONSOR_1_PATH), Path(STATIC_SPONSOR_2_PATH)]
-    static_sponsor_positions = [STATIC_SPONSOR_0_POSITION, STATIC_SPONSOR_1_POSITION, STATIC_SPONSOR_2_POSITION]
-
-    # --- Always add main_ezrec_logo.png as overlay input ---
+    # --- Always add main logo as overlay input ---
     main_logo_path = Path(MAIN_LOGO_PATH)
     if not main_logo_path.exists():
         log.error(f"Main logo not found at {MAIN_LOGO_PATH}. Skipping processing.")
@@ -624,15 +607,15 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
         overlay_positions = []
 
         # Always add static main logo if present
-        if os.path.exists(static_logo_path):
-            overlay_files.append(static_logo_path)
+        if os.path.exists(main_logo_path):
+            overlay_files.append(main_logo_path)
             overlay_specs.append({
-                'name': 'staticlogo',
-                'position': STATIC_LOGO_POSITION,
+                'name': 'mainlogo',
+                'position': MAIN_LOGO_POSITION,
                 'type': 'static_main',
                 'main_logo': True  # <-- Mark this as main logo to use different sizing
             })
-            overlay_positions.append(STATIC_LOGO_POSITION)
+            overlay_positions.append(MAIN_LOGO_POSITION)
 
         # Add user logo if present
         if logo_path and logo_path.exists():
@@ -759,40 +742,29 @@ def process_video(raw_file: Path, user_id: str, date_dir: Path) -> Path:
             main_with_logos.unlink()
         return output_file
     # --- Single-pass logic if no intro video ---
-    input_args = ["-i", str(raw_file), "-i", str(static_logo_path)]
+    input_args = ["-i", str(raw_file), "-i", str(main_logo_path)]
     main_video_idx = 0
     video_inputs = 1
-    # For static main logo, scale to main logo size
-    filter_parts = [f"[1:v]scale={MAIN_LOGO_WIDTH}:{MAIN_LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={MAIN_LOGO_WIDTH}:{MAIN_LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[staticlogo_scaled]"]
-    filter_parts.append(f"[{main_video_idx}:v][staticlogo_scaled]overlay={POSITION_MAP[STATIC_LOGO_POSITION]}:format=auto[staticlogo_out]")
-    last_output = "[staticlogo_out]"
-    static_logo_inputs = []
-    for i, static_sponsor_path in enumerate(static_sponsor_paths):
-        if static_sponsor_path.exists():
-            input_args.extend(["-i", str(static_sponsor_path)])
-            static_logo_inputs.append((f"staticsponsor{i}", video_inputs + len(static_logo_inputs) + 1, static_sponsor_positions[i]))
-    for name, idx, position in static_logo_inputs:
-        scale_filter = f"[{idx}:v]scale=iw*0.15:ih*0.15[{name}_scaled]"
-        filter_parts.append(scale_filter)
-        overlay_position = POSITION_MAP.get(position, "top_right")
-        overlay_filter = f"{last_output}[{name}_scaled]overlay={overlay_position}:format=auto[{name}_out]"
-        filter_parts.append(overlay_filter)
-        last_output = f"[{name}_out]"
+    # For main logo, scale to main logo size
+    filter_parts = [f"[1:v]scale={MAIN_LOGO_WIDTH}:{MAIN_LOGO_HEIGHT}:force_original_aspect_ratio=decrease,pad={MAIN_LOGO_WIDTH}:{MAIN_LOGO_HEIGHT}:(ow-iw)/2:(oh-ih)/2:color=0x00000000[mainlogo_scaled]"]
+    filter_parts.append(f"[{main_video_idx}:v][mainlogo_scaled]overlay={POSITION_MAP[MAIN_LOGO_POSITION]}:format=auto[mainlogo_out]")
+    last_output = "[mainlogo_out]"
+    
+    # Add user and sponsor logos
     logo_inputs = []
     if logo_path and logo_path.exists():
         input_args.extend(["-i", str(logo_path)])
-        logo_inputs.append(("logo", video_inputs + len(static_logo_inputs) + 1, LOGO_POSITION))
-    sponsor_positions = [SPONSOR_0_POSITION, SPONSOR_1_POSITION, SPONSOR_2_POSITION]
+        logo_inputs.append(("userlogo", video_inputs + 1, USER_LOGO_POSITION))
+    
+    sponsor_positions = [SPONSOR_1_POSITION, SPONSOR_2_POSITION, SPONSOR_3_POSITION]
     for i, sponsor_path in enumerate(sponsor_paths):
         if sponsor_path and sponsor_path.exists():
             input_args.extend(["-i", str(sponsor_path)])
-            logo_inputs.append((f"sponsor{i}", video_inputs + len(static_logo_inputs) + len(logo_inputs) + 1, sponsor_positions[i]))
-    # LOGGING: Print overlays and positions AFTER logo_inputs is built
+            logo_inputs.append((f"sponsor{i}", video_inputs + len(logo_inputs) + 1, sponsor_positions[i]))
+    
+    # LOGGING: Print overlays and positions
     log.info("--- Overlay Chain (Single-pass, actual overlays to be applied) ---")
-    log.info(f"Static main logo: {static_logo_path} at {STATIC_LOGO_POSITION}")
-    for i, static_sponsor_path in enumerate(static_sponsor_paths):
-        if static_sponsor_path.exists():
-            log.info(f"Static sponsor {i}: {static_sponsor_path} at {static_sponsor_positions[i]}")
+    log.info(f"Main logo: {main_logo_path} at {MAIN_LOGO_POSITION}")
     for name, idx, position in logo_inputs:
         log.info(f"Overlay: {name} (input idx {idx}) at {position}")
     log.info("------------------------------")
