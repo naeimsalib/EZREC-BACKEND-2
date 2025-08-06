@@ -190,6 +190,7 @@ POSITION_MAP = {
     "bottom_center": "(main_w-overlay_w)/2:main_h-overlay_h-10",
 }
 
+# Logo configuration - all from environment variables
 LOGO_POSITION = os.getenv("LOGO_POSITION", "bottom_right")
 SPONSOR_0_POSITION = os.getenv("SPONSOR_0_POSITION", "bottom_left")
 SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_right")
@@ -204,10 +205,32 @@ except Exception:
 
 VIDEO_ENCODER = 'libx264'  # Hardware encoding disabled, always use software encoder
 
-# Main logo config (always use this path)
+# Logo paths from environment variables
+MAIN_LOGO_PATH = os.getenv("MAIN_LOGO_PATH", "/opt/ezrec-backend/assets/ezrec_logo.png")
+USER_LOGO_PATH = os.getenv("USER_LOGO_PATH", "/opt/ezrec-backend/assets/user_logo.png")
+SPONSOR_LOGO_1_PATH = os.getenv("SPONSOR_LOGO_1_PATH", "/opt/ezrec-backend/assets/sponsor_logo1.png")
+SPONSOR_LOGO_2_PATH = os.getenv("SPONSOR_LOGO_2_PATH", "/opt/ezrec-backend/assets/sponsor_logo2.png")
+SPONSOR_LOGO_3_PATH = os.getenv("SPONSOR_LOGO_3_PATH", "/opt/ezrec-backend/assets/sponsor_logo3.png")
 
-MAIN_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
-MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
+# Logo positions from environment variables
+MAIN_LOGO_POSITION = os.getenv("MAIN_LOGO_POSITION", "bottom_right")  # Always bottom right
+USER_LOGO_POSITION = os.getenv("USER_LOGO_POSITION", "top_right")
+SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_left")
+SPONSOR_2_POSITION = os.getenv("SPONSOR_2_POSITION", "bottom_center")
+SPONSOR_3_POSITION = os.getenv("SPONSOR_3_POSITION", "top_left")
+
+# Logo sizes from environment variables
+LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
+LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
+MAIN_LOGO_WIDTH = int(os.getenv('MAIN_LOGO_WIDTH', '400'))
+MAIN_LOGO_HEIGHT = int(os.getenv('MAIN_LOGO_HEIGHT', '400'))
+USER_LOGO_WIDTH = int(os.getenv('USER_LOGO_WIDTH', '120'))
+USER_LOGO_HEIGHT = int(os.getenv('USER_LOGO_HEIGHT', '120'))
+SPONSOR_LOGO_WIDTH = int(os.getenv('SPONSOR_LOGO_WIDTH', '120'))
+SPONSOR_LOGO_HEIGHT = int(os.getenv('SPONSOR_LOGO_HEIGHT', '120'))
+
+# Intro video path
+INTRO_VIDEO_PATH = os.getenv("INTRO_VIDEO_PATH", "/opt/ezrec-backend/assets/intro.mp4")
 
 # Static logo config
 STATIC_LOGO_PATH = "/opt/ezrec-backend/main_ezrec_logo.png"
@@ -218,32 +241,6 @@ STATIC_SPONSOR_2_PATH = "/opt/ezrec-backend/static/sponsor_logo_3.png"
 STATIC_SPONSOR_0_POSITION = os.getenv("STATIC_SPONSOR_0_POSITION", "top_right")
 STATIC_SPONSOR_1_POSITION = os.getenv("STATIC_SPONSOR_1_POSITION", "bottom_center")
 STATIC_SPONSOR_2_POSITION = os.getenv("STATIC_SPONSOR_2_POSITION", "bottom_right")
-
-LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
-LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
-MAIN_LOGO_WIDTH = int(os.getenv('MAIN_LOGO_WIDTH', '400'))
-MAIN_LOGO_HEIGHT = int(os.getenv('MAIN_LOGO_HEIGHT', '400'))
-MAIN_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
-MAIN_LOGO_POSITION = "bottom_right"  # Always bottom right
-
-# Static logo config - updated to match deployment script paths
-STATIC_LOGO_PATH = "/opt/ezrec-backend/assets/ezrec_logo.png"
-STATIC_LOGO_POSITION = os.getenv("STATIC_LOGO_POSITION", "bottom_right")
-# User asset paths - all assets in single assets folder
-USER_LOGO_PATH = "/opt/ezrec-backend/assets/user_logo.png"
-INTRO_VIDEO_PATH = "/opt/ezrec-backend/assets/intro.mp4"
-SPONSOR_LOGO_1_PATH = "/opt/ezrec-backend/assets/sponsor_logo1.png"
-SPONSOR_LOGO_2_PATH = "/opt/ezrec-backend/assets/sponsor_logo2.png"
-SPONSOR_LOGO_3_PATH = "/opt/ezrec-backend/assets/sponsor_logo3.png"
-SPONSOR_0_POSITION = os.getenv("SPONSOR_0_POSITION", "bottom_left")
-SPONSOR_1_POSITION = os.getenv("SPONSOR_1_POSITION", "bottom_right")
-SPONSOR_2_POSITION = os.getenv("SPONSOR_2_POSITION", "bottom_center")
-
-LOGO_WIDTH = int(os.getenv('LOGO_WIDTH', '120'))
-LOGO_HEIGHT = int(os.getenv('LOGO_HEIGHT', '120'))
-# Add these lines for main logo size
-MAIN_LOGO_WIDTH = int(os.getenv('MAIN_LOGO_WIDTH', str(LOGO_WIDTH)))
-MAIN_LOGO_HEIGHT = int(os.getenv('MAIN_LOGO_HEIGHT', str(LOGO_HEIGHT)))
 
 # Add a simple file validation function that doesn't require FFmpeg
 def is_file_readable(file: Path) -> bool:

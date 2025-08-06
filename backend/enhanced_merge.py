@@ -302,80 +302,62 @@ class EnhancedVideoMerger:
         self.logger.info(f"   - Distortion correction: {'enabled' if self.enable_distortion_correction else 'disabled'}")
         
         if method == 'side_by_side':
-            # FIXED: Remove black line seam with perfect alignment
-            # Uses smaller overlap and ensures no gaps between sections
-            overlap_width = min(30, feather_width // 3)  # Even smaller overlap
+            # FIXED: Simple 2-part blend to eliminate black line seam
+            # Uses direct blend without complex cropping
+            overlap_width = min(50, feather_width // 2)  # Moderate overlap
             
             if self.enable_distortion_correction:
                 filter_complex = (
                     f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[0:v]crop=w={overlap_width}:h={output_height}:x={width1 - overlap_width}:y=0[overlapL]; '
-                    f'[1:v]crop=w={overlap_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T/{overlap_width})+B*(T/{overlap_width})\'[blended]; '
-                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[merged]; '
+                    f'[left][right]hstack=inputs=2,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
             else:
                 filter_complex = (
                     f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[0:v]crop=w={overlap_width}:h={output_height}:x={width1 - overlap_width}:y=0[overlapL]; '
-                    f'[1:v]crop=w={overlap_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T/{overlap_width})+B*(T/{overlap_width})\'[blended]; '
-                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+                    f'[left][right]hstack=inputs=2,format=yuv420p[v]'
                 )
             # Calculate final output width correctly
-            final_width = (width1 - overlap_width) + overlap_width + (width2 - overlap_width)
+            final_width = (width1 - overlap_width) + (width2 - overlap_width)
         elif method == 'stacked':
-            # FIXED: Top-bottom merge with smaller overlap
-            overlap_height = min(30, feather_width // 3)  # Even smaller overlap
+            # FIXED: Simple top-bottom merge
+            overlap_height = min(50, feather_width // 2)  # Moderate overlap
             
             if self.enable_distortion_correction:
                 filter_complex = (
                     f'[0:v]crop=w={width1}:h={height1 - overlap_height}:x=0:y=0[top]; '
-                    f'[0:v]crop=w={width1}:h={overlap_height}:x=0:y={height1 - overlap_height}[overlapT]; '
-                    f'[1:v]crop=w={width2}:h={overlap_height}:x=0:y=0[overlapB]; '
                     f'[1:v]crop=w={width2}:h={height2 - overlap_height}:x=0:y={overlap_height}[bottom]; '
-                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-T/{overlap_height})+B*(T/{overlap_height})\'[blended]; '
-                    f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[merged]; '
+                    f'[top][bottom]vstack=inputs=2,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
             else:
                 filter_complex = (
                     f'[0:v]crop=w={width1}:h={height1 - overlap_height}:x=0:y=0[top]; '
-                    f'[0:v]crop=w={width1}:h={overlap_height}:x=0:y={height1 - overlap_height}[overlapT]; '
-                    f'[1:v]crop=w={width2}:h={overlap_height}:x=0:y=0[overlapB]; '
                     f'[1:v]crop=w={width2}:h={height2 - overlap_height}:x=0:y={overlap_height}[bottom]; '
-                    f'[overlapT][overlapB]blend=all_expr=\'A*(1-T/{overlap_height})+B*(T/{overlap_height})\'[blended]; '
-                    f'[top][blended][bottom]vstack=inputs=3,format=yuv420p[v]'
+                    f'[top][bottom]vstack=inputs=2,format=yuv420p[v]'
                 )
             # Calculate final output height correctly
-            final_height = (height1 - overlap_height) + overlap_height + (height2 - overlap_height)
+            final_height = (height1 - overlap_height) + (height2 - overlap_height)
         else:
-            # Default to side-by-side with smaller overlap
-            overlap_width = min(30, feather_width // 3)
+            # Default to side-by-side with simple blend
+            overlap_width = min(50, feather_width // 2)
             
             if self.enable_distortion_correction:
                 filter_complex = (
                     f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[0:v]crop=w={overlap_width}:h={output_height}:x={width1 - overlap_width}:y=0[overlapL]; '
-                    f'[1:v]crop=w={overlap_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T/{overlap_width})+B*(T/{overlap_width})\'[blended]; '
-                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[merged]; '
+                    f'[left][right]hstack=inputs=2,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
             else:
                 filter_complex = (
                     f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[0:v]crop=w={overlap_width}:h={output_height}:x={width1 - overlap_width}:y=0[overlapL]; '
-                    f'[1:v]crop=w={overlap_width}:h={output_height}:x=0:y=0[overlapR]; '
                     f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
-                    f'[overlapL][overlapR]blend=all_expr=\'A*(1-T/{overlap_width})+B*(T/{overlap_width})\'[blended]; '
-                    f'[left][blended][right]hstack=inputs=3,format=yuv420p[v]'
+                    f'[left][right]hstack=inputs=2,format=yuv420p[v]'
                 )
-            final_width = (width1 - overlap_width) + overlap_width + (width2 - overlap_width)
+            final_width = (width1 - overlap_width) + (width2 - overlap_width)
         
         # Log the complete filter for debugging
         self.logger.debug(f"🔧 Complete filter_complex: {filter_complex}")

@@ -98,6 +98,9 @@ else:
 TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "America/New_York"
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
+# Camera rotation configuration
+CAMERA_ROTATION = int(os.getenv("CAMERA_ROTATION", "45"))  # 45 degrees anti-clockwise by default
+
 # Merge configuration
 MERGE_METHOD = os.getenv("MERGE_METHOD", "side_by_side")
 ENABLE_DISTORTION_CORRECTION = os.getenv("ENABLE_DISTORTION_CORRECTION", "true").lower() == "true"
@@ -374,7 +377,7 @@ class CameraRecorder:
                         "AnalogueGain": 1.0,
                         "NoiseReductionMode": 0
                     },
-                    transform=libcamera.Transform(hflip=False, vflip=False, rotation=90)  # 90 degrees anti-clockwise
+                    transform=libcamera.Transform(hflip=False, vflip=False, rotation=CAMERA_ROTATION)  # Configurable rotation
                 )
                 
                 self.picamera2.configure(config)
