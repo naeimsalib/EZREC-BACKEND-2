@@ -302,25 +302,31 @@ class EnhancedVideoMerger:
         self.logger.info(f"   - Distortion correction: {'enabled' if self.enable_distortion_correction else 'disabled'}")
         
         if method == 'side_by_side':
-            # FIXED: Simple 2-part blend to eliminate black line seam
-            # Uses direct blend without complex cropping
-            overlap_width = min(50, feather_width // 2)  # Moderate overlap
+            # NEW: Seamless 180° merge with 100px feathered blend
+            blend_width = self.feather_width  # Use the configured feather width (default 100px)
             
             if self.enable_distortion_correction:
                 filter_complex = (
-                    f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
-                    f'[left][right]hstack=inputs=2,format=yuv420p[merged]; '
-                    f'[merged]lenscorrection={lens_correction}[v]'
+                    f"[0:v]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
+                    f"[0:v]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
+                    f"[1:v]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
+                    f"[1:v]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
+                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)'[blended];"
+                    f"[left][blended][right]hstack=inputs=3[merged];"
+                    f"[merged]lenscorrection={lens_correction}[v]"
                 )
             else:
                 filter_complex = (
-                    f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
-                    f'[left][right]hstack=inputs=2,format=yuv420p[v]'
+                    f"[0:v]crop=w=iw-{blend_width}:h=ih:x=0:y=0[left];"
+                    f"[0:v]crop=w={blend_width}:h=ih:x=iw-{blend_width}:y=0[overlapL];"
+                    f"[1:v]crop=w={blend_width}:h=ih:x=0:y=0[overlapR];"
+                    f"[1:v]crop=w=iw-{blend_width}:h=ih:x={blend_width}:y=0[right];"
+                    f"[overlapL][overlapR]blend=all_expr='A*(1-(X/W))+B*(X/W)'[blended];"
+                    f"[left][blended][right]hstack=inputs=3[out];"
+                    f"[out]format=yuv420p[v]"
                 )
-            # Calculate final output width correctly
-            final_width = (width1 - overlap_width) + (width2 - overlap_width)
+            # Calculate final output width for the new 3-part merge
+            final_width = (width1 - blend_width) + blend_width + (width2 - blend_width)
         elif method == 'stacked':
             # FIXED: Simple top-bottom merge
             overlap_height = min(50, feather_width // 2)  # Moderate overlap
