@@ -30,6 +30,7 @@ current_session = None
 # Monkey patch Picamera2 to fix _preview attribute error
 try:
     from picamera2 import Picamera2
+    import libcamera
     
     # Store the original close method
     original_close = Picamera2.close
@@ -372,7 +373,8 @@ class CameraRecorder:
                         "ExposureTime": 33333,
                         "AnalogueGain": 1.0,
                         "NoiseReductionMode": 0
-                    }
+                    },
+                    transform=libcamera.Transform(hflip=0, vflip=0, rotate=90)  # 90 degrees anti-clockwise
                 )
                 
                 self.picamera2.configure(config)

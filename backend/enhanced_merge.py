@@ -302,9 +302,9 @@ class EnhancedVideoMerger:
         self.logger.info(f"   - Distortion correction: {'enabled' if self.enable_distortion_correction else 'disabled'}")
         
         if method == 'side_by_side':
-            # FIXED: Simple and reliable feathered blend merge
-            # Uses a smaller overlap area with proper alpha gradient
-            overlap_width = min(50, feather_width // 2)  # Smaller overlap for better results
+            # FIXED: Remove black line seam with perfect alignment
+            # Uses smaller overlap and ensures no gaps between sections
+            overlap_width = min(30, feather_width // 3)  # Even smaller overlap
             
             if self.enable_distortion_correction:
                 filter_complex = (
@@ -329,7 +329,7 @@ class EnhancedVideoMerger:
             final_width = (width1 - overlap_width) + overlap_width + (width2 - overlap_width)
         elif method == 'stacked':
             # FIXED: Top-bottom merge with smaller overlap
-            overlap_height = min(50, feather_width // 2)  # Smaller overlap for better results
+            overlap_height = min(30, feather_width // 3)  # Even smaller overlap
             
             if self.enable_distortion_correction:
                 filter_complex = (
@@ -354,7 +354,7 @@ class EnhancedVideoMerger:
             final_height = (height1 - overlap_height) + overlap_height + (height2 - overlap_height)
         else:
             # Default to side-by-side with smaller overlap
-            overlap_width = min(50, feather_width // 2)
+            overlap_width = min(30, feather_width // 3)
             
             if self.enable_distortion_correction:
                 filter_complex = (
