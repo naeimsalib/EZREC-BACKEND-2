@@ -374,7 +374,7 @@ class CameraRecorder:
                         "AnalogueGain": 1.0,
                         "NoiseReductionMode": 0
                     },
-                    transform=libcamera.Transform(hflip=0, vflip=0, rotate=90)  # 90 degrees anti-clockwise
+                    transform=libcamera.Transform(hflip=False, vflip=False, rotation=90)  # 90 degrees anti-clockwise
                 )
                 
                 self.picamera2.configure(config)
