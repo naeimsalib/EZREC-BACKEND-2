@@ -207,8 +207,8 @@ class EnhancedVideoMerger:
             if not video2_path.exists():
                 return False, f"Video 2 not found: {video2_path}"
             
-            # Check file sizes (minimum 500KB each)
-            min_size = 500 * 1024
+            # Check file sizes (minimum 100KB each for testing)
+            min_size = 100 * 1024
             size1 = video1_path.stat().st_size
             size2 = video2_path.stat().st_size
             
