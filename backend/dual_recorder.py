@@ -99,12 +99,15 @@ TIMEZONE_NAME = os.getenv("LOCAL_TIMEZONE") or os.getenv("SYSTEM_TIMEZONE") or "
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
 # Camera rotation configuration
-CAMERA_ROTATION = int(os.getenv("CAMERA_ROTATION", "90"))  # 90 degrees anti-clockwise by default
+CAMERA_ROTATION = int(os.getenv("CAMERA_ROTATION", "0"))  # 0 degrees by default (rotation handled in merge)
 
-# Validate rotation value (only 0, 90, 180, 270 are valid)
+# Validate rotation value (only 0, 90, 180, 270 are valid for hardware rotation)
 if CAMERA_ROTATION not in [0, 90, 180, 270]:
-    print(f"⚠️ Invalid CAMERA_ROTATION={CAMERA_ROTATION}. Using 90 degrees instead.")
-    CAMERA_ROTATION = 90
+    print(f"⚠️ Invalid CAMERA_ROTATION={CAMERA_ROTATION}. Using 0 degrees instead.")
+    CAMERA_ROTATION = 0
+
+# Enhanced merge rotation (for 45-degree support)
+ENHANCED_MERGE_ROTATE_DEGREES = float(os.getenv("ENHANCED_MERGE_ROTATE_DEGREES", "45.0"))  # 45 degrees for seamless merge
 
 # Merge configuration
 MERGE_METHOD = os.getenv("MERGE_METHOD", "side_by_side")
@@ -638,16 +641,18 @@ def merge_videos(video1_path: Path, video2_path: Path, output_path: Path, method
         try:
             logger.info(f"🎬 Using enhanced merge for {video1_path.name} and {video2_path.name}")
             logger.info(f"🔧 Merge method: {method}")
+            logger.info(f"🔧 Input rotation: {ENHANCED_MERGE_ROTATE_DEGREES}°")
             logger.info(f"🔧 Distortion correction: {'enabled' if ENABLE_DISTORTION_CORRECTION else 'disabled'}")
             
-            # Create enhanced merger with distortion correction setting
+            # Create enhanced merger with rotation and distortion correction setting
             from enhanced_merge import EnhancedVideoMerger
             merger = EnhancedVideoMerger(
                 max_retries=3,
                 timeout=300,
                 feather_width=100,
                 edge_trim=5,
-                enable_distortion_correction=ENABLE_DISTORTION_CORRECTION
+                enable_distortion_correction=ENABLE_DISTORTION_CORRECTION,
+                input_rotate_degrees=ENHANCED_MERGE_ROTATE_DEGREES
             )
             
             result = merger.merge_videos(video1_path, video2_path, output_path, method)

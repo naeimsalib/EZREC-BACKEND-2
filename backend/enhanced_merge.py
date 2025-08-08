@@ -40,7 +40,7 @@ class MergeResult:
 class EnhancedVideoMerger:
     """Enhanced video merger with retry logic and validation"""
     
-    def __init__(self, max_retries: int = 3, timeout: int = 300, feather_width: int = 100, edge_trim: int = 5, target_bitrate: str = "8000k", output_resolution: tuple = None, enable_distortion_correction: bool = True):
+    def __init__(self, max_retries: int = 3, timeout: int = 300, feather_width: int = 100, edge_trim: int = 5, target_bitrate: str = "8000k", output_resolution: tuple = None, enable_distortion_correction: bool = False, input_rotate_degrees: float = 0.0):
         self.max_retries = max_retries
         self.timeout = timeout
         self.feather_width = feather_width
@@ -49,10 +49,21 @@ class EnhancedVideoMerger:
         self.target_bitrate = target_bitrate
         self.output_resolution = output_resolution
         self.enable_distortion_correction = enable_distortion_correction
+        self.input_rotate_degrees = input_rotate_degrees
         
         # Validate FFmpeg availability
         if not self._check_ffmpeg():
             raise RuntimeError("FFmpeg not found. Please install FFmpeg.")
+    
+    def _input_prefilter(self) -> str:
+        """Rotate (any angle), normalize pixel aspect & height before stitching."""
+        angle = self.input_rotate_degrees
+        if angle:
+            # radians for ffmpeg rotate filter
+            rad = f"({angle}*PI/180)"
+            return f"rotate={rad}:ow=rotw({rad}):oh=roth({rad}):c=black@0,scale=-2:1080,setsar=1"
+        # no rotation: still normalize height and SAR
+        return "scale=-2:1080,setsar=1"
     
     def _check_ffmpeg(self) -> bool:
         """Check if FFmpeg is available"""
@@ -293,23 +304,25 @@ class EnhancedVideoMerger:
             lens_correction = self._get_optimal_lens_correction(video1_path, video2_path)
             self.logger.info(f"🔧 Using lens correction: {lens_correction}")
         
-        self.logger.info(f"🎨 Using TRUE 180° seamless panoramic merge:")
+        # Get the prefilter for rotation and normalization
+        pref = self._input_prefilter()
+        
+        self.logger.info(f"🎨 Using seamless panoramic merge with {self.input_rotate_degrees}° rotation:")
         self.logger.info(f"   - Source dimensions: {width1}x{height1}, {width2}x{height2}")
-        self.logger.info(f"   - Fisheye unwarping: 180° horizontal FOV, 90° vertical FOV")
-        self.logger.info(f"   - Geometric alignment: Proper overlap region blending")
-        self.logger.info(f"   - Blend width: {feather_width}px")
+        self.logger.info(f"   - Input rotation: {self.input_rotate_degrees}°")
+        self.logger.info(f"   - Feather width: {feather_width}px")
         self.logger.info(f"   - Edge trim: {edge_trim}px")
         self.logger.info(f"   - Method: {method}")
         self.logger.info(f"   - Distortion correction: {'enabled' if self.enable_distortion_correction else 'disabled'}")
         
         if method == 'advanced_stitch':
-            # ULTRA-ADVANCED: Professional stitching with true 180° panoramic view
+            # ULTRA-ADVANCED: Professional stitching with rotation support
             blend_width = self.feather_width
             
             if self.enable_distortion_correction:
                 filter_complex = (
-                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[left];"
-                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[right];"
+                    f"[0:v]{pref}[left];"
+                    f"[1:v]{pref}[right];"
                     f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
                     f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
                     f"[right]crop={blend_width}:ih:0:0[right_overlap];"
@@ -320,8 +333,8 @@ class EnhancedVideoMerger:
                 )
             else:
                 filter_complex = (
-                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[left];"
-                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[right];"
+                    f"[0:v]{pref}[left];"
+                    f"[1:v]{pref}[right];"
                     f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
                     f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
                     f"[right]crop={blend_width}:ih:0:0[right_overlap];"
@@ -332,14 +345,14 @@ class EnhancedVideoMerger:
                 )
             final_width = (width1 - blend_width) + blend_width + (width2 - blend_width)
         elif method == 'side_by_side':
-            # TRUE 180° SEAMLESS PANORAMIC: Proper fisheye unwarping + geometric alignment
+            # SEAMLESS PANORAMIC: Rotation + normalization + geometric alignment + seamless blend
             blend_width = self.feather_width  # Use the configured feather width (default 100px)
             
             if self.enable_distortion_correction:
-                # Professional method: Fisheye unwarp + equirectangular + geometric alignment + seamless blend
+                # Professional method: Rotation + normalization + geometric alignment + seamless blend
                 filter_complex = (
-                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[left];"
-                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[right];"
+                    f"[0:v]{pref}[left];"
+                    f"[1:v]{pref}[right];"
                     f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
                     f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
                     f"[right]crop={blend_width}:ih:0:0[right_overlap];"
@@ -349,10 +362,10 @@ class EnhancedVideoMerger:
                     f"[merged]lenscorrection={lens_correction}[v]"
                 )
             else:
-                # Standard method: Equirectangular conversion with seamless blend
+                # Standard method: Rotation + normalization with seamless blend
                 filter_complex = (
-                    f"[0:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[left];"
-                    f"[1:v]v360=input=fisheye:output=equirect:ih_fov=180:iv_fov=90[right];"
+                    f"[0:v]{pref}[left];"
+                    f"[1:v]{pref}[right];"
                     f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
                     f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
                     f"[right]crop={blend_width}:ih:0:0[right_overlap];"
@@ -361,42 +374,50 @@ class EnhancedVideoMerger:
                     f"[left_main][blended][right_main]hstack=inputs=3[out];"
                     f"[out]format=yuv420p[v]"
                 )
-            # Calculate final output width for true 180° panoramic
+            # Calculate final output width for seamless panoramic
             final_width = (width1 - blend_width) + blend_width + (width2 - blend_width)
         elif method == 'stacked':
-            # FIXED: Simple top-bottom merge
+            # FIXED: Simple top-bottom merge with rotation support
             overlap_height = min(50, feather_width // 2)  # Moderate overlap
             
             if self.enable_distortion_correction:
                 filter_complex = (
-                    f'[0:v]crop=w={width1}:h={height1 - overlap_height}:x=0:y=0[top]; '
-                    f'[1:v]crop=w={width2}:h={height2 - overlap_height}:x=0:y={overlap_height}[bottom]; '
+                    f'[0:v]{pref}[top_prep]; '
+                    f'[1:v]{pref}[bottom_prep]; '
+                    f'[top_prep]crop=w=iw:h=ih-{overlap_height}:x=0:y=0[top]; '
+                    f'[bottom_prep]crop=w=iw:h=ih-{overlap_height}:x=0:y={overlap_height}[bottom]; '
                     f'[top][bottom]vstack=inputs=2,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
             else:
                 filter_complex = (
-                    f'[0:v]crop=w={width1}:h={height1 - overlap_height}:x=0:y=0[top]; '
-                    f'[1:v]crop=w={width2}:h={height2 - overlap_height}:x=0:y={overlap_height}[bottom]; '
+                    f'[0:v]{pref}[top_prep]; '
+                    f'[1:v]{pref}[bottom_prep]; '
+                    f'[top_prep]crop=w=iw:h=ih-{overlap_height}:x=0:y=0[top]; '
+                    f'[bottom_prep]crop=w=iw:h=ih-{overlap_height}:x=0:y={overlap_height}[bottom]; '
                     f'[top][bottom]vstack=inputs=2,format=yuv420p[v]'
                 )
             # Calculate final output height correctly
             final_height = (height1 - overlap_height) + (height2 - overlap_height)
         else:
-            # Default to side-by-side with simple blend
+            # Default to side-by-side with simple blend and rotation support
             overlap_width = min(50, feather_width // 2)
             
             if self.enable_distortion_correction:
                 filter_complex = (
-                    f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
+                    f'[0:v]{pref}[left_prep]; '
+                    f'[1:v]{pref}[right_prep]; '
+                    f'[left_prep]crop=w=iw-{overlap_width}:h=ih:x=0:y=0[left]; '
+                    f'[right_prep]crop=w=iw-{overlap_width}:h=ih:x={overlap_width}:y=0[right]; '
                     f'[left][right]hstack=inputs=2,format=yuv420p[merged]; '
                     f'[merged]lenscorrection={lens_correction}[v]'
                 )
             else:
                 filter_complex = (
-                    f'[0:v]crop=w={width1 - overlap_width}:h={output_height}:x=0:y=0[left]; '
-                    f'[1:v]crop=w={width2 - overlap_width}:h={output_height}:x={overlap_width}:y=0[right]; '
+                    f'[0:v]{pref}[left_prep]; '
+                    f'[1:v]{pref}[right_prep]; '
+                    f'[left_prep]crop=w=iw-{overlap_width}:h=ih:x=0:y=0[left]; '
+                    f'[right_prep]crop=w=iw-{overlap_width}:h=ih:x={overlap_width}:y=0[right]; '
                     f'[left][right]hstack=inputs=2,format=yuv420p[v]'
                 )
             final_width = (width1 - overlap_width) + (width2 - overlap_width)
@@ -412,11 +433,8 @@ class EnhancedVideoMerger:
             '-map', '[v]',
             '-an',  # No audio to avoid errors
             '-c:v', 'libx264',
-            '-preset', 'ultrafast',  # Fast encoding
-            '-crf', '23',  # Good quality
-            '-b:v', target_bitrate,
-            '-maxrate', target_bitrate,
-            '-bufsize', '16000k',
+            '-preset', 'veryfast',  # Fast encoding
+            '-crf', '20',  # Good quality
             '-pix_fmt', 'yuv420p',  # Ensure compatibility
             '-movflags', '+faststart',  # Optimize for streaming
             '-metadata', f'merge_method={method}',
@@ -680,12 +698,20 @@ if __name__ == "__main__":
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--bitrate", type=str, default="8000k")
     parser.add_argument("--resolution", help="e.g. 1920x1080")
+    parser.add_argument("--rotate", type=float, default=0.0, help="Rotate inputs by N degrees before stitching")
     parser.add_argument("--dry-run", action="store_true")
 
     args = parser.parse_args()
 
     res = tuple(map(int, args.resolution.lower().split("x"))) if args.resolution else None
-    merger = EnhancedVideoMerger(max_retries=args.retries, timeout=args.timeout, target_bitrate=args.bitrate, output_resolution=res)
+    merger = EnhancedVideoMerger(
+        max_retries=args.retries, 
+        timeout=args.timeout, 
+        target_bitrate=args.bitrate, 
+        output_resolution=res,
+        input_rotate_degrees=args.rotate,
+        enable_distortion_correction=False,  # default off
+    )
 
     if args.dry_run:
         cmd = merger._create_merge_command(Path(args.input1), Path(args.input2), Path(args.output), method=args.method)
