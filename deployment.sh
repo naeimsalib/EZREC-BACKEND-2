@@ -170,6 +170,8 @@ install_dependencies() {
         libswscale-dev \
         libswresample-dev \
         v4l2loopback-dkms \
+        python3-opencv \
+        libopencv-dev \
         git curl wget vim htop
     
     log_info "System dependencies installed"
@@ -366,12 +368,27 @@ setup_venv() {
     log_info "Upgrading PyAV to ensure picamera2 compatibility"
     pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade "av>=15.0.0"
     
+    # Install OpenCV stitching dependencies
+    log_info "Installing OpenCV stitching dependencies..."
+    pip_install_suppress_warnings "$path/venv" install --no-cache-dir \
+        "opencv-python>=4.8.0" \
+        "opencv-contrib-python>=4.8.0" \
+        "numpy>=1.21.0"
+    
     # Verify picamera2 compatibility
     log_info "Verifying picamera2 and PyAV compatibility"
     if sudo -u $DEPLOY_USER venv/bin/python3 -c "import picamera2; import av; print('✅ picamera2 and PyAV compatibility verified')" 2>/dev/null; then
         log_info "✅ picamera2 and PyAV compatibility verified"
     else
         log_warn "⚠️ picamera2 and PyAV compatibility check failed"
+    fi
+    
+    # Verify OpenCV stitching compatibility
+    log_info "Verifying OpenCV stitching compatibility"
+    if sudo -u $DEPLOY_USER venv/bin/python3 -c "import cv2; import numpy; print('✅ OpenCV stitching compatibility verified')" 2>/dev/null; then
+        log_info "✅ OpenCV stitching compatibility verified"
+    else
+        log_warn "⚠️ OpenCV stitching compatibility check failed"
     fi
     
     log_info "$name virtual environment ready"

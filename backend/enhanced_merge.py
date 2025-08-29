@@ -5,6 +5,7 @@ Enhanced Video Merge with Retry Logic
 - Better error handling and validation
 - Progress tracking and logging
 - Automatic cleanup on failure
+- OpenCV-based panoramic stitching support
 """
 
 import os
@@ -40,7 +41,7 @@ class MergeResult:
 class EnhancedVideoMerger:
     """Enhanced video merger with retry logic and validation"""
     
-    def __init__(self, max_retries: int = 3, timeout: int = 300, feather_width: int = 100, edge_trim: int = 5, target_bitrate: str = "8000k", output_resolution: tuple = None, enable_distortion_correction: bool = False, input_rotate_degrees: float = 0.0):
+    def __init__(self, max_retries: int = 3, timeout: int = 300, feather_width: int = 100, edge_trim: int = 5, target_bitrate: str = "8000k", output_resolution: tuple = None, enable_distortion_correction: bool = False, input_rotate_degrees: float = 0.0, use_opencv_stitching: bool = True):
         self.max_retries = max_retries
         self.timeout = timeout
         self.feather_width = feather_width
@@ -50,10 +51,21 @@ class EnhancedVideoMerger:
         self.output_resolution = output_resolution
         self.enable_distortion_correction = enable_distortion_correction
         self.input_rotate_degrees = input_rotate_degrees
+        self.use_opencv_stitching = use_opencv_stitching
         
-        # Validate FFmpeg availability
+        # Validate FFmpeg availability (still needed for validation)
         if not self._check_ffmpeg():
             raise RuntimeError("FFmpeg not found. Please install FFmpeg.")
+        
+        # Try to import OpenCV stitching if enabled
+        if self.use_opencv_stitching:
+            try:
+                from stitch import PanoramicStitcher
+                self.logger.info("✅ OpenCV stitching available")
+            except ImportError as e:
+                self.logger.warning(f"⚠️ OpenCV stitching not available: {e}")
+                self.logger.info("Falling back to FFmpeg stitching")
+                self.use_opencv_stitching = False
     
     def _input_prefilter(self) -> str:
         """Rotate (any angle), normalize pixel aspect & height before stitching."""
@@ -471,13 +483,26 @@ class EnhancedVideoMerger:
         if output_path.exists():
             output_path.unlink()
         
-        # Retry loop
+        # Try OpenCV stitching first if enabled and available
+        if self.use_opencv_stitching and method == 'side_by_side':
+            try:
+                self.logger.info("🎬 Attempting OpenCV panoramic stitching...")
+                opencv_result = self._opencv_panoramic_stitch(video1_path, video2_path, output_path, method)
+                if opencv_result.success:
+                    return opencv_result
+                else:
+                    self.logger.warning("⚠️ OpenCV stitching failed, falling back to FFmpeg")
+            except Exception as e:
+                self.logger.warning(f"⚠️ OpenCV stitching not available: {e}")
+                self.logger.info("Falling back to FFmpeg stitching")
+        
+        # Retry loop for FFmpeg merging
         for attempt in range(self.max_retries):
             try:
                 result.retry_count = attempt
                 result.status = MergeStatus.IN_PROGRESS
                 
-                self.logger.info(f"🎬 Starting merge attempt {attempt + 1}/{self.max_retries}")
+                self.logger.info(f"🎬 Starting FFmpeg merge attempt {attempt + 1}/{self.max_retries}")
                 self.logger.info(f"📹 Input 1: {video1_path.name} ({video1_path.stat().st_size:,} bytes)")
                 self.logger.info(f"📹 Input 2: {video2_path.name} ({video2_path.stat().st_size:,} bytes)")
                 self.logger.info(f"🎯 Output: {output_path}")
@@ -515,7 +540,7 @@ class EnhancedVideoMerger:
                         if info.get('format', {}).get('duration'):
                             result.duration = float(info['format']['duration'])
                         
-                        self.logger.info(f"✅ Merge completed successfully!")
+                        self.logger.info(f"✅ FFmpeg merge completed successfully!")
                         self.logger.info(f"📊 Output size: {result.file_size:,} bytes")
                         self.logger.info(f"⏱️ Merge time: {result.merge_time:.2f} seconds")
                         if result.duration:
@@ -669,6 +694,86 @@ class EnhancedVideoMerger:
             self.logger.warning(f"⚠️ Could not determine optimal lens correction: {e}")
             # Return safe default
             return "cx=0.5:cy=0.5:k1=0.1:k2=0.05"
+
+    def _opencv_panoramic_stitch(self, video1_path: Path, video2_path: Path, 
+                                output_path: Path, method: str = 'side_by_side') -> MergeResult:
+        """OpenCV-based panoramic stitching using homography"""
+        try:
+            self.logger.info("🎬 Using OpenCV panoramic stitching...")
+            
+            # Check for homography file
+            homography_path = Path("stitch/calibration/homography_right_to_left.json")
+            if not homography_path.exists():
+                self.logger.error(f"Homography file not found: {homography_path}")
+                self.logger.info("Run calibration first: python3 stitch/calibrate_homography.py")
+                raise FileNotFoundError(f"Homography file not found: {homography_path}")
+            
+            # Import OpenCV stitcher
+            try:
+                from stitch import PanoramicStitcher
+            except ImportError:
+                raise ImportError("OpenCV stitching not available. Install opencv-python")
+            
+            # Create stitcher
+            stitcher = PanoramicStitcher(str(homography_path))
+            
+            # Perform stitching
+            start_time = time.time()
+            stitcher.stitch_streams(
+                str(video1_path), 
+                str(video2_path), 
+                str(output_path)
+            )
+            
+            # Validate output
+            if not output_path.exists():
+                raise RuntimeError("Stitching completed but output file not found")
+            
+            # Get file info
+            file_size = output_path.stat().st_size
+            duration = self._get_video_duration(output_path)
+            
+            result = MergeResult(
+                success=True,
+                status=MergeStatus.COMPLETED,
+                output_path=output_path,
+                file_size=file_size,
+                duration=duration,
+                merge_time=time.time() - start_time
+            )
+            
+            self.logger.info(f"✅ OpenCV panoramic stitching completed successfully!")
+            self.logger.info(f"📊 Output size: {file_size:,} bytes")
+            self.logger.info(f"⏱️ Stitching time: {result.merge_time:.2f} seconds")
+            if duration:
+                self.logger.info(f"🎬 Duration: {duration:.2f} seconds")
+            
+            return result
+            
+        except Exception as e:
+            self.logger.error(f"❌ OpenCV stitching failed: {e}")
+            return MergeResult(
+                success=False,
+                status=MergeStatus.FAILED,
+                error_message=f"OpenCV stitching failed: {e}"
+            )
+    
+    def _get_video_duration(self, video_path: Path) -> Optional[float]:
+        """Get video duration using ffprobe"""
+        try:
+            result = subprocess.run([
+                'ffprobe', '-v', 'quiet',
+                '-select_streams', 'v:0',
+                '-show_entries', 'format=duration',
+                '-of', 'default=noprint_wrappers=1:nokey=1',
+                str(video_path)
+            ], capture_output=True, text=True, timeout=30)
+            
+            if result.returncode == 0 and result.stdout.strip():
+                return float(result.stdout.strip())
+            return None
+        except Exception:
+            return None
 
 def merge_videos_with_retry(video1_path: Path, video2_path: Path, 
                           output_path: Path, method: str = 'side_by_side',
