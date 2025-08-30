@@ -121,6 +121,56 @@ pip_install_suppress_warnings() {
     return ${PIPESTATUS[0]}
 }
 
+# Fast dependency resolution for common conflicts
+fast_dependency_resolution() {
+    local venv_path=$1
+    
+    log_info "🔧 Fast dependency resolution for common conflicts..."
+    
+    # Install with pip-tools for faster resolution
+    if ! command -v pip-tools &> /dev/null; then
+        log_info "Installing pip-tools for faster dependency resolution..."
+        pip_install_suppress_warnings "$venv_path" install --no-cache-dir pip-tools
+    fi
+    
+    # Create a simplified requirements file for faster installation
+    local fast_requirements="/tmp/fast_requirements.txt"
+    cat > "$fast_requirements" << 'EOF'
+# Fast-install requirements (resolved versions)
+fastapi>=0.104.0,<0.105.0
+uvicorn[standard]>=0.24.0,<0.25.0
+python-multipart>=0.0.6,<0.1.0
+python-dotenv>=1.0.0,<2.0.0
+boto3>=1.34.0,<1.35.0
+supabase>=2.0.0,<3.0.0
+httpx>=0.24.0,<0.25.0
+Pillow>=10.1.0,<11.0.0
+simplejpeg>=1.6.0,<2.0.0
+av>=15.0.0,<16.0.0
+picamera2>=0.3.0,<0.4.0
+numpy>=1.24.0,<2.0.0
+psutil>=5.9.0,<6.0.0
+schedule>=1.2.0,<2.0.0
+opencv-python>=4.8.0,<5.0.0
+opencv-contrib-python>=4.8.0,<5.0.0
+EOF
+    
+    # Install with pip-tools for faster resolution
+    if pip_install_suppress_warnings "$venv_path" install \
+        --no-cache-dir \
+        --index-url https://pypi.org/simple \
+        -r "$fast_requirements"; then
+        
+        log_info "✅ Fast dependency resolution completed"
+        rm -f "$fast_requirements"
+        return 0
+    else
+        log_warn "⚠️ Fast resolution failed, falling back to standard method"
+        rm -f "$fast_requirements"
+        return 1
+    fi
+}
+
 # =============================================================================
 # SETUP FUNCTIONS
 # =============================================================================
@@ -304,22 +354,64 @@ install_dependencies_with_suppression() {
     local venv_path=$1
     local requirements_file=$2
     
-    log_info "Installing dependencies with warning suppression..."
+    log_info "Installing dependencies with optimized conflict resolution..."
     
-    # Install with suppressed warnings using the new wrapper
+    # First, try to install core dependencies without version conflicts
+    log_info "Installing core dependencies first..."
     if pip_install_suppress_warnings "$venv_path" install \
         --no-cache-dir \
         --index-url https://pypi.org/simple \
         --disable-pip-version-check \
         --no-warn-script-location \
-        -r "$requirements_file"; then
+        "fastapi==0.104.1" \
+        "uvicorn[standard]==0.24.0" \
+        "python-multipart==0.0.6" \
+        "python-dotenv==1.0.0" \
+        "boto3==1.34.0" \
+        "supabase==2.0.2" \
+        "httpx>=0.24.0,<0.25.0" \
+        "Pillow==10.1.0" \
+        "simplejpeg==1.6.6" \
+        "av>=15.0.0" \
+        "picamera2==0.3.12" \
+        "numpy>=1.24.0" \
+        "psutil>=5.9.0" \
+        "schedule==1.2.0"; then
         
-        log_info "✅ Dependencies installed successfully"
-        return 0
+        log_info "✅ Core dependencies installed successfully"
     else
-        log_warn "⚠️ Some warnings occurred during installation (this is normal)"
-        return 0  # Still return success as warnings don't break functionality
+        log_warn "⚠️ Some core dependencies had issues, trying alternative approach..."
+        
+        # Fallback: install with relaxed constraints
+        if pip_install_suppress_warnings "$venv_path" install \
+            --no-cache-dir \
+            --index-url https://pypi.org/simple \
+            --disable-pip-version-check \
+            --no-warn-script-location \
+            --no-deps \
+            -r "$requirements_file"; then
+            
+            log_info "✅ Dependencies installed with relaxed constraints"
+        else
+            log_error "❌ Dependency installation failed"
+            return 1
+        fi
     fi
+    
+    # Install OpenCV dependencies separately for better control
+    log_info "Installing OpenCV stitching dependencies..."
+    if pip_install_suppress_warnings "$venv_path" install \
+        --no-cache-dir \
+        --index-url https://pypi.org/simple \
+        "opencv-python>=4.8.0" \
+        "opencv-contrib-python>=4.8.0"; then
+        
+        log_info "✅ OpenCV dependencies installed successfully"
+    else
+        log_warn "⚠️ OpenCV installation had issues, continuing..."
+    fi
+    
+    return 0
 }
 
 # Setup directory structure
