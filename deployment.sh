@@ -376,7 +376,8 @@ install_dependencies_with_suppression() {
         "picamera2==0.3.12" \
         "numpy>=1.24.0" \
         "psutil>=5.9.0" \
-        "schedule==1.2.0"; then
+        "schedule==1.2.0" \
+        "email-validator>=2.0.0"; then
         
         log_info "✅ Core dependencies installed successfully"
     else
@@ -470,8 +471,15 @@ setup_venv() {
     log_info "Setting up $name virtual environment"
     
     cd "$path"
-    sudo rm -rf venv 2>/dev/null || true
-    sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
+    
+    # DON'T delete existing venv if it's working
+    if [[ ! -d "venv" ]] || ! verify_venv "$path/venv" "$name"; then
+        log_info "🔄 Creating new virtual environment..."
+        sudo rm -rf venv 2>/dev/null || true
+        sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
+    else
+        log_info "✅ Using existing working virtual environment"
+    fi
     
     # Install dependencies with PyPI forcing for problematic packages
     pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade pip
@@ -480,12 +488,32 @@ setup_venv() {
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
     install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
-    # Verify virtual environment before proceeding
-    if ! verify_venv "$path/venv" "$name"; then
-        log_info "🔄 Recreating virtual environment..."
-        sudo rm -rf venv
-        sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
+    # Ensure stitch module exists (for enhanced_merge.py)
+    log_info "🔧 Ensuring stitch module structure..."
+    sudo mkdir -p "$path/../stitch/calibration"
+    if [[ ! -f "$path/../stitch/__init__.py" ]]; then
+        sudo -u $DEPLOY_USER tee "$path/../stitch/__init__.py" > /dev/null << 'EOF'
+"""
+Basic stitch module to prevent import errors
+"""
+class PanoramicStitcher:
+    def __init__(self, homography_path):
+        pass
+    
+    def stitch_streams(self, video1, video2, output):
+        raise NotImplementedError("OpenCV stitching not fully implemented yet")
+EOF
     fi
+
+    if [[ ! -f "$path/../stitch/calibration/homography_right_to_left.json" ]]; then
+        sudo -u $DEPLOY_USER tee "$path/../stitch/calibration/homography_right_to_left.json" > /dev/null << 'EOF'
+{
+    "homography": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
+    "status": "placeholder"
+}
+EOF
+    fi
+    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$path/../stitch"
     
     # Handle typing-extensions installation with multiple strategies
     install_typing_extensions "$path/venv"

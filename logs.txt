@@ -1,55 +1,128 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
-remote: Enumerating objects: 8, done.
-remote: Counting objects: 100% (8/8), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 5 (delta 2), reused 5 (delta 2), pack-reused 0 (from 0)
-Unpacking objects: 100% (5/5), 53.66 KiB | 1.12 MiB/s, done.
-From https://github.com/naeimsalib/EZREC-BACKEND-2
-   c4a8894..f53f2f6  main       -> origin/main
-Updating c4a8894..f53f2f6
-error: Your local changes to the following files would be overwritten by merge:
-        deployment.sh
-Please commit your changes or stash them before you merge.
-Aborting
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git stash
-Saved working directory and index state WIP on main: c4a8894 Add robust virtual environment verification and graceful typing-extensions installation
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
-Updating c4a8894..f53f2f6
-Fast-forward
- complete_deployment.sh | 100 +++++++++++++++++++++++++++++
- deployment.sh          |  32 +++++++++-
- logs.txt               | 678 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 808 insertions(+), 2 deletions(-)
- create mode 100644 complete_deployment.sh
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo chmod +x deployment.sh 
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./deployment.sh 
-[00:05:52] Starting EZREC deployment as user: root
-[00:05:52] STEP: 1. Stopping old services
-[00:05:52] Managing dual_recorder: stop
-[00:05:52] Managing video_worker: stop
-[00:05:52] Managing ezrec-api: stop
-[00:05:52] Managing system_status: stop
-[00:05:52] Managing dual_recorder: disable
-[00:05:52] Managing video_worker: disable
-[00:05:52] Managing ezrec-api: disable
-[00:05:53] Managing system_status: disable
-[00:05:53] STEP: 2. Cleaning up old installation
-[00:05:53] 🔒 Backing up existing .env file
-[00:05:53] ✅ .env file backed up successfully
-[00:05:53] 🧹 Cleaning up old installation (preserving .env)...
-[00:05:53] 🔒 .env file found - will preserve it during cleanup
-[00:05:53] ✅ Cleaned up old files (preserved .env)
-[00:05:53] ✅ .env file successfully preserved
-[00:05:53] STEP: 3. Copying project files
-[00:05:53] 🔒 Restoring .env file
-[00:05:53] ✅ .env file restored successfully
-[00:05:53] 🔧 Ensuring required environment variables are present...
-[00:05:53] ✅ All required environment variables are present
-[00:05:53] STEP: Installing system dependencies
+Before running deployment script again
+
+michomanoly14892@raspberrypi:~ $ # Test the API endpoints
+curl -s http://localhost:8000/test-alive
+curl -s http://localhost:8000/status
+
+# Check if all services are running
+sudo systemctl status ezrec-api.service
+sudo systemctl status dual_recorder.service
+sudo systemctl status video_worker.service
+sudo systemctl status system_status.service
+● ezrec-api.service - EZREC FastAPI Backendstamp":"2025-08-31T00:44:23.645904","version":"1.0.0"}
+     Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-08-31 00:42:58 EDT; 1min 25s ago
+   Main PID: 570317 (uvicorn)
+      Tasks: 10 (limit: 9572)
+        CPU: 1.269s
+     CGroup: /system.slice/ezrec-api.service
+             └─570317 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
+
+Aug 31 00:42:58 raspberrypi systemd[1]: Started ezrec-api.service - EZREC FastAPI Backend.
+Aug 31 00:42:59 raspberrypi uvicorn[570317]: 2025-08-31 00:42:59,108 [INFO] ✅ Supabase client initialized successfully
+Aug 31 00:42:59 raspberrypi uvicorn[570317]: 2025-08-31 00:42:59,109 [INFO] ✅ Using camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 31 00:42:59 raspberrypi uvicorn[570317]: INFO:     Started server process [570317]
+Aug 31 00:42:59 raspberrypi uvicorn[570317]: INFO:     Waiting for application startup.
+Aug 31 00:42:59 raspberrypi uvicorn[570317]: INFO:     Application startup complete.
+Aug 31 00:42:59 raspberrypi uvicorn[570317]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+Aug 31 00:44:23 raspberrypi uvicorn[570317]: INFO:     127.0.0.1:45724 - "GET /test-alive HTTP/1.1" 200 OK
+Aug 31 00:44:23 raspberrypi uvicorn[570317]: INFO:     127.0.0.1:45726 - "GET /status HTTP/1.1" 200 OK
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-08-31 00:38:11 EDT; 6min ago
+   Main PID: 569414 (python3)
+      Tasks: 6 (limit: 9572)
+        CPU: 1.398s
+     CGroup: /system.slice/dual_recorder.service
+             └─569414 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Aug 31 00:44:18 raspberrypi python3[569414]: 2025-08-31 00:44:18,436 - INFO - 📋 Loaded 0 bookings from cache
+Aug 31 00:44:18 raspberrypi python3[569414]: 2025-08-31 00:44:18,436 - INFO - 🔍 Checking 0 bookings at 2025-08-31 00:44:18 EDT
+Aug 31 00:44:18 raspberrypi python3[569414]: 2025-08-31 00:44:18,436 - INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 31 00:44:18 raspberrypi python3[569414]: 2025-08-31 00:44:18,436 - INFO - ❌ No active booking found
+Aug 31 00:44:18 raspberrypi python3[569414]: 2025-08-31 00:44:18,436 - INFO - ⏳ No active booking found, waiting...
+Aug 31 00:44:23 raspberrypi python3[569414]: 2025-08-31 00:44:23,437 - INFO - 📋 Loaded 0 bookings from cache
+Aug 31 00:44:23 raspberrypi python3[569414]: 2025-08-31 00:44:23,437 - INFO - 🔍 Checking 0 bookings at 2025-08-31 00:44:23 EDT
+Aug 31 00:44:23 raspberrypi python3[569414]: 2025-08-31 00:44:23,437 - INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 31 00:44:23 raspberrypi python3[569414]: 2025-08-31 00:44:23,437 - INFO - ❌ No active booking found
+Aug 31 00:44:23 raspberrypi python3[569414]: 2025-08-31 00:44:23,437 - INFO - ⏳ No active booking found, waiting...
+● video_worker.service - EZREC Video Processing Worker Service
+     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-08-31 00:38:03 EDT; 6min ago
+   Main PID: 568995 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 875ms
+     CGroup: /system.slice/video_worker.service
+             └─568995 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
+Aug 31 00:42:05 raspberrypi python3[568995]: 2025-08-31 00:42:05,214 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:42:20 raspberrypi python3[568995]: 2025-08-31 00:42:20,241 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:42:35 raspberrypi python3[568995]: 2025-08-31 00:42:35,280 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:42:50 raspberrypi python3[568995]: 2025-08-31 00:42:50,318 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:43:05 raspberrypi python3[568995]: 2025-08-31 00:43:05,352 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:43:20 raspberrypi python3[568995]: 2025-08-31 00:43:20,412 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:43:35 raspberrypi python3[568995]: 2025-08-31 00:43:35,443 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:43:50 raspberrypi python3[568995]: 2025-08-31 00:43:50,471 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:44:05 raspberrypi python3[568995]: 2025-08-31 00:44:05,502 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:44:20 raspberrypi python3[568995]: 2025-08-31 00:44:20,531 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+● system_status.service - EZREC System Status Monitor
+     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
+     Active: active (exited) since Sun 2025-08-31 00:37:53 EDT; 6min ago
+TriggeredBy: ● system_status.timer
+   Main PID: 568916 (code=exited, status=0/SUCCESS)
+        CPU: 1.065s
+
+Aug 31 00:37:53 raspberrypi python3[568916]: [77:49:10.811708178] [568939] ERROR RPI pisp.cpp:947 Failed to register camera imx477 11-001a: -22
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,115 [INFO] Initialization successful.
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,115 [INFO] Camera now open.
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,316 [INFO] Camera closed successfully.
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,492 [INFO] 📊 Overall Status: CRITICAL
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,492 [ERROR] 🚨 Critical Issues: Inactive services: ezrec-api.service
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,493 [INFO] ✅ Status saved to /opt/ezrec-backend/status.json
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,493 [INFO] ✅ Health check completed successfully
+Aug 31 00:37:53 raspberrypi python3[568916]: 2025-08-31 00:37:53,494 [INFO] ✅ System Status: critical
+Aug 31 00:37:53 raspberrypi systemd[1]: Finished system_status.service - EZREC System Status Monitor.
+michomanoly14892@raspberrypi:~ $ 
+
+after running the deployment script again
+
+michomanoly14892@raspberrypi:~ $ # Go back to your project directory
+cd ~/EZREC-BACKEND-2
+
+# Now run the deployment script again - it should complete successfully this time!
+sudo ./deployment.sh
+[00:45:05] Starting EZREC deployment as user: root
+[00:45:05] STEP: 1. Stopping old services
+[00:45:05] Managing dual_recorder: stop
+[00:45:12] Managing video_worker: stop
+[00:45:12] Managing ezrec-api: stop
+[00:45:13] Managing system_status: stop
+[00:45:13] Managing dual_recorder: disable
+[00:45:13] Managing video_worker: disable
+[00:45:13] Managing ezrec-api: disable
+[00:45:13] Managing system_status: disable
+[00:45:14] STEP: 2. Cleaning up old installation
+[00:45:14] 🔒 Backing up existing .env file
+[00:45:14] ✅ .env file backed up successfully
+[00:45:14] 🧹 Cleaning up old installation (preserving .env)...
+[00:45:14] 🔒 .env file found - will preserve it during cleanup
+[00:45:14] ✅ Cleaned up old files (preserved .env)
+[00:45:14] ✅ .env file successfully preserved
+[00:45:14] STEP: 3. Copying project files
+[00:45:14] 🔒 Restoring .env file
+[00:45:14] ✅ .env file restored successfully
+[00:45:14] 🔧 Ensuring required environment variables are present...
+[00:45:14] ✅ All required environment variables are present
+[00:45:14] 🔧 Ensuring API server file is properly deployed...
+[00:45:14] 🔧 Ensuring API server file is properly deployed...
+[00:45:14] 📁 Found api_server.py in project api/ directory
+[00:45:14] 📋 Copying api/api_server.py to /opt/ezrec-backend/api/
+[00:45:14] ✅ API server file deployed successfully
+[00:45:14] STEP: Installing system dependencies
 Hit:1 http://deb.debian.org/debian bookworm InRelease
 Hit:2 http://deb.debian.org/debian-security bookworm-security InRelease
-Hit:3 http://deb.debian.org/debian bookworm-updates InRelease
-Hit:4 http://archive.raspberrypi.com/debian bookworm InRelease
+Hit:3 http://deb.debian.org/debian bookworm-updates InRelease                    
+Hit:4 http://archive.raspberrypi.com/debian bookworm InRelease                   
 Reading package lists... Done
 Building dependency tree... Done
 Reading state information... Done
@@ -83,27 +156,27 @@ wget is already the newest version (1.21.3-1+deb12u1).
 vim is already the newest version (2:9.0.1378-2+deb12u2).
 htop is already the newest version (3.2.2-2).
 0 upgraded, 0 newly installed, 0 to remove and 41 not upgraded.
-[00:05:57] System dependencies installed
-[00:05:57] STEP: Setting up users and groups
-[00:05:57] Added users to video group
-[00:05:57] STEP: Setting up directory structure
-[00:05:57] Directory structure created
-[00:05:57] STEP: 6. Setting up virtual environments
-[00:05:57] Setting up backend virtual environment
+[00:45:17] System dependencies installed
+[00:45:17] STEP: Setting up users and groups
+[00:45:17] Added users to video group
+[00:45:17] STEP: Setting up directory structure
+[00:45:17] Directory structure created
+[00:45:17] STEP: 6. Setting up virtual environments
+[00:45:17] Setting up backend virtual environment
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: pip in ./venv/lib/python3.11/site-packages (23.0.1)
 Collecting pip
   Downloading https://www.piwheels.org/simple/pip/pip-25.2-py3-none-any.whl (1.8 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 1.8 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 1.6 MB/s eta 0:00:00
 Installing collected packages: pip
   Attempting uninstall: pip
     Found existing installation: pip 23.0.1
     Uninstalling pip-23.0.1:
       Successfully uninstalled pip-23.0.1
 Successfully installed pip-25.2
-[00:06:05] Installing dependencies with PyPI forcing for problematic packages...
-[00:06:05] Installing dependencies with optimized conflict resolution...
-[00:06:05] Installing core dependencies first...
+[00:45:26] Installing dependencies with PyPI forcing for problematic packages...
+[00:45:26] Installing dependencies with optimized conflict resolution...
+[00:45:26] Installing core dependencies first...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting fastapi==0.104.1
   Downloading https://www.piwheels.org/simple/fastapi/fastapi-0.104.1-py3-none-any.whl (92 kB)
@@ -140,7 +213,7 @@ Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (fro
 Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.11/dist-packages (from uvicorn==0.24.0->uvicorn[standard]==0.24.0) (0.16.0)
 Collecting botocore<1.35.0,>=1.34.0 (from boto3==1.34.0)
   Downloading https://www.piwheels.org/simple/botocore/botocore-1.34.162-py3-none-any.whl (12.4 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 2.5 MB/s  0:00:05
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 2.4 MB/s  0:00:05
 Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /usr/lib/python3/dist-packages (from boto3==1.34.0) (1.0.1)
 Collecting s3transfer<0.10.0,>=0.9.0 (from boto3==1.34.0)
   Downloading https://archive1.piwheels.org/simple/s3transfer/s3transfer-0.9.0-py3-none-any.whl (82 kB)
@@ -185,15 +258,15 @@ Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.
 Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi==0.104.1) (0.4.1)
 Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.1->botocore<1.35.0,>=1.34.0->boto3==1.34.0) (1.17.0)
 Downloading Pillow-10.1.0-cp311-cp311-manylinux_2_28_aarch64.whl (3.5 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.5/3.5 MB 822.3 kB/s  0:00:04
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.5/3.5 MB 3.0 MB/s  0:00:01
 Downloading simplejpeg-1.6.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_24_aarch64.whl (242 kB)
 Downloading av-15.1.0-cp311-cp311-manylinux_2_28_aarch64.whl (38.1 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.1/38.1 MB 3.5 MB/s  0:00:10
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.1/38.1 MB 3.0 MB/s  0:00:12
 Downloading httptools-0.6.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (462 kB)
 Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (736 kB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 736.8/736.8 kB 3.6 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 736.8/736.8 kB 3.4 MB/s  0:00:00
 Downloading uvloop-0.21.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (4.0 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 3.8 MB/s  0:00:01
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 3.1 MB/s  0:00:01
 Downloading watchfiles-1.1.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (450 kB)
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
@@ -268,8 +341,8 @@ Installing collected packages: v4l2-python3, uvloop, simplejpeg, schedule, pyyam
     Can't uninstall 'supabase'. No files were found to uninstall.
 
 Successfully installed Pillow-10.1.0 anyio-3.7.1 av-15.1.0 boto3-1.34.0 botocore-1.34.162 fastapi-0.104.1 gotrue-1.3.1 h11-0.14.0 httpcore-0.17.3 httptools-0.6.4 httpx-0.24.1 picamera2-0.3.12 postgrest-0.13.2 python-multipart-0.0.6 pyyaml-6.0.2 realtime-1.0.6 s3transfer-0.9.0 schedule-1.2.0 simplejpeg-1.6.6 starlette-0.27.0 storage3-0.6.1 supabase-2.0.2 supafunc-0.3.3 uvicorn-0.24.0 uvloop-0.21.0 v4l2-python3-0.3.5 watchfiles-1.1.0
-[00:06:45] ✅ Core dependencies installed successfully
-[00:06:45] Installing OpenCV stitching dependencies...
+[00:46:08] ✅ Core dependencies installed successfully
+[00:46:08] Installing OpenCV stitching dependencies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: opencv-python>=4.8.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (4.11.0.86)
 Collecting opencv-contrib-python>=4.8.0
@@ -278,9 +351,9 @@ Requirement already satisfied: numpy>=1.21.2 in /usr/lib/python3/dist-packages (
 Collecting numpy>=1.21.2 (from opencv-python>=4.8.0)
   Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
 Downloading opencv_contrib_python-4.12.0.88-cp37-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (51.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.3/51.3 MB 3.8 MB/s  0:00:13
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.3/51.3 MB 3.2 MB/s  0:00:16
 Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.9 MB/s  0:00:03
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.3 MB/s  0:00:04
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
 Installing collected packages: numpy, opencv-contrib-python
@@ -290,11 +363,11 @@ Installing collected packages: numpy, opencv-contrib-python
     Can't uninstall 'numpy'. No files were found to uninstall.
 
 Successfully installed numpy-2.2.6 opencv-contrib-python-4.12.0.88
-[00:07:09] ✅ OpenCV dependencies installed successfully
-[00:07:09] 🔍 Verifying backend virtual environment...
+[00:46:36] ✅ OpenCV dependencies installed successfully
+[00:46:36] 🔍 Verifying backend virtual environment...
 Python version: 3.11.2 (main, Apr 28 2025, 14:11:48) [GCC 12.2.0]
-[00:07:09] ✅ Virtual environment is valid
-[00:07:09] 🔧 Installing typing-extensions with fallback strategies...
+[00:46:36] ✅ Virtual environment is valid
+[00:46:36] 🔧 Installing typing-extensions with fallback strategies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting typing-extensions>=4.12.0
   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
@@ -308,11 +381,11 @@ Installing collected packages: typing-extensions
     Not uninstalling typing-extensions at /home/michomanoly14892/.local/lib/python3.11/site-packages, outside environment /opt/ezrec-backend/backend/venv
     Can't uninstall 'typing_extensions'. No files were found to uninstall.
 Successfully installed typing-extensions-4.15.0
-[00:07:12] ✅ typing-extensions installed successfully with version constraint
+[00:46:38] ✅ typing-extensions installed successfully with version constraint
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting simplejpeg
   Downloading simplejpeg-1.8.2.tar.gz (5.5 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 3.8 MB/s  0:00:01
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 3.0 MB/s  0:00:01
   Installing build dependencies: started
   Installing build dependencies: finished with status 'done'
   Getting requirements to build wheel: started
@@ -322,15 +395,15 @@ Collecting simplejpeg
 Collecting numpy>=1.19.3 (from simplejpeg)
   Downloading numpy-2.3.2-cp311-cp311-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (62 kB)
 Downloading numpy-2.3.2-cp311-cp311-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (14.6 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.6/14.6 MB 4.0 MB/s  0:00:03
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.6/14.6 MB 3.0 MB/s  0:00:04
 Building wheels for collected packages: simplejpeg
   Building wheel for simplejpeg (pyproject.toml): started
   Building wheel for simplejpeg (pyproject.toml): still running...
   Building wheel for simplejpeg (pyproject.toml): still running...
   Building wheel for simplejpeg (pyproject.toml): still running...
   Building wheel for simplejpeg (pyproject.toml): finished with status 'done'
-  Created wheel for simplejpeg: filename=simplejpeg-1.8.2-cp311-cp311-linux_aarch64.whl size=442430 sha256=23d7d7870851ee4050b35c0a5bb4237b73d5a3ee2b0ab8fc5edba991c33fde71
-  Stored in directory: /tmp/pip-ephem-wheel-cache-i1harduh/wheels/2a/4a/8b/5589c46335d8955dde48df4c3fd1370c51df6df06472dd2103
+  Created wheel for simplejpeg: filename=simplejpeg-1.8.2-cp311-cp311-linux_aarch64.whl size=442431 sha256=d911f2a8e364fc4cd0a7482d89ced0f2b951c7b8d984f242174a31f208478551
+  Stored in directory: /tmp/pip-ephem-wheel-cache-1nvacql4/wheels/2a/4a/8b/5589c46335d8955dde48df4c3fd1370c51df6df06472dd2103
 Successfully built simplejpeg
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
@@ -347,12 +420,12 @@ Installing collected packages: numpy, simplejpeg
 ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
 opencv-contrib-python 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 2.3.2 which is incompatible.
 Successfully installed numpy-2.3.2 simplejpeg-1.8.2
-[00:11:15] Upgrading PyAV to ensure picamera2 compatibility
+[00:50:47] Upgrading PyAV to ensure picamera2 compatibility
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: av>=15.0.0 in ./venv/lib/python3.11/site-packages (15.1.0)
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[00:11:17] Installing OpenCV stitching dependencies...
+[00:50:49] Installing OpenCV stitching dependencies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: opencv-python>=4.8.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (4.11.0.86)
 Requirement already satisfied: opencv-contrib-python>=4.8.0 in ./venv/lib/python3.11/site-packages (4.12.0.88)
@@ -360,7 +433,7 @@ Requirement already satisfied: numpy>=1.21.0 in ./venv/lib/python3.11/site-packa
 Collecting numpy>=1.21.0
   Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
 Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.7 MB/s  0:00:03
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.8 MB/s  0:00:03
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
 Installing collected packages: numpy
@@ -369,28 +442,28 @@ Installing collected packages: numpy
     Uninstalling numpy-2.3.2:
       Successfully uninstalled numpy-2.3.2
 Successfully installed numpy-2.2.6
-[00:11:26] Verifying picamera2 and PyAV compatibility
+[00:50:58] Verifying picamera2 and PyAV compatibility
 ✅ picamera2 and PyAV compatibility verified
-[00:11:26] ✅ picamera2 and PyAV compatibility verified
-[00:11:26] Verifying OpenCV stitching compatibility
+[00:50:58] ✅ picamera2 and PyAV compatibility verified
+[00:50:58] Verifying OpenCV stitching compatibility
 ✅ OpenCV stitching compatibility verified
-[00:11:27] ✅ OpenCV stitching compatibility verified
-[00:11:27] backend virtual environment ready
-[00:11:27] Setting up API virtual environment
+[00:50:59] ✅ OpenCV stitching compatibility verified
+[00:50:59] backend virtual environment ready
+[00:50:59] Setting up API virtual environment
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: pip in ./venv/lib/python3.11/site-packages (23.0.1)
 Collecting pip
   Downloading https://www.piwheels.org/simple/pip/pip-25.2-py3-none-any.whl (1.8 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 2.0 MB/s eta 0:00:00
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 1.7 MB/s eta 0:00:00
 Installing collected packages: pip
   Attempting uninstall: pip
     Found existing installation: pip 23.0.1
     Uninstalling pip-23.0.1:
       Successfully uninstalled pip-23.0.1
 Successfully installed pip-25.2
-[00:11:35] Installing dependencies with PyPI forcing for problematic packages...
-[00:11:35] Installing dependencies with optimized conflict resolution...
-[00:11:35] Installing core dependencies first...
+[00:51:07] Installing dependencies with PyPI forcing for problematic packages...
+[00:51:07] Installing dependencies with optimized conflict resolution...
+[00:51:07] Installing core dependencies first...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting fastapi==0.104.1
   Downloading https://www.piwheels.org/simple/fastapi/fastapi-0.104.1-py3-none-any.whl (92 kB)
@@ -427,7 +500,7 @@ Requirement already satisfied: click>=7.0 in /usr/lib/python3/dist-packages (fro
 Requirement already satisfied: h11>=0.8 in /usr/local/lib/python3.11/dist-packages (from uvicorn==0.24.0->uvicorn[standard]==0.24.0) (0.16.0)
 Collecting botocore<1.35.0,>=1.34.0 (from boto3==1.34.0)
   Downloading https://www.piwheels.org/simple/botocore/botocore-1.34.162-py3-none-any.whl (12.4 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 2.5 MB/s  0:00:05
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 12.4/12.4 MB 3.2 MB/s  0:00:04
 Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /usr/lib/python3/dist-packages (from boto3==1.34.0) (1.0.1)
 Collecting s3transfer<0.10.0,>=0.9.0 (from boto3==1.34.0)
   Downloading https://archive1.piwheels.org/simple/s3transfer/s3transfer-0.9.0-py3-none-any.whl (82 kB)
@@ -472,15 +545,15 @@ Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.
 Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic!=1.8,!=1.8.1,!=2.0.0,!=2.0.1,!=2.1.0,<3.0.0,>=1.7.4->fastapi==0.104.1) (0.4.1)
 Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.1->botocore<1.35.0,>=1.34.0->boto3==1.34.0) (1.17.0)
 Downloading Pillow-10.1.0-cp311-cp311-manylinux_2_28_aarch64.whl (3.5 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.5/3.5 MB 4.2 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.5/3.5 MB 2.7 MB/s  0:00:01
 Downloading simplejpeg-1.6.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.manylinux_2_24_aarch64.whl (242 kB)
 Downloading av-15.1.0-cp311-cp311-manylinux_2_28_aarch64.whl (38.1 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.1/38.1 MB 3.7 MB/s  0:00:10
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 38.1/38.1 MB 3.3 MB/s  0:00:11
 Downloading httptools-0.6.4-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (462 kB)
 Downloading PyYAML-6.0.2-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (736 kB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 736.8/736.8 kB 4.3 MB/s  0:00:00
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 736.8/736.8 kB 3.4 MB/s  0:00:00
 Downloading uvloop-0.21.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (4.0 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 3.2 MB/s  0:00:01
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.0/4.0 MB 3.1 MB/s  0:00:01
 Downloading watchfiles-1.1.0-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (450 kB)
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
@@ -555,8 +628,8 @@ Installing collected packages: v4l2-python3, uvloop, simplejpeg, schedule, pyyam
     Can't uninstall 'supabase'. No files were found to uninstall.
 
 Successfully installed Pillow-10.1.0 anyio-3.7.1 av-15.1.0 boto3-1.34.0 botocore-1.34.162 fastapi-0.104.1 gotrue-1.3.1 h11-0.14.0 httpcore-0.17.3 httptools-0.6.4 httpx-0.24.1 picamera2-0.3.12 postgrest-0.13.2 python-multipart-0.0.6 pyyaml-6.0.2 realtime-1.0.6 s3transfer-0.9.0 schedule-1.2.0 simplejpeg-1.6.6 starlette-0.27.0 storage3-0.6.1 supabase-2.0.2 supafunc-0.3.3 uvicorn-0.24.0 uvloop-0.21.0 v4l2-python3-0.3.5 watchfiles-1.1.0
-[00:12:11] ✅ Core dependencies installed successfully
-[00:12:11] Installing OpenCV stitching dependencies...
+[00:51:45] ✅ Core dependencies installed successfully
+[00:51:45] Installing OpenCV stitching dependencies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: opencv-python>=4.8.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (4.11.0.86)
 Collecting opencv-contrib-python>=4.8.0
@@ -565,9 +638,9 @@ Requirement already satisfied: numpy>=1.21.2 in /usr/lib/python3/dist-packages (
 Collecting numpy>=1.21.2 (from opencv-python>=4.8.0)
   Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
 Downloading opencv_contrib_python-4.12.0.88-cp37-abi3-manylinux2014_aarch64.manylinux_2_17_aarch64.whl (51.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.3/51.3 MB 3.5 MB/s  0:00:14
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.3/51.3 MB 3.1 MB/s  0:00:16
 Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.4 MB/s  0:00:04
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.1 MB/s  0:00:04
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
 Installing collected packages: numpy, opencv-contrib-python
@@ -577,11 +650,11 @@ Installing collected packages: numpy, opencv-contrib-python
     Can't uninstall 'numpy'. No files were found to uninstall.
 
 Successfully installed numpy-2.2.6 opencv-contrib-python-4.12.0.88
-[00:12:36] ✅ OpenCV dependencies installed successfully
-[00:12:36] 🔍 Verifying API virtual environment...
+[00:52:13] ✅ OpenCV dependencies installed successfully
+[00:52:13] 🔍 Verifying API virtual environment...
 Python version: 3.11.2 (main, Apr 28 2025, 14:11:48) [GCC 12.2.0]
-[00:12:36] ✅ Virtual environment is valid
-[00:12:36] 🔧 Installing typing-extensions with fallback strategies...
+[00:52:13] ✅ Virtual environment is valid
+[00:52:13] 🔧 Installing typing-extensions with fallback strategies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting typing-extensions>=4.12.0
   Downloading typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
@@ -595,11 +668,11 @@ Installing collected packages: typing-extensions
     Not uninstalling typing-extensions at /home/michomanoly14892/.local/lib/python3.11/site-packages, outside environment /opt/ezrec-backend/api/venv
     Can't uninstall 'typing_extensions'. No files were found to uninstall.
 Successfully installed typing-extensions-4.15.0
-[00:12:39] ✅ typing-extensions installed successfully with version constraint
+[00:52:17] ✅ typing-extensions installed successfully with version constraint
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Collecting simplejpeg
   Downloading simplejpeg-1.8.2.tar.gz (5.5 MB)
-     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 3.8 MB/s  0:00:01
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 5.5/5.5 MB 2.2 MB/s  0:00:02
   Installing build dependencies: started
   Installing build dependencies: finished with status 'done'
   Getting requirements to build wheel: started
@@ -609,15 +682,15 @@ Collecting simplejpeg
 Collecting numpy>=1.19.3 (from simplejpeg)
   Downloading numpy-2.3.2-cp311-cp311-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl.metadata (62 kB)
 Downloading numpy-2.3.2-cp311-cp311-manylinux_2_27_aarch64.manylinux_2_28_aarch64.whl (14.6 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.6/14.6 MB 3.3 MB/s  0:00:04
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.6/14.6 MB 2.4 MB/s  0:00:06
 Building wheels for collected packages: simplejpeg
   Building wheel for simplejpeg (pyproject.toml): started
   Building wheel for simplejpeg (pyproject.toml): still running...
   Building wheel for simplejpeg (pyproject.toml): still running...
   Building wheel for simplejpeg (pyproject.toml): still running...
   Building wheel for simplejpeg (pyproject.toml): finished with status 'done'
-  Created wheel for simplejpeg: filename=simplejpeg-1.8.2-cp311-cp311-linux_aarch64.whl size=442430 sha256=bd4cd85c4e8c0a21445ffb4594aa7b351e47dfd232e32f12933a7a87bfec2fc4
-  Stored in directory: /tmp/pip-ephem-wheel-cache-rac24dor/wheels/2a/4a/8b/5589c46335d8955dde48df4c3fd1370c51df6df06472dd2103
+  Created wheel for simplejpeg: filename=simplejpeg-1.8.2-cp311-cp311-linux_aarch64.whl size=442430 sha256=ceb75e23f85c3a2ba8f147fa4fb52145c7d6f17f592a40fa5d6b4bcacd9935d5
+  Stored in directory: /tmp/pip-ephem-wheel-cache-wsdday73/wheels/2a/4a/8b/5589c46335d8955dde48df4c3fd1370c51df6df06472dd2103
 Successfully built simplejpeg
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
@@ -634,12 +707,12 @@ Installing collected packages: numpy, simplejpeg
 ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
 opencv-contrib-python 4.12.0.88 requires numpy<2.3.0,>=2; python_version >= "3.9", but you have numpy 2.3.2 which is incompatible.
 Successfully installed numpy-2.3.2 simplejpeg-1.8.2
-[00:16:51] Upgrading PyAV to ensure picamera2 compatibility
+[00:56:25] Upgrading PyAV to ensure picamera2 compatibility
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: av>=15.0.0 in ./venv/lib/python3.11/site-packages (15.1.0)
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[00:16:53] Installing OpenCV stitching dependencies...
+[00:56:27] Installing OpenCV stitching dependencies...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: opencv-python>=4.8.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (4.11.0.86)
 Requirement already satisfied: opencv-contrib-python>=4.8.0 in ./venv/lib/python3.11/site-packages (4.12.0.88)
@@ -647,7 +720,7 @@ Requirement already satisfied: numpy>=1.21.0 in ./venv/lib/python3.11/site-packa
 Collecting numpy>=1.21.0
   Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl.metadata (63 kB)
 Downloading numpy-2.2.6-cp311-cp311-manylinux_2_17_aarch64.manylinux2014_aarch64.whl (14.3 MB)
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 3.6 MB/s  0:00:04
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.3/14.3 MB 1.8 MB/s  0:00:08
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
 Installing collected packages: numpy
@@ -656,85 +729,155 @@ Installing collected packages: numpy
     Uninstalling numpy-2.3.2:
       Successfully uninstalled numpy-2.3.2
 Successfully installed numpy-2.2.6
-[00:17:03] Verifying picamera2 and PyAV compatibility
+[00:56:41] Verifying picamera2 and PyAV compatibility
 ✅ picamera2 and PyAV compatibility verified
-[00:17:03] ✅ picamera2 and PyAV compatibility verified
-[00:17:03] Verifying OpenCV stitching compatibility
+[00:56:41] ✅ picamera2 and PyAV compatibility verified
+[00:56:41] Verifying OpenCV stitching compatibility
 ✅ OpenCV stitching compatibility verified
-[00:17:03] ✅ OpenCV stitching compatibility verified
-[00:17:03] API virtual environment ready
-[00:17:03] STEP: 7. Applying fixes
-[00:17:03] Creating improved kms.py placeholder for picamera2 compatibility
-[00:17:04] Improved kms.py placeholder created
-[00:17:04] Deploying working video_worker with all fixes...
-[00:17:04] ✅ video_worker.py exists and will be used
-[00:17:04] Setting up assets directory
-[00:17:04] Starting asset download with timeout protection...
-[00:17:04] Checking and downloading user assets (smart mode)
-[00:17:04] Current directory: /opt/ezrec-backend
-[00:17:04] Checking if .env exists: -rwxr-xr-x 1 michomanoly14892 michomanoly14892 2672 Aug 31 00:05 .env
-[00:17:06] ✅ Asset check/download completed successfully
-[00:17:06] Smart asset download process completed
-[00:17:06] ✅ Asset download completed
-[00:17:06] STEP: Setting up files and permissions
-[00:17:07] Files and permissions set up
-[00:17:07] STEP: Installing systemd services
+[00:56:42] ✅ OpenCV stitching compatibility verified
+[00:56:42] API virtual environment ready
+[00:56:42] STEP: 7. Applying fixes
+[00:56:42] Creating improved kms.py placeholder for picamera2 compatibility
+[00:56:42] Improved kms.py placeholder created
+[00:56:42] Deploying working video_worker with all fixes...
+[00:56:42] ✅ video_worker.py exists and will be used
+[00:56:42] Setting up assets directory
+[00:56:42] Starting asset download with timeout protection...
+[00:56:42] Checking and downloading user assets (smart mode)
+[00:56:42] Current directory: /opt/ezrec-backend
+[00:56:42] Checking if .env exists: -rwxr-xr-x 1 michomanoly14892 michomanoly14892 2672 Aug 31 00:45 .env
+[00:56:46] ✅ Asset check/download completed successfully
+[00:56:46] Smart asset download process completed
+[00:56:46] ✅ Asset download completed
+[00:56:46] STEP: Setting up files and permissions
+[00:56:46] Files and permissions set up
+[00:56:46] STEP: Installing systemd services
 Created symlink /etc/systemd/system/multi-user.target.wants/dual_recorder.service → /etc/systemd/system/dual_recorder.service.
 Created symlink /etc/systemd/system/multi-user.target.wants/video_worker.service → /etc/systemd/system/video_worker.service.
 Created symlink /etc/systemd/system/multi-user.target.wants/ezrec-api.service → /etc/systemd/system/ezrec-api.service.
 Created symlink /etc/systemd/system/multi-user.target.wants/system_status.service → /etc/systemd/system/system_status.service.
-[00:17:08] Systemd services installed and enabled
-[00:17:08] STEP: Setting up cron jobs
-[00:17:09] Cron jobs configured
-[00:17:09] STEP: Starting services
-[00:17:09] STEP: Preventing port conflicts
-[00:17:09] 🔧 Checking for port conflicts...
-[00:17:09] 🛑 Stopping all EZREC services...
-[00:17:09] 🧹 Cleaning up any existing API server processes...
-[00:17:12] 🔧 Final cleanup - killing any remaining processes on our ports...
-[00:17:12] ✅ Port 8000 is now free
-[00:17:12] ✅ Port 9000 is now free
-[00:17:12] Port conflict prevention completed
-[00:17:12] Starting dual_recorder.service
-[00:17:12] Starting video_worker.service
-[00:17:12] Starting ezrec-api.service
-[00:17:12] Starting system_status.service
-[00:17:15] Starting system_status.timer
-[00:17:20] Restarting dual_recorder.service
-[00:17:28] Restarting video_worker.service
-[00:17:28] Restarting ezrec-api.service
-[00:17:28] 🔧 Double-checking port 8000 is free before starting API server...
-[00:17:28] 🔧 Final API server port cleanup...
-[00:17:31] Restarting system_status.service
-[00:17:43] Services started
-[00:17:43] STEP: Completing interrupted deployment
-[00:17:43] 🔄 Completing setup_cron step...
-[00:17:43] STEP: Setting up cron jobs
-[00:17:43] Cron jobs configured
-[00:17:43] ✅ Interrupted deployment completed
-[00:17:43] 📦 Deploying updated video_worker.py...
-[00:17:43] ✅ video_worker.py exists and will be used
-[00:17:43] Deploying working video_worker with all fixes...
-[00:17:43] ✅ video_worker.py exists and will be used
-[00:17:43] 🔁 Restarting video_worker.service...
-[00:17:43] ✅ video_worker.service restarted successfully
-[00:17:43] 📦 Deploying updated dual_recorder.py and enhanced_merge.py...
-[00:17:43] ✅ dual_recorder.py exists and will be used
-[00:17:43] ✅ enhanced_merge.py exists and will be used
-[00:17:43] 🔁 Restarting dual_recorder.service...
-[00:17:51] ✅ dual_recorder.service restarted successfully
-[00:17:51] STEP: Validating deployment
-[00:17:51] ✅ dual_recorder.service is running
-[00:17:51] ✅ video_worker.service is running
-[00:17:51] ERROR: ezrec-api.service failed to start
-[00:17:51] ERROR: Detailed status for ezrec-api:
+[00:56:47] Systemd services installed and enabled
+[00:56:47] STEP: Setting up cron jobs
+[00:56:47] Cron jobs configured
+[00:56:47] STEP: Starting services
+[00:56:47] STEP: Preventing port conflicts
+[00:56:47] 🔧 Checking for port conflicts...
+[00:56:47] 🛑 Stopping all EZREC services...
+[00:56:47] 🧹 Cleaning up any existing API server processes...
+[00:56:50] 🔧 Final cleanup - killing any remaining processes on our ports...
+[00:56:50] ✅ Port 8000 is now free
+[00:56:50] ✅ Port 9000 is now free
+[00:56:50] Port conflict prevention completed
+[00:56:50] Starting dual_recorder.service
+[00:56:50] Starting video_worker.service
+[00:56:50] Starting ezrec-api.service
+[00:56:50] Starting system_status.service
+[00:56:53] Starting system_status.timer
+[00:56:59] Restarting dual_recorder.service
+[00:57:07] Restarting video_worker.service
+[00:57:07] Restarting ezrec-api.service
+[00:57:07] 🔧 Double-checking port 8000 is free before starting API server...
+[00:57:07] 🔧 Final API server port cleanup...
+[00:57:10] Restarting system_status.service
+[00:57:22] Services started
+[00:57:22] STEP: Completing interrupted deployment
+[00:57:22] 🔄 Completing setup_cron step...
+[00:57:22] STEP: Setting up cron jobs
+[00:57:22] Cron jobs configured
+[00:57:22] ✅ Interrupted deployment completed
+[00:57:22] 📦 Deploying updated video_worker.py...
+[00:57:22] ✅ video_worker.py exists and will be used
+[00:57:22] Deploying working video_worker with all fixes...
+[00:57:22] ✅ video_worker.py exists and will be used
+[00:57:22] 🔁 Restarting video_worker.service...
+[00:57:22] ✅ video_worker.service restarted successfully
+[00:57:22] 📦 Deploying updated dual_recorder.py and enhanced_merge.py...
+[00:57:22] ✅ dual_recorder.py exists and will be used
+[00:57:22] ✅ enhanced_merge.py exists and will be used
+[00:57:22] 🔁 Restarting dual_recorder.service...
+[00:57:30] ✅ dual_recorder.service restarted successfully
+[00:57:30] STEP: Validating deployment
+[00:57:30] ✅ dual_recorder.service is running
+[00:57:30] ✅ video_worker.service is running
+[00:57:30] ERROR: ezrec-api.service failed to start
+[00:57:30] ERROR: Detailed status for ezrec-api:
 ● ezrec-api.service - EZREC FastAPI Backend
      Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
-     Active: activating (auto-restart) (Result: exit-code) since Sun 2025-08-31 00:17:44 EDT; 7s ago
-    Process: 557570 ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000 (code=exited, status=1/FAILURE)
-   Main PID: 557570 (code=exited, status=1/FAILURE)
-        CPU: 1.689s
+     Active: activating (auto-restart) (Result: exit-code) since Sun 2025-08-31 00:57:23 EDT; 7s ago
+    Process: 580306 ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000 (code=exited, status=1/FAILURE)
+   Main PID: 580306 (code=exited, status=1/FAILURE)
+        CPU: 1.620s
 
-Aug 31 00:17:44 raspberrypi systemd[1]: ezrec-api.service: Main process exited, code=exited, status=1/FAILURE
-Aug 31 00:17:44 raspberrypi systemd[1]: ezrec-api.service: Failed with result 'exit-code'.
-Aug 31 00:17:44 raspberrypi systemd[1]: ezrec-api.service: Consumed 1.689s CPU time.
+Aug 31 00:57:23 raspberrypi systemd[1]: ezrec-api.service: Consumed 1.620s CPU time.
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Test the API endpoints
+curl -s http://localhost:8000/test-alive
+curl -s http://localhost:8000/status
+
+# Check if all services are running
+sudo systemctl status ezrec-api.service
+sudo systemctl status dual_recorder.service
+sudo systemctl status video_worker.service
+sudo systemctl status system_status.service
+● ezrec-api.service - EZREC FastAPI Backend
+     Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Sun 2025-08-31 00:59:04 EDT; 4s ago
+    Process: 581047 ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000 (code=exited, status=1/FAILURE)
+   Main PID: 581047 (code=exited, status=1/FAILURE)
+        CPU: 1.463s
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-08-31 00:57:30 EDT; 1min 39s ago
+   Main PID: 580760 (python3)
+      Tasks: 6 (limit: 9572)
+        CPU: 1.376s
+     CGroup: /system.slice/dual_recorder.service
+             └─580760 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Aug 31 00:59:02 raspberrypi python3[580760]: 2025-08-31 00:59:02,086 - INFO - 📋 Loaded 0 bookings from cache
+Aug 31 00:59:02 raspberrypi python3[580760]: 2025-08-31 00:59:02,088 - INFO - 🔍 Checking 0 bookings at 2025-08-31 00:59:02 EDT
+Aug 31 00:59:02 raspberrypi python3[580760]: 2025-08-31 00:59:02,088 - INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 31 00:59:02 raspberrypi python3[580760]: 2025-08-31 00:59:02,088 - INFO - ❌ No active booking found
+Aug 31 00:59:02 raspberrypi python3[580760]: 2025-08-31 00:59:02,088 - INFO - ⏳ No active booking found, waiting...
+Aug 31 00:59:07 raspberrypi python3[580760]: 2025-08-31 00:59:07,088 - INFO - 📋 Loaded 0 bookings from cache
+Aug 31 00:59:07 raspberrypi python3[580760]: 2025-08-31 00:59:07,093 - INFO - 🔍 Checking 0 bookings at 2025-08-31 00:59:07 EDT
+Aug 31 00:59:07 raspberrypi python3[580760]: 2025-08-31 00:59:07,093 - INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Aug 31 00:59:07 raspberrypi python3[580760]: 2025-08-31 00:59:07,093 - INFO - ❌ No active booking found
+Aug 31 00:59:07 raspberrypi python3[580760]: 2025-08-31 00:59:07,093 - INFO - ⏳ No active booking found, waiting...
+● video_worker.service - EZREC Video Processing Worker Service
+     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-08-31 00:57:22 EDT; 1min 46s ago
+   Main PID: 580332 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 872ms
+     CGroup: /system.slice/video_worker.service
+             └─580332 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
+Aug 31 00:57:23 raspberrypi python3[580332]: 2025-08-31 00:57:23,405 [INFO] 🧹 Running startup cleanup of orphaned marker files...
+Aug 31 00:57:23 raspberrypi python3[580332]: 2025-08-31 00:57:23,405 [INFO] ✅ Startup cleanup: no orphaned marker files found
+Aug 31 00:57:23 raspberrypi python3[580332]: 2025-08-31 00:57:23,459 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:57:38 raspberrypi python3[580332]: 2025-08-31 00:57:38,497 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:57:53 raspberrypi python3[580332]: 2025-08-31 00:57:53,544 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:58:08 raspberrypi python3[580332]: 2025-08-31 00:58:08,583 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:58:23 raspberrypi python3[580332]: 2025-08-31 00:58:23,612 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:58:38 raspberrypi python3[580332]: 2025-08-31 00:58:38,636 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:58:53 raspberrypi python3[580332]: 2025-08-31 00:58:53,664 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+Aug 31 00:59:08 raspberrypi python3[580332]: 2025-08-31 00:59:08,706 [INFO] 📊 Disk usage: 8.1% used, 101.6 GB free
+● system_status.service - EZREC System Status Monitor
+     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
+     Active: active (exited) since Sun 2025-08-31 00:57:12 EDT; 1min 57s ago
+TriggeredBy: ● system_status.timer
+    Process: 580260 ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py (code=exited, status=0/SUCCESS)
+   Main PID: 580260 (code=exited, status=0/SUCCESS)
+        CPU: 1.053s
+
+Aug 31 00:57:11 raspberrypi python3[580260]: [78:08:29.585938086] [580276] ERROR RPI pisp.cpp:947 Failed to register camera imx477 11-001a: -22
+Aug 31 00:57:11 raspberrypi python3[580260]: 2025-08-31 00:57:11,889 [INFO] Initialization successful.
+Aug 31 00:57:11 raspberrypi python3[580260]: 2025-08-31 00:57:11,889 [INFO] Camera now open.
+Aug 31 00:57:12 raspberrypi python3[580260]: 2025-08-31 00:57:12,090 [INFO] Camera closed successfully.
+Aug 31 00:57:12 raspberrypi python3[580260]: 2025-08-31 00:57:12,268 [INFO] 📊 Overall Status: CRITICAL
+Aug 31 00:57:12 raspberrypi python3[580260]: 2025-08-31 00:57:12,268 [ERROR] 🚨 Critical Issues: Inactive services: ezrec-api.service
+Aug 31 00:57:12 raspberrypi python3[580260]: 2025-08-31 00:57:12,269 [INFO] ✅ Status saved to /opt/ezrec-backend/status.json
+Aug 31 00:57:12 raspberrypi python3[580260]: 2025-08-31 00:57:12,269 [INFO] ✅ Health check completed successfully
+Aug 31 00:57:12 raspberrypi python3[580260]: 2025-08-31 00:57:12,269 [INFO] ✅ System Status: critical
+Aug 31 00:57:12 raspberrypi systemd[1]: Finished system_status.service - EZREC System Status Monitor.
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
