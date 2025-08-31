@@ -488,11 +488,20 @@ setup_venv() {
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
     install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
-    # Ensure stitch module exists (for enhanced_merge.py)
-    log_info "🔧 Ensuring stitch module structure..."
-    sudo mkdir -p "$path/../stitch/calibration"
-    if [[ ! -f "$path/../stitch/__init__.py" ]]; then
-        sudo -u $DEPLOY_USER tee "$path/../stitch/__init__.py" > /dev/null << 'EOF'
+    # Ensure stitch module exists (for enhanced_merge.py) - FIXED PERMISSIONS
+    log_info "🔧 Ensuring stitch module structure with proper permissions..."
+    
+    # Create stitch directory in the correct location (backend/stitch, not ../stitch)
+    local stitch_dir="$path/stitch"
+    sudo mkdir -p "$stitch_dir/calibration"
+    
+    # Set ownership BEFORE creating files
+    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$stitch_dir"
+    sudo chmod -R 755 "$stitch_dir"
+    
+    # Create __init__.py with proper ownership
+    if [[ ! -f "$stitch_dir/__init__.py" ]]; then
+        sudo -u $DEPLOY_USER tee "$stitch_dir/__init__.py" > /dev/null << 'EOF'
 """
 Basic stitch module to prevent import errors
 """
@@ -505,15 +514,23 @@ class PanoramicStitcher:
 EOF
     fi
 
-    if [[ ! -f "$path/../stitch/calibration/homography_right_to_left.json" ]]; then
-        sudo -u $DEPLOY_USER tee "$path/../stitch/calibration/homography_right_to_left.json" > /dev/null << 'EOF'
+    # Create calibration file with proper ownership
+    if [[ ! -f "$stitch_dir/calibration/homography_right_to_left.json" ]]; then
+        sudo -u $DEPLOY_USER tee "$stitch_dir/calibration/homography_right_to_left.json" > /dev/null << 'EOF'
 {
     "homography": [[1, 0, 0], [0, 1, 0], [0, 0, 1]],
     "status": "placeholder"
 }
 EOF
     fi
-    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$path/../stitch"
+    
+    # Final permission check and fix
+    sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$stitch_dir"
+    sudo chmod -R 755 "$stitch_dir"
+    sudo chmod 644 "$stitch_dir"/*.py 2>/dev/null || true
+    sudo chmod 644 "$stitch_dir/calibration"/*.json 2>/dev/null || true
+    
+    log_info "✅ Stitch module created with proper permissions"
     
     # Handle typing-extensions installation with multiple strategies
     install_typing_extensions "$path/venv"
@@ -528,12 +545,16 @@ EOF
     log_info "Upgrading PyAV to ensure picamera2 compatibility"
     pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade "av>=15.0.0"
     
-    # Install OpenCV stitching dependencies
-    log_info "Installing OpenCV stitching dependencies..."
+    # Install OpenCV stitching dependencies with compatible numpy version
+    log_info "Installing OpenCV stitching dependencies with compatible numpy..."
+    
+    # First, ensure we have a compatible numpy version
+    pip_install_suppress_warnings "$path/venv" install --no-cache-dir --force-reinstall "numpy==1.24.2"
+    
+    # Then install OpenCV
     pip_install_suppress_warnings "$path/venv" install --no-cache-dir \
         "opencv-python>=4.8.0" \
-        "opencv-contrib-python>=4.8.0" \
-        "numpy>=1.21.0"
+        "opencv-contrib-python>=4.8.0"
     
     # Verify picamera2 compatibility
     log_info "Verifying picamera2 and PyAV compatibility"
@@ -549,6 +570,14 @@ EOF
         log_info "✅ OpenCV stitching compatibility verified"
     else
         log_warn "⚠️ OpenCV stitching compatibility check failed"
+    fi
+    
+    # Verify stitch module import
+    log_info "Verifying stitch module import compatibility"
+    if sudo -u $DEPLOY_USER venv/bin/python3 -c "import sys; sys.path.insert(0, '.'); from stitch import PanoramicStitcher; print('✅ Stitch module import verified')" 2>/dev/null; then
+        log_info "✅ Stitch module import verified"
+    else
+        log_warn "⚠️ Stitch module import check failed"
     fi
     
     log_info "$name virtual environment ready"
@@ -1288,6 +1317,91 @@ test_api_server_startup() {
     fi
 }
 
+# Ensure all directories and files have proper permissions
+ensure_proper_permissions() {
+    log_info "🔧 Ensuring all directories and files have proper permissions..."
+    
+    # Set ownership for the entire deployment directory
+    sudo chown -R $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH
+    
+    # Set directory permissions
+    sudo find $DEPLOY_PATH -type d -exec chmod 755 {} \;
+    
+    # Set file permissions
+    sudo find $DEPLOY_PATH -type f -exec chmod 644 {} \;
+    
+    # Make scripts executable
+    sudo find $DEPLOY_PATH -name "*.sh" -exec chmod +x {} \;
+    sudo find $DEPLOY_PATH -name "*.py" -exec chmod +x {} \;
+    
+    # Ensure specific directories have correct permissions
+    sudo chmod 755 $DEPLOY_PATH/logs
+    sudo chmod 755 $DEPLOY_PATH/recordings
+    sudo chmod 755 $DEPLOY_PATH/processed
+    sudo chmod 755 $DEPLOY_PATH/final
+    sudo chmod 755 $DEPLOY_PATH/assets
+    sudo chmod 755 $DEPLOY_PATH/events
+    sudo chmod 755 $DEPLOY_PATH/api
+    sudo chmod 755 $DEPLOY_PATH/backend
+    
+    # Ensure stitch module has correct permissions
+    if [[ -d "$DEPLOY_PATH/backend/stitch" ]]; then
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/stitch"
+        sudo chmod -R 755 "$DEPLOY_PATH/backend/stitch"
+        sudo chmod 644 "$DEPLOY_PATH/backend/stitch"/*.py 2>/dev/null || true
+        sudo chmod 644 "$DEPLOY_PATH/backend/stitch/calibration"/*.json 2>/dev/null || true
+    fi
+    
+    # Ensure virtual environments have correct permissions
+    if [[ -d "$DEPLOY_PATH/backend/venv" ]]; then
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/venv"
+        sudo chmod -R 755 "$DEPLOY_PATH/backend/venv"
+    fi
+    
+    if [[ -d "$DEPLOY_PATH/api/venv" ]]; then
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api/venv"
+        sudo chmod -R 755 "$DEPLOY_PATH/api/venv"
+    fi
+    
+    log_info "✅ All permissions and ownership set correctly"
+}
+
+# Verify stitch module is working correctly
+verify_stitch_module() {
+    log_info "🔍 Verifying stitch module functionality..."
+    
+    cd "$DEPLOY_PATH/backend"
+    
+    # Test if the stitch module can be imported
+    if sudo -u $DEPLOY_USER venv/bin/python3 -c "
+import sys
+sys.path.insert(0, '.')
+try:
+    from stitch import PanoramicStitcher
+    print('✅ Stitch module import successful')
+    
+    # Test creating an instance
+    stitcher = PanoramicStitcher('stitch/calibration/homography_right_to_left.json')
+    print('✅ Stitch module instance creation successful')
+    
+    # Test that the homography file exists
+    import json
+    with open('stitch/calibration/homography_right_to_left.json', 'r') as f:
+        data = json.load(f)
+        print(f'✅ Homography file loaded: {data.get(\"status\", \"unknown\")}')
+    
+except Exception as e:
+    print(f'❌ Stitch module verification failed: {e}')
+    sys.exit(1)
+" 2>/dev/null; then
+        log_info "✅ Stitch module verification passed"
+        return 0
+    else
+        log_error "❌ Stitch module verification failed"
+        return 1
+    fi
+}
+
 # =============================================================================
 # MAIN DEPLOYMENT PROCESS
 # =============================================================================
@@ -1458,6 +1572,9 @@ main() {
     install_services
     setup_cron
     
+    # 8.5. Ensure all permissions are correct
+    ensure_proper_permissions
+    
     # 9. Start services
     start_services
     
@@ -1533,6 +1650,9 @@ main() {
     test_picamera2
     test_system_status
     verify_api_server
+    
+    # 10.5. Verify stitch module is working
+    verify_stitch_module
     
     # 11. Final checks
     log_step "11. Final system checks"
