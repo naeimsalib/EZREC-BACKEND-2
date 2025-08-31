@@ -105,13 +105,13 @@ test_python_import() {
     fi
 }
 
-# Comprehensive pip wrapper with warning suppression
+# Enhanced pip wrapper with warning suppression and timeout
 pip_install_suppress_warnings() {
     local venv_path=$1
     shift  # Remove first argument, pass rest to pip
     
-    # Run pip with warning suppression
-    sudo -u $DEPLOY_USER "$venv_path/bin/pip" "$@" 2>&1 | \
+    # Run pip with timeout and warning suppression
+    timeout 300 sudo -u $DEPLOY_USER "$venv_path/bin/pip" "$@" 2>&1 | \
         grep -v "WARNING:" | \
         grep -v "send2trash" | \
         grep -v "yanked version" | \
@@ -447,8 +447,16 @@ setup_venv() {
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
     install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
-    # Fix typing-extensions conflict
-    pip_install_suppress_warnings "$path/venv" install --no-cache-dir --upgrade "typing-extensions>=4.12.0"
+    # Fix typing-extensions conflict with proper virtual environment isolation
+    log_info "Fixing typing-extensions conflict..."
+    cd "$path"
+    if ! sudo -u $DEPLOY_USER venv/bin/pip install --no-cache-dir --upgrade --force-reinstall "typing-extensions>=4.12.0" 2>/dev/null; then
+        log_warn "⚠️ typing-extensions installation failed, trying alternative approach..."
+        # Try installing without version constraint
+        if ! sudo -u $DEPLOY_USER venv/bin/pip install --no-cache-dir typing-extensions 2>/dev/null; then
+            log_warn "⚠️ typing-extensions installation completely failed, continuing..."
+        fi
+    fi
     
     # Install simplejpeg with proper error handling
     if ! pip_install_suppress_warnings "$path/venv" install --no-cache-dir --force-reinstall --no-binary simplejpeg simplejpeg; then
