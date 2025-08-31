@@ -1241,23 +1241,21 @@ test_api_server_startup() {
     
     # Test uvicorn startup
     log_info "🔍 Testing uvicorn startup..."
-    if timeout 30 sudo -u $DEPLOY_USER venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8001 --log-level error > /tmp/api_test.log 2>&1 &; then
-        local pid=$!
-        sleep 5
-        
-        # Check if it's running
-        if kill -0 $pid 2>/dev/null; then
-            log_info "✅ API server test startup successful on port 8001"
-            kill $pid 2>/dev/null || true
-            return 0
-        else
-            log_error "❌ API server test startup failed"
-            log_info "🔍 Test startup logs:"
-            cat /tmp/api_test.log || true
-            return 1
-        fi
+    
+    # Start the test server in background
+    timeout 30 sudo -u $DEPLOY_USER venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8001 --log-level error > /tmp/api_test.log 2>&1 &
+    local pid=$!
+    sleep 5
+    
+    # Check if it's running
+    if kill -0 $pid 2>/dev/null; then
+        log_info "✅ API server test startup successful on port 8001"
+        kill $pid 2>/dev/null || true
+        return 0
     else
-        log_error "❌ Failed to start API server test"
+        log_error "❌ API server test startup failed"
+        log_info "🔍 Test startup logs:"
+        cat /tmp/api_test.log || true
         return 1
     fi
 }
