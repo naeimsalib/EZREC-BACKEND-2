@@ -733,16 +733,17 @@ except Exception as e:
 setup_files() {
     log_step "Setting up files and permissions"
     
-    # Ensure logs directory exists
+    # Ensure logs directory exists with proper ownership
     sudo mkdir -p $DEPLOY_PATH/logs
     sudo chown $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH/logs
     sudo chmod 755 $DEPLOY_PATH/logs
     
-    # Create log files
+    # Create log files with proper ownership
     sudo -u $DEPLOY_USER touch $DEPLOY_PATH/logs/dual_recorder.log
     sudo -u $DEPLOY_USER touch $DEPLOY_PATH/logs/video_worker.log
     sudo -u $DEPLOY_USER touch $DEPLOY_PATH/logs/ezrec-api.log
     sudo -u $DEPLOY_USER touch $DEPLOY_PATH/logs/system_status.log
+    sudo chown $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH/logs/*.log
     sudo chmod 644 $DEPLOY_PATH/logs/*.log
     
     # Create bookings.json
@@ -758,6 +759,7 @@ EOF
   "system_status": "deployed"
 }
 EOF
+    sudo chown $DEPLOY_USER:$DEPLOY_USER $DEPLOY_PATH/status.json
     sudo chmod 664 $DEPLOY_PATH/status.json
     
     # Set final permissions
@@ -1074,6 +1076,29 @@ verify_venv() {
     return 0
 }
 
+# Complete interrupted deployment
+complete_interrupted_deployment() {
+    log_step "Completing interrupted deployment"
+    
+    # Check if we need to continue from where we left off
+    if [[ ! -f "$DEPLOY_PATH/status.json" ]]; then
+        log_info "🔄 Completing setup_files step..."
+        setup_files
+    fi
+    
+    if [[ ! -f "/etc/systemd/system/dual_recorder.service" ]]; then
+        log_info "🔄 Completing install_services step..."
+        install_services
+    fi
+    
+    if [[ ! -f "/etc/cron.d/ezrec-cleanup" ]]; then
+        log_info "🔄 Completing setup_cron step..."
+        setup_cron
+    fi
+    
+    log_info "✅ Interrupted deployment completed"
+}
+
 # =============================================================================
 # MAIN DEPLOYMENT PROCESS
 # =============================================================================
@@ -1240,6 +1265,9 @@ main() {
     
     # 9. Start services
     start_services
+    
+    # 9.5. Complete any interrupted deployment steps
+    complete_interrupted_deployment
     
     # ----------------------------------------
     # ✅ Deploy updated video_worker.py
