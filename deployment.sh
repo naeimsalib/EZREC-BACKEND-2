@@ -414,6 +414,39 @@ install_dependencies_with_suppression() {
     return 0
 }
 
+# Handle typing-extensions installation gracefully
+install_typing_extensions() {
+    local venv_path=$1
+    
+    log_info "🔧 Installing typing-extensions with fallback strategies..."
+    
+    # Strategy 1: Install with version constraint
+    if timeout 60 sudo -u $DEPLOY_USER "$venv_path/bin/pip" install --no-cache-dir --upgrade --force-reinstall "typing-extensions>=4.12.0"; then
+        log_info "✅ typing-extensions installed successfully with version constraint"
+        return 0
+    fi
+    
+    log_warn "⚠️ Strategy 1 failed, trying Strategy 2..."
+    
+    # Strategy 2: Install without version constraint
+    if timeout 60 sudo -u $DEPLOY_USER "$venv_path/bin/pip" install --no-cache-dir typing-extensions; then
+        log_info "✅ typing-extensions installed successfully without version constraint"
+        return 0
+    fi
+    
+    log_warn "⚠️ Strategy 2 failed, trying Strategy 3..."
+    
+    # Strategy 3: Install from PyPI directly
+    if timeout 60 sudo -u $DEPLOY_USER "$venv_path/bin/pip" install --no-cache-dir --index-url https://pypi.org/simple typing-extensions; then
+        log_info "✅ typing-extensions installed successfully from PyPI"
+        return 0
+    fi
+    
+    log_warn "⚠️ All typing-extensions installation strategies failed"
+    log_info "💡 Continuing without typing-extensions - this is not critical"
+    return 1
+}
+
 # Setup directory structure
 setup_directories() {
     log_step "Setting up directory structure"
@@ -447,16 +480,15 @@ setup_venv() {
     log_info "Installing dependencies with PyPI forcing for problematic packages..."
     install_dependencies_with_suppression "$path/venv" "../requirements.txt"
     
-    # Fix typing-extensions conflict with proper virtual environment isolation
-    log_info "Fixing typing-extensions conflict..."
-    cd "$path"
-    if ! sudo -u $DEPLOY_USER venv/bin/pip install --no-cache-dir --upgrade --force-reinstall "typing-extensions>=4.12.0" 2>/dev/null; then
-        log_warn "⚠️ typing-extensions installation failed, trying alternative approach..."
-        # Try installing without version constraint
-        if ! sudo -u $DEPLOY_USER venv/bin/pip install --no-cache-dir typing-extensions 2>/dev/null; then
-            log_warn "⚠️ typing-extensions installation completely failed, continuing..."
-        fi
+    # Verify virtual environment before proceeding
+    if ! verify_venv "$path/venv" "$name"; then
+        log_info "🔄 Recreating virtual environment..."
+        sudo rm -rf venv
+        sudo -u $DEPLOY_USER python3 -m venv --system-site-packages venv
     fi
+    
+    # Handle typing-extensions installation with multiple strategies
+    install_typing_extensions "$path/venv"
     
     # Install simplejpeg with proper error handling
     if ! pip_install_suppress_warnings "$path/venv" install --no-cache-dir --force-reinstall --no-binary simplejpeg simplejpeg; then
@@ -1013,6 +1045,33 @@ verify_api_server() {
             return 1
         fi
     fi
+}
+
+# Verify and fix virtual environment
+verify_venv() {
+    local venv_path=$1
+    local venv_name=$2
+    
+    log_info "🔍 Verifying $venv_name virtual environment..."
+    
+    # Check if virtual environment exists and is valid
+    if [[ ! -d "$venv_path" ]] || [[ ! -f "$venv_path/bin/python3" ]]; then
+        log_error "❌ Virtual environment is corrupted or missing"
+        log_info "🧹 Removing corrupted virtual environment..."
+        sudo rm -rf "$venv_path"
+        return 1
+    fi
+    
+    # Test if virtual environment is working
+    if ! sudo -u $DEPLOY_USER "$venv_path/bin/python3" -c "import sys; print('Python version:', sys.version)" 2>/dev/null; then
+        log_error "❌ Virtual environment is not working properly"
+        log_info "🧹 Removing corrupted virtual environment..."
+        sudo rm -rf "$venv_path"
+        return 1
+    fi
+    
+    log_info "✅ Virtual environment is valid"
+    return 0
 }
 
 # =============================================================================
