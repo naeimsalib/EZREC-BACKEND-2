@@ -1099,6 +1099,169 @@ complete_interrupted_deployment() {
     log_info "✅ Interrupted deployment completed"
 }
 
+# Fix API service startup issues
+fix_api_service() {
+    log_info "🔧 Fixing API service startup issues..."
+    
+    # Ensure api_server.py exists and is in the correct location
+    if [[ ! -f "$DEPLOY_PATH/api/api_server.py" ]]; then
+        log_error "❌ api_server.py not found in $DEPLOY_PATH/api/"
+        log_info "🔍 Checking for api_server.py in other locations..."
+        
+        # Look for api_server.py in the project
+        if [[ -f "api/api_server.py" ]]; then
+            log_info "📁 Found api_server.py in project, copying to deployment..."
+            sudo cp api/api_server.py "$DEPLOY_PATH/api/"
+            sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api/api_server.py"
+        elif [[ -f "backend/api_server.py" ]]; then
+            log_info "📁 Found api_server.py in backend, copying to api directory..."
+            sudo cp backend/api_server.py "$DEPLOY_PATH/api/"
+            sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api/api_server.py"
+        else
+            log_error "❌ api_server.py not found anywhere in the project!"
+            return 1
+        fi
+    fi
+    
+    # Ensure the API directory structure is correct
+    sudo mkdir -p "$DEPLOY_PATH/api"
+    sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api"
+    
+    # Test if the API server can start manually
+    log_info "🧪 Testing API server startup manually..."
+    cd "$DEPLOY_PATH/api"
+    
+    # Run the detailed startup test
+    if test_api_server_startup; then
+        log_info "✅ API server startup test passed"
+    else
+        log_error "❌ API server startup test failed"
+        return 1
+    fi
+    
+    # Update the systemd service file to use the correct working directory
+    log_info "🔧 Updating systemd service configuration..."
+    sudo tee /etc/systemd/system/ezrec-api.service > /dev/null << EOF
+[Unit]
+Description=EZREC FastAPI Backend
+After=network.target
+
+[Service]
+User=$DEPLOY_USER
+EnvironmentFile=$DEPLOY_PATH/.env
+WorkingDirectory=$DEPLOY_PATH/api
+ExecStart=$DEPLOY_PATH/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=5s
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    
+    # Reload systemd and restart the service
+    sudo systemctl daemon-reload
+    sudo systemctl restart ezrec-api.service
+    
+    # Wait for service to start
+    sleep 5
+    
+    # Check if service is now running
+    if sudo systemctl is-active --quiet ezrec-api.service; then
+        log_info "✅ API service is now running"
+        return 0
+    else
+        log_error "❌ API service still failed to start"
+        sudo systemctl status ezrec-api.service --no-pager -l
+        return 1
+    fi
+}
+
+# Ensure API server file is properly deployed
+ensure_api_server_file() {
+    log_info "🔧 Ensuring API server file is properly deployed..."
+    
+    # Check if api_server.py exists in the project
+    local api_file_found=false
+    
+    if [[ -f "api/api_server.py" ]]; then
+        log_info "📁 Found api_server.py in project api/ directory"
+        api_file_found=true
+        source_path="api/api_server.py"
+    elif [[ -f "backend/api_server.py" ]]; then
+        log_info "📁 Found api_server.py in project backend/ directory"
+        api_file_found=true
+        source_path="backend/api_server.py"
+    else
+        log_error "❌ api_server.py not found in project!"
+        return 1
+    fi
+    
+    # Ensure the API directory exists in deployment
+    sudo mkdir -p "$DEPLOY_PATH/api"
+    sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api"
+    
+    # Copy the API server file to the deployment
+    if [[ "$api_file_found" == true ]]; then
+        log_info "📋 Copying $source_path to $DEPLOY_PATH/api/"
+        sudo cp "$source_path" "$DEPLOY_PATH/api/"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api/api_server.py"
+        sudo chmod 644 "$DEPLOY_PATH/api/api_server.py"
+        
+        # Verify the file was copied
+        if [[ -f "$DEPLOY_PATH/api/api_server.py" ]]; then
+            log_info "✅ API server file deployed successfully"
+            return 0
+        else
+            log_error "❌ Failed to deploy API server file"
+            return 1
+        fi
+    fi
+    
+    return 1
+}
+
+# Test API server startup with detailed error reporting
+test_api_server_startup() {
+    log_info "🧪 Testing API server startup with detailed error reporting..."
+    
+    cd "$DEPLOY_PATH/api"
+    
+    # Test Python import
+    log_info "🔍 Testing Python import of api_server..."
+    if sudo -u $DEPLOY_USER venv/bin/python3 -c "import api_server; print('✅ API server import successful')" 2>/dev/null; then
+        log_info "✅ API server import test passed"
+    else
+        log_error "❌ API server import test failed"
+        log_info "🔍 Detailed import error:"
+        sudo -u $DEPLOY_USER venv/bin/python3 -c "import api_server" 2>&1 || true
+        return 1
+    fi
+    
+    # Test uvicorn startup
+    log_info "🔍 Testing uvicorn startup..."
+    if timeout 30 sudo -u $DEPLOY_USER venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8001 --log-level error > /tmp/api_test.log 2>&1 &; then
+        local pid=$!
+        sleep 5
+        
+        # Check if it's running
+        if kill -0 $pid 2>/dev/null; then
+            log_info "✅ API server test startup successful on port 8001"
+            kill $pid 2>/dev/null || true
+            return 0
+        else
+            log_error "❌ API server test startup failed"
+            log_info "🔍 Test startup logs:"
+            cat /tmp/api_test.log || true
+            return 1
+        fi
+    else
+        log_error "❌ Failed to start API server test"
+        return 1
+    fi
+}
+
 # =============================================================================
 # MAIN DEPLOYMENT PROCESS
 # =============================================================================
@@ -1218,6 +1381,12 @@ main() {
     # Run environment variable check
     ensure_env_variables
     
+    # 3.5. Ensure API server file is properly deployed
+    log_info "🔧 Ensuring API server file is properly deployed..."
+    if ! ensure_api_server_file; then
+        log_warn "⚠️ API server file deployment failed, but continuing..."
+    fi
+    
     # 4. Install dependencies
     install_dependencies
     
@@ -1268,6 +1437,16 @@ main() {
     
     # 9.5. Complete any interrupted deployment steps
     complete_interrupted_deployment
+    
+    # 9.6. Fix API service if it's not running
+    if ! sudo systemctl is-active --quiet ezrec-api.service; then
+        log_info "🔧 API service not running, attempting to fix..."
+        if fix_api_service; then
+            log_info "✅ API service fixed and running"
+        else
+            log_warn "⚠️ API service fix failed, continuing with deployment..."
+        fi
+    fi
     
     # ----------------------------------------
     # ✅ Deploy updated video_worker.py
