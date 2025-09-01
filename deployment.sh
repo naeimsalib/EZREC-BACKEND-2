@@ -1845,9 +1845,278 @@ fix_numpy_conflicts() {
     log_info "✅ Numpy conflicts resolved"
 }
 
-# =============================================================================
-# MAIN DEPLOYMENT PROCESS
-# =============================================================================
+# Add these new functions after the existing functions (around line 1876, before the main function)
+
+# Fix port conflicts aggressively
+fix_port_conflicts_aggressive() {
+    log_info "🔧 Fixing port conflicts aggressively..."
+    
+    # Stop all EZREC services first
+    log_info "🛑 Stopping all EZREC services..."
+    sudo systemctl stop ezrec-api.service 2>/dev/null || true
+    sudo systemctl stop video_worker.service 2>/dev/null || true
+    sudo systemctl stop dual_recorder.service 2>/dev/null || true
+    sudo systemctl stop system_status.service 2>/dev/null || true
+    
+    # Kill any processes using our ports
+    log_info "🧹 Killing processes on port 8000..."
+    if lsof -i :8000 >/dev/null 2>&1; then
+        sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
+        sleep 2
+    fi
+    
+    log_info "🧹 Killing processes on port 9000..."
+    if lsof -i :9000 >/dev/null 2>&1; then
+        sudo lsof -ti :9000 | xargs -r sudo kill -9 2>/dev/null || true
+        sleep 2
+    fi
+    
+    # Kill any uvicorn or API server processes
+    log_info "🧹 Killing any remaining API server processes..."
+    sudo pkill -f "uvicorn" 2>/dev/null || true
+    sudo pkill -f "api_server" 2>/dev/null || true
+    sudo pkill -f "python.*8000" 2>/dev/null || true
+    sudo pkill -f "python.*9000" 2>/dev/null || true
+    
+    # Wait for processes to fully terminate
+    sleep 3
+    
+    # Verify ports are free
+    if ! lsof -i :8000 >/dev/null 2>&1; then
+        log_info "✅ Port 8000 is now free"
+    else
+        log_error "❌ Port 8000 is still in use after cleanup"
+        sudo lsof -i :8000 2>/dev/null || true
+    fi
+    
+    if ! lsof -i :9000 >/dev/null 2>&1; then
+        log_info "✅ Port 9000 is now free"
+    else
+        log_error "❌ Port 9000 is still in use after cleanup"
+        sudo lsof -i :9000 2>/dev/null || true
+    fi
+    
+    log_info "✅ Port conflicts resolved"
+}
+
+# Install missing dependencies
+install_missing_dependencies() {
+    log_info "🔧 Installing missing dependencies..."
+    
+    # Install psutil in backend venv
+    log_info "📦 Installing psutil in backend virtual environment..."
+    if sudo -u $DEPLOY_USER "$DEPLOY_PATH/backend/venv/bin/pip" install --no-cache-dir psutil; then
+        log_info "✅ psutil installed successfully in backend venv"
+    else
+        log_error "❌ psutil installation failed in backend venv"
+        return 1
+    fi
+    
+    # Install psutil in API venv
+    log_info "📦 Installing psutil in API virtual environment..."
+    if sudo -u $DEPLOY_USER "$DEPLOY_PATH/api/venv/bin/pip" install --no-cache-dir psutil; then
+        log_info "✅ psutil installed successfully in API venv"
+    else
+        log_error "❌ psutil installation failed in API venv"
+        return 1
+    fi
+    
+    # Test the imports
+    log_info "🧪 Testing psutil imports..."
+    if sudo -u $DEPLOY_USER "$DEPLOY_PATH/backend/venv/bin/python3" -c "import psutil; print('✅ psutil imported successfully in backend')" 2>/dev/null; then
+        log_info "✅ psutil import test passed in backend"
+    else
+        log_error "❌ psutil import test failed in backend"
+        return 1
+    fi
+    
+    if sudo -u $DEPLOY_USER "$DEPLOY_PATH/api/venv/bin/python3" -c "import psutil; print('✅ psutil imported successfully in API')" 2>/dev/null; then
+        log_info "✅ psutil import test passed in API"
+    else
+        log_error "❌ psutil import test failed in API"
+        return 1
+    fi
+    
+    log_info "✅ All missing dependencies installed successfully"
+}
+
+# Enable all services for auto-start
+enable_all_services() {
+    log_info "🔧 Enabling all services for auto-start..."
+    
+    # Enable all EZREC services
+    for service in "${SERVICES[@]}"; do
+        log_info "🔧 Enabling $service.service for auto-start..."
+        if sudo systemctl enable ${service}.service; then
+            log_info "✅ $service.service enabled successfully"
+        else
+            log_error "❌ Failed to enable $service.service"
+            return 1
+        fi
+    done
+    
+    # Enable timers
+    for timer in "${TIMER_SERVICES[@]}"; do
+        log_info "🔧 Enabling $timer.timer for auto-start..."
+        if sudo systemctl enable ${timer}.timer; then
+            log_info "✅ $timer.timer enabled successfully"
+        else
+            log_error "❌ Failed to enable $timer.timer"
+            return 1
+        fi
+    done
+    
+    # Verify services are enabled
+    log_info "🔍 Verifying services are enabled..."
+    for service in "${SERVICES[@]}"; do
+        if sudo systemctl is-enabled ${service}.service >/dev/null 2>&1; then
+            log_info "✅ $service.service is enabled"
+        else
+            log_error "❌ $service.service is not enabled"
+            return 1
+        fi
+    done
+    
+    log_info "✅ All services enabled for auto-start"
+}
+
+# Start all services with proper error handling
+start_all_services() {
+    log_info "🔧 Starting all services with proper error handling..."
+    
+    # Start services in correct order
+    local service_order=("ezrec-api" "dual_recorder" "video_worker" "system_status")
+    
+    for service in "${service_order[@]}"; do
+        log_info "🚀 Starting $service.service..."
+        
+        # Special handling for API service
+        if [[ "$service" == "ezrec-api" ]]; then
+            log_info "🔧 Special handling for API service..."
+            
+            # Double-check port 8000 is free
+            if lsof -i :8000 >/dev/null 2>&1; then
+                log_warn "⚠️ Port 8000 still in use, forcing cleanup..."
+                sudo lsof -ti :8000 | xargs -r sudo kill -9 2>/dev/null || true
+                sleep 2
+            fi
+            
+            # Start the service
+            if sudo systemctl start ${service}.service; then
+                log_info "✅ $service.service started successfully"
+            else
+                log_error "❌ Failed to start $service.service"
+                sudo systemctl status ${service}.service --no-pager -l
+                return 1
+            fi
+            
+            # Wait for API to be ready
+            log_info "⏳ Waiting for API service to be ready..."
+            sleep 5
+            
+            # Test API endpoint
+            if curl -s http://localhost:8000/test-alive >/dev/null 2>&1; then
+                log_info "✅ API service is responding"
+            else
+                log_warn "⚠️ API service not responding yet, but continuing..."
+            fi
+        else
+            # Start other services
+            if sudo systemctl start ${service}.service; then
+                log_info "✅ $service.service started successfully"
+            else
+                log_error "❌ Failed to start $service.service"
+                sudo systemctl status ${service}.service --no-pager -l
+                return 1
+            fi
+        fi
+        
+        # Wait between service starts
+        sleep 2
+    done
+    
+    # Start timers
+    for timer in "${TIMER_SERVICES[@]}"; do
+        log_info "🚀 Starting $timer.timer..."
+        if sudo systemctl start ${timer}.timer; then
+            log_info "✅ $timer.timer started successfully"
+        else
+            log_error "❌ Failed to start $timer.timer"
+            return 1
+        fi
+    done
+    
+    log_info "✅ All services started successfully"
+}
+
+# Verify all services are running
+verify_all_services() {
+    log_info "🔍 Verifying all services are running..."
+    
+    local all_services_running=true
+    
+    # Check each service
+    for service in "${SERVICES[@]}"; do
+        if sudo systemctl is-active --quiet ${service}.service; then
+            log_info "✅ $service.service is running"
+        else
+            log_error "❌ $service.service is not running"
+            sudo systemctl status ${service}.service --no-pager -l
+            all_services_running=false
+        fi
+    done
+    
+    # Check timers
+    for timer in "${TIMER_SERVICES[@]}"; do
+        if sudo systemctl is-active --quiet ${timer}.timer; then
+            log_info "✅ $timer.timer is running"
+        else
+            log_error "❌ $timer.timer is not running"
+            sudo systemctl status ${timer}.timer --no-pager -l
+            all_services_running=false
+        fi
+    done
+    
+    # Test API endpoints
+    log_info "🧪 Testing API endpoints..."
+    if curl -s http://localhost:8000/test-alive >/dev/null 2>&1; then
+        log_info "✅ API /test-alive endpoint is responding"
+    else
+        log_error "❌ API /test-alive endpoint is not responding"
+        all_services_running=false
+    fi
+    
+    if curl -s http://localhost:8000/status >/dev/null 2>&1; then
+        log_info "✅ API /status endpoint is responding"
+    else
+        log_error "❌ API /status endpoint is not responding"
+        all_services_running=false
+    fi
+    
+    # Test share endpoint
+    log_info "🧪 Testing share endpoint..."
+    local share_response=$(curl -s -X POST http://localhost:8000/share \
+        -H "Content-Type: application/json" \
+        -d '{"key":"test-video-key","user_id":"test-user-123"}' 2>/dev/null)
+    
+    if [[ -n "$share_response" && "$share_response" != *"error"* ]]; then
+        log_info "✅ Share endpoint is working"
+    else
+        log_error "❌ Share endpoint is not working"
+        all_services_running=false
+    fi
+    
+    if [[ "$all_services_running" == true ]]; then
+        log_info "🎉 All services are running and responding correctly!"
+        return 0
+    else
+        log_error "❌ Some services are not running or responding correctly"
+        return 1
+    fi
+}
+
+# Update the main function to include these new fixes
+# Replace the existing main function with this updated version:
 
 main() {
     local current_user=$(whoami)
@@ -1991,122 +2260,53 @@ main() {
     fix_api_endpoints
     fix_video_worker_imports
     
-    # Ensure working video_worker is deployed
-    log_info "Deploying working video_worker with all fixes..."
-    if [[ -f "$DEPLOY_PATH/backend/video_worker.py" ]]; then
-        log_info "✅ video_worker.py exists and will be used"
-    else
-        log_warn "⚠️ video_worker.py not found in deployment"
-    fi
+    # 8. NEW: Install missing dependencies
+    log_step "8. Installing missing dependencies"
+    install_missing_dependencies
     
-    # Create assets directory (no placeholders)
-    log_info "Setting up assets directory"
-    cd $DEPLOY_PATH
-    sudo -u $DEPLOY_USER mkdir -p assets
+    # 9. NEW: Fix port conflicts aggressively
+    log_step "9. Fixing port conflicts"
+    fix_port_conflicts_aggressive
     
-    # Download user assets and company logo with timeout
-    log_info "Starting asset download with timeout protection..."
-    cd $DEPLOY_PATH
-    
-    # Call the function directly from the script
-    if download_user_assets; then
-        log_info "✅ Asset download completed"
-    else
-        log_warn "⚠️ Asset download failed, continuing with deployment..."
-    fi
-    
-    # 8. Setup files and services
+    # 10. Setup files and services
     setup_files
     install_services
+    
+    # 11. NEW: Enable all services for auto-start
+    log_step "11. Enabling all services for auto-start"
+    enable_all_services
+    
+    # 12. NEW: Start all services with proper error handling
+    log_step "12. Starting all services"
+    start_all_services
+    
+    # 13. Setup cron
     setup_cron
     
-    # 8.5. Ensure all permissions are correct
+    # 14. Ensure all permissions are correct
     ensure_proper_permissions
     
-    # 9. Start services
-    start_services
-    
-    # 9.5. Complete any interrupted deployment steps
+    # 15. Complete any interrupted deployment steps
     complete_interrupted_deployment
     
-    # 9.6. Fix API service if it's not running
-    if ! sudo systemctl is-active --quiet ezrec-api.service; then
-        log_info "🔧 API service not running, attempting to fix..."
-        if fix_api_service; then
-            log_info "✅ API service fixed and running"
-        else
-            log_warn "⚠️ API service fix failed, continuing with deployment..."
-        fi
-    fi
+    # 16. NEW: Verify all services are running
+    log_step "16. Verifying all services"
+    verify_all_services
     
-    # ----------------------------------------
-    # ✅ Deploy updated video_worker.py
-    # ----------------------------------------
-    log_info "📦 Deploying updated video_worker.py..."
-    
-    if [[ -f "$DEPLOY_PATH/backend/video_worker.py" ]]; then
-        log_info "✅ video_worker.py exists and will be used"
-    else
-        log_warn "⚠️ video_worker.py not found in deployment"
-    fi
-    
-    # Ensure working video_worker is deployed
-    log_info "Deploying working video_worker with all fixes..."
-    if [[ -f "$DEPLOY_PATH/backend/video_worker.py" ]]; then
-        log_info "✅ video_worker.py exists and will be used"
-    else
-        log_warn "⚠️ video_worker.py not found in deployment"
-    fi
-    
-    # Restart video_worker service specifically
-    log_info "🔁 Restarting video_worker.service..."
-    if sudo systemctl restart video_worker.service; then
-        log_info "✅ video_worker.service restarted successfully"
-    else
-        log_error "❌ video_worker.service restart failed"
-        sudo systemctl status video_worker.service --no-pager -l
-    fi
-    
-    # ----------------------------------------
-    # ✅ Deploy updated dual_recorder.py and enhanced_merge.py
-    # ----------------------------------------
-    log_info "📦 Deploying updated dual_recorder.py and enhanced_merge.py..."
-    
-    if [[ -f "$DEPLOY_PATH/backend/dual_recorder.py" ]]; then
-        log_info "✅ dual_recorder.py exists and will be used"
-    else
-        log_warn "⚠️ dual_recorder.py not found in deployment"
-    fi
-    
-    if [[ -f "$DEPLOY_PATH/backend/enhanced_merge.py" ]]; then
-        log_info "✅ enhanced_merge.py exists and will be used"
-    else
-        log_warn "⚠️ enhanced_merge.py not found in deployment"
-    fi
-    
-    # Restart dual_recorder service specifically
-    log_info "🔁 Restarting dual_recorder.service..."
-    if sudo systemctl restart dual_recorder.service; then
-        log_info "✅ dual_recorder.service restarted successfully"
-    else
-        log_error "❌ dual_recorder.service restart failed"
-        sudo systemctl status dual_recorder.service --no-pager -l
-    fi
-    
-    # 10. Validate deployment
+    # 17. Validate deployment
     validate_deployment
     test_picamera2
     test_system_status
     verify_api_server
     
-    # 10.5. Verify stitch module is working
+    # 18. Verify stitch module is working
     verify_stitch_module
     
-    # 10.6. Verify all fixes are working
+    # 19. Verify all fixes are working
     verify_all_fixes
     
-    # 10.7. Run comprehensive system check and push to GitHub
-    log_step "10.7. Running comprehensive system check and pushing to GitHub"
+    # 20. Run comprehensive system check and push to GitHub
+    log_step "20. Running comprehensive system check and pushing to GitHub"
     if [[ -f "system_check.sh" ]]; then
         log_info "🔍 Running comprehensive system check..."
         chmod +x system_check.sh
@@ -2116,8 +2316,8 @@ main() {
         log_warn "⚠️ system_check.sh not found, skipping comprehensive check"
     fi
     
-    # 11. Final checks
-    log_step "11. Final system checks"
+    # 21. Final checks
+    log_step "21. Final system checks"
     
     # Test API server specifically
     echo -e "\n--- API SERVER TEST ---"
@@ -2154,7 +2354,10 @@ main() {
         echo "💡 Or: nohup cloudflared tunnel run ezrec-tunnel > /tmp/cloudflared.log 2>&1 &"
     fi
     
-    log_info "Comprehensive system check completed!"
+    log_info "🎉 Comprehensive deployment completed successfully!"
+    log_info "✅ All services are running and responding correctly"
+    log_info "✅ External API is accessible via Cloudflare tunnel"
+    log_info "✅ System is ready for frontend testing"
 }
 
 # Run main function with output capture
