@@ -5,3 +5,106 @@
 # =============================================================================
 # SYSTEM CHECK OUTPUT
 # =============================================================================
+[0;32m[15:55:52] Starting EZREC deployment as user: michomanoly14892[0m
+[0;34m[15:55:52] STEP: 1. Applying comprehensive system fixes[0m
+[0;32m[15:55:52] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
+[0;32m[15:55:52] 🛑 Stopping all EZREC services...[0m
+[0;32m[15:55:52] 🧹 Comprehensive port cleanup...[0m
+[0;32m[15:55:52] 🔍 Found processes on port 8000, killing them...[0m
+[0;32m[15:55:54] 🧹 Killing processes by name...[0m
+[0;32m[15:55:58] ✅ Port 8000 is now free[0m
+[0;32m[15:55:58] ✅ Port 9000 is now free[0m
+[0;32m[15:55:58] ✅ Comprehensive port conflict resolution completed[0m
+[0;32m[15:55:58] 🔧 Installing psutil in all virtual environments...[0m
+[0;32m[15:55:58] 📦 Installing psutil in backend virtual environment...[0m
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[0;32m[15:56:00] ✅ psutil installed successfully in backend venv[0m
+[0;32m[15:56:00] 📦 Installing psutil in API virtual environment...[0m
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[0;32m[15:56:02] ✅ psutil installed successfully in API venv[0m
+[0;32m[15:56:02] 🧪 Testing psutil imports...[0m
+✅ psutil imported successfully in backend
+[0;32m[15:56:02] ✅ psutil import test passed in backend[0m
+✅ psutil imported successfully in API
+[0;32m[15:56:02] ✅ psutil import test passed in API[0m
+[0;32m[15:56:02] ✅ psutil installed and tested successfully in all environments[0m
+[0;32m[15:56:02] 🔧 Ensuring all services are properly enabled...[0m
+[0;32m[15:56:02] 🔧 Enabling dual_recorder.service for auto-start...[0m
+[0;32m[15:56:02] ✅ dual_recorder.service enabled successfully[0m
+[0;32m[15:56:02] 🔧 Enabling video_worker.service for auto-start...[0m
+[0;32m[15:56:02] ✅ video_worker.service enabled successfully[0m
+[0;32m[15:56:02] 🔧 Enabling ezrec-api.service for auto-start...[0m
+[0;32m[15:56:02] ✅ ezrec-api.service enabled successfully[0m
+[0;32m[15:56:02] 🔧 Enabling system_status.service for auto-start...[0m
+[0;32m[15:56:03] ✅ system_status.service enabled successfully[0m
+[0;32m[15:56:03] 🔧 Enabling system_status.timer for auto-start...[0m
+[0;32m[15:56:03] ✅ system_status.timer enabled successfully[0m
+[0;32m[15:56:03] 🔍 Verifying services are enabled...[0m
+[0;32m[15:56:03] ✅ dual_recorder.service is enabled[0m
+[0;32m[15:56:03] ✅ video_worker.service is enabled[0m
+[0;32m[15:56:03] ✅ ezrec-api.service is enabled[0m
+[0;32m[15:56:03] ✅ system_status.service is enabled[0m
+[0;32m[15:56:03] ✅ All services properly enabled for auto-start[0m
+[0;34m[15:56:03] STEP: 2. Starting all services safely[0m
+[0;32m[15:56:03] 🔧 Starting all services safely with port conflict prevention...[0m
+[0;32m[15:56:03] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
+[0;32m[15:56:03] 🛑 Stopping all EZREC services...[0m
+[0;32m[15:56:03] 🧹 Comprehensive port cleanup...[0m
+[0;32m[15:56:03] 🔍 Found processes on port 8000, killing them...[0m
+[0;32m[15:56:05] 🧹 Killing processes by name...[0m
+[0;32m[15:56:08] ✅ Port 8000 is now free[0m
+[0;32m[15:56:08] ✅ Port 9000 is now free[0m
+[0;32m[15:56:08] ✅ Comprehensive port conflict resolution completed[0m
+[0;32m[15:56:08] 🚀 Starting ezrec-api.service...[0m
+[0;32m[15:56:08] 🔧 Special handling for API service...[0m
+[0;32m[15:56:08] ✅ ezrec-api.service started successfully[0m
+[0;32m[15:56:08] ⏳ Waiting for API service to be ready...[0m
+[0;32m[15:56:18] ✅ API service is responding[0m
+[0;32m[15:56:21] 🚀 Starting dual_recorder.service...[0m
+[0;32m[15:56:21] ✅ dual_recorder.service started successfully[0m
+[0;32m[15:56:24] 🚀 Starting video_worker.service...[0m
+[0;32m[15:56:24] ✅ video_worker.service started successfully[0m
+[0;32m[15:56:27] 🚀 Starting system_status.service...[0m
+[0;32m[15:56:27] ✅ system_status.service started successfully[0m
+[0;32m[15:56:30] 🚀 Starting system_status.timer...[0m
+[0;32m[15:56:30] ✅ system_status.timer started successfully[0m
+[0;32m[15:56:30] ✅ All services started safely[0m
+[0;34m[15:56:30] STEP: 3. Verifying system completely[0m
+[0;32m[15:56:30] 🔍 Performing comprehensive system verification...[0m
+[0;32m[15:56:30] 🧪 Checking all services are running...[0m
+[0;32m[15:56:30] ✅ dual_recorder.service is running[0m
+[0;32m[15:56:30] ✅ video_worker.service is running[0m
+[0;32m[15:56:30] ✅ ezrec-api.service is running[0m
+[0;32m[15:56:30] ✅ system_status.service is running[0m
+[0;32m[15:56:30] 🧪 Testing API endpoints...[0m
+[0;32m[15:56:30] ✅ API /test-alive endpoint is responding[0m
+[0;32m[15:56:30] ✅ API /status endpoint is responding[0m
+[0;32m[15:56:30] 🧪 Testing Python imports...[0m
+✅ Backend imports working
+[0;32m[15:56:31] ✅ Backend Python imports are working[0m
+✅ API imports working
+[0;32m[15:56:31] ✅ API Python imports are working[0m
+[0;32m[15:56:31] 🧪 Testing Cloudflare tunnel...[0m
+[0;32m[15:56:31] ✅ Cloudflare tunnel is running[0m
+[0;32m[15:56:31] 🎉 All system verification checks passed![0m
+[0;34m[15:56:31] STEP: 4. Final system status[0m
+
+=== FINAL SYSTEM STATUS ===
+✅ dual_recorder.service: RUNNING
+✅ video_worker.service: RUNNING
+✅ ezrec-api.service: RUNNING
+✅ system_status.service: RUNNING
+✅ cloudflared.service: RUNNING
+✅ External API: ACCESSIBLE
+[0;32m[15:56:31] 🎉 Deployment completed successfully![0m
+[0;32m[15:56:31] ✅ All services are running and responding correctly[0m
+[0;32m[15:56:31] ✅ External API is accessible via Cloudflare tunnel[0m
+[0;32m[15:56:31] ✅ System is ready for frontend testing[0m
