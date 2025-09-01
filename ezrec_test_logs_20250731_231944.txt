@@ -1,0 +1,274 @@
+=== EZREC TEST LOGS - Thu 31 Jul 23:19:44 EDT 2025 ===
+--- SYSTEM STATUS ---
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2025-07-31 23:14:49 EDT; 4min 54s ago
+   Main PID: 29972 (python3)
+      Tasks: 6 (limit: 9572)
+        CPU: 1.853s
+     CGroup: /system.slice/dual_recorder.service
+             └─29972 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - 🔍 Booking 1: 047e9845-9301-461a-82d6-aaaa7ea9339a
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Camera ID: pi-001 (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Start: 2025-07-31 23:17:00 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    End: 2025-07-31 23:18:00 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Now: 2025-07-31 23:19:40 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - ❌ No active booking found
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - ⏳ No active booking found, waiting...
+
+● video_worker.service - EZREC Video Processing Worker Service
+     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2025-07-31 23:14:41 EDT; 5min ago
+   Main PID: 29531 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 1.155s
+     CGroup: /system.slice/video_worker.service
+             └─29531 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
+Jul 31 23:19:13 raspberrypi python3[29531]: 2025-07-31 23:19:13,254:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:13 raspberrypi python3[29531]: 2025-07-31 23:19:13,254:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,284:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,285:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,285:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,285:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,324:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,324:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,325:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,325:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+
+● ezrec-api.service - EZREC FastAPI Backend
+     Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
+     Active: active (running) since Thu 2025-07-31 23:14:41 EDT; 5min ago
+   Main PID: 29573 (uvicorn)
+      Tasks: 10 (limit: 9572)
+        CPU: 1.910s
+     CGroup: /system.slice/ezrec-api.service
+             └─29573 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000
+
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: 2025-07-31 23:16:05,953:INFO - ✅ Added booking: 047e9845-9301-461a-82d6-aaaa7ea9339a
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: 2025-07-31 23:16:05,953:WARNING - ⚠️ Failed to update Supabase: 'Booking' object has no attribute 'status'
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "POST /bookings HTTP/1.1" 200 OK
+Jul 31 23:16:13 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:00 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:05 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:08 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:50 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:18:11 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:18:41 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+
+● system_status.service - EZREC System Status Monitor
+     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
+     Active: active (exited) since Thu 2025-07-31 23:14:44 EDT; 4min 59s ago
+TriggeredBy: ● system_status.timer
+    Process: 29579 ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py (code=exited, status=0/SUCCESS)
+   Main PID: 29579 (code=exited, status=0/SUCCESS)
+        CPU: 1.540s
+
+Notice: journal has been rotated since unit was started, output may be incomplete.
+
+--- RECENT LOGS ---
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,777:INFO -    End: 2025-07-31 22:13:00 EDT
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,777:INFO -    Now: 2025-07-31 23:19:30 EDT
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,777:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,777:INFO - 🔍 Booking 1: 047e9845-9301-461a-82d6-aaaa7ea9339a
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,777:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,777:INFO -    Camera ID: pi-001 (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,778:INFO -    Start: 2025-07-31 23:17:00 EDT
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,778:INFO -    End: 2025-07-31 23:18:00 EDT
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,778:INFO -    Now: 2025-07-31 23:19:30 EDT
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,778:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,778:INFO - ❌ No active booking found
+Jul 31 23:19:30 raspberrypi python3[29972]: 2025-07-31 23:19:30,778:INFO - ⏳ No active booking found, waiting...
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO - 📋 Loaded 2 bookings from cache
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO - 🔍 Checking 2 bookings at 2025-07-31 23:19:35 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO - 🔍 Booking 0: 07b92df9-b133-47d4-bae5-47fe98465938
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    Camera ID: pi-001 (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    Start: 2025-07-31 22:12:00 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    End: 2025-07-31 22:13:00 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    Now: 2025-07-31 23:19:35 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO - 🔍 Booking 1: 047e9845-9301-461a-82d6-aaaa7ea9339a
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    Camera ID: pi-001 (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,778:INFO -    Start: 2025-07-31 23:17:00 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,779:INFO -    End: 2025-07-31 23:18:00 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,779:INFO -    Now: 2025-07-31 23:19:35 EDT
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,779:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,779:INFO - ❌ No active booking found
+Jul 31 23:19:35 raspberrypi python3[29972]: 2025-07-31 23:19:35,779:INFO - ⏳ No active booking found, waiting...
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,779:INFO - 📋 Loaded 2 bookings from cache
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,779:INFO - 🔍 Checking 2 bookings at 2025-07-31 23:19:40 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,779:INFO - 🔍 Looking for user_id: 65aa2e2a-e463-424d-b88f-0724bb0bea3a, camera_id: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - 🔍 Booking 0: 07b92df9-b133-47d4-bae5-47fe98465938
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Camera ID: pi-001 (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Start: 2025-07-31 22:12:00 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    End: 2025-07-31 22:13:00 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Now: 2025-07-31 23:19:40 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - 🔍 Booking 1: 047e9845-9301-461a-82d6-aaaa7ea9339a
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User ID: 65aa2e2a-e463-424d-b88f-0724bb0bea3a (expected: 65aa2e2a-e463-424d-b88f-0724bb0bea3a)
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Camera ID: pi-001 (expected: d217e751-dfa5-5276-abbb-da5ad6c2626a)
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Start: 2025-07-31 23:17:00 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    End: 2025-07-31 23:18:00 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    Now: 2025-07-31 23:19:40 EDT
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO -    User match: True, Camera match: True, Time match: False
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - ❌ No active booking found
+Jul 31 23:19:40 raspberrypi python3[29972]: 2025-07-31 23:19:40,780:INFO - ⏳ No active booking found, waiting...
+
+Jul 31 23:15:42 raspberrypi python3[29531]: 2025-07-31 23:15:42,670:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:15:57 raspberrypi python3[29531]: 2025-07-31 23:15:57,719:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:16:12 raspberrypi python3[29531]: 2025-07-31 23:16:12,790:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:16:27 raspberrypi python3[29531]: 2025-07-31 23:16:27,828:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:16:42 raspberrypi python3[29531]: 2025-07-31 23:16:42,854:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:16:57 raspberrypi python3[29531]: 2025-07-31 23:16:57,892:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:17:12 raspberrypi python3[29531]: 2025-07-31 23:17:12,951:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:17:12 raspberrypi python3[29531]: 2025-07-31 23:17:12,951:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:17:12 raspberrypi python3[29531]: 2025-07-31 23:17:12,951:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:12 raspberrypi python3[29531]: 2025-07-31 23:17:12,951:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:27 raspberrypi python3[29531]: 2025-07-31 23:17:27,999:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:17:28 raspberrypi python3[29531]: 2025-07-31 23:17:28,000:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:17:28 raspberrypi python3[29531]: 2025-07-31 23:17:28,000:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:28 raspberrypi python3[29531]: 2025-07-31 23:17:28,000:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:43 raspberrypi python3[29531]: 2025-07-31 23:17:43,046:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:17:43 raspberrypi python3[29531]: 2025-07-31 23:17:43,046:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:17:43 raspberrypi python3[29531]: 2025-07-31 23:17:43,046:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:43 raspberrypi python3[29531]: 2025-07-31 23:17:43,046:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:58 raspberrypi python3[29531]: 2025-07-31 23:17:58,086:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:17:58 raspberrypi python3[29531]: 2025-07-31 23:17:58,087:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:17:58 raspberrypi python3[29531]: 2025-07-31 23:17:58,087:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:17:58 raspberrypi python3[29531]: 2025-07-31 23:17:58,087:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:13 raspberrypi python3[29531]: 2025-07-31 23:18:13,115:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:18:13 raspberrypi python3[29531]: 2025-07-31 23:18:13,115:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:18:13 raspberrypi python3[29531]: 2025-07-31 23:18:13,115:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:13 raspberrypi python3[29531]: 2025-07-31 23:18:13,115:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:28 raspberrypi python3[29531]: 2025-07-31 23:18:28,144:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:18:28 raspberrypi python3[29531]: 2025-07-31 23:18:28,144:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:18:28 raspberrypi python3[29531]: 2025-07-31 23:18:28,144:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:28 raspberrypi python3[29531]: 2025-07-31 23:18:28,144:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:43 raspberrypi python3[29531]: 2025-07-31 23:18:43,178:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:18:43 raspberrypi python3[29531]: 2025-07-31 23:18:43,178:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:18:43 raspberrypi python3[29531]: 2025-07-31 23:18:43,178:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:43 raspberrypi python3[29531]: 2025-07-31 23:18:43,179:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:58 raspberrypi python3[29531]: 2025-07-31 23:18:58,210:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:18:58 raspberrypi python3[29531]: 2025-07-31 23:18:58,210:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:18:58 raspberrypi python3[29531]: 2025-07-31 23:18:58,210:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:18:58 raspberrypi python3[29531]: 2025-07-31 23:18:58,211:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:13 raspberrypi python3[29531]: 2025-07-31 23:19:13,254:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:19:13 raspberrypi python3[29531]: 2025-07-31 23:19:13,254:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:19:13 raspberrypi python3[29531]: 2025-07-31 23:19:13,254:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:13 raspberrypi python3[29531]: 2025-07-31 23:19:13,254:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,284:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,285:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,285:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:28 raspberrypi python3[29531]: 2025-07-31 23:19:28,285:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,324:INFO - 📊 Disk usage: 7.7% used, 102.0 GB free
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,324:INFO - Scanning directory: /opt/ezrec-backend/recordings/2025-07-31
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,325:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4: done=False, completed=False, lock=False, error=False, meta=False
+Jul 31 23:19:43 raspberrypi python3[29531]: 2025-07-31 23:19:43,325:INFO - Checking 231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4: done=False, completed=False, lock=False, error=False, meta=False
+
+Jul 31 23:16:02 raspberrypi uvicorn[29573]: ✅ Supabase client initialized successfully
+Jul 31 23:16:02 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "OPTIONS /bookings HTTP/1.1" 200 OK
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: 2025-07-31 23:16:05,952:INFO - 📝 Creating 1 booking(s)
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: 2025-07-31 23:16:05,953:INFO - ✅ Added booking: 047e9845-9301-461a-82d6-aaaa7ea9339a
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: 2025-07-31 23:16:05,953:WARNING - ⚠️ Failed to update Supabase: 'Booking' object has no attribute 'status'
+Jul 31 23:16:05 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "POST /bookings HTTP/1.1" 200 OK
+Jul 31 23:16:13 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:00 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:05 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:08 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:17:50 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:18:11 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+Jul 31 23:18:41 raspberrypi uvicorn[29573]: INFO:     2607:fb91:180a:43f5:7085:ffc6:d771:da9d:0 - "GET /status HTTP/1.1" 200 OK
+
+--- SYSTEM RESOURCES ---
+Filesystem      Size  Used Avail Use% Mounted on
+udev            3.9G     0  3.9G   0% /dev
+tmpfs           1.6G   15M  1.6G   1% /run
+/dev/mmcblk0p2  117G  9.0G  102G   9% /
+tmpfs           4.0G  336K  4.0G   1% /dev/shm
+tmpfs           5.0M   48K  5.0M   1% /run/lock
+/dev/mmcblk0p1  510M   78M  433M  16% /boot/firmware
+tmpfs           807M  176K  807M   1% /run/user/1000
+               total        used        free      shared  buff/cache   available
+Mem:           7.9Gi       742Mi       5.1Gi        34Mi       2.1Gi       7.1Gi
+Swap:          511Mi          0B       511Mi
+
+--- RECORDINGS CHECK ---
+/opt/ezrec-backend/recordings/2025-07-31/231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_right.mp4
+/opt/ezrec-backend/recordings/2025-07-31/231700-231800_65aa2e2a-e463-424d-b88f-0724bb0bea3a_pi-001_left.mp4
+/opt/ezrec-backend/assets/intro.mp4
+
+--- STATUS FILE ---
+{
+  "timestamp": "2025-07-31T23:14:44.191591",
+  "overall_status": "critical",
+  "critical_issues": [
+    "Inactive services: dual_recorder.service"
+  ],
+  "warnings": [],
+  "disk_usage": {
+    "status": "healthy",
+    "usage_percent": 8.1,
+    "free_gb": 101.97,
+    "total_gb": 116.93
+  },
+  "memory_usage": {
+    "status": "healthy",
+    "usage_percent": 9.9,
+    "available_gb": 7.09,
+    "total_gb": 7.87
+  },
+  "cpu_usage": {
+    "status": "healthy",
+    "usage_percent": 46.5
+  },
+  "services": {
+    "services": {
+      "dual_recorder.service": {
+        "active": false,
+        "status": ""
+      },
+      "video_worker.service": {
+        "active": true,
+        "status": "active"
+      },
+      "ezrec-api.service": {
+        "active": true,
+        "status": "active"
+      }
+    },
+    "inactive": [
+      "dual_recorder.service"
+    ],
+    "timer_active": true
+  },
+  "cameras": {
+    "status": "healthy",
+    "available": true,
+    "camera_count": 2
+  },
+  "ffmpeg": {
+    "status": "healthy",
+    "available": true,
+    "version": "5.1.6-0+deb12u1+rpt3"
+  },
+  "environment": {
+    "status": "healthy",
+    "all_set": true,
+    "missing_vars": []
+  },
+  "recording": {
+    "status": "idle",
+    "is_recording": false
+  },
+  "is_recording": false,
+  "last_update": "2025-07-31T23:18:05.757244"
+}
