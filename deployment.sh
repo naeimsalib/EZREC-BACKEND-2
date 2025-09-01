@@ -2086,6 +2086,17 @@ main() {
     # 10.6. Verify all fixes are working
     verify_all_fixes
     
+    # 10.7. Run comprehensive system check and push to GitHub
+    log_step "10.7. Running comprehensive system check and pushing to GitHub"
+    if [[ -f "system_check.sh" ]]; then
+        log_info "🔍 Running comprehensive system check..."
+        chmod +x system_check.sh
+        ./system_check.sh
+        log_info "✅ System check completed and results pushed to GitHub"
+    else
+        log_warn "⚠️ system_check.sh not found, skipping comprehensive check"
+    fi
+    
     # 11. Final checks
     log_step "11. Final system checks"
     
@@ -2127,5 +2138,5 @@ main() {
     log_info "Comprehensive system check completed!"
 }
 
-# Run main function
-main "$@"
+# Run main function with output capture
+main "$@" 2>&1 | tee -a logs.txt
