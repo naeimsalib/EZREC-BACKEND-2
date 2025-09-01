@@ -1030,14 +1030,16 @@ install_services() {
     sudo cp $DEPLOY_PATH/systemd/*.timer /etc/systemd/system/
     sudo systemctl daemon-reload
     
-    # Enable services
+    # Enable services - ADD THIS LINE TO ENSURE SERVICES ARE ENABLED
     for service in "${SERVICES[@]}"; do
         sudo systemctl enable ${service}.service
+        log_info "✅ Enabled ${service}.service"
     done
     
     # Enable timers
     for timer in "${TIMER_SERVICES[@]}"; do
         sudo systemctl enable ${timer}.timer
+        log_info "✅ Enabled ${timer}.timer"
     done
     
     log_info "Systemd services installed and enabled"
@@ -1075,7 +1077,7 @@ start_services() {
         log_info "Starting $timer.timer"
         sudo systemctl start ${timer}.timer
     done
-    
+
     # Wait for services to start
     sleep 5
 
