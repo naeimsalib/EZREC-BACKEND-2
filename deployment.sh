@@ -326,7 +326,7 @@ install_cloudflared() {
     
     # Create tunnel configuration
     cat > ~/.cloudflared/config.yml << EOF
-tunnel: $TUNNEL_ID
+tunnel: 741e8a7e-5842-45ce-afdb-995618e5899b
 credentials-file: ~/.cloudflared/$TUNNEL_ID.json
 
 ingress:
@@ -1601,31 +1601,50 @@ except Exception as e:
 fix_cloudflare_tunnel() {
     log_info "🔧 Fixing Cloudflare tunnel configuration..."
     
-    # Create config directory
-    sudo mkdir -p /etc/cloudflared
+    # Stop any existing service
+    sudo systemctl stop cloudflared.service 2>/dev/null || true
     
-    # Create tunnel configuration
-    sudo tee /etc/cloudflared/config.yml > /dev/null << 'EOF'
-tunnel: 51c5f902-46cd-4821-ad63-b24861aa4bec
-credentials-file: /root/.cloudflared/51c5f902-46cd-4821-ad63-b24861aa4bec.json
+    # Create user config directory
+    sudo mkdir -p /home/michomanoly14892/.cloudflared
+    sudo chown michomanoly14892:michomanoly14892 /home/michomanoly14892/.cloudflared
+    
+    # Create proper user-based tunnel configuration
+    sudo -u michomanoly14892 tee /home/michomanoly14892/.cloudflared/config.yml > /dev/null << EOF
+tunnel: 741e8a7e-5842-45ce-afdb-995618e5899b
+credentials-file: /home/michomanoly14892/.cloudflared/741e8a7e-5842-45ce-afdb-995618e5899b.json
 
 ingress:
   - hostname: api.ezrec.org
     service: http://localhost:8000
+    originRequest:
+      noTLSVerify: true
   - service: http_status:404
 EOF
-
+    
     # Set proper permissions
-    sudo chmod 644 /etc/cloudflared/config.yml
+    sudo chmod 600 /home/michomanoly14892/.cloudflared/config.yml
+    sudo chown michomanoly14892:michomanoly14892 /home/michomanoly14892/.cloudflared/config.yml
     
-    # Check if credentials file exists
-    if [[ ! -f "/root/.cloudflared/51c5f902-46cd-4821-ad63-b24861aa4bec.json" ]]; then
-        log_warn "⚠️ Cloudflare tunnel credentials not found"
-        log_info "📋 You may need to run: sudo cloudflared tunnel login"
-    fi
+    # Create proper systemd service
+    sudo tee /etc/systemd/system/cloudflared.service > /dev/null << EOF
+[Unit]
+Description=Cloudflare Tunnel
+After=network.target
+
+[Service]
+User=michomanoly14892
+ExecStart=/usr/local/bin/cloudflared --config /home/michomanoly14892/.cloudflared/config.yml tunnel run ezrec-tunnel
+Restart=always
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
+EOF
     
-    # Restart service
-    sudo systemctl restart cloudflared.service
+    # Reload systemd and start service
+    sudo systemctl daemon-reload
+    sudo systemctl enable cloudflared.service
+    sudo systemctl start cloudflared.service
     
     # Wait for service to start
     sleep 5
@@ -1633,6 +1652,13 @@ EOF
     # Check service status
     if sudo systemctl is-active --quiet cloudflared.service; then
         log_info "✅ Cloudflare tunnel service is running"
+        
+        # Create DNS route
+        if sudo cloudflared tunnel route dns ezrec-tunnel api.ezrec.org 2>/dev/null; then
+            log_info "✅ DNS route created for api.ezrec.org"
+        else
+            log_info "ℹ️ DNS route may already exist"
+        fi
     else
         log_warn "⚠️ Cloudflare tunnel service failed to start"
         sudo systemctl status cloudflared.service --no-pager -l
