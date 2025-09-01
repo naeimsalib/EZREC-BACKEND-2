@@ -228,7 +228,7 @@ def post_bookings(bookings: Union[List[Booking], Booking]):
         
         # Add new bookings
         for booking in bookings_list:
-            booking_dict = booking.dict()
+            booking_dict = booking.model_dump()
             
             # Always use the correct camera ID from environment, not from request
             booking_dict['camera_id'] = CAMERA_ID
@@ -273,7 +273,7 @@ def update_booking(booking_id: str, updated_booking: Booking):
         updated = False
         for i, b in enumerate(bookings):
             if isinstance(b, dict) and b.get("id") == booking_id:
-                bookings[i] = updated_booking.dict()
+                bookings[i] = updated_booking.model_dump()
                 updated = True
                 break
         
@@ -336,7 +336,7 @@ def get_recordings():
 @app.post("/system")
 def update_system_settings(settings: SystemSettings):
     try:
-        SYSTEM_FILE.write_text(json.dumps(settings.dict(), indent=2))
+        SYSTEM_FILE.write_text(json.dumps(settings.model_dump(), indent=2))
         return {"status": "success", "settings": settings}
     except Exception as e:
         logger.error(f"Error updating system settings: {e}")
