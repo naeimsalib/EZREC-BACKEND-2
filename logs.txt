@@ -1,4 +1,4 @@
-# EZREC System Logs
+# EZREC System Logs - Fresh Start
 # This file contains system check output and deployment logs
 # Generated automatically by the deployment script
 
