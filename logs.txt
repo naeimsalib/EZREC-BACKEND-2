@@ -5,3 +5,11 @@
 # =============================================================================
 # SYSTEM CHECK OUTPUT
 # =============================================================================
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cat logs.txt 
+# EZREC System Logs - Fresh Start
+# This file contains system check output and deployment logs
+# Generated automatically by the deployment script
+
+# =============================================================================
+# SYSTEM CHECK OUTPUT
+# =============================================================================

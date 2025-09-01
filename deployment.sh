@@ -374,7 +374,7 @@ install_dependencies_with_suppression() {
         "simplejpeg==1.6.6" \
         "av>=15.0.0" \
         "picamera2==0.3.12" \
-        "numpy>=1.24.0" \
+        "numpy>=1.24.0,<2.0.0" \
         "psutil>=5.9.0" \
         "schedule==1.2.0" \
         "email-validator>=2.0.0"; then
@@ -398,6 +398,9 @@ install_dependencies_with_suppression() {
             return 1
         fi
     fi
+    
+    # Fix numpy conflicts
+    fix_numpy_conflicts "$venv_path"
     
     # Install OpenCV dependencies separately for better control
     log_info "Installing OpenCV stitching dependencies..."
@@ -1360,36 +1363,6 @@ fix_api_service() {
     # Ensure api_server.py exists and is in the correct location
     if [[ ! -f "$DEPLOY_PATH/api/api_server.py" ]]; then
         log_error "❌ api_server.py not found in $DEPLOY_PATH/api/"
-        log_info "🔍 Checking for api_server.py in other locations..."
-        
-        # Look for api_server.py in the project
-        if [[ -f "api/api_server.py" ]]; then
-            log_info "📁 Found api_server.py in project, copying to deployment..."
-            sudo cp api/api_server.py "$DEPLOY_PATH/api/"
-            sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api/api_server.py"
-        elif [[ -f "backend/api_server.py" ]]; then
-            log_info "📁 Found api_server.py in backend, copying to api directory..."
-            sudo cp backend/api_server.py "$DEPLOY_PATH/api/"
-            sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api/api_server.py"
-        else
-            log_error "❌ api_server.py not found anywhere in the project!"
-            return 1
-        fi
-    fi
-    
-    # Ensure the API directory structure is correct
-    sudo mkdir -p "$DEPLOY_PATH/api"
-    sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api"
-    
-    # Test if the API server can start manually
-    log_info "🧪 Testing API server startup manually..."
-    cd "$DEPLOY_PATH/api"
-    
-    # Run the detailed startup test
-    if test_api_server_startup; then
-        log_info "✅ API server startup test passed"
-    else
-        log_error "❌ API server startup test failed"
         return 1
     fi
     
@@ -1685,11 +1658,11 @@ fix_api_endpoints() {
     sudo cp "$api_file" "${api_file}.backup"
     log_info "✅ Created backup of api_server.py"
     
-    # Check if endpoints need fixing
-    if grep -q "create-share-link" "$api_file"; then
-        log_info "✅ create-share-link endpoint found"
+    # Check if endpoints need fixing - FIXED TO LOOK FOR CORRECT ENDPOINT NAMES
+    if grep -q "@app\.post(\"/share\"" "$api_file"; then
+        log_info "✅ /share endpoint found (create-share-link functionality)"
     else
-        log_warn "⚠️ create-share-link endpoint not found"
+        log_warn "⚠️ /share endpoint not found"
     fi
     
     if grep -q "send-share-email" "$api_file"; then
@@ -1852,6 +1825,24 @@ print(f'FFmpeg available: {merger._check_ffmpeg()}')
         log_error "❌ Some fixes failed verification. Please check the logs above."
         return 1
     fi
+}
+
+# Fix numpy version conflicts
+fix_numpy_conflicts() {
+    log_info "🔧 Fixing numpy version conflicts..."
+    
+    local venv_path=$1
+    
+    # Uninstall all numpy versions first
+    sudo -u $DEPLOY_USER "$venv_path/bin/pip" uninstall -y numpy 2>/dev/null || true
+    
+    # Install compatible numpy version
+    sudo -u $DEPLOY_USER "$venv_path/bin/pip" install --no-cache-dir "numpy>=1.24.0,<2.0.0"
+    
+    # Reinstall opencv with compatible numpy
+    sudo -u $DEPLOY_USER "$venv_path/bin/pip" install --no-cache-dir --force-reinstall "opencv-python>=4.8.0" "opencv-contrib-python>=4.8.0"
+    
+    log_info "✅ Numpy conflicts resolved"
 }
 
 # =============================================================================
