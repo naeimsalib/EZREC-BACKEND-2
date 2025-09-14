@@ -153,6 +153,14 @@ fix_port_conflicts_comprehensive() {
         fi
     done
     
+    # Strategy 4: Kill any Python processes that might be running our services
+    log_info "🧹 Killing any remaining Python service processes..."
+    sudo pkill -f "api_server.py" 2>/dev/null || true
+    sudo pkill -f "dual_recorder.py" 2>/dev/null || true
+    sudo pkill -f "video_worker.py" 2>/dev/null || true
+    sudo pkill -f "system_status.py" 2>/dev/null || true
+    sleep 2
+    
     # Wait for processes to fully terminate
     sleep 3
     
