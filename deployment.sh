@@ -380,25 +380,25 @@ replace_with_simple_recorder() {
     log_info "🔄 Replacing dual_recorder with simplified version..."
     
     # Backup original dual_recorder
-    if [[ -f "$DEPLOY_DIR/backend/dual_recorder.py" ]]; then
-        cp "$DEPLOY_DIR/backend/dual_recorder.py" "$DEPLOY_DIR/backend/dual_recorder.py.backup"
+    if [[ -f "$DEPLOY_PATH/backend/dual_recorder.py" ]]; then
+        cp "$DEPLOY_PATH/backend/dual_recorder.py" "$DEPLOY_PATH/backend/dual_recorder.py.backup"
         log_info "📁 Backed up original dual_recorder.py"
     fi
     
     # Copy simplified version
-    if [[ -f "$DEPLOY_DIR/backend/dual_recorder_simple.py" ]]; then
-        cp "$DEPLOY_DIR/backend/dual_recorder_simple.py" "$DEPLOY_DIR/backend/dual_recorder.py"
+    if [[ -f "$DEPLOY_PATH/backend/dual_recorder_simple.py" ]]; then
+        cp "$DEPLOY_PATH/backend/dual_recorder_simple.py" "$DEPLOY_PATH/backend/dual_recorder.py"
         log_info "✅ Replaced dual_recorder.py with simplified version"
     elif [[ -f "backend/dual_recorder_simple.py" ]]; then
-        cp "backend/dual_recorder_simple.py" "$DEPLOY_DIR/backend/dual_recorder.py"
+        cp "backend/dual_recorder_simple.py" "$DEPLOY_PATH/backend/dual_recorder.py"
         log_info "✅ Replaced dual_recorder.py with simplified version (from source)"
     else
         log_warn "⚠️ dual_recorder_simple.py not found, keeping original"
     fi
     
     # Make sure it's executable
-    if [[ -f "$DEPLOY_DIR/backend/dual_recorder.py" ]]; then
-        chmod +x "$DEPLOY_DIR/backend/dual_recorder.py"
+    if [[ -f "$DEPLOY_PATH/backend/dual_recorder.py" ]]; then
+        chmod +x "$DEPLOY_PATH/backend/dual_recorder.py"
         log_info "✅ Made dual_recorder.py executable"
     else
         log_warn "⚠️ dual_recorder.py not found for chmod"
