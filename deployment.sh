@@ -509,13 +509,30 @@ main() {
     verify_system_completely
     
     # 4. Final status report
+    log_info "⏳ Waiting for services to settle before final status check..."
+    sleep 5
     log_step "4. Final system status"
     
     echo -e "\n=== FINAL SYSTEM STATUS ==="
     for service in "${SERVICES[@]}"; do
-        if sudo systemctl is-active --quiet ${service}.service; then
-            echo "✅ $service.service: RUNNING"
-        else
+        local retry_count=0
+        local max_retries=2
+        local service_running=false
+        
+        while [[ $retry_count -lt $max_retries ]]; do
+            if sudo systemctl is-active --quiet ${service}.service; then
+                echo "✅ $service.service: RUNNING"
+                service_running=true
+                break
+            else
+                retry_count=$((retry_count + 1))
+                if [[ $retry_count -lt $max_retries ]]; then
+                    sleep 2
+                fi
+            fi
+        done
+        
+        if [[ "$service_running" == false ]]; then
             echo "❌ $service.service: NOT RUNNING"
         fi
     done
