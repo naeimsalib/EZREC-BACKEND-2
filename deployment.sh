@@ -376,8 +376,8 @@ fix_camera_initialization() {
 }
 
 # Replace dual_recorder with simplified version
-replace_with_simple_recorder() {
-    log_info "🔄 Replacing dual_recorder with simplified version..."
+replace_with_working_recorder() {
+    log_info "🔄 Replacing dual_recorder with working version..."
     
     # Backup original dual_recorder
     if [[ -f "$DEPLOY_PATH/backend/dual_recorder.py" ]]; then
@@ -385,15 +385,15 @@ replace_with_simple_recorder() {
         log_info "📁 Backed up original dual_recorder.py"
     fi
     
-    # Copy simplified version
-    if [[ -f "$DEPLOY_PATH/backend/dual_recorder_simple.py" ]]; then
-        cp "$DEPLOY_PATH/backend/dual_recorder_simple.py" "$DEPLOY_PATH/backend/dual_recorder.py"
-        log_info "✅ Replaced dual_recorder.py with simplified version"
-    elif [[ -f "backend/dual_recorder_simple.py" ]]; then
-        cp "backend/dual_recorder_simple.py" "$DEPLOY_PATH/backend/dual_recorder.py"
-        log_info "✅ Replaced dual_recorder.py with simplified version (from source)"
+    # Copy working version
+    if [[ -f "$DEPLOY_PATH/backend/dual_recorder_working.py" ]]; then
+        cp "$DEPLOY_PATH/backend/dual_recorder_working.py" "$DEPLOY_PATH/backend/dual_recorder.py"
+        log_info "✅ Replaced dual_recorder.py with working version"
+    elif [[ -f "backend/dual_recorder_working.py" ]]; then
+        cp "backend/dual_recorder_working.py" "$DEPLOY_PATH/backend/dual_recorder.py"
+        log_info "✅ Replaced dual_recorder.py with working version (from source)"
     else
-        log_warn "⚠️ dual_recorder_simple.py not found, keeping original"
+        log_warn "⚠️ dual_recorder_working.py not found, keeping original"
     fi
     
     # Make sure it's executable
@@ -681,8 +681,8 @@ main() {
     # Fix camera initialization issues
     fix_camera_initialization
     
-    # Replace dual_recorder with simplified version
-    replace_with_simple_recorder
+    # Replace dual_recorder with working version
+    replace_with_working_recorder
     
     # Ensure all required files and directories exist
     ensure_files_and_directories
