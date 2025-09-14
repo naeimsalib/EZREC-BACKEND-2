@@ -364,8 +364,13 @@ start_all_services_safely() {
             fi
         fi
         
-        # Wait between service starts
-        sleep 3
+        # Wait between service starts (longer for critical services)
+        if [[ "$service" == "dual_recorder" || "$service" == "video_worker" ]]; then
+            log_info "⏳ Waiting longer for $service to fully initialize..."
+            sleep 10
+        else
+            sleep 3
+        fi
     done
     
     # Start timers
@@ -388,13 +393,31 @@ verify_system_completely() {
     
     local all_checks_passed=true
     
-    # Check 1: All services are running
+    # Check 1: All services are running (with retry logic)
     log_info "🧪 Checking all services are running..."
     for service in "${SERVICES[@]}"; do
-        if sudo systemctl is-active --quiet ${service}.service; then
-            log_info "✅ $service.service is running"
-        else
-            log_error "❌ $service.service is not running"
+        local retry_count=0
+        local max_retries=3
+        local service_running=false
+        
+        while [[ $retry_count -lt $max_retries ]]; do
+            if sudo systemctl is-active --quiet ${service}.service; then
+                log_info "✅ $service.service is running"
+                service_running=true
+                break
+            else
+                retry_count=$((retry_count + 1))
+                if [[ $retry_count -lt $max_retries ]]; then
+                    log_info "⏳ $service.service not ready yet, retrying in 5s... (attempt $retry_count/$max_retries)"
+                    sleep 5
+                fi
+            fi
+        done
+        
+        if [[ "$service_running" == false ]]; then
+            log_error "❌ $service.service is not running after $max_retries attempts"
+            log_info "📋 Service status:"
+            sudo systemctl status ${service}.service --no-pager -l
             all_checks_passed=false
         fi
     done
@@ -476,6 +499,10 @@ main() {
     # 2. Start services safely
     log_step "2. Starting all services safely"
     start_all_services_safely
+    
+    # 2.5. Wait for all services to fully initialize
+    log_info "⏳ Waiting for all services to fully initialize..."
+    sleep 15
     
     # 3. Verify system completely
     log_step "3. Verifying system completely"
