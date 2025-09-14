@@ -91,4 +91,106 @@ sudo lsof -i :8000
 tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN      560999/python3      
 COMMAND    PID             USER   FD   TYPE  DEVICE SIZE/OFF NODE NAME
 python3 560999 michomanoly14892   13u  IPv4 3660995      0t0  TCP *:8000 (LISTEN)
-michomanoly14892@raspberrypi:/opt/ezrec-backend/api $ 
+michomanoly14892@raspberrypi:/opt/ezrec-backend/api $ [0;32m[17:01:58] Starting EZREC deployment as user: root[0m
+[0;34m[17:01:58] STEP: 1. Applying comprehensive system fixes[0m
+[0;32m[17:01:58] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
+[0;32m[17:01:58] 🛑 Stopping all EZREC services...[0m
+[0;32m[17:01:59] 🧹 Comprehensive port cleanup...[0m
+[0;32m[17:01:59] 🧹 Killing processes by name...[0m
+[0;32m[17:02:02] ✅ Port 8000 is now free[0m
+[0;32m[17:02:02] ✅ Port 9000 is now free[0m
+[0;32m[17:02:02] ✅ Comprehensive port conflict resolution completed[0m
+[0;32m[17:02:02] 🔧 Installing psutil in all virtual environments...[0m
+[0;32m[17:02:02] 📦 Installing psutil in backend virtual environment...[0m
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[0;32m[17:02:04] ✅ psutil installed successfully in backend venv[0m
+[0;32m[17:02:04] 📦 Installing psutil in API virtual environment...[0m
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[0;32m[17:02:05] ✅ psutil installed successfully in API venv[0m
+[0;32m[17:02:05] 🧪 Testing psutil imports...[0m
+✅ psutil imported successfully in backend
+[0;32m[17:02:05] ✅ psutil import test passed in backend[0m
+✅ psutil imported successfully in API
+[0;32m[17:02:05] ✅ psutil import test passed in API[0m
+[0;32m[17:02:05] ✅ psutil installed and tested successfully in all environments[0m
+[0;32m[17:02:05] 🔧 Ensuring all required files and directories exist...[0m
+[0;32m[17:02:05] 📁 Creating logs directory...[0m
+[0;32m[17:02:05] ✅ Logs directory created with proper permissions[0m
+[0;32m[17:02:05] 📄 Creating system_status.log file...[0m
+[0;32m[17:02:05] ✅ system_status.log file created with proper permissions[0m
+[0;32m[17:02:05] 📄 Copying system_status.py to deployment directory...[0m
+[0;32m[17:02:05] ✅ system_status.py copied with proper permissions[0m
+[0;32m[17:02:05] ✅ All required files and directories created with proper permissions[0m
+[0;32m[17:02:05] 🔧 Ensuring all services are properly enabled...[0m
+[0;32m[17:02:05] 🔧 Enabling dual_recorder.service for auto-start...[0m
+[0;32m[17:02:06] ✅ dual_recorder.service enabled successfully[0m
+[0;32m[17:02:06] 🔧 Enabling video_worker.service for auto-start...[0m
+[0;32m[17:02:06] ✅ video_worker.service enabled successfully[0m
+[0;32m[17:02:06] 🔧 Enabling ezrec-api.service for auto-start...[0m
+[0;32m[17:02:06] ✅ ezrec-api.service enabled successfully[0m
+[0;32m[17:02:06] 🔧 Enabling system_status.service for auto-start...[0m
+[0;32m[17:02:06] ✅ system_status.service enabled successfully[0m
+[0;32m[17:02:06] 🔧 Enabling system_status.timer for auto-start...[0m
+[0;32m[17:02:06] ✅ system_status.timer enabled successfully[0m
+[0;32m[17:02:06] 🔍 Verifying services are enabled...[0m
+[0;32m[17:02:06] ✅ dual_recorder.service is enabled[0m
+[0;32m[17:02:06] ✅ video_worker.service is enabled[0m
+[0;32m[17:02:06] ✅ ezrec-api.service is enabled[0m
+[0;32m[17:02:07] ✅ system_status.service is enabled[0m
+[0;32m[17:02:07] ✅ All services properly enabled for auto-start[0m
+[0;34m[17:02:07] STEP: 2. Starting all services safely[0m
+[0;32m[17:02:07] 🔧 Starting all services safely with port conflict prevention...[0m
+[0;32m[17:02:07] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
+[0;32m[17:02:07] 🛑 Stopping all EZREC services...[0m
+[0;32m[17:02:07] 🧹 Comprehensive port cleanup...[0m
+[0;32m[17:02:07] 🔍 Found processes on port 8000, killing them...[0m
+[0;32m[17:02:09] 🧹 Killing processes by name...[0m
+[0;32m[17:02:12] ✅ Port 8000 is now free[0m
+[0;32m[17:02:12] ✅ Port 9000 is now free[0m
+[0;32m[17:02:12] ✅ Comprehensive port conflict resolution completed[0m
+[0;32m[17:02:12] 🚀 Starting ezrec-api.service...[0m
+[0;32m[17:02:12] 🔧 Special handling for API service...[0m
+[0;32m[17:02:12] ✅ ezrec-api.service started successfully[0m
+[0;32m[17:02:12] ⏳ Waiting for API service to be ready...[0m
+[0;32m[17:02:22] ✅ API service is responding[0m
+[0;32m[17:02:25] 🚀 Starting dual_recorder.service...[0m
+[0;32m[17:02:25] ✅ dual_recorder.service started successfully[0m
+[0;32m[17:02:25] ⏳ Waiting longer for dual_recorder to fully initialize...[0m
+[0;32m[17:02:35] 🚀 Starting video_worker.service...[0m
+[0;32m[17:02:35] ✅ video_worker.service started successfully[0m
+[0;32m[17:02:35] ⏳ Waiting longer for video_worker to fully initialize...[0m
+[0;32m[17:02:45] 🚀 Starting system_status.service...[0m
+[0;32m[17:02:45] 🔧 Special handling for system_status service...[0m
+[0;32m[17:02:45] ✅ system_status.log file exists and is writable[0m
+[0;32m[17:02:48] ✅ system_status.service started successfully[0m
+[0;32m[17:02:51] 🚀 Starting system_status.timer...[0m
+[0;32m[17:02:51] ✅ system_status.timer started successfully[0m
+[0;32m[17:02:51] ✅ All services started safely[0m
+[0;32m[17:02:51] ⏳ Waiting for all services to fully initialize...[0m
+[0;34m[17:03:06] STEP: 3. Verifying system completely[0m
+[0;32m[17:03:06] 🔍 Performing comprehensive system verification...[0m
+[0;32m[17:03:06] 🧪 Checking all services are running...[0m
+[0;32m[17:03:06] ✅ dual_recorder.service is running[0m
+[0;32m[17:03:06] ⏳ video_worker.service not ready yet, retrying in 5s... (attempt 1/3)[0m
+[0;32m[17:03:11] ⏳ video_worker.service not ready yet, retrying in 5s... (attempt 2/3)[0m
+[0;32m[17:03:16] ✅ video_worker.service is running[0m
+[0;32m[17:03:16] ⏳ ezrec-api.service not ready yet, retrying in 5s... (attempt 1/3)[0m
+[0;32m[17:03:21] ⏳ ezrec-api.service not ready yet, retrying in 5s... (attempt 2/3)[0m
+[0;31m[17:03:26] ERROR: ❌ ezrec-api.service is not running after 3 attempts[0m
+[0;32m[17:03:26] 📋 Service status:[0m
+● ezrec-api.service - EZREC FastAPI Backend
+     Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
+     Active: activating (auto-restart) (Result: exit-code) since Sun 2025-09-14 17:03:24 EDT; 1s ago
+    Process: 565301 ExecStart=/opt/ezrec-backend/api/venv/bin/uvicorn api_server:app --host 0.0.0.0 --port 8000 (code=exited, status=1/FAILURE)
+   Main PID: 565301 (code=exited, status=1/FAILURE)
+        CPU: 1.516s
+
+Sep 14 17:03:24 raspberrypi systemd[1]: ezrec-api.service: Consumed 1.516s CPU time.
