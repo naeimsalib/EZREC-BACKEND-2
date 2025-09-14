@@ -341,6 +341,40 @@ copy_project_files() {
     log_info "✅ All project files copied successfully"
 }
 
+# Fix camera initialization issues
+fix_camera_initialization() {
+    log_info "🔧 Fixing camera initialization issues..."
+    
+    # Check if cameras are accessible
+    log_info "📷 Checking camera accessibility..."
+    if command_exists libcamera-hello; then
+        log_info "📷 Testing camera access with libcamera-hello..."
+        timeout 10 libcamera-hello --list-cameras 2>/dev/null || log_warn "⚠️ Camera access test failed"
+    fi
+    
+    # Ensure camera permissions
+    log_info "🔐 Ensuring camera permissions..."
+    sudo usermod -a -G video $DEPLOY_USER 2>/dev/null || true
+    sudo usermod -a -G render $DEPLOY_USER 2>/dev/null || true
+    
+    # Check camera device files
+    if [[ -e /dev/video0 ]]; then
+        log_info "✅ Camera device /dev/video0 found"
+        sudo chmod 666 /dev/video0 2>/dev/null || true
+    else
+        log_warn "⚠️ Camera device /dev/video0 not found"
+    fi
+    
+    if [[ -e /dev/video1 ]]; then
+        log_info "✅ Camera device /dev/video1 found"
+        sudo chmod 666 /dev/video1 2>/dev/null || true
+    else
+        log_warn "⚠️ Camera device /dev/video1 not found"
+    fi
+    
+    log_info "✅ Camera initialization fixes applied"
+}
+
 # Handle service restart issues and ensure clean startup
 handle_service_restart_issues() {
     log_info "🔧 Handling service restart issues..."
@@ -611,6 +645,9 @@ main() {
     
     # Copy all project files to deployment directory
     copy_project_files
+    
+    # Fix camera initialization issues
+    fix_camera_initialization
     
     # Ensure all required files and directories exist
     ensure_files_and_directories

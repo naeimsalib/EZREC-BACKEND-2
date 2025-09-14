@@ -384,9 +384,12 @@ class CameraRecorder:
                         "ExposureTime": 33333,
                         "AnalogueGain": 1.0,
                         "NoiseReductionMode": 0
-                    },
-                    transform=libcamera.Transform(hflip=False, vflip=False, rotation=CAMERA_ROTATION)  # Configurable rotation
+                    }
                 )
+                
+                # Apply rotation if needed (using controls instead of transform)
+                if CAMERA_ROTATION != 0:
+                    config["controls"]["Rotation"] = CAMERA_ROTATION
                 
                 self.picamera2.configure(config)
                 self.picamera2.start()
