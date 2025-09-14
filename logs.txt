@@ -164,3 +164,286 @@ Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,232 - WARNING -
 Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,233 - INFO - 📷 Available cameras: []
 Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,233 - ERROR - ❌ No cameras available
 Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,233 - ERROR - ❌ Failed to start recording
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # 1. Pull the latest changes
+git pull origin main
+
+# 2. Run the deployment script
+sudo ./deployment.sh
+
+# 3. Create a fresh booking
+python3 -c "
+import json
+import time
+from datetime import datetime, timedelta
+import pytz
+
+now = datetime.now(pytz.timezone('America/New_York'))
+start_time = now
+end_time = now + timedelta(minutes=10)
+
+test_booking = {
+    'id': f'test-booking-{int(time.time())}',
+    'user_id': 'test-user-123',
+    'start_time': start_time.isoformat(),
+    'end_time': end_time.isoformat(),
+    'date': now.strftime('%Y-%m-%d'),
+    'camera_id': 'test-camera-456',
+    'recording_id': f'rec-{int(time.time())}',
+    'status': None,
+    'email': None,
+    'created_at': now.isoformat(),
+    'updated_at': now.isoformat()
+}
+
+with open('/opt/ezrec-backend/api/local_data/bookings.json', 'w') as f:
+    json.dump([test_booking], f, indent=2)
+
+print(f'✅ New booking created: {test_booking[\"id\"]}')
+"
+
+# 4. Monitor the logs
+sudo journalctl -u dual_recorder.service -f
+remote: Enumerating objects: 10, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 6 (delta 3), reused 6 (delta 3), pack-reused 0 (from 0)
+Unpacking objects: 100% (6/6), 5.28 KiB | 1.76 MiB/s, done.
+From https://github.com/naeimsalib/EZREC-BACKEND-2
+ * branch            main       -> FETCH_HEAD
+   aa9be0b..01038bc  main       -> origin/main
+Updating aa9be0b..01038bc
+error: Your local changes to the following files would be overwritten by merge:
+        logs.txt
+Please commit your changes or stash them before you merge.
+Aborting
+[19:10:23] Starting EZREC deployment as user: root
+[19:10:23] STEP: 1. Applying comprehensive system fixes
+[19:10:23] 🔧 Fixing port conflicts with comprehensive cleanup...
+[19:10:23] 🛑 Stopping all EZREC services...
+[19:10:24] 🧹 Comprehensive port cleanup...
+[19:10:24] 🧹 Killing processes by name...
+[19:10:24] 🧹 Killing any remaining Python service processes...
+[19:10:26] 🧹 Force killing any remaining processes on ports 8000 and 9000...
+[19:10:29] ✅ Port 8000 is now free
+[19:10:29] ✅ Port 9000 is now free
+[19:10:29] ✅ Comprehensive port conflict resolution completed
+[19:10:29] 🔧 Installing psutil in all virtual environments...
+[19:10:29] 📦 Installing psutil in backend virtual environment...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[19:10:31] ✅ psutil installed successfully in backend venv
+[19:10:31] 📦 Installing psutil in API virtual environment...
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[19:10:32] ✅ psutil installed successfully in API venv
+[19:10:32] 🧪 Testing psutil imports...
+✅ psutil imported successfully in backend
+[19:10:32] ✅ psutil import test passed in backend
+✅ psutil imported successfully in API
+[19:10:32] ✅ psutil import test passed in API
+[19:10:32] ✅ psutil installed and tested successfully in all environments
+[19:10:32] 📁 Copying all project files to deployment directory...
+[19:10:33] 📄 Copying backend files...
+[19:10:33] ✅ Backend files copied successfully
+[19:10:33] 📄 Copying API files...
+[19:10:33] ✅ API files copied successfully
+[19:10:33] 📄 Copying systemd service files...
+[19:10:33] ✅ Systemd service files copied and reloaded
+[19:10:33] WARNING: ⚠️ No .env file found - you may need to create one manually
+[19:10:33] ✅ All project files copied successfully
+[19:10:33] 🔧 Fixing camera initialization issues...
+[19:10:33] 📷 Checking camera accessibility...
+[19:10:33] 🔐 Ensuring camera permissions...
+[19:10:33] ✅ Camera device /dev/video0 found
+[19:10:33] ✅ Camera device /dev/video1 found
+[19:10:33] ✅ Camera initialization fixes applied
+[19:10:33] 🔄 Replacing dual_recorder with simplified version...
+[19:10:33] 📁 Backed up original dual_recorder.py
+[19:10:33] ✅ Replaced dual_recorder.py with simplified version
+[19:10:33] ✅ Made dual_recorder.py executable
+[19:10:33] ✅ Dual recorder replacement completed
+[19:10:33] 🔧 Ensuring all required files and directories exist...
+[19:10:33] 📁 Creating logs directory...
+[19:10:33] ✅ Logs directory created with proper permissions
+[19:10:33] 📄 Creating system_status.log file...
+[19:10:33] ✅ system_status.log file created with proper permissions
+[19:10:33] 📄 Copying system_status.py to deployment directory...
+[19:10:33] ✅ system_status.py copied with proper permissions
+[19:10:33] 📄 Creating all required log files...
+[19:10:33] ✅ Fixed permissions for existing video_worker.log
+[19:10:33] ✅ Fixed permissions for existing dual_recorder.log
+[19:10:33] ✅ Fixed permissions for existing api_server.log
+[19:10:33] ✅ Fixed permissions for existing health_check.log
+[19:10:33] ✅ Fixed permissions for existing service_monitor.log
+[19:10:33] ✅ All required files and directories created with proper permissions
+[19:10:33] 🔧 Handling service restart issues...
+[19:10:33] 🛑 Stopping all services to break restart loops...
+[19:10:38] 🧹 Killing any remaining service processes...
+[19:10:41] ✅ Service restart issues handled
+[19:10:41] 🔧 Ensuring all services are properly enabled...
+[19:10:41] 🔧 Enabling dual_recorder.service for auto-start...
+[19:10:42] ✅ dual_recorder.service enabled successfully
+[19:10:42] 🔧 Enabling video_worker.service for auto-start...
+[19:10:42] ✅ video_worker.service enabled successfully
+[19:10:42] 🔧 Enabling ezrec-api.service for auto-start...
+[19:10:42] ✅ ezrec-api.service enabled successfully
+[19:10:42] 🔧 Enabling system_status.service for auto-start...
+[19:10:42] ✅ system_status.service enabled successfully
+[19:10:42] 🔧 Enabling system_status.timer for auto-start...
+[19:10:42] ✅ system_status.timer enabled successfully
+[19:10:42] 🔍 Verifying services are enabled...
+[19:10:42] ✅ dual_recorder.service is enabled
+[19:10:42] ✅ video_worker.service is enabled
+[19:10:42] ✅ ezrec-api.service is enabled
+[19:10:42] ✅ system_status.service is enabled
+[19:10:42] ✅ All services properly enabled for auto-start
+[19:10:42] STEP: 2. Starting all services safely
+[19:10:42] 🔧 Starting all services safely with port conflict prevention...
+[19:10:42] 🔧 Fixing port conflicts with comprehensive cleanup...
+[19:10:42] 🛑 Stopping all EZREC services...
+[19:10:43] 🧹 Comprehensive port cleanup...
+[19:10:43] 🧹 Killing processes by name...
+[19:10:43] 🧹 Killing any remaining Python service processes...
+[19:10:45] 🧹 Force killing any remaining processes on ports 8000 and 9000...
+[19:10:48] ✅ Port 8000 is now free
+[19:10:48] ✅ Port 9000 is now free
+[19:10:48] ✅ Comprehensive port conflict resolution completed
+[19:10:48] 🚀 Starting ezrec-api.service...
+[19:10:48] 🔧 Special handling for API service...
+[19:10:48] ✅ ezrec-api.service started successfully
+[19:10:48] ⏳ Waiting for API service to be ready...
+[19:10:58] ✅ API service is responding
+[19:11:01] 🚀 Starting dual_recorder.service...
+[19:11:01] ✅ dual_recorder.service started successfully
+[19:11:01] ⏳ Waiting longer for dual_recorder to fully initialize...
+[19:11:11] 🚀 Starting video_worker.service...
+[19:11:11] ✅ video_worker.service started successfully
+[19:11:11] ⏳ Waiting longer for video_worker to fully initialize...
+[19:11:21] 🚀 Starting system_status.service...
+[19:11:21] 🔧 Special handling for system_status service...
+[19:11:21] ✅ system_status.log file exists and is writable
+[19:11:24] ✅ system_status.service started successfully
+[19:11:27] 🚀 Starting system_status.timer...
+[19:11:27] ✅ system_status.timer started successfully
+[19:11:27] ✅ All services started safely
+[19:11:27] ⏳ Waiting for all services to fully initialize...
+[19:11:42] STEP: 3. Verifying system completely
+[19:11:42] 🔍 Performing comprehensive system verification...
+[19:11:42] 🧪 Checking all services are running...
+[19:11:42] ✅ dual_recorder.service is running
+[19:11:42] ✅ video_worker.service is running
+[19:11:42] ✅ ezrec-api.service is running
+[19:11:42] ✅ system_status.service is running
+[19:11:42] 🧪 Testing API endpoints...
+[19:11:42] ✅ API /test-alive endpoint is responding
+[19:11:42] ✅ API /status endpoint is responding
+[19:11:42] 🧪 Testing Python imports...
+✅ Backend imports working
+[19:11:42] ✅ Backend Python imports are working
+✅ API imports working
+[19:11:42] ✅ API Python imports are working
+[19:11:42] 🧪 Testing Cloudflare tunnel...
+[19:11:42] ✅ Cloudflare tunnel is running
+[19:11:42] 🎉 All system verification checks passed!
+[19:11:42] ⏳ Waiting for services to settle before final status check...
+[19:11:47] STEP: 4. Final system status
+
+=== FINAL SYSTEM STATUS ===
+✅ dual_recorder.service: RUNNING
+✅ video_worker.service: RUNNING
+✅ ezrec-api.service: RUNNING
+✅ system_status.service: RUNNING
+✅ cloudflared.service: RUNNING
+✅ External API: ACCESSIBLE
+[19:11:48] 🎉 Deployment completed successfully!
+[19:11:48] ✅ All services are running and responding correctly
+[19:11:48] ✅ External API is accessible via Cloudflare tunnel
+[19:11:48] ✅ System is ready for frontend testing
+✅ New booking created: test-booking-1757891508
+Sep 14 19:11:47 raspberrypi python3[585473]: [103:00:44.839282597] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - INFO - Initialization successful.
+Sep 14 19:11:47 raspberrypi python3[585473]: [103:00:44.839675264] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - INFO - 📷 Available cameras: []
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - ❌ No cameras available
+Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - ❌ Failed to start recording
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:11:52.898331-04:00
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🔍 Booking test-booking-1757891508: 2025-09-14 19:11:48.133649-04:00 - 2025-09-14 19:21:48.133649-04:00
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO -    Now: 2025-09-14 19:11:52.898331-04:00
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🎯 Active booking found: test-booking-1757891508
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🎬 Starting recording for booking: test-booking-1757891508
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🎬 Starting recording session for booking: test-booking-1757891508
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🔍 Detecting cameras...
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,899 - INFO - Camera closed successfully.
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,923 - INFO - Camera closed successfully.
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,924 - INFO - Initialization successful.
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,924 - INFO - Camera now open.
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,925 - WARNING - ⚠️ Camera 0 not available: 0
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,925 - INFO - Initialization successful.
+Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,925 - INFO - Camera now open.
+Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,125 - INFO - Camera closed successfully.
+Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - INFO - ✅ Camera 1 detected
+Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - INFO - 📷 Available cameras: [1]
+Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - ERROR - ❌ No cameras started recording successfully
+Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - ERROR - ❌ Failed to start recording
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:11:58.126564-04:00
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🔍 Booking test-booking-1757891508: 2025-09-14 19:11:48.133649-04:00 - 2025-09-14 19:21:48.133649-04:00
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO -    Now: 2025-09-14 19:11:58.126564-04:00
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🎯 Active booking found: test-booking-1757891508
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🎬 Starting recording for booking: test-booking-1757891508
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🎬 Starting recording session for booking: test-booking-1757891508
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🔍 Detecting cameras...
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,127 - INFO - Initialization successful.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,128 - INFO - Camera now open.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,327 - INFO - Camera closed successfully.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,327 - INFO - ✅ Camera 0 detected
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,328 - INFO - Initialization successful.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,329 - INFO - Camera now open.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,528 - INFO - Camera closed successfully.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - ✅ Camera 1 detected
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - 📷 Available cameras: [0, 1]
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - 🔧 Initializing left camera (index 0)
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - Initialization successful.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - Camera now open.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - INFO - 📷 Using default config for left: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - ERROR - ❌ left camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - ERROR - ❌ Camera 0 initialization failed
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - INFO - 🔧 Initializing right camera (index 1)
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - INFO - Initialization successful.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,532 - INFO - Camera now open.
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - INFO - 📷 Using default config for right: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ right camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ Camera 1 initialization failed
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ No cameras started recording successfully
+Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ Failed to start recording
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,533 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:12:03.533954-04:00
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🔍 Booking test-booking-1757891508: 2025-09-14 19:11:48.133649-04:00 - 2025-09-14 19:21:48.133649-04:00
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO -    Now: 2025-09-14 19:12:03.533954-04:00
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🎯 Active booking found: test-booking-1757891508
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🎬 Starting recording for booking: test-booking-1757891508
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🎬 Starting recording session for booking: test-booking-1757891508
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🔍 Detecting cameras...
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - INFO - Initialization successful.
+Sep 14 19:12:03 raspberrypi python3[585473]: [103:01:00.477106894] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - INFO - Initialization successful.
+Sep 14 19:12:03 raspberrypi python3[585473]: [103:01:00.477777118] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - INFO - 📷 Available cameras: []
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - ERROR - ❌ No cameras available
+Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - ERROR - ❌ Failed to start recording
