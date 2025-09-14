@@ -282,6 +282,65 @@ ensure_files_and_directories() {
     log_info "✅ All required files and directories created with proper permissions"
 }
 
+# Copy all project files to deployment directory
+copy_project_files() {
+    log_info "📁 Copying all project files to deployment directory..."
+    
+    # Create deployment directory structure
+    sudo mkdir -p "$DEPLOY_PATH/backend"
+    sudo mkdir -p "$DEPLOY_PATH/api"
+    sudo mkdir -p "$DEPLOY_PATH/systemd"
+    
+    # Copy backend files
+    log_info "📄 Copying backend files..."
+    if [[ -d "backend" ]]; then
+        sudo cp -r backend/* "$DEPLOY_PATH/backend/"
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend"
+        sudo chmod -R 755 "$DEPLOY_PATH/backend"
+        log_info "✅ Backend files copied successfully"
+    else
+        log_error "❌ Backend directory not found"
+        return 1
+    fi
+    
+    # Copy API files
+    log_info "📄 Copying API files..."
+    if [[ -d "api" ]]; then
+        sudo cp -r api/* "$DEPLOY_PATH/api/"
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/api"
+        sudo chmod -R 755 "$DEPLOY_PATH/api"
+        log_info "✅ API files copied successfully"
+    else
+        log_error "❌ API directory not found"
+        return 1
+    fi
+    
+    # Copy systemd service files
+    log_info "📄 Copying systemd service files..."
+    if [[ -d "systemd" ]]; then
+        sudo cp systemd/*.service /etc/systemd/system/
+        sudo cp systemd/*.timer /etc/systemd/system/ 2>/dev/null || true
+        sudo systemctl daemon-reload
+        log_info "✅ Systemd service files copied and reloaded"
+    else
+        log_error "❌ Systemd directory not found"
+        return 1
+    fi
+    
+    # Copy environment file if it exists
+    if [[ -f ".env" ]]; then
+        log_info "📄 Copying environment file..."
+        sudo cp .env "$DEPLOY_PATH/.env"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/.env"
+        sudo chmod 600 "$DEPLOY_PATH/.env"
+        log_info "✅ Environment file copied"
+    else
+        log_warn "⚠️ No .env file found - you may need to create one manually"
+    fi
+    
+    log_info "✅ All project files copied successfully"
+}
+
 # Handle service restart issues and ensure clean startup
 handle_service_restart_issues() {
     log_info "🔧 Handling service restart issues..."
@@ -549,6 +608,9 @@ main() {
     
     # Install psutil everywhere
     install_psutil_everywhere
+    
+    # Copy all project files to deployment directory
+    copy_project_files
     
     # Ensure all required files and directories exist
     ensure_files_and_directories
