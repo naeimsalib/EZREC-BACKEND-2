@@ -239,40 +239,94 @@ class SimpleDualRecorder:
         """Check if currently recording"""
         return self.recording
 
-def main():
-    """Main function for testing"""
-    logger.info("🎥 Simple Dual Recorder Test")
+def load_bookings():
+    """Load bookings from the bookings file"""
+    try:
+        if BOOKINGS_FILE.exists():
+            import json
+            with open(BOOKINGS_FILE, 'r') as f:
+                bookings = json.load(f)
+            logger.info(f"📋 Loaded {len(bookings)} bookings from cache")
+            return bookings
+        else:
+            logger.warning("⚠️ No bookings file found")
+            return []
+    except Exception as e:
+        logger.error(f"❌ Failed to load bookings: {e}")
+        return []
+
+def find_active_booking(bookings):
+    """Find an active booking that should be recording now"""
+    from datetime import datetime
+    import pytz
     
-    # Create test booking
-    test_booking = {
-        "id": "test-booking-123",
-        "user_id": "test-user-456",
-        "camera_id": "test-camera-789"
-    }
+    now = datetime.now(pytz.timezone('America/New_York'))
+    logger.info(f"🔍 Checking {len(bookings)} bookings at {now}")
+    
+    for booking in bookings:
+        try:
+            start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
+            end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
+            
+            # Convert to local timezone
+            start_time = start_time.astimezone(pytz.timezone('America/New_York'))
+            end_time = end_time.astimezone(pytz.timezone('America/New_York'))
+            
+            logger.info(f"🔍 Booking {booking['id']}: {start_time} - {end_time}")
+            logger.info(f"   Now: {now}")
+            
+            if start_time <= now <= end_time:
+                logger.info(f"🎯 Active booking found: {booking['id']}")
+                return booking
+                
+        except Exception as e:
+            logger.error(f"❌ Error processing booking {booking.get('id', 'unknown')}: {e}")
+    
+    logger.info("❌ No active booking found")
+    return None
+
+def main():
+    """Main service function - runs continuously"""
+    logger.info("🎥 Simple Dual Recorder Service Starting")
     
     # Create recorder
     recorder = SimpleDualRecorder()
+    current_booking = None
     
     try:
-        # Start recording
-        if recorder.start_recording_session(test_booking):
-            logger.info("✅ Recording started successfully")
+        while True:
+            # Load bookings
+            bookings = load_bookings()
             
-            # Record for 10 seconds
-            time.sleep(10)
+            # Find active booking
+            active_booking = find_active_booking(bookings)
             
-            # Stop recording
-            recorder.stop_recording_session()
-            logger.info("✅ Recording completed successfully")
-        else:
-            logger.error("❌ Recording failed to start")
+            if active_booking and not recorder.is_recording():
+                # Start recording for active booking
+                logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
+                if recorder.start_recording_session(active_booking):
+                    current_booking = active_booking
+                    logger.info("✅ Recording started successfully")
+                else:
+                    logger.error("❌ Failed to start recording")
+            
+            elif not active_booking and recorder.is_recording():
+                # Stop recording if no active booking
+                logger.info("🛑 No active booking, stopping recording")
+                recorder.stop_recording_session()
+                current_booking = None
+            
+            # Wait before checking again
+            time.sleep(5)
             
     except KeyboardInterrupt:
-        logger.info("🛑 Recording interrupted by user")
-        recorder.stop_recording_session()
+        logger.info("🛑 Service interrupted by user")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
     except Exception as e:
-        logger.error(f"❌ Recording failed: {e}")
-        recorder.stop_recording_session()
+        logger.error(f"❌ Service error: {e}")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
 
 if __name__ == "__main__":
     main()
