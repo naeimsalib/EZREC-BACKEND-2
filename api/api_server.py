@@ -226,8 +226,11 @@ def post_bookings(bookings: Union[List[Booking], Booking]):
                 # Handle both array and object formats
                 if isinstance(data, dict) and "bookings" in data:
                     existing_bookings = data["bookings"]
-                else:
+                elif isinstance(data, list):
                     existing_bookings = data
+                else:
+                    # If data is a dict but not the expected format, start fresh
+                    existing_bookings = []
         else:
             existing_bookings = []
         
@@ -1058,8 +1061,11 @@ def delete_user_data(user_id: str = Query(...)):
                 # Handle both array and object formats
                 if isinstance(data, dict) and "bookings" in data:
                     existing_bookings = data["bookings"]
-                else:
+                elif isinstance(data, list):
                     existing_bookings = data
+                else:
+                    # If data is a dict but not the expected format, start fresh
+                    existing_bookings = []
         else:
             existing_bookings = []
         
