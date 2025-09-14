@@ -375,6 +375,30 @@ fix_camera_initialization() {
     log_info "✅ Camera initialization fixes applied"
 }
 
+# Replace dual_recorder with simplified version
+replace_with_simple_recorder() {
+    log_info "🔄 Replacing dual_recorder with simplified version..."
+    
+    # Backup original dual_recorder
+    if [[ -f "$DEPLOY_DIR/backend/dual_recorder.py" ]]; then
+        cp "$DEPLOY_DIR/backend/dual_recorder.py" "$DEPLOY_DIR/backend/dual_recorder.py.backup"
+        log_info "📁 Backed up original dual_recorder.py"
+    fi
+    
+    # Copy simplified version
+    if [[ -f "$DEPLOY_DIR/backend/dual_recorder_simple.py" ]]; then
+        cp "$DEPLOY_DIR/backend/dual_recorder_simple.py" "$DEPLOY_DIR/backend/dual_recorder.py"
+        log_info "✅ Replaced dual_recorder.py with simplified version"
+    else
+        log_warn "⚠️ dual_recorder_simple.py not found, keeping original"
+    fi
+    
+    # Make sure it's executable
+    chmod +x "$DEPLOY_DIR/backend/dual_recorder.py"
+    
+    log_info "✅ Dual recorder replacement completed"
+}
+
 # Handle service restart issues and ensure clean startup
 handle_service_restart_issues() {
     log_info "🔧 Handling service restart issues..."
@@ -648,6 +672,9 @@ main() {
     
     # Fix camera initialization issues
     fix_camera_initialization
+    
+    # Replace dual_recorder with simplified version
+    replace_with_simple_recorder
     
     # Ensure all required files and directories exist
     ensure_files_and_directories
