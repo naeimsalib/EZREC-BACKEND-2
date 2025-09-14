@@ -161,6 +161,16 @@ fix_port_conflicts_comprehensive() {
     sudo pkill -f "system_status.py" 2>/dev/null || true
     sleep 2
     
+    # Strategy 5: Force kill any remaining processes on our ports
+    log_info "🧹 Force killing any remaining processes on ports 8000 and 9000..."
+    for port in 8000 9000; do
+        if lsof -i :$port >/dev/null 2>&1; then
+            log_info "🔍 Force killing processes on port $port..."
+            sudo lsof -ti :$port | xargs -r sudo kill -9 2>/dev/null || true
+            sleep 1
+        fi
+    done
+    
     # Wait for processes to fully terminate
     sleep 3
     
@@ -253,17 +263,50 @@ ensure_files_and_directories() {
         return 1
     fi
     
-    # Create other required log files
-    for log_file in "video_worker.log" "dual_recorder.log" "api_server.log"; do
+    # Create all required log files with proper permissions
+    log_info "📄 Creating all required log files..."
+    for log_file in "video_worker.log" "dual_recorder.log" "api_server.log" "health_check.log" "service_monitor.log"; do
         if [[ ! -f "$DEPLOY_PATH/logs/$log_file" ]]; then
             sudo touch "$DEPLOY_PATH/logs/$log_file"
             sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/logs/$log_file"
             sudo chmod 644 "$DEPLOY_PATH/logs/$log_file"
             log_info "✅ Created $log_file with proper permissions"
+        else
+            # Ensure existing log files have correct permissions
+            sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/logs/$log_file"
+            sudo chmod 644 "$DEPLOY_PATH/logs/$log_file"
+            log_info "✅ Fixed permissions for existing $log_file"
         fi
     done
     
     log_info "✅ All required files and directories created with proper permissions"
+}
+
+# Handle service restart issues and ensure clean startup
+handle_service_restart_issues() {
+    log_info "🔧 Handling service restart issues..."
+    
+    # Stop all services to break any restart loops
+    log_info "🛑 Stopping all services to break restart loops..."
+    sudo systemctl stop ezrec-api.service 2>/dev/null || true
+    sudo systemctl stop dual_recorder.service 2>/dev/null || true
+    sudo systemctl stop video_worker.service 2>/dev/null || true
+    sudo systemctl stop system_status.service 2>/dev/null || true
+    
+    # Wait for services to fully stop
+    sleep 5
+    
+    # Kill any remaining processes
+    log_info "🧹 Killing any remaining service processes..."
+    sudo pkill -f "api_server" 2>/dev/null || true
+    sudo pkill -f "dual_recorder" 2>/dev/null || true
+    sudo pkill -f "video_worker" 2>/dev/null || true
+    sudo pkill -f "system_status" 2>/dev/null || true
+    
+    # Wait for processes to terminate
+    sleep 3
+    
+    log_info "✅ Service restart issues handled"
 }
 
 # Ensure all services are properly enabled and configured
@@ -509,6 +552,9 @@ main() {
     
     # Ensure all required files and directories exist
     ensure_files_and_directories
+    
+    # Handle service restart issues
+    handle_service_restart_issues
     
     # Enable all services
     ensure_services_enabled
