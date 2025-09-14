@@ -333,26 +333,26 @@ class EnhancedVideoMerger:
             
             if self.enable_distortion_correction:
                 filter_complex = (
-                    f"[0:v]{pref}[left];"
-                    f"[1:v]{pref}[right];"
-                    f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
-                    f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
-                    f"[right]crop={blend_width}:ih:0:0[right_overlap];"
-                    f"[right]crop=iw-{blend_width}:ih:{blend_width}:0[right_main];"
-                    f"[left_overlap][right_overlap]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
-                    f"[left_main][blended][right_main]hstack=inputs=3[merged];"
+                    f"[0:v]{pref}[rotated0];"
+                    f"[1:v]{pref}[rotated1];"
+                    f"[rotated0]crop=iw-{blend_width}:ih:0:0[main0];"
+                    f"[rotated0]crop={blend_width}:ih:iw-{blend_width}:0[overlap0];"
+                    f"[rotated1]crop={blend_width}:ih:0:0[overlap1];"
+                    f"[rotated1]crop=iw-{blend_width}:ih:{blend_width}:0[main1];"
+                    f"[overlap0][overlap1]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
+                    f"[main0][blended][main1]hstack=inputs=3[merged];"
                     f"[merged]lenscorrection={lens_correction}[v]"
                 )
             else:
                 filter_complex = (
-                    f"[0:v]{pref}[left];"
-                    f"[1:v]{pref}[right];"
-                    f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
-                    f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
-                    f"[right]crop={blend_width}:ih:0:0[right_overlap];"
-                    f"[right]crop=iw-{blend_width}:ih:{blend_width}:0[right_main];"
-                    f"[left_overlap][right_overlap]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
-                    f"[left_main][blended][right_main]hstack=inputs=3[out];"
+                    f"[0:v]{pref}[rotated0];"
+                    f"[1:v]{pref}[rotated1];"
+                    f"[rotated0]crop=iw-{blend_width}:ih:0:0[main0];"
+                    f"[rotated0]crop={blend_width}:ih:iw-{blend_width}:0[overlap0];"
+                    f"[rotated1]crop={blend_width}:ih:0:0[overlap1];"
+                    f"[rotated1]crop=iw-{blend_width}:ih:{blend_width}:0[main1];"
+                    f"[overlap0][overlap1]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
+                    f"[main0][blended][main1]hstack=inputs=3[out];"
                     f"[out]format=yuv420p[v]"
                 )
             final_width = (width1 - blend_width) + blend_width + (width2 - blend_width)
@@ -363,27 +363,27 @@ class EnhancedVideoMerger:
             if self.enable_distortion_correction:
                 # Professional method: Rotation + normalization + geometric alignment + seamless blend
                 filter_complex = (
-                    f"[0:v]{pref}[left];"
-                    f"[1:v]{pref}[right];"
-                    f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
-                    f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
-                    f"[right]crop={blend_width}:ih:0:0[right_overlap];"
-                    f"[right]crop=iw-{blend_width}:ih:{blend_width}:0[right_main];"
-                    f"[left_overlap][right_overlap]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
-                    f"[left_main][blended][right_main]hstack=inputs=3[merged];"
+                    f"[0:v]{pref}[rotated0];"
+                    f"[1:v]{pref}[rotated1];"
+                    f"[rotated0]crop=iw-{blend_width}:ih:0:0[main0];"
+                    f"[rotated0]crop={blend_width}:ih:iw-{blend_width}:0[overlap0];"
+                    f"[rotated1]crop={blend_width}:ih:0:0[overlap1];"
+                    f"[rotated1]crop=iw-{blend_width}:ih:{blend_width}:0[main1];"
+                    f"[overlap0][overlap1]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
+                    f"[main0][blended][main1]hstack=inputs=3[merged];"
                     f"[merged]lenscorrection={lens_correction}[v]"
                 )
             else:
                 # Standard method: Rotation + normalization with seamless blend
                 filter_complex = (
-                    f"[0:v]{pref}[left];"
-                    f"[1:v]{pref}[right];"
-                    f"[left]crop=iw-{blend_width}:ih:0:0[left_main];"
-                    f"[left]crop={blend_width}:ih:iw-{blend_width}:0[left_overlap];"
-                    f"[right]crop={blend_width}:ih:0:0[right_overlap];"
-                    f"[right]crop=iw-{blend_width}:ih:{blend_width}:0[right_main];"
-                    f"[left_overlap][right_overlap]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
-                    f"[left_main][blended][right_main]hstack=inputs=3[out];"
+                    f"[0:v]{pref}[rotated0];"
+                    f"[1:v]{pref}[rotated1];"
+                    f"[rotated0]crop=iw-{blend_width}:ih:0:0[main0];"
+                    f"[rotated0]crop={blend_width}:ih:iw-{blend_width}:0[overlap0];"
+                    f"[rotated1]crop={blend_width}:ih:0:0[overlap1];"
+                    f"[rotated1]crop=iw-{blend_width}:ih:{blend_width}:0[main1];"
+                    f"[overlap0][overlap1]blend=all_expr='A*(1-X/W)+B*(X/W)'[blended];"
+                    f"[main0][blended][main1]hstack=inputs=3[out];"
                     f"[out]format=yuv420p[v]"
                 )
             # Calculate final output width for seamless panoramic
