@@ -136,13 +136,22 @@ fix_port_conflicts_comprehensive() {
         sleep 2
     fi
     
-    # Strategy 2: Kill by process name
+    # Strategy 2: Kill by process name (more aggressive)
     log_info "🧹 Killing processes by name..."
     sudo pkill -f "uvicorn" 2>/dev/null || true
     sudo pkill -f "api_server" 2>/dev/null || true
     sudo pkill -f "python.*8000" 2>/dev/null || true
     sudo pkill -f "python.*9000" 2>/dev/null || true
     sudo pkill -f "python.*api_server" 2>/dev/null || true
+    
+    # Strategy 3: Kill any remaining Python processes on our ports
+    for port in 8000 9000; do
+        if lsof -i :$port >/dev/null 2>&1; then
+            log_info "🔍 Found remaining processes on port $port, force killing..."
+            sudo lsof -ti :$port | xargs -r sudo kill -9 2>/dev/null || true
+            sleep 1
+        fi
+    done
     
     # Wait for processes to fully terminate
     sleep 3
