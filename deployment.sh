@@ -206,6 +206,49 @@ install_psutil_everywhere() {
     log_info "✅ psutil installed and tested successfully in all environments"
 }
 
+# Ensure all required files and directories exist with proper permissions
+ensure_files_and_directories() {
+    log_info "🔧 Ensuring all required files and directories exist..."
+    
+    # Create logs directory with proper permissions
+    log_info "📁 Creating logs directory..."
+    sudo mkdir -p "$DEPLOY_PATH/logs"
+    sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/logs"
+    sudo chmod 755 "$DEPLOY_PATH/logs"
+    log_info "✅ Logs directory created with proper permissions"
+    
+    # Create system_status.log file with proper permissions
+    log_info "📄 Creating system_status.log file..."
+    sudo touch "$DEPLOY_PATH/logs/system_status.log"
+    sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/logs/system_status.log"
+    sudo chmod 644 "$DEPLOY_PATH/logs/system_status.log"
+    log_info "✅ system_status.log file created with proper permissions"
+    
+    # Ensure system_status.py exists and has proper permissions
+    if [[ -f "backend/system_status.py" ]]; then
+        log_info "📄 Copying system_status.py to deployment directory..."
+        sudo cp backend/system_status.py "$DEPLOY_PATH/backend/system_status.py"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/system_status.py"
+        sudo chmod 755 "$DEPLOY_PATH/backend/system_status.py"
+        log_info "✅ system_status.py copied with proper permissions"
+    else
+        log_error "❌ system_status.py not found in backend directory"
+        return 1
+    fi
+    
+    # Create other required log files
+    for log_file in "video_worker.log" "dual_recorder.log" "api_server.log"; do
+        if [[ ! -f "$DEPLOY_PATH/logs/$log_file" ]]; then
+            sudo touch "$DEPLOY_PATH/logs/$log_file"
+            sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/logs/$log_file"
+            sudo chmod 644 "$DEPLOY_PATH/logs/$log_file"
+            log_info "✅ Created $log_file with proper permissions"
+        fi
+    done
+    
+    log_info "✅ All required files and directories created with proper permissions"
+}
+
 # Ensure all services are properly enabled and configured
 ensure_services_enabled() {
     log_info "🔧 Ensuring all services are properly enabled..."
@@ -288,6 +331,27 @@ start_all_services_safely() {
                 log_info "✅ API service is responding"
             else
                 log_warn "⚠️ API service not responding yet, but continuing..."
+            fi
+        elif [[ "$service" == "system_status" ]]; then
+            log_info "🔧 Special handling for system_status service..."
+            
+            # Ensure the service can write to its log file
+            if [[ -f "$DEPLOY_PATH/logs/system_status.log" ]]; then
+                log_info "✅ system_status.log file exists and is writable"
+            else
+                log_error "❌ system_status.log file missing, creating it..."
+                sudo touch "$DEPLOY_PATH/logs/system_status.log"
+                sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/logs/system_status.log"
+                sudo chmod 644 "$DEPLOY_PATH/logs/system_status.log"
+            fi
+            
+            # Start the service
+            if sudo systemctl start ${service}.service; then
+                log_info "✅ $service.service started successfully"
+            else
+                log_error "❌ Failed to start $service.service"
+                sudo systemctl status ${service}.service --no-pager -l
+                return 1
             fi
         else
             # Start other services
@@ -402,6 +466,9 @@ main() {
     
     # Install psutil everywhere
     install_psutil_everywhere
+    
+    # Ensure all required files and directories exist
+    ensure_files_and_directories
     
     # Enable all services
     ensure_services_enabled
