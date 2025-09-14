@@ -5,4 +5,93 @@ michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cat logs.txt
 
 # =============================================================================
 # SYSTEM CHECK OUTPUT
-# =============================================================================
+# =============================================================================[0;32m[15:48:44] Starting EZREC deployment as user: root[0m
+[0;34m[15:48:44] STEP: 1. Applying comprehensive system fixes[0m
+[0;32m[15:48:44] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
+[0;32m[15:48:44] 🛑 Stopping all EZREC services...[0m
+[0;32m[15:48:44] 🧹 Comprehensive port cleanup...[0m
+[0;32m[15:48:44] 🔍 Found processes on port 8000, killing them...[0m
+[0;32m[15:48:47] 🧹 Killing processes by name...[0m
+[0;32m[15:48:50] ✅ Port 8000 is now free[0m
+[0;32m[15:48:50] ✅ Port 9000 is now free[0m
+[0;32m[15:48:50] ✅ Comprehensive port conflict resolution completed[0m
+[0;32m[15:48:50] 🔧 Installing psutil in all virtual environments...[0m
+[0;32m[15:48:50] 📦 Installing psutil in backend virtual environment...[0m
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[0;32m[15:48:52] ✅ psutil installed successfully in backend venv[0m
+[0;32m[15:48:52] 📦 Installing psutil in API virtual environment...[0m
+Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
+Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
+WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
+    sys-platform (=="darwin") ; extra == 'objc'
+                 ~^
+[0;32m[15:48:53] ✅ psutil installed successfully in API venv[0m
+[0;32m[15:48:53] 🧪 Testing psutil imports...[0m
+✅ psutil imported successfully in backend
+[0;32m[15:48:53] ✅ psutil import test passed in backend[0m
+✅ psutil imported successfully in API
+[0;32m[15:48:53] ✅ psutil import test passed in API[0m
+[0;32m[15:48:53] ✅ psutil installed and tested successfully in all environments[0m
+[0;32m[15:48:53] 🔧 Ensuring all services are properly enabled...[0m
+[0;32m[15:48:53] 🔧 Enabling dual_recorder.service for auto-start...[0m
+[0;32m[15:48:54] ✅ dual_recorder.service enabled successfully[0m
+[0;32m[15:48:54] 🔧 Enabling video_worker.service for auto-start...[0m
+[0;32m[15:48:54] ✅ video_worker.service enabled successfully[0m
+[0;32m[15:48:54] 🔧 Enabling ezrec-api.service for auto-start...[0m
+[0;32m[15:48:54] ✅ ezrec-api.service enabled successfully[0m
+[0;32m[15:48:54] 🔧 Enabling system_status.service for auto-start...[0m
+[0;32m[15:48:54] ✅ system_status.service enabled successfully[0m
+[0;32m[15:48:54] 🔧 Enabling system_status.timer for auto-start...[0m
+[0;32m[15:48:54] ✅ system_status.timer enabled successfully[0m
+[0;32m[15:48:54] 🔍 Verifying services are enabled...[0m
+[0;32m[15:48:54] ✅ dual_recorder.service is enabled[0m
+[0;32m[15:48:54] ✅ video_worker.service is enabled[0m
+[0;32m[15:48:54] ✅ ezrec-api.service is enabled[0m
+[0;32m[15:48:54] ✅ system_status.service is enabled[0m
+[0;32m[15:48:54] ✅ All services properly enabled for auto-start[0m
+[0;34m[15:48:54] STEP: 2. Starting all services safely[0m
+[0;32m[15:48:54] 🔧 Starting all services safely with port conflict prevention...[0m
+[0;32m[15:48:54] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
+[0;32m[15:48:54] 🛑 Stopping all EZREC services...[0m
+[0;32m[15:48:55] 🧹 Comprehensive port cleanup...[0m
+[0;32m[15:48:55] 🔍 Found processes on port 8000, killing them...[0m
+[0;32m[15:48:57] 🧹 Killing processes by name...[0m
+[0;32m[15:49:00] ✅ Port 8000 is now free[0m
+[0;32m[15:49:00] ✅ Port 9000 is now free[0m
+[0;32m[15:49:00] ✅ Comprehensive port conflict resolution completed[0m
+[0;32m[15:49:00] 🚀 Starting ezrec-api.service...[0m
+[0;32m[15:49:00] 🔧 Special handling for API service...[0m
+[0;32m[15:49:00] ✅ ezrec-api.service started successfully[0m
+[0;32m[15:49:00] ⏳ Waiting for API service to be ready...[0m
+[0;32m[15:49:10] ✅ API service is responding[0m
+[0;32m[15:49:13] 🚀 Starting dual_recorder.service...[0m
+[0;32m[15:49:13] ✅ dual_recorder.service started successfully[0m
+[0;32m[15:49:16] 🚀 Starting video_worker.service...[0m
+[0;32m[15:49:16] ✅ video_worker.service started successfully[0m
+[0;32m[15:49:19] 🚀 Starting system_status.service...[0m
+Job for system_status.service failed because the control process exited with error code.
+See "systemctl status system_status.service" and "journalctl -xeu system_status.service" for details.
+[0;31m[15:49:20] ERROR: ❌ Failed to start system_status.service[0m
+× system_status.service - EZREC System Status Monitor
+     Loaded: loaded (/etc/systemd/system/system_status.service; enabled; preset: enabled)
+     Active: failed (Result: exit-code) since Sun 2025-09-14 15:49:20 EDT; 14ms ago
+   Duration: 4d 3h 31min 15.793s
+TriggeredBy: ● system_status.timer
+    Process: 551202 ExecStart=/opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/system_status.py (code=exited, status=1/FAILURE)
+   Main PID: 551202 (code=exited, status=1/FAILURE)
+        CPU: 871ms
+
+Sep 14 15:49:20 raspberrypi python3[551202]:   File "/usr/lib/python3.11/logging/__init__.py", line 1181, in __init__
+Sep 14 15:49:20 raspberrypi python3[551202]:     StreamHandler.__init__(self, self._open())
+Sep 14 15:49:20 raspberrypi python3[551202]:                                  ^^^^^^^^^^^^
+Sep 14 15:49:20 raspberrypi python3[551202]:   File "/usr/lib/python3.11/logging/__init__.py", line 1213, in _open
+Sep 14 15:49:20 raspberrypi python3[551202]:     return open_func(self.baseFilename, self.mode,
+Sep 14 15:49:20 raspberrypi python3[551202]:            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Sep 14 15:49:20 raspberrypi python3[551202]: PermissionError: [Errno 13] Permission denied: '/opt/ezrec-backend/logs/system_status.log'
+Sep 14 15:49:20 raspberrypi systemd[1]: system_status.service: Main process exited, code=exited, status=1/FAILURE
+Sep 14 15:49:20 raspberrypi systemd[1]: system_status.service: Failed with result 'exit-code'.
+Sep 14 15:49:20 raspberrypi systemd[1]: Failed to start system_status.service - EZREC System Status Monitor.
