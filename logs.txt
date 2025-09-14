@@ -1,0 +1,344 @@
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo journalctl -u dual_recorder.service -f
+Sep 14 18:17:11 raspberrypi python3[579657]: [102:06:08.782638832] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,840 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,840 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,841 - INFO - Initialization successful.
+Sep 14 18:17:11 raspberrypi python3[579657]: [102:06:08.783208870] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,841 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,841 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,841 - INFO - 📷 Available cameras: []
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,841 - ERROR - ❌ No cameras available
+Sep 14 18:17:11 raspberrypi python3[579657]: 2025-09-14 18:17:11,841 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,841 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,841 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:16.841942-04:00
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO -    Now: 2025-09-14 18:17:16.841942-04:00
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,842 - INFO - Camera closed successfully.
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,846 - INFO - Camera closed successfully.
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,846 - INFO - Initialization successful.
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,846 - INFO - Camera now open.
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,847 - WARNING - ⚠️ Camera 0 not available: 0
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,848 - INFO - Initialization successful.
+Sep 14 18:17:16 raspberrypi python3[579657]: 2025-09-14 18:17:16,848 - INFO - Camera now open.
+Sep 14 18:17:17 raspberrypi python3[579657]: 2025-09-14 18:17:17,048 - INFO - Camera closed successfully.
+Sep 14 18:17:17 raspberrypi python3[579657]: 2025-09-14 18:17:17,048 - INFO - ✅ Camera 1 detected
+Sep 14 18:17:17 raspberrypi python3[579657]: 2025-09-14 18:17:17,048 - INFO - 📷 Available cameras: [1]
+Sep 14 18:17:17 raspberrypi python3[579657]: 2025-09-14 18:17:17,048 - ERROR - ❌ No cameras started recording successfully
+Sep 14 18:17:17 raspberrypi python3[579657]: 2025-09-14 18:17:17,048 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:22.049211-04:00
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO -    Now: 2025-09-14 18:17:22.049211-04:00
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,049 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,050 - INFO - Initialization successful.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,050 - INFO - Camera now open.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,051 - INFO - Camera closed successfully.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,051 - INFO - ✅ Camera 0 detected
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,051 - INFO - Initialization successful.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,051 - INFO - Camera now open.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,252 - INFO - Camera closed successfully.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,252 - INFO - ✅ Camera 1 detected
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,252 - INFO - 📷 Available cameras: [0, 1]
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,252 - INFO - 🔧 Initializing left camera (index 0)
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,253 - INFO - Initialization successful.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,253 - INFO - Camera now open.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,254 - INFO - 📷 Using default config for left: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,254 - ERROR - ❌ left camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,254 - ERROR - ❌ Camera 0 initialization failed
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,254 - INFO - 🔧 Initializing right camera (index 1)
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,255 - INFO - Initialization successful.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,255 - INFO - Camera now open.
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,256 - INFO - 📷 Using default config for right: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,256 - ERROR - ❌ right camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,256 - ERROR - ❌ Camera 1 initialization failed
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,256 - ERROR - ❌ No cameras started recording successfully
+Sep 14 18:17:22 raspberrypi python3[579657]: 2025-09-14 18:17:22,256 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,256 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,258 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:27.258697-04:00
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,258 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,258 - INFO -    Now: 2025-09-14 18:17:27.258697-04:00
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,258 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,258 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - INFO - Initialization successful.
+Sep 14 18:17:27 raspberrypi python3[579657]: [102:06:24.201418274] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - INFO - Initialization successful.
+Sep 14 18:17:27 raspberrypi python3[579657]: [102:06:24.201798855] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,259 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,260 - INFO - 📷 Available cameras: []
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,260 - ERROR - ❌ No cameras available
+Sep 14 18:17:27 raspberrypi python3[579657]: 2025-09-14 18:17:27,260 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:32.260424-04:00
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO -    Now: 2025-09-14 18:17:32.260424-04:00
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,260 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - INFO - Initialization successful.
+Sep 14 18:17:32 raspberrypi python3[579657]: [102:06:29.203104913] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - INFO - Initialization successful.
+Sep 14 18:17:32 raspberrypi python3[579657]: [102:06:29.203529419] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - INFO - 📷 Available cameras: []
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - ERROR - ❌ No cameras available
+Sep 14 18:17:32 raspberrypi python3[579657]: 2025-09-14 18:17:32,261 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:37.262251-04:00
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO -    Now: 2025-09-14 18:17:37.262251-04:00
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,262 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,263 - INFO - Initialization successful.
+Sep 14 18:17:37 raspberrypi python3[579657]: [102:06:34.205315947] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,263 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,263 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,263 - INFO - Initialization successful.
+Sep 14 18:17:37 raspberrypi python3[579657]: [102:06:34.205931873] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,264 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,264 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,264 - INFO - 📷 Available cameras: []
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,264 - ERROR - ❌ No cameras available
+Sep 14 18:17:37 raspberrypi python3[579657]: 2025-09-14 18:17:37,264 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:42.264712-04:00
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO -    Now: 2025-09-14 18:17:42.264712-04:00
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,264 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,265 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,265 - INFO - Initialization successful.
+Sep 14 18:17:42 raspberrypi python3[579657]: [102:06:39.207415900] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,265 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,265 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,265 - INFO - Initialization successful.
+Sep 14 18:17:42 raspberrypi python3[579657]: [102:06:39.207813795] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,265 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,266 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,266 - INFO - 📷 Available cameras: []
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,266 - ERROR - ❌ No cameras available
+Sep 14 18:17:42 raspberrypi python3[579657]: 2025-09-14 18:17:42,266 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:47.266478-04:00
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO -    Now: 2025-09-14 18:17:47.266478-04:00
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,266 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - INFO - Initialization successful.
+Sep 14 18:17:47 raspberrypi python3[579657]: [102:06:44.209191319] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - INFO - Initialization successful.
+Sep 14 18:17:47 raspberrypi python3[579657]: [102:06:44.209571919] [579657] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - ERROR - Camera __init__ sequence did not complete.
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - INFO - 📷 Available cameras: []
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - ERROR - ❌ No cameras available
+Sep 14 18:17:47 raspberrypi python3[579657]: 2025-09-14 18:17:47,267 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,268 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,274 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:52.274230-04:00
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,274 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,274 - INFO -    Now: 2025-09-14 18:17:52.274230-04:00
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,274 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,274 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,275 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,275 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,275 - INFO - Camera closed successfully.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,289 - INFO - Camera closed successfully.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,290 - INFO - Initialization successful.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,290 - INFO - Camera now open.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,291 - WARNING - ⚠️ Camera 0 not available: 0
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,292 - INFO - Initialization successful.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,293 - INFO - Camera now open.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,493 - INFO - Camera closed successfully.
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,493 - INFO - ✅ Camera 1 detected
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,493 - INFO - 📷 Available cameras: [1]
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,493 - ERROR - ❌ No cameras started recording successfully
+Sep 14 18:17:52 raspberrypi python3[579657]: 2025-09-14 18:17:52,493 - ERROR - ❌ Failed to start recording
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,493 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,493 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:17:57.493896-04:00
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO -    Now: 2025-09-14 18:17:57.493896-04:00
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🎯 Active booking found: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🎬 Starting recording for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🎬 Starting recording session for booking: af944147-3d40-4020-ac7d-e192e81da550
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,495 - INFO - Initialization successful.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,495 - INFO - Camera now open.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,695 - INFO - Camera closed successfully.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,695 - INFO - ✅ Camera 0 detected
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,696 - INFO - Initialization successful.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,696 - INFO - Camera now open.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,898 - INFO - Camera closed successfully.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,898 - INFO - ✅ Camera 1 detected
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,898 - INFO - 📷 Available cameras: [0, 1]
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,898 - INFO - 🔧 Initializing left camera (index 0)
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,899 - INFO - Initialization successful.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,899 - INFO - Camera now open.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,900 - INFO - 📷 Using default config for left: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,901 - ERROR - ❌ left camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,901 - ERROR - ❌ Camera 0 initialization failed
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,901 - INFO - 🔧 Initializing right camera (index 1)
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,902 - INFO - Initialization successful.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,902 - INFO - Camera now open.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,903 - INFO - 📷 Using default config for right: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,903 - ERROR - ❌ right camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,904 - ERROR - ❌ Camera 1 initialization failed
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,904 - ERROR - ❌ No cameras started recording successfully
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,904 - ERROR - ❌ Failed to start recording
+Sep 14 18:18:02 raspberrypi python3[579657]: 2025-09-14 18:18:02,904 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:18:02 raspberrypi python3[579657]: 2025-09-14 18:18:02,904 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:18:02.904572-04:00
+Sep 14 18:18:02 raspberrypi python3[579657]: 2025-09-14 18:18:02,904 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:18:02 raspberrypi python3[579657]: 2025-09-14 18:18:02,904 - INFO -    Now: 2025-09-14 18:18:02.904572-04:00
+Sep 14 18:18:02 raspberrypi python3[579657]: 2025-09-14 18:18:02,904 - INFO - ❌ No active booking found
+Sep 14 18:18:07 raspberrypi python3[579657]: 2025-09-14 18:18:07,905 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:18:07 raspberrypi python3[579657]: 2025-09-14 18:18:07,905 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:18:07.905257-04:00
+Sep 14 18:18:07 raspberrypi python3[579657]: 2025-09-14 18:18:07,905 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:18:07 raspberrypi python3[579657]: 2025-09-14 18:18:07,905 - INFO -    Now: 2025-09-14 18:18:07.905257-04:00
+Sep 14 18:18:07 raspberrypi python3[579657]: 2025-09-14 18:18:07,905 - INFO - ❌ No active booking found
+Sep 14 18:18:12 raspberrypi python3[579657]: 2025-09-14 18:18:12,905 - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 18:18:12 raspberrypi python3[579657]: 2025-09-14 18:18:12,905 - INFO - 🔍 Checking 1 bookings at 2025-09-14 18:18:12.905832-04:00
+Sep 14 18:18:12 raspberrypi python3[579657]: 2025-09-14 18:18:12,905 - INFO - 🔍 Booking af944147-3d40-4020-ac7d-e192e81da550: 2025-09-14 18:17:00.857000-04:00 - 2025-09-14 18:18:00.857000-04:00
+Sep 14 18:18:12 raspberrypi python3[579657]: 2025-09-14 18:18:12,905 - INFO -    Now: 2025-09-14 18:18:12.905832-04:00
+Sep 14 18:18:12 raspberrypi python3[579657]: 2025-09-14 18:18:12,906 - INFO - ❌ No active booking found
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+
+michomanoly14892@raspberrypi:~ $ sudo systemctl status dual_recorder.service video_worker.service ezrec-api.service
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-09-14 18:15:41 EDT; 2min 16s ago
+   Main PID: 579657 (python3)
+      Tasks: 12 (limit: 9572)
+        CPU: 553ms
+     CGroup: /system.slice/dual_recorder.service
+             └─579657 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🎯 Active booking found: af94414>
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🎬 Starting recording for bookin>
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🎬 Starting recording session fo>
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,494 - INFO - 🔍 Detecting cameras...
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,495 - INFO - Initialization successful.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,495 - INFO - Camera now open.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,695 - INFO - Camera closed successfully.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,695 - INFO - ✅ Camera 0 detected
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,696 - INFO - Initialization successful.
+Sep 14 18:17:57 raspberrypi python3[579657]: 2025-09-14 18:17:57,696 - INFO - Camera now open.
+
+● video_worker.service - EZREC Video Processing Worker Service
+     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
+     Active: active (running) since Sun 2025-09-14 18:15:51 EDT; 2min 6s ago
+   Main PID: 579677 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 662ms
+     CGroup: /system.slice/video_worker.service
+             └─579677 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
+michomanoly14892@raspberrypi:~ $ 
+
+michomanoly14892@raspberrypi:~ $ # Check recordings directory
+ls -la /opt/ezrec-backend/recordings/
+
+# Check today's recordings
+ls -la /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/
+
+# Look for any MP4 files
+find /opt/ezrec-backend/recordings/ -name "*.mp4" -type f -newer /tmp/start_time 2>/dev/null || find /opt/ezrec-backend/recordings/ -name "*.mp4" -type f
+total 12
+drwxr-xr-x  3 michomanoly14892 michomanoly14892 4096 Sep 14 17:51 .
+drwxr-xr-x 19 michomanoly14892 michomanoly14892 4096 Sep  1 15:39 ..
+drwxr-xr-x  2 michomanoly14892 video            4096 Sep 14 17:46 2025-09-14
+total 8
+drwxr-xr-x 2 michomanoly14892 video            4096 Sep 14 17:46 .
+drwxr-xr-x 3 michomanoly14892 michomanoly14892 4096 Sep 14 17:51 ..
+michomanoly14892@raspberrypi:~ $ 
+
+
+michomanoly14892@raspberrypi:~ $ # Check system status
+cat /opt/ezrec-backend/status.json
+
+# Check API health
+curl -s http://localhost:8000/health | jq .
+{
+  "timestamp": "2025-09-14T18:16:03.202146",
+  "overall_status": "healthy",
+  "critical_issues": [],
+  "warnings": [],
+  "disk_usage": {
+    "status": "healthy",
+    "usage_percent": 8.5,
+    "free_gb": 101.51,
+    "total_gb": 116.93
+  },
+  "memory_usage": {
+    "status": "healthy",
+    "usage_percent": 12.3,
+    "available_gb": 6.91,
+    "total_gb": 7.87
+  },
+  "cpu_usage": {
+    "status": "healthy",
+    "usage_percent": 0.0
+  },
+  "services": {
+    "services": {
+      "dual_recorder.service": {
+        "active": true,
+        "status": "active"
+      },
+      "video_worker.service": {
+        "active": true,
+        "status": "active"
+      },
+      "ezrec-api.service": {
+        "active": true,
+        "status": "active"
+      }
+    },
+    "inactive": [],
+    "timer_active": true
+  },
+  "cameras": {
+    "status": "healthy",
+    "available": true,
+    "camera_count": 2
+  },
+  "ffmpeg": {
+    "status": "healthy",
+    "available": true,
+    "version": "5.1.7-0+deb12u1+rpt1"
+  },
+  "environment": {
+    "status": "healthy",
+    "all_set": true,
+    "missing_vars": []
+  },
+  "recording": {
+    "status": "idle",
+    "is_recording": false
+  }
+}{
+  "detail": "Not Found"
+}
+michomanoly14892@raspberrypi:~ $ 
+
