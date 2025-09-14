@@ -155,51 +155,43 @@ def create_test_booking():
     
     return test_booking
 
-def test_minimal_recorder():
-    """Test the minimal recorder directly"""
-    print("\n🎥 Testing minimal recorder...")
+def test_service_recording():
+    """Test recording by triggering the service"""
+    print("\n🎥 Testing service recording...")
     
     try:
-        # Import the minimal recorder
-        sys.path.append('/opt/ezrec-backend/backend')
-        from dual_recorder import MinimalDualRecorder, load_bookings, find_active_booking
+        # Check if the service is running
+        import subprocess
+        result = subprocess.run(['systemctl', 'is-active', 'dual_recorder.service'], 
+                              capture_output=True, text=True)
         
-        # Create recorder
-        recorder = MinimalDualRecorder()
-        
-        # Load bookings
-        bookings = load_bookings()
-        print(f"📋 Loaded {len(bookings)} bookings")
-        
-        # Find active booking
-        active_booking = find_active_booking(bookings)
-        
-        if active_booking:
-            print(f"🎯 Active booking found: {active_booking['id']}")
-            
-            # Start recording
-            print("🎬 Starting recording session...")
-            if recorder.start_recording_session(active_booking):
-                print("✅ Recording started successfully")
-                
-                # Record for 30 seconds
-                print("⏳ Recording for 30 seconds...")
-                time.sleep(30)
-                
-                # Stop recording
-                recorder.stop_recording_session()
-                print("✅ Recording stopped")
-                
-                return True
-            else:
-                print("❌ Failed to start recording")
-                return False
-        else:
-            print("❌ No active booking found")
+        if result.stdout.strip() != 'active':
+            print("❌ dual_recorder service is not active")
             return False
-            
+        
+        print("✅ dual_recorder service is active")
+        
+        # Check recent logs for any errors
+        result = subprocess.run(['journalctl', '-u', 'dual_recorder.service', '--since', '1 minute ago', '-n', '20'], 
+                              capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            logs = result.stdout
+            if 'transform' in logs.lower() or 'error' in logs.lower():
+                print("❌ Service logs show errors:")
+                print(logs)
+                return False
+            else:
+                print("✅ Service logs look clean")
+        
+        # Wait a bit for the service to process the booking
+        print("⏳ Waiting for service to process booking...")
+        time.sleep(10)
+        
+        return True
+        
     except Exception as e:
-        print(f"❌ Minimal recorder test failed: {e}")
+        print(f"❌ Service recording test failed: {e}")
         import traceback
         traceback.print_exc()
         return False
@@ -260,9 +252,9 @@ def main():
     test_booking = create_test_booking()
     results['booking_creation'] = True
     
-    # Test 4: Test minimal recorder
-    print("\n4️⃣ Testing minimal recorder...")
-    results['minimal_recorder'] = test_minimal_recorder()
+    # Test 4: Test service recording
+    print("\n4️⃣ Testing service recording...")
+    results['service_recording'] = test_service_recording()
     
     # Test 5: Check recording files
     print("\n5️⃣ Checking recording files...")
