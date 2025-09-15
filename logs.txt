@@ -1,254 +1,228 @@
-# EZREC System Test Logs
-# This file will be populated by the automated test script
-[0;32m[22:21:37] Starting EZREC deployment as user: root[0m
-[0;34m[22:21:37] STEP: 1. Applying comprehensive system fixes[0m
-[0;32m[22:21:37] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
-[0;32m[22:21:37] 🧹 Performing comprehensive system cleanup...[0m
-[0;32m[22:21:37] 🛑 Stopping all EZREC services...[0m
-[0;32m[22:21:38] 📷 Killing all camera-related processes...[0m
-[0;32m[22:21:38] 🐍 Killing Python camera processes...[0m
-[0;32m[22:21:38] 🔓 Clearing camera device locks...[0m
-[0;32m[22:21:39] 🗑️ Clearing booking cache...[0m
-[0;32m[22:21:39] 🗑️ Clearing temporary recording files...[0m
-[0;32m[22:21:39] 🔄 Resetting camera devices...[0m
-[0;32m[22:21:42] ✅ Comprehensive system cleanup completed[0m
-[0;32m[22:21:42] 🧹 Comprehensive port cleanup...[0m
-[0;32m[22:21:42] 🧹 Killing processes by name...[0m
-[0;32m[22:21:42] 🧹 Killing any remaining Python service processes...[0m
-[0;32m[22:21:44] 🧹 Force killing any remaining processes on ports 8000 and 9000...[0m
-[0;32m[22:21:47] ✅ Port 8000 is now free[0m
-[0;32m[22:21:47] ✅ Port 9000 is now free[0m
-[0;32m[22:21:47] ✅ Comprehensive port conflict resolution completed[0m
-[0;32m[22:21:47] 🗑️ Clearing old recordings and temporary files...[0m
-[0;32m[22:21:47] 🗑️ Clearing temporary files...[0m
-[0;32m[22:21:47] 🗑️ Clearing old log files...[0m
-[0;32m[22:21:47] 🗑️ Clearing old systemd journal logs...[0m
-[0;32m[22:21:47] ✅ Old recordings and temporary files cleared[0m
-[0;32m[22:21:47] 📋 Initializing fresh booking cache...[0m
-[0;32m[22:21:47] ✅ Fresh booking cache initialized[0m
-[0;32m[22:21:47] 🔧 Installing psutil in all virtual environments...[0m
-[0;32m[22:21:47] 📦 Installing psutil in backend virtual environment...[0m
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[0;32m[22:21:49] ✅ psutil installed successfully in backend venv[0m
-[0;32m[22:21:49] 📦 Installing psutil in API virtual environment...[0m
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[0;32m[22:21:51] ✅ psutil installed successfully in API venv[0m
-[0;32m[22:21:51] 🧪 Testing psutil imports...[0m
-✅ psutil imported successfully in backend
-[0;32m[22:21:51] ✅ psutil import test passed in backend[0m
-✅ psutil imported successfully in API
-[0;32m[22:21:51] ✅ psutil import test passed in API[0m
-[0;32m[22:21:51] ✅ psutil installed and tested successfully in all environments[0m
-[0;32m[22:21:51] 📁 Copying all project files to deployment directory...[0m
-[0;32m[22:21:51] 📄 Copying backend files...[0m
-[0;32m[22:21:51] ✅ Backend files copied successfully[0m
-[0;32m[22:21:51] 📄 Copying API files...[0m
-[0;32m[22:21:51] ✅ API files copied successfully[0m
-[0;32m[22:21:51] 📄 Copying systemd service files...[0m
-[0;32m[22:21:52] ✅ Systemd service files copied and reloaded[0m
-[0;32m[22:21:52] 📄 Copying updated system_status.py...[0m
-[0;32m[22:21:52] ✅ system_status.py updated successfully[0m
-[0;32m[22:21:52] 📄 Copying services directory...[0m
-[0;32m[22:21:52] ✅ Services directory copied successfully[0m
-[0;32m[22:21:52] 📄 Copying config directory...[0m
-[0;32m[22:21:52] ✅ Config directory copied successfully[0m
-[0;32m[22:21:52] 📄 Copying utils directory...[0m
-[0;32m[22:21:52] ✅ Utils directory copied successfully[0m
-[0;32m[22:21:52] 🔒 Existing .env file found in deployment directory - preserving it[0m
-[0;32m[22:21:52] ℹ️ To update .env, manually edit: /opt/ezrec-backend/.env[0m
-[0;32m[22:21:52] ✅ All project files copied successfully[0m
-[0;32m[22:21:52] 🔧 Installing new architecture dependencies...[0m
-[0;32m[22:21:52] 📦 Installing new architecture dependencies in backend virtual environment...[0m
-[0;32m[22:21:52] 📦 Installing pytz...[0m
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (2022.7.1)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[0;32m[22:21:54] ✅ pytz installed successfully[0m
-[0;32m[22:21:54] 📦 Installing python-dotenv...[0m
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: python-dotenv in /home/michomanoly14892/.local/lib/python3.11/site-packages (1.0.0)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[0;32m[22:21:55] ✅ python-dotenv installed successfully[0m
-[0;32m[22:21:55] 📦 Installing supabase...[0m
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: supabase in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (2.0.2)
-Requirement already satisfied: gotrue<2.0.0,>=1.3.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (1.3.1)
-Requirement already satisfied: httpx<0.25.0,>=0.24.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (0.24.1)
-Requirement already satisfied: postgrest<0.14.0,>=0.10.8 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (0.13.2)
-Requirement already satisfied: realtime<2.0.0,>=1.0.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (1.0.6)
-Requirement already satisfied: storage3<0.7.0,>=0.5.3 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (0.6.1)
-Requirement already satisfied: supafunc<0.4.0,>=0.3.1 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (0.3.3)
-Requirement already satisfied: pydantic<3,>=1.10 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from gotrue<2.0.0,>=1.3.0->supabase) (2.11.7)
-Requirement already satisfied: certifi in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx<0.25.0,>=0.24.0->supabase) (2025.6.15)
-Requirement already satisfied: httpcore<0.18.0,>=0.15.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from httpx<0.25.0,>=0.24.0->supabase) (0.17.3)
-Requirement already satisfied: idna in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx<0.25.0,>=0.24.0->supabase) (3.10)
-Requirement already satisfied: sniffio in /home/michomanoly14892/.local/lib/python3.11/site-packages (from httpx<0.25.0,>=0.24.0->supabase) (1.3.1)
-Requirement already satisfied: h11<0.15,>=0.13 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from httpcore<0.18.0,>=0.15.0->httpx<0.25.0,>=0.24.0->supabase) (0.14.0)
-Requirement already satisfied: anyio<5.0,>=3.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from httpcore<0.18.0,>=0.15.0->httpx<0.25.0,>=0.24.0->supabase) (3.7.1)
-Requirement already satisfied: deprecation<3.0.0,>=2.1.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from postgrest<0.14.0,>=0.10.8->supabase) (2.1.0)
-Requirement already satisfied: strenum<0.5.0,>=0.4.9 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from postgrest<0.14.0,>=0.10.8->supabase) (0.4.15)
-Requirement already satisfied: packaging in /home/michomanoly14892/.local/lib/python3.11/site-packages (from deprecation<3.0.0,>=2.1.0->postgrest<0.14.0,>=0.10.8->supabase) (25.0)
-Requirement already satisfied: annotated-types>=0.6.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue<2.0.0,>=1.3.0->supabase) (0.7.0)
-Requirement already satisfied: pydantic-core==2.33.2 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue<2.0.0,>=1.3.0->supabase) (2.33.2)
-Requirement already satisfied: typing-extensions>=4.12.2 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue<2.0.0,>=1.3.0->supabase) (4.15.0)
-Requirement already satisfied: typing-inspection>=0.4.0 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from pydantic<3,>=1.10->gotrue<2.0.0,>=1.3.0->supabase) (0.4.1)
-Requirement already satisfied: python-dateutil<3.0.0,>=2.8.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime<2.0.0,>=1.0.0->supabase) (2.9.0.post0)
-Requirement already satisfied: websockets<13,>=11 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from realtime<2.0.0,>=1.0.0->supabase) (12.0)
-Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.8.1->realtime<2.0.0,>=1.0.0->supabase) (1.17.0)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[0;32m[22:21:57] ✅ supabase installed successfully[0m
-[0;32m[22:21:57] 📦 Installing boto3...[0m
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: boto3 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (1.34.0)
-Requirement already satisfied: botocore<1.35.0,>=1.34.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from boto3) (1.34.162)
-Requirement already satisfied: jmespath<2.0.0,>=0.7.1 in /usr/lib/python3/dist-packages (from boto3) (1.0.1)
-Requirement already satisfied: s3transfer<0.10.0,>=0.9.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from boto3) (0.9.0)
-Requirement already satisfied: python-dateutil<3.0.0,>=2.1 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from botocore<1.35.0,>=1.34.0->boto3) (2.9.0.post0)
-Requirement already satisfied: urllib3!=2.2.0,<3,>=1.25.4 in /usr/lib/python3/dist-packages (from botocore<1.35.0,>=1.34.0->boto3) (1.26.12)
-Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/python3.11/site-packages (from python-dateutil<3.0.0,>=2.1->botocore<1.35.0,>=1.34.0->boto3) (1.17.0)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[0;32m[22:21:59] ✅ boto3 installed successfully[0m
-[0;32m[22:21:59] ✅ New architecture dependencies installation completed[0m
-[0;32m[22:21:59] 🧪 Testing new architecture imports...[0m
-✅ Config settings import successful
-[0;32m[22:21:59] ✅ New architecture imports test passed[0m
-[0;32m[22:21:59] 🔧 Creating fallback dual_recorder for compatibility...[0m
-[0;32m[22:21:59] ✅ Fallback dual_recorder created[0m
-[0;32m[22:21:59] 🔧 Fixing camera initialization issues...[0m
-[0;32m[22:21:59] 📷 Checking camera accessibility...[0m
-[0;32m[22:21:59] 🔐 Ensuring camera permissions...[0m
-[0;32m[22:21:59] ✅ Camera device /dev/video0 found[0m
-[0;32m[22:21:59] ✅ Camera device /dev/video1 found[0m
-[0;32m[22:21:59] ✅ Camera initialization fixes applied[0m
-[0;32m[22:21:59] 🔧 Ensuring dual_recorder.py is correct and executable...[0m
-[0;32m[22:21:59] 📄 Force copying dual_recorder.py from source...[0m
-[0;32m[22:21:59] ✅ dual_recorder.py copied and made executable[0m
-[1;33m[22:21:59] WARNING: ⚠️ WARNING: File may not be the correct version[0m
-[0;32m[22:21:59] ✅ Dual recorder setup completed[0m
-[0;32m[22:21:59] 🧪 Testing dual_recorder functionality...[0m
-✅ New architecture imports successful
-[0;32m[22:21:59] ✅ New architecture dual_recorder should work[0m
-[0;32m[22:21:59] 🔄 Force restarting dual_recorder service...[0m
-[0;32m[22:22:05] ✅ dual_recorder service restarted successfully[0m
-[0;32m[22:22:05] 🔧 Ensuring all required files and directories exist...[0m
-[0;32m[22:22:05] 📁 Creating logs directory...[0m
-[0;32m[22:22:05] ✅ Logs directory created with proper permissions[0m
-[0;32m[22:22:05] 📄 Creating system_status.log file...[0m
-[0;32m[22:22:05] ✅ system_status.log file created with proper permissions[0m
-[0;32m[22:22:05] 📄 Copying system_status.py to deployment directory...[0m
-[0;32m[22:22:05] ✅ system_status.py copied with proper permissions[0m
-[0;32m[22:22:05] 📄 Creating all required log files...[0m
-[0;32m[22:22:05] ✅ Fixed permissions for existing video_worker.log[0m
-[0;32m[22:22:05] ✅ Fixed permissions for existing dual_recorder.log[0m
-[0;32m[22:22:05] ✅ Fixed permissions for existing api_server.log[0m
-[0;32m[22:22:05] ✅ Fixed permissions for existing health_check.log[0m
-[0;32m[22:22:05] ✅ Fixed permissions for existing service_monitor.log[0m
-[0;32m[22:22:05] ✅ All required files and directories created with proper permissions[0m
-[0;32m[22:22:05] 🔧 Handling service restart issues...[0m
-[0;32m[22:22:05] 🛑 Stopping all services to break restart loops...[0m
-[0;32m[22:22:10] 🧹 Killing any remaining service processes...[0m
-[0;32m[22:22:13] ✅ Service restart issues handled[0m
-[0;32m[22:22:13] 🔧 Ensuring all services are properly enabled...[0m
-[0;32m[22:22:13] 🔧 Enabling dual_recorder.service for auto-start...[0m
-[0;32m[22:22:13] ✅ dual_recorder.service enabled successfully[0m
-[0;32m[22:22:13] 🔧 Enabling video_worker.service for auto-start...[0m
-[0;32m[22:22:13] ✅ video_worker.service enabled successfully[0m
-[0;32m[22:22:13] 🔧 Enabling ezrec-api.service for auto-start...[0m
-[0;32m[22:22:14] ✅ ezrec-api.service enabled successfully[0m
-[0;32m[22:22:14] 🔧 Enabling system_status.service for auto-start...[0m
-[0;32m[22:22:14] ✅ system_status.service enabled successfully[0m
-[0;32m[22:22:14] 🔧 Enabling system_status.timer for auto-start...[0m
-[0;32m[22:22:14] ✅ system_status.timer enabled successfully[0m
-[0;32m[22:22:14] 🔍 Verifying services are enabled...[0m
-[0;32m[22:22:14] ✅ dual_recorder.service is enabled[0m
-[0;32m[22:22:14] ✅ video_worker.service is enabled[0m
-[0;32m[22:22:14] ✅ ezrec-api.service is enabled[0m
-[0;32m[22:22:14] ✅ system_status.service is enabled[0m
-[0;32m[22:22:14] ✅ All services properly enabled for auto-start[0m
-[0;34m[22:22:14] STEP: 2. Starting all services safely[0m
-[0;32m[22:22:14] 🔧 Starting all services safely with port conflict prevention...[0m
-[0;32m[22:22:14] 🔧 Fixing port conflicts with comprehensive cleanup...[0m
-[0;32m[22:22:14] 🧹 Performing comprehensive system cleanup...[0m
-[0;32m[22:22:14] 🛑 Stopping all EZREC services...[0m
-[0;32m[22:22:14] 📷 Killing all camera-related processes...[0m
-[0;32m[22:22:14] 🐍 Killing Python camera processes...[0m
-[0;32m[22:22:14] 🔓 Clearing camera device locks...[0m
-[0;32m[22:22:15] 🗑️ Clearing booking cache...[0m
-[0;32m[22:22:15] 🗑️ Removing booking cache: /opt/ezrec-backend/backend/bookings.json[0m
-[0;32m[22:22:15] 🗑️ Clearing temporary recording files...[0m
-[0;32m[22:22:15] 🔄 Resetting camera devices...[0m
-[0;32m[22:22:18] ✅ Comprehensive system cleanup completed[0m
-[0;32m[22:22:18] 🧹 Comprehensive port cleanup...[0m
-[0;32m[22:22:18] 🧹 Killing processes by name...[0m
-[0;32m[22:22:18] 🧹 Killing any remaining Python service processes...[0m
-[0;32m[22:22:21] 🧹 Force killing any remaining processes on ports 8000 and 9000...[0m
-[0;32m[22:22:24] ✅ Port 8000 is now free[0m
-[0;32m[22:22:24] ✅ Port 9000 is now free[0m
-[0;32m[22:22:24] ✅ Comprehensive port conflict resolution completed[0m
-[0;32m[22:22:24] 🚀 Starting ezrec-api.service...[0m
-[0;32m[22:22:24] 🔧 Special handling for API service...[0m
-[0;32m[22:22:24] ✅ ezrec-api.service started successfully[0m
-[0;32m[22:22:24] ⏳ Waiting for API service to be ready...[0m
-[0;32m[22:22:34] ✅ API service is responding[0m
-[0;32m[22:22:37] 🚀 Starting dual_recorder.service...[0m
-[0;32m[22:22:37] ✅ dual_recorder.service started successfully[0m
-[0;32m[22:22:37] ⏳ Waiting longer for dual_recorder to fully initialize...[0m
-[0;32m[22:22:47] 🚀 Starting video_worker.service...[0m
-[0;32m[22:22:47] ✅ video_worker.service started successfully[0m
-[0;32m[22:22:47] ⏳ Waiting longer for video_worker to fully initialize...[0m
-[0;32m[22:22:57] 🚀 Starting system_status.service...[0m
-[0;32m[22:22:57] 🔧 Special handling for system_status service...[0m
-[0;32m[22:22:57] ✅ system_status.log file exists and is writable[0m
-[0;32m[22:23:00] ✅ system_status.service started successfully[0m
-[0;32m[22:23:03] 🚀 Starting system_status.timer...[0m
-[0;32m[22:23:03] ✅ system_status.timer started successfully[0m
-[0;32m[22:23:03] ✅ All services started safely[0m
-[0;32m[22:23:03] ⏳ Waiting for all services to fully initialize...[0m
-[0;34m[22:23:18] STEP: 3. Verifying system completely[0m
-[0;32m[22:23:18] 🔍 Performing comprehensive system verification...[0m
-[0;32m[22:23:18] 🧪 Checking all services are running...[0m
-[0;32m[22:23:18] ✅ dual_recorder.service is running[0m
-[0;32m[22:23:18] ✅ video_worker.service is running[0m
-[0;32m[22:23:18] ✅ ezrec-api.service is running[0m
-[0;32m[22:23:18] ✅ system_status.service is running[0m
-[0;32m[22:23:18] 🧪 Testing API endpoints...[0m
-[0;32m[22:23:18] ✅ API /test-alive endpoint is responding[0m
-[0;32m[22:23:18] ✅ API /status endpoint is responding[0m
-[0;32m[22:23:18] 🧪 Testing Python imports...[0m
-✅ Backend imports working
-[0;32m[22:23:18] ✅ Backend Python imports are working[0m
-✅ API imports working
-[0;32m[22:23:18] ✅ API Python imports are working[0m
-[0;32m[22:23:18] 🧪 Testing Cloudflare tunnel...[0m
-[0;32m[22:23:19] ✅ Cloudflare tunnel is running[0m
-[0;32m[22:23:19] 🎉 All system verification checks passed![0m
-[0;32m[22:23:19] ⏳ Waiting for services to settle before final status check...[0m
-[0;34m[22:23:24] STEP: 4. Final system status[0m
-
-=== FINAL SYSTEM STATUS ===
-✅ dual_recorder.service: RUNNING
-✅ video_worker.service: RUNNING
-✅ ezrec-api.service: RUNNING
-✅ system_status.service: RUNNING
-✅ cloudflared.service: RUNNING
-✅ External API: ACCESSIBLE
-[0;32m[22:23:24] 🎉 Deployment completed successfully![0m
-[0;32m[22:23:24] ✅ All services are running and responding correctly[0m
-[0;32m[22:23:24] ✅ External API is accessible via Cloudflare tunnel[0m
-[0;32m[22:23:24] ✅ System is ready for frontend testing[0m
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
+remote: Enumerating objects: 10, done.
+remote: Counting objects: 100% (10/10), done.
+remote: Compressing objects: 100% (1/1), done.
+remote: Total 6 (delta 5), reused 6 (delta 5), pack-reused 0 (from 0)
+Unpacking objects: 100% (6/6), 1.39 KiB | 711.00 KiB/s, done.
+From https://github.com/naeimsalib/EZREC-BACKEND-2
+   a297bf2..7e66791  main       -> origin/main
+Updating a297bf2..7e66791
+error: Your local changes to the following files would be overwritten by merge:
+        quick_test.sh
+Please commit your changes or stash them before you merge.
+Aborting
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git stash
+Saved working directory and index state WIP on main: a297bf2 Add quick test scripts for recording verification
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
+Updating a297bf2..7e66791
+Fast-forward
+ backend/dual_recorder.py |  5 +++--
+ immediate_test.sh        | 97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ quick_test.sh            |  8 +++++---
+ 3 files changed, 105 insertions(+), 5 deletions(-)
+ create mode 100644 immediate_test.sh
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo chmod +x immediate_test.sh 
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./immediate_test.sh 
+🚀 EZREC Immediate Recording Test
+=================================
+1️⃣ Testing Service Status...
+  dual_recorder.service: active
+  video_worker.service: active
+  ezrec-api.service: active
+  system_status.service: active
+  cloudflared.service: active
+2️⃣ Testing API Endpoints...
+  Testing /test-alive...
+    ✅ Success: {"status":"alive"}...
+  Testing /status...
+    ✅ Success: {"status":"running","timestamp":"2025-09-14T22:48:32.857007","version":"1.0.0"}...
+  Testing /api/bookings...
+    ✅ Success: [{"id":"test-1757903677","user_id":"test-user","start_time":"2025-09-14T22:35:37","end_time":"2025-0...
+  Testing /api/cameras...
+    ✅ Success: {"cameras":[{"id":"camera_0","name":"Available cameras","status":"available"},{"id":"camera_1","name...
+  Testing /api/recordings...
+    ✅ Success: []...
+3️⃣ Testing Camera Detection...
+  Camera devices:
+crw-rw-rw-+ 1 root video 81,  0 Sep 10 11:17 /dev/video0
+crw-rw-rw-+ 1 root video 81, 18 Sep 10 11:17 /dev/video1
+crw-rw----+ 1 root video 81, 30 Sep 10 11:17 /dev/video10
+crw-rw----+ 1 root video 81, 31 Sep 10 11:17 /dev/video11
+crw-rw----+ 1 root video 81, 32 Sep 10 11:17 /dev/video12
+crw-rw----+ 1 root video 81, 33 Sep 10 11:17 /dev/video13
+crw-rw----+ 1 root video 81, 34 Sep 10 11:17 /dev/video14
+crw-rw----+ 1 root video 81, 35 Sep 10 11:17 /dev/video15
+crw-rw----+ 1 root video 81, 36 Sep 10 11:17 /dev/video16
+crw-rw----+ 1 root video 81,  3 Sep 10 11:17 /dev/video19
+crw-rw----+ 1 root video 81, 19 Sep 10 11:17 /dev/video2
+crw-rw----+ 1 root video 81,  1 Sep 10 11:17 /dev/video20
+crw-rw----+ 1 root video 81,  2 Sep 10 11:17 /dev/video21
+crw-rw----+ 1 root video 81,  4 Sep 10 11:17 /dev/video22
+crw-rw----+ 1 root video 81,  5 Sep 10 11:17 /dev/video23
+crw-rw----+ 1 root video 81,  6 Sep 10 11:17 /dev/video24
+crw-rw----+ 1 root video 81,  7 Sep 10 11:17 /dev/video25
+crw-rw----+ 1 root video 81,  8 Sep 10 11:17 /dev/video26
+crw-rw----+ 1 root video 81,  9 Sep 10 11:17 /dev/video27
+crw-rw----+ 1 root video 81, 10 Sep 10 11:17 /dev/video28
+crw-rw----+ 1 root video 81, 11 Sep 10 11:17 /dev/video29
+crw-rw----+ 1 root video 81, 20 Sep 10 11:17 /dev/video3
+crw-rw----+ 1 root video 81, 12 Sep 10 11:17 /dev/video30
+crw-rw----+ 1 root video 81, 13 Sep 10 11:17 /dev/video31
+crw-rw----+ 1 root video 81, 14 Sep 10 11:17 /dev/video32
+crw-rw----+ 1 root video 81, 15 Sep 10 11:17 /dev/video33
+crw-rw----+ 1 root video 81, 16 Sep 10 11:17 /dev/video34
+crw-rw----+ 1 root video 81, 17 Sep 10 11:17 /dev/video35
+crw-rw----+ 1 root video 81, 21 Sep 10 11:17 /dev/video4
+crw-rw----+ 1 root video 81, 22 Sep 10 11:17 /dev/video5
+crw-rw----+ 1 root video 81, 23 Sep 10 11:17 /dev/video6
+crw-rw----+ 1 root video 81, 24 Sep 10 11:17 /dev/video7
+crw-rw----+ 1 root video 81, 25 Sep 10 11:17 /dev/video8
+crw-rw----+ 1 root video 81, 29 Sep 10 11:17 /dev/video9
+  rpicam-vid test:
+Available cameras
+-----------------
+0 : imx477 [4056x3040 12-bit] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SBGGR10_CSI2P' : 1332x990 [30.00 fps - (65535, 65535)/65535x65535 crop]
+           'SBGGR12_CSI2P' : 2028x1080 [30.00 fps - (65535, 65535)/65535x65535 crop]
+4️⃣ Creating Immediate Test Booking...
+  Booking ID: immediate-test-1757904512
+  Start: 2025-09-14T22:48:32 (NOW)
+  End: 2025-09-14T22:50:32
+  ✅ Booking created
+5️⃣ Monitoring Recording (should start immediately)...
+  🎬 Starting recording monitoring...
+  --- Check 1/15 ---
+    Dual Recorder:
+Sep 14 22:48:32 raspberrypi python3[617226]: 2025-09-14 22:48:32,592 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 22:48:32 raspberrypi python3[617226]: 2025-09-14 22:48:32,592 - dual_recorder - INFO - ⏸️ No active booking, no recording
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 12.4  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38232 - "GET /test-alive HTTP/1.1" 200 OK
+Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38246 - "GET /status HTTP/1.1" 200 OK
+Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38254 - "GET /api/bookings HTTP/1.1" 200 OK
+Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38270 - "GET /api/cameras HTTP/1.1" 200 OK
+Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38286 - "GET /api/recordings HTTP/1.1" 200 OK
+  --- Check 2/15 ---
+    Dual Recorder:
+Sep 14 22:48:39 raspberrypi python3[617226]: [106:37:34.667715286] [619396]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:48:39 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 12.3  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 3/15 ---
+    Dual Recorder:
+Sep 14 22:48:51 raspberrypi python3[617226]: 2025-09-14 22:48:51,726 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 14 22:48:51 raspberrypi python3[617226]: 2025-09-14 22:48:51,793 - dual_recorder - INFO - ✅ Cameras available, starting recording...
+    Recording processes: 3
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 12.1  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+michoma+  619475  3.7  0.0      0     0 ?        Z    22:48   0:00 [rpicam-vid] <defunct>
+michoma+  619476  3.7  0.0      0     0 ?        Z    22:48   0:00 [rpicam-vid] <defunct>
+  --- Check 4/15 ---
+    Dual Recorder:
+Sep 14 22:49:00 raspberrypi python3[617226]: [106:37:55.835545020] [619521]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:49:00 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 12.0  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 5/15 ---
+    Dual Recorder:
+Sep 14 22:49:12 raspberrypi python3[617226]: 2025-09-14 22:49:12,883 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 14 22:49:12 raspberrypi python3[617226]: 2025-09-14 22:49:12,925 - dual_recorder - INFO - ✅ Cameras available, starting recording...
+    Recording processes: 3
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.8  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+michoma+  619595 18.5  0.0      0     0 ?        Z    22:49   0:00 [rpicam-vid] <defunct>
+michoma+  619596 18.5  0.0      0     0 ?        Z    22:49   0:00 [rpicam-vid] <defunct>
+  --- Check 6/15 ---
+    Dual Recorder:
+Sep 14 22:49:21 raspberrypi python3[617226]: [106:38:16.966619887] [619641]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:49:21 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.7  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 7/15 ---
+    Dual Recorder:
+Sep 14 22:49:29 raspberrypi python3[617226]: [106:38:24.010566376] [619687]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:49:29 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.5  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 8/15 ---
+    Dual Recorder:
+Sep 14 22:49:43 raspberrypi python3[617226]: [106:38:38.129461472] [619761]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:49:43 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.4  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 9/15 ---
+    Dual Recorder:
+Sep 14 22:49:50 raspberrypi python3[617226]: [106:38:45.167140511] [619808]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:49:50 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.3  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 10/15 ---
+    Dual Recorder:
+Sep 14 22:50:02 raspberrypi python3[617226]: 2025-09-14 22:50:02,214 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 14 22:50:02 raspberrypi python3[617226]: 2025-09-14 22:50:02,256 - dual_recorder - INFO - ✅ Cameras available, starting recording...
+    Recording processes: 3
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.1  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+michoma+  619890  4.4  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
+michoma+  619891  4.4  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
+  --- Check 11/15 ---
+    Dual Recorder:
+Sep 14 22:50:11 raspberrypi python3[617226]: [106:39:06.297613386] [619936]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:50:11 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 11.0  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 12/15 ---
+    Dual Recorder:
+Sep 14 22:50:23 raspberrypi python3[617226]: 2025-09-14 22:50:23,344 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 14 22:50:23 raspberrypi python3[617226]: 2025-09-14 22:50:23,386 - dual_recorder - INFO - ✅ Cameras available, starting recording...
+    Recording processes: 3
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 10.9  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+michoma+  620010 55.5  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
+michoma+  620011 55.5  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
+  --- Check 13/15 ---
+    Dual Recorder:
+Sep 14 22:50:32 raspberrypi python3[617226]: [106:39:27.464316860] [620057]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 14 22:50:32 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 10.8  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 14/15 ---
+    Dual Recorder:
+Sep 14 22:50:42 raspberrypi python3[617226]: 2025-09-14 22:50:42,451 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 22:50:42 raspberrypi python3[617226]: 2025-09-14 22:50:42,451 - dual_recorder - INFO - ⏸️ No active booking, no recording
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 10.6  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+  --- Check 15/15 ---
+    Dual Recorder:
+Sep 14 22:50:52 raspberrypi python3[617226]: 2025-09-14 22:50:52,452 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 22:50:52 raspberrypi python3[617226]: 2025-09-14 22:50:52,452 - dual_recorder - INFO - ⏸️ No active booking, no recording
+    Recording processes: 1
+    New recording files: 0
+    Active rpicam-vid processes:
+michoma+  618055 10.5  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
+✅ Immediate test completed
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
