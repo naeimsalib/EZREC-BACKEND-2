@@ -680,13 +680,16 @@ copy_project_files() {
         log_warn "⚠️ Utils directory not found - new architecture may not work"
     fi
     
-    # Copy environment file if it exists, or create a basic one
+    # Handle environment file - NEVER overwrite existing .env
     if [[ -f ".env" ]]; then
         log_info "📄 Copying environment file..."
         sudo cp .env "$DEPLOY_PATH/.env"
         sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/.env"
         sudo chmod 600 "$DEPLOY_PATH/.env"
         log_info "✅ Environment file copied"
+    elif [[ -f "$DEPLOY_PATH/.env" ]]; then
+        log_info "🔒 Existing .env file found in deployment directory - preserving it"
+        log_info "ℹ️ To update .env, manually edit: $DEPLOY_PATH/.env"
     else
         log_warn "⚠️ No .env file found - creating basic configuration..."
         
