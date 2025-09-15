@@ -375,19 +375,58 @@ fix_camera_initialization() {
     log_info "✅ Camera initialization fixes applied"
 }
 
-# Ensure dual_recorder is executable (no replacement needed - main file is now correct)
+# Ensure dual_recorder is correct and executable
 ensure_recorder_executable() {
-    log_info "🔧 Ensuring dual_recorder.py is executable..."
+    log_info "🔧 Ensuring dual_recorder.py is correct and executable..."
     
-    # Make sure it's executable
-    if [[ -f "$DEPLOY_PATH/backend/dual_recorder.py" ]]; then
-        chmod +x "$DEPLOY_PATH/backend/dual_recorder.py"
-        log_info "✅ Made dual_recorder.py executable"
+    # Force copy the correct file from source
+    if [[ -f "backend/dual_recorder.py" ]]; then
+        log_info "📄 Force copying dual_recorder.py from source..."
+        sudo cp "backend/dual_recorder.py" "$DEPLOY_PATH/backend/dual_recorder.py"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/dual_recorder.py"
+        sudo chmod +x "$DEPLOY_PATH/backend/dual_recorder.py"
+        log_info "✅ dual_recorder.py copied and made executable"
+        
+        # Verify the file content
+        if head -5 "$DEPLOY_PATH/backend/dual_recorder.py" | grep -q "DEFINITIVE FIX"; then
+            log_info "✅ Verified: DEFINITIVE FIX version is deployed"
+        else
+            log_warn "⚠️ WARNING: File may not be the correct version"
+        fi
     else
-        log_warn "⚠️ dual_recorder.py not found for chmod"
+        log_error "❌ Source dual_recorder.py not found"
+        return 1
     fi
     
     log_info "✅ Dual recorder setup completed"
+}
+
+# Force restart dual_recorder service to pick up file changes
+force_restart_dual_recorder() {
+    log_info "🔄 Force restarting dual_recorder service..."
+    
+    # Stop the service
+    sudo systemctl stop dual_recorder.service 2>/dev/null || true
+    
+    # Kill any remaining processes
+    sudo pkill -f dual_recorder 2>/dev/null || true
+    
+    # Wait a moment
+    sleep 2
+    
+    # Reload systemd and start the service
+    sudo systemctl daemon-reload
+    sudo systemctl start dual_recorder.service
+    
+    # Wait a moment for it to start
+    sleep 3
+    
+    # Check if it's running
+    if sudo systemctl is-active --quiet dual_recorder.service; then
+        log_info "✅ dual_recorder service restarted successfully"
+    else
+        log_warn "⚠️ dual_recorder service may not have started properly"
+    fi
 }
 
 # Handle service restart issues and ensure clean startup
@@ -666,6 +705,9 @@ main() {
     
     # Ensure dual_recorder is executable
     ensure_recorder_executable
+    
+    # Force restart dual_recorder service to pick up changes
+    force_restart_dual_recorder
     
     # Ensure all required files and directories exist
     ensure_files_and_directories
