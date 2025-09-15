@@ -174,6 +174,14 @@ class SimpleDualRecorder:
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
+            # Calculate recording duration from booking
+            start_time = datetime.fromisoformat(booking['start_time'].replace('Z', ''))
+            end_time = datetime.fromisoformat(booking['end_time'].replace('Z', ''))
+            duration_seconds = int((end_time - start_time).total_seconds())
+            duration_ms = duration_seconds * 1000
+            
+            logger.info(f"⏱️ Recording duration: {duration_seconds} seconds ({duration_ms}ms)")
+            
             # Create a single recording file
             output_file = session_dir / f"camera_0_{timestamp}.mp4"
             
@@ -184,7 +192,7 @@ class SimpleDualRecorder:
                 '--height', '720',
                 '--framerate', '25',
                 '--output', str(output_file),
-                '--timeout', '300000',  # 5 minutes
+                '--timeout', str(duration_ms),  # Use actual booking duration
                 '--codec', 'h264',
                 '--bitrate', '5000000'  # 5 Mbps
             ]
@@ -219,6 +227,14 @@ class SimpleDualRecorder:
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
+            # Calculate recording duration from booking
+            start_time = datetime.fromisoformat(booking['start_time'].replace('Z', ''))
+            end_time = datetime.fromisoformat(booking['end_time'].replace('Z', ''))
+            duration_seconds = int((end_time - start_time).total_seconds())
+            duration_ms = duration_seconds * 1000
+            
+            logger.info(f"⏱️ Recording duration: {duration_seconds} seconds ({duration_ms}ms)")
+            
             # Camera 0 - Primary camera
             output_file_0 = session_dir / f"camera_0_{timestamp}.mp4"
             cmd_0 = [
@@ -228,7 +244,7 @@ class SimpleDualRecorder:
                 '--height', '720',
                 '--framerate', '25',
                 '--output', str(output_file_0),
-                '--timeout', '300000',  # 5 minutes
+                '--timeout', str(duration_ms),  # Use actual booking duration
                 '--codec', 'h264',
                 '--bitrate', '5000000'  # 5 Mbps
             ]
@@ -242,7 +258,7 @@ class SimpleDualRecorder:
                 '--height', '720',
                 '--framerate', '25',
                 '--output', str(output_file_1),
-                '--timeout', '300000',  # 5 minutes
+                '--timeout', str(duration_ms),  # Use actual booking duration
                 '--codec', 'h264',
                 '--bitrate', '5000000'  # 5 Mbps
             ]
@@ -293,18 +309,31 @@ class SimpleDualRecorder:
             return False
     
     def stop_recording(self):
-        """Stop current recording"""
+        """Stop current recording gracefully"""
         if not self.recording_processes:
             return
         
-        logger.info("🛑 Stopping recording")
+        logger.info("🛑 Stopping recording gracefully...")
         
-        for process in self.recording_processes:
+        for i, process in enumerate(self.recording_processes):
             try:
+                logger.info(f"🔄 Gracefully stopping camera {i}...")
+                # Send SIGTERM to allow rpicam-vid to finalize the file
                 process.terminate()
-                process.wait(timeout=5)
-            except:
+                # Wait up to 10 seconds for graceful shutdown
+                process.wait(timeout=10)
+                logger.info(f"✅ Camera {i} stopped gracefully")
+            except subprocess.TimeoutExpired:
+                logger.warning(f"⚠️ Camera {i} didn't stop gracefully, forcing termination")
                 process.kill()
+                process.wait(timeout=5)
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {i}: {e}")
+                try:
+                    process.kill()
+                    process.wait(timeout=5)
+                except:
+                    pass
         
         self.recording_processes = []
         self.current_booking = None
