@@ -1,94 +1,96 @@
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ suod ./deployment.sh 
+bash: suod: command not found
 michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./deployment.sh 
-[21:29:27] Starting EZREC deployment as user: root
-[21:29:27] STEP: 1. Applying comprehensive system fixes
-[21:29:27] 🔧 Fixing port conflicts with comprehensive cleanup...
-[21:29:27] 🧹 Performing comprehensive system cleanup...
-[21:29:27] 🛑 Stopping all EZREC services...
-Sep 14 21:29:27 raspberrypi systemd[1]: Stopping ezrec-api.service - EZREC FastAPI Backend...
-Sep 14 21:29:27 raspberrypi uvicorn[604348]: INFO:     Shutting down
-Sep 14 21:29:27 raspberrypi uvicorn[604348]: INFO:     Waiting for application shutdown.
-Sep 14 21:29:27 raspberrypi uvicorn[604348]: INFO:     Application shutdown complete.
-Sep 14 21:29:27 raspberrypi uvicorn[604348]: INFO:     Finished server process [604348]
-[21:29:28] 📷 Killing all camera-related processes...
-[21:29:28] 🐍 Killing Python camera processes...
-[21:29:28] 🔓 Clearing camera device locks...
-Sep 14 21:29:28 raspberrypi systemd[1]: ezrec-api.service: Deactivated successfully.
-Sep 14 21:29:28 raspberrypi systemd[1]: Stopped ezrec-api.service - EZREC FastAPI Backend.
-Sep 14 21:29:28 raspberrypi systemd[1]: ezrec-api.service: Consumed 1.587s CPU time.
-[21:29:29] 🗑️ Clearing booking cache...
-[21:29:29] 🗑️ Clearing temporary recording files...
-[21:29:29] 🔄 Resetting camera devices...
-[21:29:32] ✅ Comprehensive system cleanup completed
-[21:29:32] 🧹 Comprehensive port cleanup...
-[21:29:32] 🧹 Killing processes by name...
-[21:29:32] 🧹 Killing any remaining Python service processes...
-[21:29:34] 🧹 Force killing any remaining processes on ports 8000 and 9000...
-[21:29:37] ✅ Port 8000 is now free
-[21:29:37] ✅ Port 9000 is now free
-[21:29:37] ✅ Comprehensive port conflict resolution completed
-[21:29:37] 🗑️ Clearing old recordings and temporary files...
-[21:29:37] 🗑️ Clearing temporary files...
-[21:29:37] 🗑️ Clearing old log files...
-[21:29:37] 🗑️ Clearing old systemd journal logs...
-[21:29:37] ✅ Old recordings and temporary files cleared
-[21:29:37] 📋 Initializing fresh booking cache...
-[21:29:37] ✅ Fresh booking cache initialized
-[21:29:37] 🔧 Installing psutil in all virtual environments...
-[21:29:37] 📦 Installing psutil in backend virtual environment...
+[21:48:38] Starting EZREC deployment as user: root
+[21:48:38] STEP: 1. Applying comprehensive system fixes
+[21:48:38] 🔧 Fixing port conflicts with comprehensive cleanup...
+[21:48:38] 🧹 Performing comprehensive system cleanup...
+[21:48:38] 🛑 Stopping all EZREC services...
+Sep 14 21:48:38 raspberrypi systemd[1]: Stopping ezrec-api.service - EZREC FastAPI Backend...
+Sep 14 21:48:39 raspberrypi uvicorn[608895]: INFO:     Shutting down
+Sep 14 21:48:39 raspberrypi uvicorn[608895]: INFO:     Waiting for application shutdown.
+Sep 14 21:48:39 raspberrypi uvicorn[608895]: INFO:     Application shutdown complete.
+Sep 14 21:48:39 raspberrypi uvicorn[608895]: INFO:     Finished server process [608895]
+[21:48:39] 📷 Killing all camera-related processes...
+[21:48:39] 🐍 Killing Python camera processes...
+[21:48:39] 🔓 Clearing camera device locks...
+Sep 14 21:48:39 raspberrypi systemd[1]: ezrec-api.service: Deactivated successfully.
+Sep 14 21:48:39 raspberrypi systemd[1]: Stopped ezrec-api.service - EZREC FastAPI Backend.
+Sep 14 21:48:39 raspberrypi systemd[1]: ezrec-api.service: Consumed 1.816s CPU time.
+[21:48:40] 🗑️ Clearing booking cache...
+[21:48:40] 🗑️ Clearing temporary recording files...
+[21:48:40] 🔄 Resetting camera devices...
+[21:48:43] ✅ Comprehensive system cleanup completed
+[21:48:43] 🧹 Comprehensive port cleanup...
+[21:48:43] 🧹 Killing processes by name...
+[21:48:43] 🧹 Killing any remaining Python service processes...
+[21:48:45] 🧹 Force killing any remaining processes on ports 8000 and 9000...
+[21:48:48] ✅ Port 8000 is now free
+[21:48:48] ✅ Port 9000 is now free
+[21:48:48] ✅ Comprehensive port conflict resolution completed
+[21:48:48] 🗑️ Clearing old recordings and temporary files...
+[21:48:48] 🗑️ Clearing temporary files...
+[21:48:49] 🗑️ Clearing old log files...
+[21:48:49] 🗑️ Clearing old systemd journal logs...
+[21:48:49] ✅ Old recordings and temporary files cleared
+[21:48:49] 📋 Initializing fresh booking cache...
+[21:48:49] ✅ Fresh booking cache initialized
+[21:48:49] 🔧 Installing psutil in all virtual environments...
+[21:48:49] 📦 Installing psutil in backend virtual environment...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
 WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[21:29:39] ✅ psutil installed successfully in backend venv
-[21:29:39] 📦 Installing psutil in API virtual environment...
+[21:48:50] ✅ psutil installed successfully in backend venv
+[21:48:50] 📦 Installing psutil in API virtual environment...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
 WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[21:29:40] ✅ psutil installed successfully in API venv
-[21:29:40] 🧪 Testing psutil imports...
+[21:48:52] ✅ psutil installed successfully in API venv
+[21:48:52] 🧪 Testing psutil imports...
 ✅ psutil imported successfully in backend
-[21:29:40] ✅ psutil import test passed in backend
+[21:48:52] ✅ psutil import test passed in backend
 ✅ psutil imported successfully in API
-[21:29:40] ✅ psutil import test passed in API
-[21:29:40] ✅ psutil installed and tested successfully in all environments
-[21:29:40] 📁 Copying all project files to deployment directory...
-[21:29:40] 📄 Copying backend files...
-[21:29:40] ✅ Backend files copied successfully
-[21:29:40] 📄 Copying API files...
-[21:29:41] ✅ API files copied successfully
-[21:29:41] 📄 Copying systemd service files...
-[21:29:41] ✅ Systemd service files copied and reloaded
-[21:29:41] 📄 Copying updated system_status.py...
-[21:29:41] ✅ system_status.py updated successfully
-[21:29:41] 📄 Copying services directory...
-[21:29:41] ✅ Services directory copied successfully
-[21:29:41] 📄 Copying config directory...
-[21:29:41] ✅ Config directory copied successfully
-[21:29:41] 📄 Copying utils directory...
-[21:29:41] ✅ Utils directory copied successfully
-[21:29:41] 🔒 Existing .env file found in deployment directory - preserving it
-[21:29:41] ℹ️ To update .env, manually edit: /opt/ezrec-backend/.env
-[21:29:41] ✅ All project files copied successfully
-[21:29:41] 🔧 Installing new architecture dependencies...
-[21:29:41] 📦 Installing new architecture dependencies in backend virtual environment...
-[21:29:41] 📦 Installing pytz...
+[21:48:52] ✅ psutil import test passed in API
+[21:48:52] ✅ psutil installed and tested successfully in all environments
+[21:48:52] 📁 Copying all project files to deployment directory...
+[21:48:52] 📄 Copying backend files...
+[21:48:52] ✅ Backend files copied successfully
+[21:48:52] 📄 Copying API files...
+[21:48:53] ✅ API files copied successfully
+[21:48:53] 📄 Copying systemd service files...
+[21:48:53] ✅ Systemd service files copied and reloaded
+[21:48:53] 📄 Copying updated system_status.py...
+[21:48:53] ✅ system_status.py updated successfully
+[21:48:53] 📄 Copying services directory...
+[21:48:53] ✅ Services directory copied successfully
+[21:48:53] 📄 Copying config directory...
+[21:48:53] ✅ Config directory copied successfully
+[21:48:53] 📄 Copying utils directory...
+[21:48:53] ✅ Utils directory copied successfully
+[21:48:53] 🔒 Existing .env file found in deployment directory - preserving it
+[21:48:53] ℹ️ To update .env, manually edit: /opt/ezrec-backend/.env
+[21:48:53] ✅ All project files copied successfully
+[21:48:53] 🔧 Installing new architecture dependencies...
+[21:48:53] 📦 Installing new architecture dependencies in backend virtual environment...
+[21:48:53] 📦 Installing pytz...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: pytz in /usr/lib/python3/dist-packages (2022.7.1)
 WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[21:29:43] ✅ pytz installed successfully
-[21:29:43] 📦 Installing python-dotenv...
+[21:48:54] ✅ pytz installed successfully
+[21:48:54] 📦 Installing python-dotenv...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: python-dotenv in /home/michomanoly14892/.local/lib/python3.11/site-packages (1.0.0)
 WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[21:29:44] ✅ python-dotenv installed successfully
-[21:29:44] 📦 Installing supabase...
+[21:48:56] ✅ python-dotenv installed successfully
+[21:48:56] 📦 Installing supabase...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: supabase in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (2.0.2)
 Requirement already satisfied: gotrue<2.0.0,>=1.3.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from supabase) (1.3.1)
@@ -117,8 +119,8 @@ Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/pyt
 WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[21:29:46] ✅ supabase installed successfully
-[21:29:46] 📦 Installing boto3...
+[21:48:58] ✅ supabase installed successfully
+[21:48:58] 📦 Installing boto3...
 Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
 Requirement already satisfied: boto3 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (1.34.0)
 Requirement already satisfied: botocore<1.35.0,>=1.34.0 in /opt/ezrec-backend/backend/venv/lib/python3.11/site-packages (from boto3) (1.34.162)
@@ -130,133 +132,133 @@ Requirement already satisfied: six>=1.5 in /home/michomanoly14892/.local/lib/pyt
 WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
     sys-platform (=="darwin") ; extra == 'objc'
                  ~^
-[21:29:48] ✅ boto3 installed successfully
-[21:29:48] ✅ New architecture dependencies installation completed
-[21:29:48] 🧪 Testing new architecture imports...
+[21:48:59] ✅ boto3 installed successfully
+[21:48:59] ✅ New architecture dependencies installation completed
+[21:48:59] 🧪 Testing new architecture imports...
 ✅ Config settings import successful
-[21:29:48] ✅ New architecture imports test passed
-[21:29:48] 🔧 Creating fallback dual_recorder for compatibility...
-[21:29:48] ✅ Fallback dual_recorder created
-[21:29:48] 🔧 Fixing camera initialization issues...
-[21:29:48] 📷 Checking camera accessibility...
-[21:29:48] 🔐 Ensuring camera permissions...
-[21:29:48] ✅ Camera device /dev/video0 found
-[21:29:48] ✅ Camera device /dev/video1 found
-[21:29:48] ✅ Camera initialization fixes applied
-[21:29:48] 🔧 Ensuring dual_recorder.py is correct and executable...
-[21:29:48] 📄 Force copying dual_recorder.py from source...
-[21:29:48] ✅ dual_recorder.py copied and made executable
-[21:29:48] WARNING: ⚠️ WARNING: File may not be the correct version
-[21:29:48] ✅ Dual recorder setup completed
-[21:29:48] 🧪 Testing dual_recorder functionality...
+[21:48:59] ✅ New architecture imports test passed
+[21:48:59] 🔧 Creating fallback dual_recorder for compatibility...
+[21:48:59] ✅ Fallback dual_recorder created
+[21:48:59] 🔧 Fixing camera initialization issues...
+[21:48:59] 📷 Checking camera accessibility...
+[21:48:59] 🔐 Ensuring camera permissions...
+[21:48:59] ✅ Camera device /dev/video0 found
+[21:48:59] ✅ Camera device /dev/video1 found
+[21:48:59] ✅ Camera initialization fixes applied
+[21:48:59] 🔧 Ensuring dual_recorder.py is correct and executable...
+[21:48:59] 📄 Force copying dual_recorder.py from source...
+[21:48:59] ✅ dual_recorder.py copied and made executable
+[21:48:59] WARNING: ⚠️ WARNING: File may not be the correct version
+[21:48:59] ✅ Dual recorder setup completed
+[21:48:59] 🧪 Testing dual_recorder functionality...
 ✅ New architecture imports successful
-[21:29:48] ✅ New architecture dual_recorder should work
-[21:29:48] 🔄 Force restarting dual_recorder service...
-[21:29:53] ✅ dual_recorder service restarted successfully
-[21:29:53] 🔧 Ensuring all required files and directories exist...
-[21:29:53] 📁 Creating logs directory...
-[21:29:53] ✅ Logs directory created with proper permissions
-[21:29:53] 📄 Creating system_status.log file...
-[21:29:53] ✅ system_status.log file created with proper permissions
-[21:29:53] 📄 Copying system_status.py to deployment directory...
-[21:29:53] ✅ system_status.py copied with proper permissions
-[21:29:53] 📄 Creating all required log files...
-[21:29:53] ✅ Fixed permissions for existing video_worker.log
-[21:29:54] ✅ Fixed permissions for existing dual_recorder.log
-[21:29:54] ✅ Fixed permissions for existing api_server.log
-[21:29:54] ✅ Fixed permissions for existing health_check.log
-[21:29:54] ✅ Fixed permissions for existing service_monitor.log
-[21:29:54] ✅ All required files and directories created with proper permissions
-[21:29:54] 🔧 Handling service restart issues...
-[21:29:54] 🛑 Stopping all services to break restart loops...
-[21:29:59] 🧹 Killing any remaining service processes...
-[21:30:02] ✅ Service restart issues handled
-[21:30:02] 🔧 Ensuring all services are properly enabled...
-[21:30:02] 🔧 Enabling dual_recorder.service for auto-start...
-[21:30:02] ✅ dual_recorder.service enabled successfully
-[21:30:02] 🔧 Enabling video_worker.service for auto-start...
-[21:30:02] ✅ video_worker.service enabled successfully
-[21:30:02] 🔧 Enabling ezrec-api.service for auto-start...
-[21:30:02] ✅ ezrec-api.service enabled successfully
-[21:30:02] 🔧 Enabling system_status.service for auto-start...
-[21:30:03] ✅ system_status.service enabled successfully
-[21:30:03] 🔧 Enabling system_status.timer for auto-start...
-[21:30:03] ✅ system_status.timer enabled successfully
-[21:30:03] 🔍 Verifying services are enabled...
-[21:30:03] ✅ dual_recorder.service is enabled
-[21:30:03] ✅ video_worker.service is enabled
-[21:30:03] ✅ ezrec-api.service is enabled
-[21:30:03] ✅ system_status.service is enabled
-[21:30:03] ✅ All services properly enabled for auto-start
-[21:30:03] STEP: 2. Starting all services safely
-[21:30:03] 🔧 Starting all services safely with port conflict prevention...
-[21:30:03] 🔧 Fixing port conflicts with comprehensive cleanup...
-[21:30:03] 🧹 Performing comprehensive system cleanup...
-[21:30:03] 🛑 Stopping all EZREC services...
-[21:30:03] 📷 Killing all camera-related processes...
-[21:30:03] 🐍 Killing Python camera processes...
-[21:30:03] 🔓 Clearing camera device locks...
-[21:30:04] 🗑️ Clearing booking cache...
-[21:30:04] 🗑️ Removing booking cache: /opt/ezrec-backend/backend/bookings.json
-[21:30:04] 🗑️ Clearing temporary recording files...
-[21:30:04] 🔄 Resetting camera devices...
-[21:30:07] ✅ Comprehensive system cleanup completed
-[21:30:07] 🧹 Comprehensive port cleanup...
-[21:30:07] 🧹 Killing processes by name...
-[21:30:07] 🧹 Killing any remaining Python service processes...
-[21:30:09] 🧹 Force killing any remaining processes on ports 8000 and 9000...
-[21:30:12] ✅ Port 8000 is now free
-[21:30:12] ✅ Port 9000 is now free
-[21:30:12] ✅ Comprehensive port conflict resolution completed
-[21:30:12] 🚀 Starting ezrec-api.service...
-[21:30:12] 🔧 Special handling for API service...
-[21:30:12] ✅ ezrec-api.service started successfully
-[21:30:12] ⏳ Waiting for API service to be ready...
-Sep 14 21:30:12 raspberrypi systemd[1]: Started ezrec-api.service - EZREC FastAPI Backend.
-Sep 14 21:30:13 raspberrypi uvicorn[605795]: 2025-09-14 21:30:13,791 [INFO] ✅ Supabase client initialized successfully
-Sep 14 21:30:13 raspberrypi uvicorn[605795]: 2025-09-14 21:30:13,792 [INFO] ✅ Using camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a
-Sep 14 21:30:13 raspberrypi uvicorn[605795]: INFO:     Started server process [605795]
-Sep 14 21:30:13 raspberrypi uvicorn[605795]: INFO:     Waiting for application startup.
-Sep 14 21:30:13 raspberrypi uvicorn[605795]: INFO:     Application startup complete.
-Sep 14 21:30:13 raspberrypi uvicorn[605795]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-[21:30:22] ✅ API service is responding
-Sep 14 21:30:22 raspberrypi uvicorn[605795]: INFO:     127.0.0.1:60204 - "GET /test-alive HTTP/1.1" 200 OK
-[21:30:25] 🚀 Starting dual_recorder.service...
-[21:30:26] ✅ dual_recorder.service started successfully
-[21:30:26] ⏳ Waiting longer for dual_recorder to fully initialize...
-[21:30:36] 🚀 Starting video_worker.service...
-[21:30:36] ✅ video_worker.service started successfully
-[21:30:36] ⏳ Waiting longer for video_worker to fully initialize...
-[21:30:46] 🚀 Starting system_status.service...
-[21:30:46] 🔧 Special handling for system_status service...
-[21:30:46] ✅ system_status.log file exists and is writable
-[21:30:48] ✅ system_status.service started successfully
-[21:30:51] 🚀 Starting system_status.timer...
-[21:30:51] ✅ system_status.timer started successfully
-[21:30:51] ✅ All services started safely
-[21:30:51] ⏳ Waiting for all services to fully initialize...
-[21:31:06] STEP: 3. Verifying system completely
-[21:31:06] 🔍 Performing comprehensive system verification...
-[21:31:06] 🧪 Checking all services are running...
-[21:31:06] ✅ dual_recorder.service is running
-[21:31:06] ✅ video_worker.service is running
-[21:31:06] ✅ ezrec-api.service is running
-[21:31:06] ✅ system_status.service is running
-[21:31:06] 🧪 Testing API endpoints...
-[21:31:06] ✅ API /test-alive endpoint is responding
-[21:31:06] ✅ API /status endpoint is responding
-[21:31:06] 🧪 Testing Python imports...
-Sep 14 21:31:06 raspberrypi uvicorn[605795]: INFO:     127.0.0.1:60716 - "GET /test-alive HTTP/1.1" 200 OK
-Sep 14 21:31:06 raspberrypi uvicorn[605795]: INFO:     127.0.0.1:60728 - "GET /status HTTP/1.1" 200 OK
+[21:48:59] ✅ New architecture dual_recorder should work
+[21:48:59] 🔄 Force restarting dual_recorder service...
+[21:49:05] ✅ dual_recorder service restarted successfully
+[21:49:05] 🔧 Ensuring all required files and directories exist...
+[21:49:05] 📁 Creating logs directory...
+[21:49:05] ✅ Logs directory created with proper permissions
+[21:49:05] 📄 Creating system_status.log file...
+[21:49:05] ✅ system_status.log file created with proper permissions
+[21:49:05] 📄 Copying system_status.py to deployment directory...
+[21:49:05] ✅ system_status.py copied with proper permissions
+[21:49:05] 📄 Creating all required log files...
+[21:49:05] ✅ Fixed permissions for existing video_worker.log
+[21:49:05] ✅ Fixed permissions for existing dual_recorder.log
+[21:49:05] ✅ Fixed permissions for existing api_server.log
+[21:49:05] ✅ Fixed permissions for existing health_check.log
+[21:49:05] ✅ Fixed permissions for existing service_monitor.log
+[21:49:05] ✅ All required files and directories created with proper permissions
+[21:49:05] 🔧 Handling service restart issues...
+[21:49:05] 🛑 Stopping all services to break restart loops...
+[21:49:10] 🧹 Killing any remaining service processes...
+[21:49:13] ✅ Service restart issues handled
+[21:49:13] 🔧 Ensuring all services are properly enabled...
+[21:49:13] 🔧 Enabling dual_recorder.service for auto-start...
+[21:49:13] ✅ dual_recorder.service enabled successfully
+[21:49:13] 🔧 Enabling video_worker.service for auto-start...
+[21:49:13] ✅ video_worker.service enabled successfully
+[21:49:13] 🔧 Enabling ezrec-api.service for auto-start...
+[21:49:14] ✅ ezrec-api.service enabled successfully
+[21:49:14] 🔧 Enabling system_status.service for auto-start...
+[21:49:14] ✅ system_status.service enabled successfully
+[21:49:14] 🔧 Enabling system_status.timer for auto-start...
+[21:49:14] ✅ system_status.timer enabled successfully
+[21:49:14] 🔍 Verifying services are enabled...
+[21:49:14] ✅ dual_recorder.service is enabled
+[21:49:14] ✅ video_worker.service is enabled
+[21:49:14] ✅ ezrec-api.service is enabled
+[21:49:14] ✅ system_status.service is enabled
+[21:49:14] ✅ All services properly enabled for auto-start
+[21:49:14] STEP: 2. Starting all services safely
+[21:49:14] 🔧 Starting all services safely with port conflict prevention...
+[21:49:14] 🔧 Fixing port conflicts with comprehensive cleanup...
+[21:49:14] 🧹 Performing comprehensive system cleanup...
+[21:49:14] 🛑 Stopping all EZREC services...
+[21:49:14] 📷 Killing all camera-related processes...
+[21:49:14] 🐍 Killing Python camera processes...
+[21:49:14] 🔓 Clearing camera device locks...
+[21:49:15] 🗑️ Clearing booking cache...
+[21:49:15] 🗑️ Removing booking cache: /opt/ezrec-backend/backend/bookings.json
+[21:49:15] 🗑️ Clearing temporary recording files...
+[21:49:15] 🔄 Resetting camera devices...
+[21:49:18] ✅ Comprehensive system cleanup completed
+[21:49:18] 🧹 Comprehensive port cleanup...
+[21:49:18] 🧹 Killing processes by name...
+[21:49:19] 🧹 Killing any remaining Python service processes...
+[21:49:21] 🧹 Force killing any remaining processes on ports 8000 and 9000...
+[21:49:24] ✅ Port 8000 is now free
+[21:49:24] ✅ Port 9000 is now free
+[21:49:24] ✅ Comprehensive port conflict resolution completed
+[21:49:24] 🚀 Starting ezrec-api.service...
+[21:49:24] 🔧 Special handling for API service...
+[21:49:24] ✅ ezrec-api.service started successfully
+[21:49:24] ⏳ Waiting for API service to be ready...
+Sep 14 21:49:24 raspberrypi systemd[1]: Started ezrec-api.service - EZREC FastAPI Backend.
+Sep 14 21:49:25 raspberrypi uvicorn[610721]: 2025-09-14 21:49:25,093 [INFO] ✅ Supabase client initialized successfully
+Sep 14 21:49:25 raspberrypi uvicorn[610721]: 2025-09-14 21:49:25,094 [INFO] ✅ Using camera ID: d217e751-dfa5-5276-abbb-da5ad6c2626a
+Sep 14 21:49:25 raspberrypi uvicorn[610721]: INFO:     Started server process [610721]
+Sep 14 21:49:25 raspberrypi uvicorn[610721]: INFO:     Waiting for application startup.
+Sep 14 21:49:25 raspberrypi uvicorn[610721]: INFO:     Application startup complete.
+Sep 14 21:49:25 raspberrypi uvicorn[610721]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+[21:49:34] ✅ API service is responding
+Sep 14 21:49:34 raspberrypi uvicorn[610721]: INFO:     127.0.0.1:49468 - "GET /test-alive HTTP/1.1" 200 OK
+[21:49:37] 🚀 Starting dual_recorder.service...
+[21:49:37] ✅ dual_recorder.service started successfully
+[21:49:37] ⏳ Waiting longer for dual_recorder to fully initialize...
+[21:49:47] 🚀 Starting video_worker.service...
+[21:49:47] ✅ video_worker.service started successfully
+[21:49:47] ⏳ Waiting longer for video_worker to fully initialize...
+[21:49:57] 🚀 Starting system_status.service...
+[21:49:57] 🔧 Special handling for system_status service...
+[21:49:57] ✅ system_status.log file exists and is writable
+[21:50:00] ✅ system_status.service started successfully
+[21:50:03] 🚀 Starting system_status.timer...
+[21:50:03] ✅ system_status.timer started successfully
+[21:50:03] ✅ All services started safely
+[21:50:03] ⏳ Waiting for all services to fully initialize...
+[21:50:18] STEP: 3. Verifying system completely
+[21:50:18] 🔍 Performing comprehensive system verification...
+[21:50:18] 🧪 Checking all services are running...
+[21:50:18] ✅ dual_recorder.service is running
+[21:50:18] ✅ video_worker.service is running
+[21:50:18] ✅ ezrec-api.service is running
+[21:50:18] ✅ system_status.service is running
+[21:50:18] 🧪 Testing API endpoints...
+[21:50:18] ✅ API /test-alive endpoint is responding
+[21:50:18] ✅ API /status endpoint is responding
+[21:50:18] 🧪 Testing Python imports...
 ✅ Backend imports working
-[21:31:07] ✅ Backend Python imports are working
+Sep 14 21:50:18 raspberrypi uvicorn[610721]: INFO:     127.0.0.1:35462 - "GET /test-alive HTTP/1.1" 200 OK
+Sep 14 21:50:18 raspberrypi uvicorn[610721]: INFO:     127.0.0.1:35478 - "GET /status HTTP/1.1" 200 OK
+[21:50:18] ✅ Backend Python imports are working
 ✅ API imports working
-[21:31:07] ✅ API Python imports are working
-[21:31:07] 🧪 Testing Cloudflare tunnel...
-[21:31:07] ✅ Cloudflare tunnel is running
-[21:31:07] 🎉 All system verification checks passed!
-[21:31:07] ⏳ Waiting for services to settle before final status check...
-[21:31:12] STEP: 4. Final system status
+[21:50:19] ✅ API Python imports are working
+[21:50:19] 🧪 Testing Cloudflare tunnel...
+[21:50:19] ✅ Cloudflare tunnel is running
+[21:50:19] 🎉 All system verification checks passed!
+[21:50:19] ⏳ Waiting for services to settle before final status check...
+[21:50:24] STEP: 4. Final system status
 
 === FINAL SYSTEM STATUS ===
 ✅ dual_recorder.service: RUNNING
@@ -265,8 +267,333 @@ Sep 14 21:31:06 raspberrypi uvicorn[605795]: INFO:     127.0.0.1:60728 - "GET /s
 ✅ system_status.service: RUNNING
 ✅ cloudflared.service: RUNNING
 ✅ External API: ACCESSIBLE
-[21:31:12] 🎉 Deployment completed successfully!
-[21:31:12] ✅ All services are running and responding correctly
-[21:31:12] ✅ External API is accessible via Cloudflare tunnel
-[21:31:12] ✅ System is ready for frontend testing
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ Sep 14 21:31:12 raspberrypi uvicorn[605795]: INFO:     97.100.138.40:0 - "GET /status HTTP/1.1" 200 OK
+[21:50:24] 🎉 Deployment completed successfully!
+[21:50:24] ✅ All services are running and responding correctly
+[21:50:24] ✅ External API is accessible via Cloudflare tunnel
+[21:50:24] ✅ System is ready for frontend testing
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ Sep 14 21:50:24 raspberrypi uvicorn[610721]: INFO:     97.100.138.40:0 - "GET /status HTTP/1.1" 200 OK
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check if video files are being created
+ls -la /opt/ezrec-backend/recordings/2025-09-14/session_test-booking-now/
+
+# Check recording processes
+ps aux | grep rpicam-vid
+
+# Check camera device usage
+lsof /dev/video0 /dev/video1
+total 38156
+drwxr-xr-x 2 michomanoly14892 video     4096 Sep 14 21:46 .
+drwxr-xr-x 6 michomanoly14892 video     4096 Sep 14 21:46 ..
+-rw-r--r-- 1 michomanoly14892 video 39059504 Sep 14 21:48 camera_0_20250914_214602.mp4
+michoma+  611011  0.0  0.0   6240  1584 pts/0    S+   21:52   0:00 grep --color=auto rpicam-vid
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a new test booking
+sudo tee /opt/ezrec-backend/api/local_data/bookings.json > /dev/null << 'EOF'
+[
+  {
+    "id": "system-test-$(date +%s)",
+    "user_id": "test-user",
+    "start_time": "2025-09-14T21:54:00",
+    "end_time": "2025-09-14T21:55:00",
+    "date": "2025-09-14",
+    "camera_id": "test-camera",
+    "recording_id": "rec-system-test",
+    "status": null,
+    "email": null,
+    "created_at": "2025-09-14T21:50:00",
+    "updated_at": "2025-09-14T21:50:00"
+  }
+]
+EOF
+
+# Monitor the improved system
+sudo journalctl -u dual_recorder.service -f
+Sep 14 21:52:47 raspberrypi python3[610751]: 2025-09-14 21:52:47,655 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:52:47 raspberrypi python3[610751]: 2025-09-14 21:52:47,655 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:52:47 raspberrypi python3[610751]: 2025-09-14 21:52:47,655 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:52:52.656095 (local time)
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO - 🔍 Booking test-booking-now: 2025-09-14 21:46:00 - 2025-09-14 21:47:00
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO -    Now: 2025-09-14 21:52:52.656095
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:52:52 raspberrypi python3[610751]: 2025-09-14 21:52:52,656 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:52:57.656529 (local time)
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO -    Now: 2025-09-14 21:52:57.656529
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:52:57 raspberrypi python3[610751]: 2025-09-14 21:52:57,656 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,656 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,656 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:02.656970 (local time)
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,657 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,657 - dual_recorder - INFO -    Now: 2025-09-14 21:53:02.656970
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,657 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,657 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:02 raspberrypi python3[610751]: 2025-09-14 21:53:02,657 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:07.657479 (local time)
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO -    Now: 2025-09-14 21:53:07.657479
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:07 raspberrypi python3[610751]: 2025-09-14 21:53:07,657 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,657 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,658 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:12.658007 (local time)
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,658 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,658 - dual_recorder - INFO -    Now: 2025-09-14 21:53:12.658007
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,658 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,658 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:12 raspberrypi python3[610751]: 2025-09-14 21:53:12,658 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:17.658457 (local time)
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO -    Now: 2025-09-14 21:53:17.658457
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:17 raspberrypi python3[610751]: 2025-09-14 21:53:17,658 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,658 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,658 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:22.658896 (local time)
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,658 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,658 - dual_recorder - INFO -    Now: 2025-09-14 21:53:22.658896
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,658 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,659 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:22 raspberrypi python3[610751]: 2025-09-14 21:53:22,659 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:27.659329 (local time)
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO -    Now: 2025-09-14 21:53:27.659329
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:27 raspberrypi python3[610751]: 2025-09-14 21:53:27,659 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,659 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,659 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:32.659844 (local time)
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,659 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,659 - dual_recorder - INFO -    Now: 2025-09-14 21:53:32.659844
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,659 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,660 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:32 raspberrypi python3[610751]: 2025-09-14 21:53:32,660 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:37.660368 (local time)
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO -    Now: 2025-09-14 21:53:37.660368
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:37 raspberrypi python3[610751]: 2025-09-14 21:53:37,660 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:42.660813 (local time)
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO -    Now: 2025-09-14 21:53:42.660813
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:42 raspberrypi python3[610751]: 2025-09-14 21:53:42,660 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:47.661266 (local time)
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO -    Now: 2025-09-14 21:53:47.661266
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:47 raspberrypi python3[610751]: 2025-09-14 21:53:47,661 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:52.661774 (local time)
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO -    Now: 2025-09-14 21:53:52.661774
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:52 raspberrypi python3[610751]: 2025-09-14 21:53:52,661 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:53:57.662328 (local time)
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO -    Now: 2025-09-14 21:53:57.662328
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:53:57 raspberrypi python3[610751]: 2025-09-14 21:53:57,662 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,662 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,662 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:02.662865 (local time)
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,662 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,662 - dual_recorder - INFO -    Now: 2025-09-14 21:54:02.662865
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,662 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,662 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,663 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,663 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:02 raspberrypi python3[610751]: 2025-09-14 21:54:02,664 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,664 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,664 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:07.664930 (local time)
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,664 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,665 - dual_recorder - INFO -    Now: 2025-09-14 21:54:07.664930
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,665 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,665 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,665 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,665 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:07 raspberrypi python3[610751]: 2025-09-14 21:54:07,666 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:12.670407 (local time)
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO -    Now: 2025-09-14 21:54:12.670407
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,670 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:12 raspberrypi python3[610751]: 2025-09-14 21:54:12,671 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,671 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,671 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:17.671913 (local time)
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,671 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,671 - dual_recorder - INFO -    Now: 2025-09-14 21:54:17.671913
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,672 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,672 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,672 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,672 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:17 raspberrypi python3[610751]: 2025-09-14 21:54:17,673 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,673 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:22.674056 (local time)
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO -    Now: 2025-09-14 21:54:22.674056
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,674 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:22 raspberrypi python3[610751]: 2025-09-14 21:54:22,675 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:27.675515 (local time)
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO -    Now: 2025-09-14 21:54:27.675515
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,675 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:27 raspberrypi python3[610751]: 2025-09-14 21:54:27,676 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,678 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,678 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:32.678895 (local time)
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,679 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,679 - dual_recorder - INFO -    Now: 2025-09-14 21:54:32.678895
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,679 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,679 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,679 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,679 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:32 raspberrypi python3[610751]: 2025-09-14 21:54:32,680 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,680 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,680 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:37.680799 (local time)
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,680 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,680 - dual_recorder - INFO -    Now: 2025-09-14 21:54:37.680799
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,680 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,681 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,681 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,681 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:37 raspberrypi python3[610751]: 2025-09-14 21:54:37,686 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,686 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,686 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:42.686959 (local time)
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,687 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,687 - dual_recorder - INFO -    Now: 2025-09-14 21:54:42.686959
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,687 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,687 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,687 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,687 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:42 raspberrypi python3[610751]: 2025-09-14 21:54:42,688 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:47.688523 (local time)
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO -    Now: 2025-09-14 21:54:47.688523
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,688 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:47 raspberrypi python3[610751]: 2025-09-14 21:54:47,689 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:52.690541 (local time)
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO -    Now: 2025-09-14 21:54:52.690541
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,690 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:52 raspberrypi python3[610751]: 2025-09-14 21:54:52,691 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:54:57.692588 (local time)
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO -    Now: 2025-09-14 21:54:57.692588
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 🎯 Active booking found: system-test-$(date +%s)
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,692 - dual_recorder - INFO - 🎬 Starting recording for booking: system-test-$(date +%s)
+Sep 14 21:54:57 raspberrypi python3[610751]: 2025-09-14 21:54:57,694 - dual_recorder - INFO - ✅ Recording started successfully for both cameras
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,694 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,695 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:55:02.694983 (local time)
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,695 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,695 - dual_recorder - INFO -    Now: 2025-09-14 21:55:02.694983
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,695 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,695 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:55:02 raspberrypi python3[610751]: 2025-09-14 21:55:02,695 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:55:07.695650 (local time)
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO -    Now: 2025-09-14 21:55:07.695650
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:55:07 raspberrypi python3[610751]: 2025-09-14 21:55:07,695 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:55:12.696336 (local time)
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO -    Now: 2025-09-14 21:55:12.696336
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:55:12 raspberrypi python3[610751]: 2025-09-14 21:55:12,696 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:55:17.697292 (local time)
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO -    Now: 2025-09-14 21:55:17.697292
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:55:17 raspberrypi python3[610751]: 2025-09-14 21:55:17,697 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-14 21:55:22.697834 (local time)
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO - 🔍 Booking system-test-$(date +%s): 2025-09-14 21:54:00 - 2025-09-14 21:55:00
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO -    Now: 2025-09-14 21:55:22.697834
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO - ❌ No active booking found
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 14 21:55:22 raspberrypi python3[610751]: 2025-09-14 21:55:22,697 - dual_recorder - INFO - ⏸️ No active booking, no recording
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Test API endpoints
+curl http://localhost:8000/status
+curl http://localhost:8000/test-alive
+
+# Test external access
+curl https://your-cloudflare-tunnel-url/status
+{"status":"running","timestamp":"2025-09-14T21:55:44.684510","version":"1.0.0"}{"status":"alive"}curl: (6) Could not resolve host: your-cloudflare-tunnel-url
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ Sep 14 21:55:44 raspberrypi uvicorn[610721]: INFO:     127.0.0.1:38270 - "GET /status HTTP/1.1" 200 OK
+Sep 14 21:55:44 raspberrypi uvicorn[610721]: INFO:     127.0.0.1:38276 - "GET /test-alive HTTP/1.1" 200 OK
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check if video files are being created
+ls -la /opt/ezrec-backend/recordings/2025-09-14/session_test-booking-now/
+
+# Check recording processes
+ps aux | grep rpicam-vid
+
+# Check camera device usage
+lsof /dev/video0 /dev/video1
+total 38156
+drwxr-xr-x 2 michomanoly14892 video     4096 Sep 14 21:46 .
+drwxr-xr-x 7 michomanoly14892 video     4096 Sep 14 21:54 ..
+-rw-r--r-- 1 michomanoly14892 video 39059504 Sep 14 21:48 camera_0_20250914_214602.mp4
+michoma+  611089 66.9  2.7 1197360 225120 ?      SLl  21:54   1:19 rpicam-vid --width 1920 --height 1080 --framerate 30 --output /opt/ezrec-backend/recordings/2025-09-14/session_system-test-$(date +%s)/camera_0_20250914_215402.mp4 --timeout 300000
+michoma+  611318  0.0  0.0      0     0 ?        Z    21:54   0:00 [rpicam-vid] <defunct>
+michoma+  611397  0.0  0.0   6240  1600 pts/0    S+   21:56   0:00 grep --color=auto rpicam-vid
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo journalctl -u video_worker.service -f
+Sep 14 21:55:18 raspberrypi python3[610778]: 2025-09-14 21:55:18,938 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:55:33 raspberrypi python3[610778]: 2025-09-14 21:55:33,977 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:55:33 raspberrypi python3[610778]: 2025-09-14 21:55:33,977 [INFO] 📊 Disk usage: 8.1% used, 101.4 GB free
+Sep 14 21:55:33 raspberrypi python3[610778]: 2025-09-14 21:55:33,977 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:55:49 raspberrypi python3[610778]: 2025-09-14 21:55:49,023 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:55:49 raspberrypi python3[610778]: 2025-09-14 21:55:49,023 [INFO] 📊 Disk usage: 8.1% used, 101.4 GB free
+Sep 14 21:55:49 raspberrypi python3[610778]: 2025-09-14 21:55:49,023 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:56:04 raspberrypi python3[610778]: 2025-09-14 21:56:04,069 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:56:04 raspberrypi python3[610778]: 2025-09-14 21:56:04,070 [INFO] 📊 Disk usage: 8.2% used, 101.4 GB free
+Sep 14 21:56:04 raspberrypi python3[610778]: 2025-09-14 21:56:04,070 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:56:19 raspberrypi python3[610778]: 2025-09-14 21:56:19,113 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:56:19 raspberrypi python3[610778]: 2025-09-14 21:56:19,113 [INFO] 📊 Disk usage: 8.2% used, 101.4 GB free
+Sep 14 21:56:19 raspberrypi python3[610778]: 2025-09-14 21:56:19,113 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+
+
