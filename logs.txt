@@ -1,0 +1,5 @@
+# EZREC Application Logs
+# This file is used by the deployment script to collect and display logs
+# It will be populated during deployment and testing
+
+# Deployment logs will be added here automatically
