@@ -233,6 +233,312 @@ install_psutil_everywhere() {
     log_info "✅ psutil installed and tested successfully in all environments"
 }
 
+# Install new architecture dependencies
+install_new_architecture_dependencies() {
+    log_info "🔧 Installing new architecture dependencies..."
+    
+    # Install in backend venv
+    if [[ -d "$DEPLOY_PATH/backend/venv" ]]; then
+        log_info "📦 Installing new architecture dependencies in backend virtual environment..."
+        
+        # Install required packages for new architecture
+        local packages=("pytz" "python-dotenv" "supabase" "boto3")
+        
+        for package in "${packages[@]}"; do
+            log_info "📦 Installing $package..."
+            if sudo -u $DEPLOY_USER "$DEPLOY_PATH/backend/venv/bin/pip" install --no-cache-dir "$package"; then
+                log_info "✅ $package installed successfully"
+            else
+                log_warn "⚠️ $package installation failed, but continuing..."
+            fi
+        done
+        
+        log_info "✅ New architecture dependencies installation completed"
+    else
+        log_warn "⚠️ Backend virtual environment not found"
+    fi
+    
+    # Test the new architecture imports
+    log_info "🧪 Testing new architecture imports..."
+    if sudo -u $DEPLOY_USER "$DEPLOY_PATH/backend/venv/bin/python3" -c "
+import sys
+sys.path.append('/opt/ezrec-backend')
+try:
+    from config.settings import settings
+    print('✅ Config settings import successful')
+except Exception as e:
+    print('❌ Config settings import failed:', e)
+    sys.exit(1)
+" 2>/dev/null; then
+        log_info "✅ New architecture imports test passed"
+    else
+        log_warn "⚠️ New architecture imports test failed - may need manual configuration"
+    fi
+}
+
+# Create fallback dual_recorder if new architecture fails
+create_fallback_recorder() {
+    log_info "🔧 Creating fallback dual_recorder for compatibility..."
+    
+    # Create a simple fallback version that doesn't use new architecture
+    cat > /tmp/dual_recorder_fallback.py << 'EOF'
+#!/usr/bin/env python3
+"""
+EZREC Dual Camera Recorder - Fallback Version
+Simple version that works without the new service architecture
+"""
+
+import os
+import sys
+import time
+import logging
+import subprocess
+import threading
+from pathlib import Path
+from datetime import datetime
+import pytz
+
+# Configuration
+RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
+BOOKINGS_FILE = Path("/opt/ezrec-backend/api/local_data/bookings.json")
+
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
+
+class FallbackRecorder:
+    def __init__(self):
+        self.recording = False
+        self.recording_processes = {}
+        self.recording_threads = {}
+        
+    def detect_cameras(self):
+        """Detect available cameras using rpicam-vid"""
+        available_cameras = []
+        
+        for index in range(2):
+            try:
+                result = subprocess.run([
+                    'rpicam-vid', '--camera', str(index), '--timeout', '1000', '--output', '/dev/null'
+                ], capture_output=True, text=True, timeout=5)
+                
+                if "Available cameras" in result.stderr or "imx477" in result.stderr:
+                    available_cameras.append(index)
+                    logger.info(f"✅ Camera {index} detected")
+                else:
+                    logger.warning(f"⚠️ Camera {index} not available")
+            except Exception as e:
+                logger.warning(f"⚠️ Camera {index} not available: {e}")
+        
+        logger.info(f"📷 Available cameras: {available_cameras}")
+        return available_cameras
+    
+    def record_camera(self, camera_index, output_file, booking_id):
+        """Record from a single camera using rpicam-vid"""
+        try:
+            logger.info(f"🔧 Starting recording for camera {camera_index}")
+            
+            cmd = [
+                'rpicam-vid',
+                '--camera', str(camera_index),
+                '--width', '1280',
+                '--height', '720',
+                '--framerate', '30',
+                '--output', str(output_file),
+                '--timeout', '300000'
+            ]
+            
+            logger.info(f"🎬 Running command: {' '.join(cmd)}")
+            
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.recording_processes[camera_index] = process
+            
+            logger.info(f"✅ Camera {camera_index} started recording to {output_file}")
+            
+            while self.recording and process.poll() is None:
+                time.sleep(1)
+            
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=5)
+            
+            logger.info(f"✅ Camera {camera_index} finished recording")
+            
+        except Exception as e:
+            logger.error(f"❌ Camera {camera_index} recording failed: {e}")
+    
+    def find_active_booking(self):
+        """Find an active booking that should be recording now"""
+        try:
+            if not BOOKINGS_FILE.exists():
+                return None
+            
+            import json
+            with open(BOOKINGS_FILE, 'r') as f:
+                bookings = json.load(f)
+            
+            if not bookings:
+                return None
+            
+            now = datetime.now(pytz.timezone('America/New_York'))
+            logger.info(f"🔍 Checking {len(bookings)} bookings at {now}")
+            
+            for booking in bookings:
+                try:
+                    start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
+                    end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
+                    
+                    if start_time <= now <= end_time:
+                        logger.info(f"🎯 Active booking found: {booking['id']}")
+                        return booking
+                except Exception as e:
+                    logger.error(f"❌ Error parsing booking {booking.get('id', 'unknown')}: {e}")
+                    continue
+            
+            logger.info("❌ No active booking found")
+            return None
+            
+        except Exception as e:
+            logger.error(f"❌ Error finding active booking: {e}")
+            return None
+    
+    def start_recording_session(self, booking):
+        """Start recording session using rpicam-vid"""
+        logger.info(f"🎬 Starting recording session for booking: {booking['id']}")
+        
+        available_cameras = self.detect_cameras()
+        
+        if not available_cameras:
+            logger.error("❌ No cameras available")
+            return False
+        
+        today = datetime.now().strftime("%Y-%m-%d")
+        session_dir = RECORDINGS_DIR / today / f"session_{booking['id']}"
+        session_dir.mkdir(parents=True, exist_ok=True)
+        
+        self.recording = True
+        
+        for camera_index in available_cameras:
+            output_file = session_dir / f"camera_{camera_index}.mp4"
+            
+            thread = threading.Thread(
+                target=self.record_camera,
+                args=(camera_index, output_file, booking['id'])
+            )
+            thread.daemon = True
+            thread.start()
+            
+            self.recording_threads[camera_index] = thread
+        
+        logger.info("✅ Recording started successfully")
+        return True
+    
+    def stop_recording_session(self):
+        """Stop recording session"""
+        if not self.recording:
+            return
+        
+        logger.info("🛑 Stopping recording session")
+        self.recording = False
+        
+        for camera_index, process in self.recording_processes.items():
+            try:
+                if process.poll() is None:
+                    process.terminate()
+                    process.wait(timeout=5)
+                logger.info(f"✅ Camera {camera_index} process stopped")
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {camera_index} process: {e}")
+        
+        for camera_index, thread in self.recording_threads.items():
+            try:
+                thread.join(timeout=5)
+                logger.info(f"✅ Camera {camera_index} thread finished")
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {camera_index} thread: {e}")
+        
+        self.recording_processes.clear()
+        self.recording_threads.clear()
+        logger.info("✅ Recording stopped")
+    
+    def is_recording(self):
+        """Check if currently recording"""
+        return self.recording
+
+def main():
+    """Main service function - runs continuously"""
+    logger.info("🎥 EZREC Dual Recorder Service Starting (Fallback Mode)")
+    
+    recorder = FallbackRecorder()
+    
+    try:
+        while True:
+            active_booking = recorder.find_active_booking()
+            
+            if active_booking and not recorder.is_recording():
+                recorder.start_recording_session(active_booking)
+            elif not active_booking and recorder.is_recording():
+                recorder.stop_recording_session()
+            
+            time.sleep(5)
+            
+    except KeyboardInterrupt:
+        logger.info("🛑 Service interrupted by user")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
+    except Exception as e:
+        logger.error(f"❌ Service error: {e}")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
+
+if __name__ == "__main__":
+    main()
+EOF
+
+    # Copy fallback to deployment directory
+    sudo cp /tmp/dual_recorder_fallback.py "$DEPLOY_PATH/backend/dual_recorder_fallback.py"
+    sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/dual_recorder_fallback.py"
+    sudo chmod +x "$DEPLOY_PATH/backend/dual_recorder_fallback.py"
+    
+    log_info "✅ Fallback dual_recorder created"
+}
+
+# Test dual_recorder and switch to fallback if needed
+test_and_fix_dual_recorder() {
+    log_info "🧪 Testing dual_recorder functionality..."
+    
+    # Test if the new architecture dual_recorder works
+    if sudo -u $DEPLOY_USER "$DEPLOY_PATH/backend/venv/bin/python3" -c "
+import sys
+sys.path.append('/opt/ezrec-backend')
+try:
+    from services.camera_service import CameraService
+    from services.booking_service import BookingService
+    from utils.logger import setup_service_logging
+    print('✅ New architecture imports successful')
+except Exception as e:
+    print('❌ New architecture imports failed:', e)
+    sys.exit(1)
+" 2>/dev/null; then
+        log_info "✅ New architecture dual_recorder should work"
+    else
+        log_warn "⚠️ New architecture dual_recorder failed - switching to fallback"
+        
+        # Backup the new architecture version
+        sudo cp "$DEPLOY_PATH/backend/dual_recorder.py" "$DEPLOY_PATH/backend/dual_recorder_new_arch.py"
+        
+        # Replace with fallback version
+        sudo cp "$DEPLOY_PATH/backend/dual_recorder_fallback.py" "$DEPLOY_PATH/backend/dual_recorder.py"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/dual_recorder.py"
+        sudo chmod +x "$DEPLOY_PATH/backend/dual_recorder.py"
+        
+        log_info "✅ Switched to fallback dual_recorder"
+    fi
+}
+
 # Ensure all required files and directories exist with proper permissions
 ensure_files_and_directories() {
     log_info "🔧 Ensuring all required files and directories exist..."
@@ -290,6 +596,9 @@ copy_project_files() {
     sudo mkdir -p "$DEPLOY_PATH/backend"
     sudo mkdir -p "$DEPLOY_PATH/api"
     sudo mkdir -p "$DEPLOY_PATH/systemd"
+    sudo mkdir -p "$DEPLOY_PATH/services"
+    sudo mkdir -p "$DEPLOY_PATH/config"
+    sudo mkdir -p "$DEPLOY_PATH/utils"
     
     # Copy backend files
     log_info "📄 Copying backend files..."
@@ -325,6 +634,39 @@ copy_project_files() {
     else
         log_error "❌ Systemd directory not found"
         return 1
+    fi
+    
+    # Copy services directory (new architecture)
+    log_info "📄 Copying services directory..."
+    if [[ -d "services" ]]; then
+        sudo cp -r services/* "$DEPLOY_PATH/services/"
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/services"
+        sudo chmod -R 755 "$DEPLOY_PATH/services"
+        log_info "✅ Services directory copied successfully"
+    else
+        log_warn "⚠️ Services directory not found - new architecture may not work"
+    fi
+    
+    # Copy config directory (new architecture)
+    log_info "📄 Copying config directory..."
+    if [[ -d "config" ]]; then
+        sudo cp -r config/* "$DEPLOY_PATH/config/"
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/config"
+        sudo chmod -R 755 "$DEPLOY_PATH/config"
+        log_info "✅ Config directory copied successfully"
+    else
+        log_warn "⚠️ Config directory not found - new architecture may not work"
+    fi
+    
+    # Copy utils directory (new architecture)
+    log_info "📄 Copying utils directory..."
+    if [[ -d "utils" ]]; then
+        sudo cp -r utils/* "$DEPLOY_PATH/utils/"
+        sudo chown -R $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/utils"
+        sudo chmod -R 755 "$DEPLOY_PATH/utils"
+        log_info "✅ Utils directory copied successfully"
+    else
+        log_warn "⚠️ Utils directory not found - new architecture may not work"
     fi
     
     # Copy environment file if it exists
@@ -700,11 +1042,20 @@ main() {
     # Copy all project files to deployment directory
     copy_project_files
     
+    # Install new architecture dependencies
+    install_new_architecture_dependencies
+    
+    # Create fallback recorder
+    create_fallback_recorder
+    
     # Fix camera initialization issues
     fix_camera_initialization
     
     # Ensure dual_recorder is executable
     ensure_recorder_executable
+    
+    # Test and fix dual_recorder if needed
+    test_and_fix_dual_recorder
     
     # Force restart dual_recorder service to pick up changes
     force_restart_dual_recorder
