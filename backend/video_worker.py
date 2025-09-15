@@ -113,8 +113,11 @@ TIMEZONE_NAME = os.getenv("TIMEZONE", "UTC")
 LOCAL_TZ = pytz.timezone(TIMEZONE_NAME)
 
 required_env_vars = [
-    "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID",
-    "AWS_REGION", "AWS_S3_BUCKET", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"
+    "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID"
+]
+# AWS variables are optional - only required if using S3 uploads
+optional_aws_vars = [
+    "AWS_REGION", "S3_BUCKET", "AWS_ACCESS_KEY_ID", "AWS_SECRET_ACCESS_KEY"
 ]
 # Setup logging FIRST before any other operations
 LOG_FILE = "/opt/ezrec-backend/logs/video_worker.log"
@@ -127,13 +130,18 @@ log = logging.getLogger("video_worker")
 
 for var in required_env_vars:
     if not os.getenv(var):
-        raise RuntimeError(f"Missing env: {var}")
+        raise RuntimeError(f"Missing required env: {var}")
+
+# Check AWS variables and warn if missing
+missing_aws_vars = [var for var in optional_aws_vars if not os.getenv(var)]
+if missing_aws_vars:
+    log.warning(f"⚠️ Missing AWS variables: {missing_aws_vars} - S3 uploads will be disabled")
 
 # Initialize Supabase client with proper error handling
 try:
     supabase = create_client(
         os.getenv("SUPABASE_URL"),
-        os.getenv("SUPABASE_ANON_KEY")
+        os.getenv("SUPABASE_SERVICE_ROLE_KEY")
     )
     log.info("✅ Supabase client initialized successfully")
 except Exception as e:
@@ -145,11 +153,11 @@ s3 = boto3.client(
     "s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    region_name=os.getenv("AWS_REGION")
+    region_name=os.getenv("AWS_REGION", "us-east-1")
 )
 
-S3_BUCKET = os.getenv("AWS_S3_BUCKET")
-AWS_REGION = os.getenv("AWS_REGION")
+S3_BUCKET = os.getenv("S3_BUCKET")
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 USER_MEDIA_BUCKET = os.getenv("AWS_USER_MEDIA_BUCKET", S3_BUCKET)
 RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
 PROCESSED_DIR = Path("/opt/ezrec-backend/processed")
@@ -177,7 +185,7 @@ user_media_s3 = boto3.client(
     "s3",
     aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
     aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    region_name=os.getenv("AWS_REGION")
+    region_name=os.getenv("AWS_REGION", "us-east-1")
 )
 
 # Overlay position mapping
