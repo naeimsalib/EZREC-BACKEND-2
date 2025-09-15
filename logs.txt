@@ -1,5 +1,473 @@
-# EZREC Application Logs
-# This file is used by the deployment script to collect and display logs
-# It will be populated during deployment and testing
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # 1. Create the correct directory and move the booking file
+sudo mkdir -p /opt/ezrec-backend/api/local_data
+sudo cp /opt/ezrec-backend/backend/bookings.json /opt/ezrec-backend/api/local_data/bookings.json
 
-# Deployment logs will be added here automatically
+# 2. Restart the dual_recorder service
+sudo systemctl restart dual_recorder.service
+
+# 3. Monitor the logs
+sudo journalctl -u dual_recorder.service -f
+Sep 14 21:19:46 raspberrypi python3[602563]: 2025-09-14 21:19:46,678 - services.booking_service - INFO - 📋 Loaded 0 bookings from cache
+Sep 14 21:19:51 raspberrypi python3[602563]: 2025-09-14 21:19:51,679 - services.booking_service - INFO - 📋 Loaded 0 bookings from cache
+Sep 14 21:19:56 raspberrypi python3[602563]: 2025-09-14 21:19:56,679 - services.booking_service - INFO - 📋 Loaded 0 bookings from cache
+Sep 14 21:20:01 raspberrypi python3[602563]: 2025-09-14 21:20:01,679 - services.booking_service - INFO - 📋 Loaded 0 bookings from cache
+Sep 14 21:20:06 raspberrypi python3[602563]: 2025-09-14 21:20:06,680 - services.booking_service - INFO - 📋 Loaded 0 bookings from cache
+Sep 14 21:20:11 raspberrypi python3[602563]: 2025-09-14 21:20:11,680 - services.booking_service - INFO - 📋 Loaded 0 bookings from cache
+Sep 14 21:20:12 raspberrypi systemd[1]: Stopping dual_recorder.service - EZREC Dual Camera Recorder Service...
+Sep 14 21:20:12 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:12 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:12 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:12 raspberrypi python3[602647]: 2025-09-14 21:20:12,229 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:12 raspberrypi python3[602647]: 2025-09-14 21:20:12,229 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:12 raspberrypi python3[602647]: 2025-09-14 21:20:12,230 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:12 raspberrypi python3[602647]: 2025-09-14 21:20:12,230 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:12.230868-04:00
+Sep 14 21:20:12 raspberrypi python3[602647]: 2025-09-14 21:20:12,231 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:12 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:17 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 1.
+Sep 14 21:20:17 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:17 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:17 raspberrypi python3[602657]: 2025-09-14 21:20:17,573 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:17 raspberrypi python3[602657]: 2025-09-14 21:20:17,574 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:17 raspberrypi python3[602657]: 2025-09-14 21:20:17,574 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:17 raspberrypi python3[602657]: 2025-09-14 21:20:17,575 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:17.575120-04:00
+Sep 14 21:20:17 raspberrypi python3[602657]: 2025-09-14 21:20:17,575 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:17 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:22 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 2.
+Sep 14 21:20:22 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:22 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:22 raspberrypi python3[602663]: 2025-09-14 21:20:22,844 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:22 raspberrypi python3[602663]: 2025-09-14 21:20:22,844 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:22 raspberrypi python3[602663]: 2025-09-14 21:20:22,846 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:22 raspberrypi python3[602663]: 2025-09-14 21:20:22,847 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:22.847264-04:00
+Sep 14 21:20:22 raspberrypi python3[602663]: 2025-09-14 21:20:22,848 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:22 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:27 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 3.
+Sep 14 21:20:27 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:27 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:28 raspberrypi python3[602668]: 2025-09-14 21:20:28,078 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:28 raspberrypi python3[602668]: 2025-09-14 21:20:28,078 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:28 raspberrypi python3[602668]: 2025-09-14 21:20:28,078 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:28 raspberrypi python3[602668]: 2025-09-14 21:20:28,079 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:28.079540-04:00
+Sep 14 21:20:28 raspberrypi python3[602668]: 2025-09-14 21:20:28,080 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:28 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:33 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 4.
+Sep 14 21:20:33 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:33 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:33 raspberrypi python3[602674]: 2025-09-14 21:20:33,330 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:33 raspberrypi python3[602674]: 2025-09-14 21:20:33,331 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:33 raspberrypi python3[602674]: 2025-09-14 21:20:33,331 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:33 raspberrypi python3[602674]: 2025-09-14 21:20:33,332 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:33.332377-04:00
+Sep 14 21:20:33 raspberrypi python3[602674]: 2025-09-14 21:20:33,333 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:33 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:38 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 5.
+Sep 14 21:20:38 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:38 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:38 raspberrypi python3[602679]: 2025-09-14 21:20:38,538 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:38 raspberrypi python3[602679]: 2025-09-14 21:20:38,538 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:38 raspberrypi python3[602679]: 2025-09-14 21:20:38,538 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:38 raspberrypi python3[602679]: 2025-09-14 21:20:38,539 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:38.539301-04:00
+Sep 14 21:20:38 raspberrypi python3[602679]: 2025-09-14 21:20:38,540 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:38 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check what API endpoints are available
+curl http://localhost:8000/
+curl http://localhost:8000/docs
+curl http://localhost:8000/status
+{"message":"EZREC FastAPI is running"}
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui.css">
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+    <title>FastAPI - Swagger UI</title>
+    </head>
+    <body>
+    <div id="swagger-ui">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <!-- `SwaggerUIBundle` is now available on the page -->
+    <script>
+    const ui = SwaggerUIBundle({
+        url: '/openapi.json',
+    "dom_id": "#swagger-ui",
+"layout": "BaseLayout",
+"deepLinking": true,
+"showExtensions": true,
+"showCommonExtensions": true,
+oauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',
+    presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+    })
+    </script>
+    </body>
+    </html>
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check what API endpoints are availableanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check what API endpoints are available
+curl http://localhost:8000/
+curl http://localhost:8000/docs
+curl http://localhost:8000/status
+{"message":"EZREC FastAPI is running"}
+    <!DOCTYPE html>
+    <html>
+    <head>
+    <link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui.css">
+    <link rel="shortcut icon" href="https://fastapi.tiangolo.com/img/favicon.png">
+    <title>FastAPI - Swagger UI</title>
+    </head>
+    <body>
+    <div id="swagger-ui">
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <!-- `SwaggerUIBundle` is now available on the page -->
+    <script>
+    const ui = SwaggerUIBundle({
+        url: '/openapi.json',
+    "dom_id": "#swagger-ui",
+"layout": "BaseLayout",
+"deepLinking": true,
+"showExtensions": true,
+"showCommonExtensions": true,
+oauth2RedirectUrl: window.location.origin + '/docs/oauth2-redirect',
+    presets: [
+        SwaggerUIBundle.presets.apis,
+        SwaggerUIBundle.SwaggerUIStandalonePreset
+        ],
+    })
+    </script>
+    </body>
+    </html>
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Test system statussion":"1.0.0"}michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Test system status
+curl http://localhost:8000/status
+
+# Test camera endpoints
+curl http://localhost:8000/api/cameras
+
+# Test recordings endpoint
+curl http://localhost:8000/api/recordings
+
+# Test bookings endpoint
+curl http://localhost:8000/api/bookings
+{"status":"running","timestamp":"2025-09-14T21:20:48.722763","version":"1.0.0"}{"detail":"Not Found"}{"detail":"Not Found"}{"detail":"Not Found"}michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a booking for immediatmichomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a booking for immediate recording
+curl -X POST http://localhost:8000/api/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_time": "'$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")'",
+    "end_time": "'$(date -u -d "+2 minutes" +"%Y-%m-%dT%H:%M:%S.000Z")'",
+    "title": "Frontend Test Recording",
+    "description": "Testing from frontend"
+  }'
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Monitor dual_recorder Monitor dual_recorder
+sudo journalctl -u dual_recorder.service -f &
+
+# Monitor video_worker
+sudo journalctl -u video_worker.service -f &
+
+# Monitor API server
+sudo journalctl -u ezrec-api.service -f &
+
+# Monitor system status
+sudo journalctl -u system_status.service -f
+[1] 602707
+[2] 602708
+[3] 602709
+Sep 14 21:20:49 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:54 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 8.
+Sep 14 21:20:54 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:54 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:54 raspberrypi python3[602705]: 2025-09-14 21:20:54,325 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:54 raspberrypi python3[602705]: 2025-09-14 21:20:54,325 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:54 raspberrypi python3[602705]: 2025-09-14 21:20:54,325 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:54 raspberrypi python3[602705]: 2025-09-14 21:20:54,326 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:54.326465-04:00
+Sep 14 21:20:54 raspberrypi python3[602705]: 2025-09-14 21:20:54,327 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:54 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:20:08 raspberrypi python3[601392]: 2025-09-14 21:20:08,666 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:23 raspberrypi python3[601392]: 2025-09-14 21:20:23,715 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:23 raspberrypi python3[601392]: 2025-09-14 21:20:23,715 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:20:23 raspberrypi python3[601392]: 2025-09-14 21:20:23,715 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:38 raspberrypi python3[601392]: 2025-09-14 21:20:38,742 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:38 raspberrypi python3[601392]: 2025-09-14 21:20:38,742 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:20:38 raspberrypi python3[601392]: 2025-09-14 21:20:38,742 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:53 raspberrypi python3[601392]: 2025-09-14 21:20:53,785 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:53 raspberrypi python3[601392]: 2025-09-14 21:20:53,785 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:20:53 raspberrypi python3[601392]: 2025-09-14 21:20:53,785 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:20:40 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:45426 - "GET /docs HTTP/1.1" 200 OK
+Sep 14 21:20:40 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:45430 - "GET /status HTTP/1.1" 200 OK
+Sep 14 21:20:45 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41812 - "GET / HTTP/1.1" 200 OK
+Sep 14 21:20:45 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41824 - "GET /docs HTTP/1.1" 200 OK
+Sep 14 21:20:45 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41840 - "GET /status HTTP/1.1" 200 OK
+Sep 14 21:20:48 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41856 - "GET /status HTTP/1.1" 200 OK
+Sep 14 21:20:48 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41872 - "GET /api/cameras HTTP/1.1" 404 Not Found
+Sep 14 21:20:48 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41874 - "GET /api/recordings HTTP/1.1" 404 Not Found
+Sep 14 21:20:48 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41886 - "GET /api/bookings HTTP/1.1" 404 Not Found
+Sep 14 21:20:52 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:41900 - "POST /api/bookings HTTP/1.1" 404 Not Found
+Sep 14 20:59:30 raspberrypi python3[601408]: 2025-09-14 20:59:30,826 [INFO] Camera closed successfully.
+Sep 14 20:59:30 raspberrypi python3[601408]: 2025-09-14 20:59:30,983 [INFO] 📊 Overall Status: CRITICAL
+Sep 14 20:59:30 raspberrypi python3[601408]: 2025-09-14 20:59:30,983 [ERROR] 🚨 Critical Issues: Missing environment variables: ['AWS_REGION', 'AWS_S3_BUCKET']
+Sep 14 20:59:30 raspberrypi python3[601408]: 2025-09-14 20:59:30,985 [INFO] ✅ Status saved to /opt/ezrec-backend/status.json
+Sep 14 20:59:31 raspberrypi python3[601408]: 2025-09-14 20:59:31,452 [INFO] HTTP Request: PATCH https://iszmsaayxpdrovealrrp.supabase.co/rest/v1/cameras?id=eq.d217e751-dfa5-5276-abbb-da5ad6c2626a "HTTP/1.1 200 OK"
+Sep 14 20:59:31 raspberrypi python3[601408]: 2025-09-14 20:59:31,455 [INFO] ✅ Camera status updated in Supabase
+Sep 14 20:59:31 raspberrypi python3[601408]: 2025-09-14 20:59:31,455 [INFO] ✅ Health check completed successfully
+Sep 14 20:59:31 raspberrypi python3[601408]: 2025-09-14 20:59:31,455 [INFO] ✅ System Status: critical
+Sep 14 20:59:31 raspberrypi python3[601408]: ✅ Supabase client initialized successfully
+Sep 14 20:59:31 raspberrypi systemd[1]: Finished system_status.service - EZREC System Status Monitor.
+Sep 14 21:20:59 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 9.
+Sep 14 21:20:59 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:59 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:20:59 raspberrypi python3[602723]: 2025-09-14 21:20:59,584 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:20:59 raspberrypi python3[602723]: 2025-09-14 21:20:59,586 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:20:59 raspberrypi python3[602723]: 2025-09-14 21:20:59,586 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:20:59 raspberrypi python3[602723]: 2025-09-14 21:20:59,587 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:20:59.587853-04:00
+Sep 14 21:20:59 raspberrypi python3[602723]: 2025-09-14 21:20:59,588 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:20:59 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:04 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 10.
+Sep 14 21:21:04 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:04 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:04 raspberrypi python3[602729]: 2025-09-14 21:21:04,831 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:04 raspberrypi python3[602729]: 2025-09-14 21:21:04,836 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:04 raspberrypi python3[602729]: 2025-09-14 21:21:04,836 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:04 raspberrypi python3[602729]: 2025-09-14 21:21:04,837 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:04.837492-04:00
+Sep 14 21:21:04 raspberrypi python3[602729]: 2025-09-14 21:21:04,838 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:04 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:08 raspberrypi python3[601392]: 2025-09-14 21:21:08,832 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:08 raspberrypi python3[601392]: 2025-09-14 21:21:08,833 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:21:08 raspberrypi python3[601392]: 2025-09-14 21:21:08,833 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:09 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 11.
+Sep 14 21:21:09 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:09 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:10 raspberrypi python3[602734]: 2025-09-14 21:21:10,085 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:10 raspberrypi python3[602734]: 2025-09-14 21:21:10,085 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:10 raspberrypi python3[602734]: 2025-09-14 21:21:10,085 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:10 raspberrypi python3[602734]: 2025-09-14 21:21:10,086 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:10.086865-04:00
+Sep 14 21:21:10 raspberrypi python3[602734]: 2025-09-14 21:21:10,087 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:10 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:15 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 12.
+Sep 14 21:21:15 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:15 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:15 raspberrypi python3[602737]: 2025-09-14 21:21:15,312 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:15 raspberrypi python3[602737]: 2025-09-14 21:21:15,312 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:15 raspberrypi python3[602737]: 2025-09-14 21:21:15,312 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:15 raspberrypi python3[602737]: 2025-09-14 21:21:15,313 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:15.313666-04:00
+Sep 14 21:21:15 raspberrypi python3[602737]: 2025-09-14 21:21:15,314 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:15 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:20 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 13.
+Sep 14 21:21:20 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:20 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:20 raspberrypi python3[602741]: 2025-09-14 21:21:20,584 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:20 raspberrypi python3[602741]: 2025-09-14 21:21:20,584 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:20 raspberrypi python3[602741]: 2025-09-14 21:21:20,584 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:20 raspberrypi python3[602741]: 2025-09-14 21:21:20,585 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:20.585693-04:00
+Sep 14 21:21:20 raspberrypi python3[602741]: 2025-09-14 21:21:20,586 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:20 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:23 raspberrypi python3[601392]: 2025-09-14 21:21:23,868 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:23 raspberrypi python3[601392]: 2025-09-14 21:21:23,868 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:21:23 raspberrypi python3[601392]: 2025-09-14 21:21:23,868 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:25 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 14.
+Sep 14 21:21:25 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:25 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:25 raspberrypi python3[602747]: 2025-09-14 21:21:25,838 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:25 raspberrypi python3[602747]: 2025-09-14 21:21:25,838 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:25 raspberrypi python3[602747]: 2025-09-14 21:21:25,838 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:25 raspberrypi python3[602747]: 2025-09-14 21:21:25,839 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:25.839781-04:00
+Sep 14 21:21:25 raspberrypi python3[602747]: 2025-09-14 21:21:25,840 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:25 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:30 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 15.
+Sep 14 21:21:30 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:30 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:31 raspberrypi python3[602752]: 2025-09-14 21:21:31,081 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:31 raspberrypi python3[602752]: 2025-09-14 21:21:31,081 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:31 raspberrypi python3[602752]: 2025-09-14 21:21:31,083 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:31 raspberrypi python3[602752]: 2025-09-14 21:21:31,084 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:31.084131-04:00
+Sep 14 21:21:31 raspberrypi python3[602752]: 2025-09-14 21:21:31,085 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:31 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:36 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 16.
+Sep 14 21:21:36 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:36 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:36 raspberrypi python3[602758]: 2025-09-14 21:21:36,331 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:36 raspberrypi python3[602758]: 2025-09-14 21:21:36,331 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:36 raspberrypi python3[602758]: 2025-09-14 21:21:36,331 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:36 raspberrypi python3[602758]: 2025-09-14 21:21:36,332 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:36.332774-04:00
+Sep 14 21:21:36 raspberrypi python3[602758]: 2025-09-14 21:21:36,333 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:36 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:38 raspberrypi python3[601392]: 2025-09-14 21:21:38,908 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:38 raspberrypi python3[601392]: 2025-09-14 21:21:38,908 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:21:38 raspberrypi python3[601392]: 2025-09-14 21:21:38,908 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:41 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 17.
+Sep 14 21:21:41 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:41 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:41 raspberrypi python3[602763]: 2025-09-14 21:21:41,583 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:41 raspberrypi python3[602763]: 2025-09-14 21:21:41,584 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:41 raspberrypi python3[602763]: 2025-09-14 21:21:41,585 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:41 raspberrypi python3[602763]: 2025-09-14 21:21:41,586 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:41.586076-04:00
+Sep 14 21:21:41 raspberrypi python3[602763]: 2025-09-14 21:21:41,587 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:41 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:46 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 18.
+Sep 14 21:21:46 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:46 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:46 raspberrypi python3[602767]: 2025-09-14 21:21:46,814 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:46 raspberrypi python3[602767]: 2025-09-14 21:21:46,814 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:46 raspberrypi python3[602767]: 2025-09-14 21:21:46,815 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:46 raspberrypi python3[602767]: 2025-09-14 21:21:46,815 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:46.815883-04:00
+Sep 14 21:21:46 raspberrypi python3[602767]: 2025-09-14 21:21:46,816 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:46 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:51 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 19.
+Sep 14 21:21:51 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:51 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:52 raspberrypi python3[602771]: 2025-09-14 21:21:52,086 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:52 raspberrypi python3[602771]: 2025-09-14 21:21:52,086 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:52 raspberrypi python3[602771]: 2025-09-14 21:21:52,086 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:52 raspberrypi python3[602771]: 2025-09-14 21:21:52,087 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:52.087323-04:00
+Sep 14 21:21:52 raspberrypi python3[602771]: 2025-09-14 21:21:52,088 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:52 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:21:53 raspberrypi python3[601392]: 2025-09-14 21:21:53,952 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:21:53 raspberrypi python3[601392]: 2025-09-14 21:21:53,952 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:21:53 raspberrypi python3[601392]: 2025-09-14 21:21:53,952 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check if recordings are being created
+ls -la /opt/ezrec-backend/recordings/
+
+# Check today's recordings
+ls -la /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/
+total 12
+drwxr-xr-x  3 michomanoly14892 michomanoly14892 4096 Sep 14 17:51 .
+drwxr-xr-x 22 michomanoly14892 michomanoly14892 4096 Sep 14 20:35 ..
+drwxr-xr-x  5 michomanoly14892 video            4096 Sep 14 19:47 2025-09-14
+total 20
+drwxr-xr-x 5 michomanoly14892 video            4096 Sep 14 19:47 .
+drwxr-xr-x 3 michomanoly14892 michomanoly14892 4096 Sep 14 17:51 ..
+drwxr-xr-x 2 michomanoly14892 video            4096 Sep 14 19:04 session_test-booking-1757890887
+drwxr-xr-x 2 michomanoly14892 video            4096 Sep 14 19:14 session_test-booking-1757891508
+drwxr-xr-x 2 michomanoly14892 video            4096 Sep 14 19:47 session_test-recording-1757893672
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ Sep 14 21:21:57 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 20.
+Sep 14 21:21:57 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:57 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:21:57 raspberrypi python3[602780]: 2025-09-14 21:21:57,335 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:21:57 raspberrypi python3[602780]: 2025-09-14 21:21:57,335 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:21:57 raspberrypi python3[602780]: 2025-09-14 21:21:57,335 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:21:57 raspberrypi python3[602780]: 2025-09-14 21:21:57,336 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:21:57.336474-04:00
+Sep 14 21:21:57 raspberrypi python3[602780]: 2025-09-14 21:21:57,337 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:21:57 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:02 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 21.
+Sep 14 21:22:02 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:02 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,577 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,577 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,578 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,579 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:02.579035-04:00
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,580 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:02 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # 1. Fix booking file location
+sudo mkdir -p /opt/ezrec-backend/api/local_data
+sudo cp /opt/ezrec-backend/backend/bookings.json /opt/ezrec-backend/api/local_data/bookings.json
+
+# 2. Restart services
+sudo systemctl restart dual_recorder.service
+
+# 3. Test API endpoints
+curl http://localhost:8000/status
+curl http://localhost:8000/api/cameras
+curl http://localhost:8000/api/bookings
+
+# 4. Create a test booking
+curl -X POST http://localhost:8000/api/bookings \
+  -H "Content-Type: application/json" \
+  -d '{
+    "start_time": "'$(date -u +"%Y-%m-%dT%H:%M:%S.000Z")'",
+    "end_time": "'$(date -u -d "+2 minutes" +"%Y-%m-%dT%H:%M:%S.000Z")'",
+    "title": "Frontend Test",
+    "description": "Testing from frontend"
+  }'
+
+# 5. Monitor the system
+sudo journalctl -u dual_recorder.service -f
+{"status":"running","timestamp":"2025-09-14T21:22:05.860990","version":"1.0.0"}{"detail":"Not Found"}{"detail":"Not Found"}{"detail":"Not Found"}Sep 14 21:22:02 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:02 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,577 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,577 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,578 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,579 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:02.579035-04:00
+Sep 14 21:22:02 raspberrypi python3[602785]: 2025-09-14 21:22:02,580 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:02 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:05 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:05 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:05 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:33674 - "GET /status HTTP/1.1" 200 OK
+Sep 14 21:22:05 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:33684 - "GET /api/cameras HTTP/1.1" 404 Not Found
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,946 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:05 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:33698 - "GET /api/bookings HTTP/1.1" 404 Not Found
+Sep 14 21:22:05 raspberrypi uvicorn[601344]: INFO:     127.0.0.1:33702 - "POST /api/bookings HTTP/1.1" 404 Not Found
+Sep 14 21:22:05 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:05 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,946 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,946 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,946 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,947 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:05.947411-04:00
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,948 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,946 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,946 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,947 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:05.947411-04:00
+Sep 14 21:22:05 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:05 raspberrypi python3[602798]: 2025-09-14 21:22:05,948 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:05 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:08 raspberrypi python3[601392]: 2025-09-14 21:22:08,998 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:22:08 raspberrypi python3[601392]: 2025-09-14 21:22:08,998 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:22:08 raspberrypi python3[601392]: 2025-09-14 21:22:08,998 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:22:11 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 22.
+Sep 14 21:22:11 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:11 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,341 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,341 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,341 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:11 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 22.
+Sep 14 21:22:11 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:11 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,341 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,342 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:11.342627-04:00
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,343 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:11 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,341 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,341 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,342 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:11.342627-04:00
+Sep 14 21:22:11 raspberrypi python3[602811]: 2025-09-14 21:22:11,343 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:11 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:16 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 23.
+Sep 14 21:22:16 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 23.
+Sep 14 21:22:16 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:16 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:16 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:16 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,585 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,585 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,586 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,586 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,586 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,587 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:16.587408-04:00
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,586 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,588 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,587 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:16.587408-04:00
+Sep 14 21:22:16 raspberrypi python3[602817]: 2025-09-14 21:22:16,588 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:16 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:16 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:21 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 24.
+Sep 14 21:22:21 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:21 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,851 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,851 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,851 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,852 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:21.852135-04:00
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,852 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:21 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:21 raspberrypi systemd[1]: dual_recorder.service: Scheduled restart job, restart counter is at 24.
+Sep 14 21:22:21 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:21 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,851 - dual_recorder - INFO - 🎥 EZREC Dual Recorder Service Starting
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,851 - dual_recorder - INFO - 🎥 Dual Recorder Service initialized
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,851 - services.booking_service - INFO - 📋 Loaded 3 bookings from cache
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,852 - services.booking_service - INFO - 🔍 Checking 3 bookings at 2025-09-14 21:22:21.852135-04:00
+Sep 14 21:22:21 raspberrypi python3[602822]: 2025-09-14 21:22:21,852 - dual_recorder - ERROR - ❌ Service error: Unexpected error in check_and_handle_bookings: 'str' object has no attribute 'get'
+Sep 14 21:22:21 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
+Sep 14 21:22:24 raspberrypi python3[601392]: 2025-09-14 21:22:24,046 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+Sep 14 21:22:24 raspberrypi python3[601392]: 2025-09-14 21:22:24,046 [INFO] 📊 Disk usage: 8.1% used, 101.5 GB free
+Sep 14 21:22:24 raspberrypi python3[601392]: 2025-09-14 21:22:24,046 [INFO] Scanning directory: /opt/ezrec-backend/recordings/2025-09-14
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ S
