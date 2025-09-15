@@ -1,228 +1,292 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
-remote: Enumerating objects: 10, done.
-remote: Counting objects: 100% (10/10), done.
-remote: Compressing objects: 100% (1/1), done.
-remote: Total 6 (delta 5), reused 6 (delta 5), pack-reused 0 (from 0)
-Unpacking objects: 100% (6/6), 1.39 KiB | 711.00 KiB/s, done.
-From https://github.com/naeimsalib/EZREC-BACKEND-2
-   a297bf2..7e66791  main       -> origin/main
-Updating a297bf2..7e66791
-error: Your local changes to the following files would be overwritten by merge:
-        quick_test.sh
-Please commit your changes or stash them before you merge.
-Aborting
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git stash
-Saved working directory and index state WIP on main: a297bf2 Add quick test scripts for recording verification
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ git pull
-Updating a297bf2..7e66791
-Fast-forward
- backend/dual_recorder.py |  5 +++--
- immediate_test.sh        | 97 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- quick_test.sh            |  8 +++++---
- 3 files changed, 105 insertions(+), 5 deletions(-)
- create mode 100644 immediate_test.sh
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo chmod +x immediate_test.sh 
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo ./immediate_test.sh 
-🚀 EZREC Immediate Recording Test
-=================================
-1️⃣ Testing Service Status...
-  dual_recorder.service: active
-  video_worker.service: active
-  ezrec-api.service: active
-  system_status.service: active
-  cloudflared.service: active
-2️⃣ Testing API Endpoints...
-  Testing /test-alive...
-    ✅ Success: {"status":"alive"}...
-  Testing /status...
-    ✅ Success: {"status":"running","timestamp":"2025-09-14T22:48:32.857007","version":"1.0.0"}...
-  Testing /api/bookings...
-    ✅ Success: [{"id":"test-1757903677","user_id":"test-user","start_time":"2025-09-14T22:35:37","end_time":"2025-0...
-  Testing /api/cameras...
-    ✅ Success: {"cameras":[{"id":"camera_0","name":"Available cameras","status":"available"},{"id":"camera_1","name...
-  Testing /api/recordings...
-    ✅ Success: []...
-3️⃣ Testing Camera Detection...
-  Camera devices:
-crw-rw-rw-+ 1 root video 81,  0 Sep 10 11:17 /dev/video0
-crw-rw-rw-+ 1 root video 81, 18 Sep 10 11:17 /dev/video1
-crw-rw----+ 1 root video 81, 30 Sep 10 11:17 /dev/video10
-crw-rw----+ 1 root video 81, 31 Sep 10 11:17 /dev/video11
-crw-rw----+ 1 root video 81, 32 Sep 10 11:17 /dev/video12
-crw-rw----+ 1 root video 81, 33 Sep 10 11:17 /dev/video13
-crw-rw----+ 1 root video 81, 34 Sep 10 11:17 /dev/video14
-crw-rw----+ 1 root video 81, 35 Sep 10 11:17 /dev/video15
-crw-rw----+ 1 root video 81, 36 Sep 10 11:17 /dev/video16
-crw-rw----+ 1 root video 81,  3 Sep 10 11:17 /dev/video19
-crw-rw----+ 1 root video 81, 19 Sep 10 11:17 /dev/video2
-crw-rw----+ 1 root video 81,  1 Sep 10 11:17 /dev/video20
-crw-rw----+ 1 root video 81,  2 Sep 10 11:17 /dev/video21
-crw-rw----+ 1 root video 81,  4 Sep 10 11:17 /dev/video22
-crw-rw----+ 1 root video 81,  5 Sep 10 11:17 /dev/video23
-crw-rw----+ 1 root video 81,  6 Sep 10 11:17 /dev/video24
-crw-rw----+ 1 root video 81,  7 Sep 10 11:17 /dev/video25
-crw-rw----+ 1 root video 81,  8 Sep 10 11:17 /dev/video26
-crw-rw----+ 1 root video 81,  9 Sep 10 11:17 /dev/video27
-crw-rw----+ 1 root video 81, 10 Sep 10 11:17 /dev/video28
-crw-rw----+ 1 root video 81, 11 Sep 10 11:17 /dev/video29
-crw-rw----+ 1 root video 81, 20 Sep 10 11:17 /dev/video3
-crw-rw----+ 1 root video 81, 12 Sep 10 11:17 /dev/video30
-crw-rw----+ 1 root video 81, 13 Sep 10 11:17 /dev/video31
-crw-rw----+ 1 root video 81, 14 Sep 10 11:17 /dev/video32
-crw-rw----+ 1 root video 81, 15 Sep 10 11:17 /dev/video33
-crw-rw----+ 1 root video 81, 16 Sep 10 11:17 /dev/video34
-crw-rw----+ 1 root video 81, 17 Sep 10 11:17 /dev/video35
-crw-rw----+ 1 root video 81, 21 Sep 10 11:17 /dev/video4
-crw-rw----+ 1 root video 81, 22 Sep 10 11:17 /dev/video5
-crw-rw----+ 1 root video 81, 23 Sep 10 11:17 /dev/video6
-crw-rw----+ 1 root video 81, 24 Sep 10 11:17 /dev/video7
-crw-rw----+ 1 root video 81, 25 Sep 10 11:17 /dev/video8
-crw-rw----+ 1 root video 81, 29 Sep 10 11:17 /dev/video9
-  rpicam-vid test:
-Available cameras
------------------
-0 : imx477 [4056x3040 12-bit] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
-    Modes: 'SBGGR10_CSI2P' : 1332x990 [30.00 fps - (65535, 65535)/65535x65535 crop]
-           'SBGGR12_CSI2P' : 2028x1080 [30.00 fps - (65535, 65535)/65535x65535 crop]
-4️⃣ Creating Immediate Test Booking...
-  Booking ID: immediate-test-1757904512
-  Start: 2025-09-14T22:48:32 (NOW)
-  End: 2025-09-14T22:50:32
-  ✅ Booking created
-5️⃣ Monitoring Recording (should start immediately)...
-  🎬 Starting recording monitoring...
-  --- Check 1/15 ---
-    Dual Recorder:
-Sep 14 22:48:32 raspberrypi python3[617226]: 2025-09-14 22:48:32,592 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 14 22:48:32 raspberrypi python3[617226]: 2025-09-14 22:48:32,592 - dual_recorder - INFO - ⏸️ No active booking, no recording
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 12.4  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38232 - "GET /test-alive HTTP/1.1" 200 OK
-Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38246 - "GET /status HTTP/1.1" 200 OK
-Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38254 - "GET /api/bookings HTTP/1.1" 200 OK
-Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38270 - "GET /api/cameras HTTP/1.1" 200 OK
-Sep 14 22:48:32 raspberrypi uvicorn[617195]: INFO:     127.0.0.1:38286 - "GET /api/recordings HTTP/1.1" 200 OK
-  --- Check 2/15 ---
-    Dual Recorder:
-Sep 14 22:48:39 raspberrypi python3[617226]: [106:37:34.667715286] [619396]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:48:39 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 12.3  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 3/15 ---
-    Dual Recorder:
-Sep 14 22:48:51 raspberrypi python3[617226]: 2025-09-14 22:48:51,726 - dual_recorder - INFO - 🔍 Testing camera availability...
-Sep 14 22:48:51 raspberrypi python3[617226]: 2025-09-14 22:48:51,793 - dual_recorder - INFO - ✅ Cameras available, starting recording...
-    Recording processes: 3
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 12.1  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-michoma+  619475  3.7  0.0      0     0 ?        Z    22:48   0:00 [rpicam-vid] <defunct>
-michoma+  619476  3.7  0.0      0     0 ?        Z    22:48   0:00 [rpicam-vid] <defunct>
-  --- Check 4/15 ---
-    Dual Recorder:
-Sep 14 22:49:00 raspberrypi python3[617226]: [106:37:55.835545020] [619521]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:49:00 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 12.0  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 5/15 ---
-    Dual Recorder:
-Sep 14 22:49:12 raspberrypi python3[617226]: 2025-09-14 22:49:12,883 - dual_recorder - INFO - 🔍 Testing camera availability...
-Sep 14 22:49:12 raspberrypi python3[617226]: 2025-09-14 22:49:12,925 - dual_recorder - INFO - ✅ Cameras available, starting recording...
-    Recording processes: 3
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.8  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-michoma+  619595 18.5  0.0      0     0 ?        Z    22:49   0:00 [rpicam-vid] <defunct>
-michoma+  619596 18.5  0.0      0     0 ?        Z    22:49   0:00 [rpicam-vid] <defunct>
-  --- Check 6/15 ---
-    Dual Recorder:
-Sep 14 22:49:21 raspberrypi python3[617226]: [106:38:16.966619887] [619641]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:49:21 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.7  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 7/15 ---
-    Dual Recorder:
-Sep 14 22:49:29 raspberrypi python3[617226]: [106:38:24.010566376] [619687]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:49:29 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.5  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 8/15 ---
-    Dual Recorder:
-Sep 14 22:49:43 raspberrypi python3[617226]: [106:38:38.129461472] [619761]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:49:43 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.4  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 9/15 ---
-    Dual Recorder:
-Sep 14 22:49:50 raspberrypi python3[617226]: [106:38:45.167140511] [619808]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:49:50 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.3  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 10/15 ---
-    Dual Recorder:
-Sep 14 22:50:02 raspberrypi python3[617226]: 2025-09-14 22:50:02,214 - dual_recorder - INFO - 🔍 Testing camera availability...
-Sep 14 22:50:02 raspberrypi python3[617226]: 2025-09-14 22:50:02,256 - dual_recorder - INFO - ✅ Cameras available, starting recording...
-    Recording processes: 3
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.1  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-michoma+  619890  4.4  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
-michoma+  619891  4.4  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
-  --- Check 11/15 ---
-    Dual Recorder:
-Sep 14 22:50:11 raspberrypi python3[617226]: [106:39:06.297613386] [619936]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:50:11 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 11.0  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 12/15 ---
-    Dual Recorder:
-Sep 14 22:50:23 raspberrypi python3[617226]: 2025-09-14 22:50:23,344 - dual_recorder - INFO - 🔍 Testing camera availability...
-Sep 14 22:50:23 raspberrypi python3[617226]: 2025-09-14 22:50:23,386 - dual_recorder - INFO - ✅ Cameras available, starting recording...
-    Recording processes: 3
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 10.9  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-michoma+  620010 55.5  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
-michoma+  620011 55.5  0.0      0     0 ?        Z    22:50   0:00 [rpicam-vid] <defunct>
-  --- Check 13/15 ---
-    Dual Recorder:
-Sep 14 22:50:32 raspberrypi python3[617226]: [106:39:27.464316860] [620057]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 14 22:50:32 raspberrypi python3[617226]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 10.8  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 14/15 ---
-    Dual Recorder:
-Sep 14 22:50:42 raspberrypi python3[617226]: 2025-09-14 22:50:42,451 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 14 22:50:42 raspberrypi python3[617226]: 2025-09-14 22:50:42,451 - dual_recorder - INFO - ⏸️ No active booking, no recording
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 10.6  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-  --- Check 15/15 ---
-    Dual Recorder:
-Sep 14 22:50:52 raspberrypi python3[617226]: 2025-09-14 22:50:52,452 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 14 22:50:52 raspberrypi python3[617226]: 2025-09-14 22:50:52,452 - dual_recorder - INFO - ⏸️ No active booking, no recording
-    Recording processes: 1
-    New recording files: 0
-    Active rpicam-vid processes:
-michoma+  618055 10.5  2.0 1103280 169440 ?      SLl  22:35   1:36 rpicam-vid --width 1280 --height 720 --framerate 25 --output /opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/camera_1_20250914_223537.mp4 --timeout 300000
-✅ Immediate test completed
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo systemctl status dual_recorder.service
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-09-15 09:39:14 EDT; 21min ago
+   Main PID: 651620 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 471ms
+     CGroup: /system.slice/dual_recorder.service
+             └─651620 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Sep 15 10:00:09 raspberrypi python3[651620]: 2025-09-15 10:00:09,555 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:00:09 raspberrypi python3[651620]: 2025-09-15 10:00:09,555 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:00:09 raspberrypi python3[651620]: 2025-09-15 10:00:09,555 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:00:14.556418 (local time)
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO - 🔍 Booking immediate-test-1757904512: 2025-09-14 22:48:32 - 2025-09-14 22:50:32
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO -    Now: 2025-09-15 10:00:14.556418
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:00:14 raspberrypi python3[651620]: 2025-09-15 10:00:14,556 - dual_recorder - INFO - ⏸️ No active booking, no recording
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ python3 test_dual_cameras.py
+🎬 Creating test booking for dual camera recording...
+✅ Test booking created:
+   ID: test-1757944826
+   Start: 2025-09-15T10:00:26
+   End: 2025-09-15T10:02:26
+   Duration: 2 minutes
+
+📋 The dual_recorder service should detect this booking and start recording.
+📁 Check /opt/ezrec-backend/recordings/ for the output files.
+⏱️ Recording will run for 2 minutes.
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo journalctl -u dual_recorder.service -f
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,557 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,557 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:00:29.557977 (local time)
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO -    Now: 2025-09-15 10:00:29.557977
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,558 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:00:29 raspberrypi python3[651620]: 2025-09-15 10:00:29,569 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:00:31 raspberrypi python3[651620]: 2025-09-15 10:00:31,570 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:00:31 raspberrypi python3[651620]: 2025-09-15 10:00:31,634 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:00:31 raspberrypi python3[651620]: 2025-09-15 10:00:31,634 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:00:34 raspberrypi python3[651620]: 2025-09-15 10:00:34,635 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:00:34 raspberrypi python3[651620]: 2025-09-15 10:00:34,635 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:00:37 raspberrypi python3[651620]: 2025-09-15 10:00:37,636 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:00:37 raspberrypi python3[651620]: 2025-09-15 10:00:37,636 - dual_recorder - ERROR - ❌ Camera 1 error: [117:49:31.588553708] [652771]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:00:37 raspberrypi python3[651620]: [117:49:31.598801816] [652774]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:00:37 raspberrypi python3[651620]: [117:49:31.599491858] [652774] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:00:37 raspberrypi python3[651620]: [117:49:31.608530365] [652774]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:00:37 raspberrypi python3[651620]: [117:49:31.608585161] [652774]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:00:37 raspberrypi python3[651620]: [117:49:31.616907349] [652774]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:00:37 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:00:37 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:00:37 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:00:37 raspberrypi python3[651620]: [117:49:31.630080959] [652771]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:00:37 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:00:42.636714 (local time)
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO -    Now: 2025-09-15 10:00:42.636714
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,636 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,637 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:00:42 raspberrypi python3[651620]: 2025-09-15 10:00:42,653 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:00:44 raspberrypi python3[651620]: 2025-09-15 10:00:44,654 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:00:44 raspberrypi python3[651620]: 2025-09-15 10:00:44,719 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:00:44 raspberrypi python3[651620]: 2025-09-15 10:00:44,719 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:00:47 raspberrypi python3[651620]: 2025-09-15 10:00:47,720 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:00:47 raspberrypi python3[651620]: 2025-09-15 10:00:47,720 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:00:50 raspberrypi python3[651620]: 2025-09-15 10:00:50,720 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:00:50 raspberrypi python3[651620]: 2025-09-15 10:00:50,720 - dual_recorder - ERROR - ❌ Camera 1 error: [117:49:44.674903256] [652817]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:00:50 raspberrypi python3[651620]: [117:49:44.684677046] [652820]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:00:50 raspberrypi python3[651620]: [117:49:44.685331235] [652820] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:00:50 raspberrypi python3[651620]: [117:49:44.694102870] [652820]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:00:50 raspberrypi python3[651620]: [117:49:44.694156352] [652820]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:00:50 raspberrypi python3[651620]: [117:49:44.702517798] [652820]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:00:50 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:00:50 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:00:50 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:00:50 raspberrypi python3[651620]: [117:49:44.717415734] [652817]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:00:50 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:00:55.721309 (local time)
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO -    Now: 2025-09-15 10:00:55.721309
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,721 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:00:55 raspberrypi python3[651620]: 2025-09-15 10:00:55,738 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:00:57 raspberrypi python3[651620]: 2025-09-15 10:00:57,738 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:00:57 raspberrypi python3[651620]: 2025-09-15 10:00:57,804 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:00:57 raspberrypi python3[651620]: 2025-09-15 10:00:57,804 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:01:00 raspberrypi python3[651620]: 2025-09-15 10:01:00,804 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:01:00 raspberrypi python3[651620]: 2025-09-15 10:01:00,804 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:01:03 raspberrypi python3[651620]: 2025-09-15 10:01:03,805 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:01:03 raspberrypi python3[651620]: 2025-09-15 10:01:03,805 - dual_recorder - ERROR - ❌ Camera 1 error: [117:49:57.758566037] [652862]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:01:03 raspberrypi python3[651620]: [117:49:57.768075398] [652865]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:03 raspberrypi python3[651620]: [117:49:57.768732828] [652865] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:01:03 raspberrypi python3[651620]: [117:49:57.778400894] [652865]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:01:03 raspberrypi python3[651620]: [117:49:57.778459136] [652865]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:03 raspberrypi python3[651620]: [117:49:57.786997064] [652865]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:01:03 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:01:03 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:01:03 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:01:03 raspberrypi python3[651620]: [117:49:57.800955882] [652862]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:01:03 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:01:08.806382 (local time)
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO -    Now: 2025-09-15 10:01:08.806382
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,806 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:01:08 raspberrypi python3[651620]: 2025-09-15 10:01:08,823 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:01:10 raspberrypi python3[651620]: 2025-09-15 10:01:10,824 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:01:10 raspberrypi python3[651620]: 2025-09-15 10:01:10,886 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:01:10 raspberrypi python3[651620]: 2025-09-15 10:01:10,886 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:01:13 raspberrypi python3[651620]: 2025-09-15 10:01:13,886 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:01:13 raspberrypi python3[651620]: 2025-09-15 10:01:13,886 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:01:16 raspberrypi python3[651620]: 2025-09-15 10:01:16,887 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:01:16 raspberrypi python3[651620]: 2025-09-15 10:01:16,887 - dual_recorder - ERROR - ❌ Camera 1 error: [117:50:10.840293571] [652907]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:01:16 raspberrypi python3[651620]: [117:50:10.849907025] [652910]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:16 raspberrypi python3[651620]: [117:50:10.850675716] [652910] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:01:16 raspberrypi python3[651620]: [117:50:10.860772525] [652910]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:01:16 raspberrypi python3[651620]: [117:50:10.860829859] [652910]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:16 raspberrypi python3[651620]: [117:50:10.869366583] [652910]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:01:16 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:01:16 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:01:16 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:01:16 raspberrypi python3[651620]: [117:50:10.882726100] [652907]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:01:16 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:01:21.888130 (local time)
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO -    Now: 2025-09-15 10:01:21.888130
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,888 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:01:21 raspberrypi python3[651620]: 2025-09-15 10:01:21,905 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:01:23 raspberrypi python3[651620]: 2025-09-15 10:01:23,905 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:01:23 raspberrypi python3[651620]: 2025-09-15 10:01:23,950 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:01:23 raspberrypi python3[651620]: 2025-09-15 10:01:23,950 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:01:26 raspberrypi python3[651620]: 2025-09-15 10:01:26,950 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:01:26 raspberrypi python3[651620]: 2025-09-15 10:01:26,950 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:01:29 raspberrypi python3[651620]: 2025-09-15 10:01:29,951 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:01:29 raspberrypi python3[651620]: 2025-09-15 10:01:29,951 - dual_recorder - ERROR - ❌ Camera 1 error: [117:50:23.904285640] [652954]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:01:29 raspberrypi python3[651620]: [117:50:23.914700747] [652957]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:29 raspberrypi python3[651620]: [117:50:23.915373029] [652957] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:01:29 raspberrypi python3[651620]: [117:50:23.924322886] [652957]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:01:29 raspberrypi python3[651620]: [117:50:23.924382831] [652957]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:29 raspberrypi python3[651620]: [117:50:23.932839851] [652957]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:01:29 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:01:29 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:01:29 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:01:29 raspberrypi python3[651620]: [117:50:23.946509351] [652954]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:01:29 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,951 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:01:34.952095 (local time)
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO -    Now: 2025-09-15 10:01:34.952095
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,952 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:01:34 raspberrypi python3[651620]: 2025-09-15 10:01:34,969 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:01:36 raspberrypi python3[651620]: 2025-09-15 10:01:36,969 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:01:37 raspberrypi python3[651620]: 2025-09-15 10:01:37,015 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:01:37 raspberrypi python3[651620]: 2025-09-15 10:01:37,015 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:01:40 raspberrypi python3[651620]: 2025-09-15 10:01:40,016 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:01:40 raspberrypi python3[651620]: 2025-09-15 10:01:40,016 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:01:43 raspberrypi python3[651620]: 2025-09-15 10:01:43,016 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:01:43 raspberrypi python3[651620]: 2025-09-15 10:01:43,016 - dual_recorder - ERROR - ❌ Camera 1 error: [117:50:36.972559279] [653001]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:01:43 raspberrypi python3[651620]: [117:50:36.982150177] [653004]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:43 raspberrypi python3[651620]: [117:50:36.982805718] [653004] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:01:43 raspberrypi python3[651620]: [117:50:36.991557036] [653004]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:01:43 raspberrypi python3[651620]: [117:50:36.991611166] [653004]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:43 raspberrypi python3[651620]: [117:50:36.999904907] [653004]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:01:43 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:01:43 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:01:43 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:01:43 raspberrypi python3[651620]: [117:50:37.015026138] [653001]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:01:43 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:01:48.017323 (local time)
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 🔍 Booking test-1757944826: 2025-09-15 10:00:26 - 2025-09-15 10:02:26
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO -    Now: 2025-09-15 10:01:48.017323
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 🎯 Active booking found: test-1757944826
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 🎬 Starting dual camera recording for booking: test-1757944826
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,017 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:01:48 raspberrypi python3[651620]: 2025-09-15 10:01:48,034 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:01:50 raspberrypi python3[651620]: 2025-09-15 10:01:50,034 - dual_recorder - INFO - 🔍 Testing camera availability...
+Sep 15 10:01:50 raspberrypi python3[651620]: 2025-09-15 10:01:50,082 - dual_recorder - INFO - ✅ Cameras available, starting dual recording...
+Sep 15 10:01:50 raspberrypi python3[651620]: 2025-09-15 10:01:50,082 - dual_recorder - INFO - 🎥 Starting Camera 0...
+Sep 15 10:01:53 raspberrypi python3[651620]: 2025-09-15 10:01:53,082 - dual_recorder - INFO - ✅ Camera 0 started successfully
+Sep 15 10:01:53 raspberrypi python3[651620]: 2025-09-15 10:01:53,082 - dual_recorder - INFO - 🎥 Starting Camera 1...
+Sep 15 10:01:56 raspberrypi python3[651620]: 2025-09-15 10:01:56,083 - dual_recorder - ERROR - ❌ Camera 1 failed to start (exit code: 255)
+Sep 15 10:01:56 raspberrypi python3[651620]: 2025-09-15 10:01:56,083 - dual_recorder - ERROR - ❌ Camera 1 error: [117:50:50.036266315] [653047]  INFO Camera camera_manager.cpp:326 libcamera v0.5.1+100-e53bdf1f
+Sep 15 10:01:56 raspberrypi python3[651620]: [117:50:50.045660748] [653050]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:56 raspberrypi python3[651620]: [117:50:50.046309456] [653050] ERROR V4L2 v4l2_device.cpp:390 'imx477 10-001a': Unable to set controls: Device or resource busy
+Sep 15 10:01:56 raspberrypi python3[651620]: [117:50:50.056741618] [653050]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a to CFE device /dev/media0 and ISP device /dev/media3 using PiSP variant BCM2712_D0
+Sep 15 10:01:56 raspberrypi python3[651620]: [117:50:50.056800155] [653050]  INFO RPI pisp.cpp:720 libpisp version v1.2.1 981977ff21f3 29-04-2025 (14:13:50)
+Sep 15 10:01:56 raspberrypi python3[651620]: [117:50:50.065602788] [653050]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
+Sep 15 10:01:56 raspberrypi python3[651620]: Made X/EGL preview window
+Sep 15 10:01:56 raspberrypi python3[651620]: Made DRM preview window
+Sep 15 10:01:56 raspberrypi python3[651620]: Preview window unavailable
+Sep 15 10:01:56 raspberrypi python3[651620]: [117:50:50.079187063] [653047]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
+Sep 15 10:01:56 raspberrypi python3[651620]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
+^C
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Look for the recording files
+ls -la /opt/ezrec-backend/recordings/*/session_*/
+
+# Or check the most recent recordings
+find /opt/ezrec-backend/recordings -name "*.mp4" -newer /tmp/test_start 2>/dev/null
+/opt/ezrec-backend/recordings/2025-09-14/session_immediate-test-1757904512/:
+total 8
+drwxr-xr-x  2 michomanoly14892 video 4096 Sep 14 22:48 .
+drwxr-xr-x 10 michomanoly14892 video 4096 Sep 14 22:48 ..
+
+'/opt/ezrec-backend/recordings/2025-09-14/session_system-test-$(date +%s)/':
+total 76812
+drwxr-xr-x  2 michomanoly14892 video     4096 Sep 14 21:54 .
+drwxr-xr-x 10 michomanoly14892 video     4096 Sep 14 22:48 ..
+-rw-r--r--  1 michomanoly14892 video 78643248 Sep 14 21:59 camera_0_20250914_215402.mp4
+
+'/opt/ezrec-backend/recordings/2025-09-14/session_test-$(date +%s)/':
+total 72972
+drwxr-xr-x  2 michomanoly14892 video     4096 Sep 14 22:05 .
+drwxr-xr-x 10 michomanoly14892 video     4096 Sep 14 22:48 ..
+-rw-r--r--  1 michomanoly14892 video 74711088 Sep 14 22:08 camera_1_20250914_220501.mp4
+
+/opt/ezrec-backend/recordings/2025-09-14/session_test-1757903677/:
+total 53260
+drwxr-xr-x  2 michomanoly14892 video     4096 Sep 14 22:35 .
+drwxr-xr-x 10 michomanoly14892 video     4096 Sep 14 22:48 ..
+-rw-r--r--  1 michomanoly14892 video 54526000 Sep 14 22:40 camera_1_20250914_223537.mp4
+
+/opt/ezrec-backend/recordings/2025-09-14/session_test-booking-1757890887/:
+total 8
+drwxr-xr-x  2 michomanoly14892 video 4096 Sep 14 19:04 .
+drwxr-xr-x 10 michomanoly14892 video 4096 Sep 14 22:48 ..
+
+/opt/ezrec-backend/recordings/2025-09-14/session_test-booking-1757891508/:
+total 8
+drwxr-xr-x  2 michomanoly14892 video 4096 Sep 14 19:14 .
+drwxr-xr-x 10 michomanoly14892 video 4096 Sep 14 22:48 ..
+
+/opt/ezrec-backend/recordings/2025-09-14/session_test-booking-now/:
+total 38156
+drwxr-xr-x  2 michomanoly14892 video     4096 Sep 14 21:46 .
+drwxr-xr-x 10 michomanoly14892 video     4096 Sep 14 22:48 ..
+-rw-r--r--  1 michomanoly14892 video 39059504 Sep 14 21:48 camera_0_20250914_214602.mp4
+
+/opt/ezrec-backend/recordings/2025-09-14/session_test-recording-1757893672/:
+total 8
+drwxr-xr-x  2 michomanoly14892 video 4096 Sep 14 19:47 .
+drwxr-xr-x 10 michomanoly14892 video 4096 Sep 14 22:48 ..
+
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/:
+total 20008
+drwxr-xr-x 2 michomanoly14892 video    4096 Sep 15 10:02 .
+drwxr-xr-x 3 michomanoly14892 video    4096 Sep 15 10:00 ..
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:00 camera_0_20250915_100031.mp4
+-rw-r--r-- 1 michomanoly14892 video 2621488 Sep 15 10:00 camera_0_20250915_100044.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100057.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100110.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100123.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100136.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100150.mp4
+-rw-r--r-- 1 michomanoly14892 video  524336 Sep 15 10:02 camera_0_20250915_100203.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100203.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100136.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100123.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100044.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100031.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100110.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100057.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100150.mp4
 michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
