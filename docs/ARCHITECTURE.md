@@ -65,6 +65,7 @@ The service layer contains the core business logic and is organized into special
 ### **Service Details**
 
 #### **Camera Service** (`services/camera_service.py`)
+
 - **Responsibility**: Camera detection, recording operations, and camera control
 - **Key Methods**:
   - `detect_cameras()`: Enumerate available cameras
@@ -74,6 +75,7 @@ The service layer contains the core business logic and is organized into special
 - **Dependencies**: rpicam-vid, subprocess, threading
 
 #### **Booking Service** (`services/booking_service.py`)
+
 - **Responsibility**: Booking lifecycle management and status tracking
 - **Key Methods**:
   - `find_active_booking()`: Find bookings that should be recording now
@@ -83,6 +85,7 @@ The service layer contains the core business logic and is organized into special
 - **Dependencies**: Supabase, local JSON cache
 
 #### **Video Processor** (`services/video_processor.py`)
+
 - **Responsibility**: Video processing, merging, and validation
 - **Key Methods**:
   - `merge_videos()`: Merge multiple video files
@@ -91,6 +94,7 @@ The service layer contains the core business logic and is organized into special
 - **Dependencies**: FFmpeg, OpenCV (optional)
 
 #### **Upload Manager** (`services/upload_manager.py`)
+
 - **Responsibility**: File uploads to cloud storage
 - **Key Methods**:
   - `upload_to_s3()`: Upload files to S3
@@ -114,6 +118,7 @@ class Settings:
 ```
 
 **Benefits**:
+
 - Single source of truth for all configuration
 - Type-safe configuration with validation
 - Environment-specific overrides
@@ -122,6 +127,7 @@ class Settings:
 ### **Utility Layer** (`utils/`)
 
 #### **Logging System** (`utils/logger.py`)
+
 - **Standardized Logging**: Consistent format across all services
 - **Color-coded Output**: Different colors for different log levels
 - **File and Console Output**: Configurable output destinations
@@ -129,6 +135,7 @@ class Settings:
 - **Performance Decorators**: Log function execution time
 
 #### **Exception Handling** (`utils/exceptions.py`)
+
 - **Structured Exceptions**: Custom exception hierarchy
 - **Error Context**: Rich error information with details
 - **Retry Logic**: Automatic retry for transient errors
@@ -182,12 +189,14 @@ class Settings:
 ### **Data Storage**
 
 #### **Local Storage**
+
 - **Recordings**: `/opt/ezrec-backend/recordings/`
 - **Bookings**: `/opt/ezrec-backend/api/local_data/bookings.json`
 - **Logs**: `/opt/ezrec-backend/logs/`
 - **Configuration**: `/opt/ezrec-backend/.env`
 
 #### **Cloud Storage**
+
 - **Database**: Supabase (PostgreSQL)
 - **Files**: AWS S3
 - **Metadata**: Stored in database with S3 references
@@ -203,17 +212,19 @@ class Settings:
 ### **Configuration Categories**
 
 #### **Database Configuration**
+
 ```python
 @dataclass
 class DatabaseConfig:
     supabase_url: str
     supabase_key: str
-    
+
     def validate(self) -> bool:
         return bool(self.supabase_url and self.supabase_key)
 ```
 
 #### **Storage Configuration**
+
 ```python
 @dataclass
 class StorageConfig:
@@ -224,6 +235,7 @@ class StorageConfig:
 ```
 
 #### **Camera Configuration**
+
 ```python
 @dataclass
 class CameraConfig:
@@ -267,6 +279,7 @@ EZRECException (Base)
 ### **Error Handling Strategies**
 
 #### **Retry Logic**
+
 ```python
 @retry(max_attempts=3, backoff_factor=2)
 def upload_to_s3(self, file_path: Path) -> bool:
@@ -275,11 +288,13 @@ def upload_to_s3(self, file_path: Path) -> bool:
 ```
 
 #### **Graceful Degradation**
+
 - Camera failures: Continue with available cameras
 - Upload failures: Retry with exponential backoff
 - Database failures: Use local cache
 
 #### **Error Recovery**
+
 - Automatic service restart on critical failures
 - Health checks and self-healing
 - Manual intervention alerts

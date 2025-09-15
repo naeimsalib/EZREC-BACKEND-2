@@ -52,11 +52,13 @@ sudo journalctl -u dual_recorder.service --since "10 minutes ago"
 ### **Problem: No Cameras Detected**
 
 **Symptoms:**
+
 - `v4l2-ctl --list-devices` shows no cameras
 - Service logs show "No cameras available"
 - Recording fails immediately
 
 **Diagnosis:**
+
 ```bash
 # Check camera interface
 sudo raspi-config
@@ -72,6 +74,7 @@ lsmod | grep bcm2835
 **Solutions:**
 
 1. **Enable Camera Interface**
+
    ```bash
    sudo raspi-config
    # Interface Options > Camera > Enable
@@ -79,6 +82,7 @@ lsmod | grep bcm2835
    ```
 
 2. **Check Physical Connections**
+
    - Ensure cameras are properly connected to CSI ports
    - Check ribbon cable connections
    - Try different cameras if available
@@ -94,11 +98,13 @@ lsmod | grep bcm2835
 ### **Problem: Camera Initialization Failed**
 
 **Symptoms:**
+
 - Camera detected but recording fails
 - Error: "Camera in Acquired state trying acquire()"
 - Service crashes on startup
 
 **Diagnosis:**
+
 ```bash
 # Check for camera processes
 ps aux | grep -i camera
@@ -113,6 +119,7 @@ sudo pkill -f picamera2
 **Solutions:**
 
 1. **Kill Existing Processes**
+
    ```bash
    sudo pkill -f camera
    sudo pkill -f libcamera
@@ -121,6 +128,7 @@ sudo pkill -f picamera2
    ```
 
 2. **Reset Camera State**
+
    ```bash
    sudo modprobe -r bcm2835_v4l2
    sudo modprobe bcm2835_v4l2
@@ -135,11 +143,13 @@ sudo pkill -f picamera2
 ### **Problem: Poor Video Quality**
 
 **Symptoms:**
+
 - Blurry or distorted video
 - Low frame rate
 - Audio sync issues
 
 **Diagnosis:**
+
 ```bash
 # Check camera settings
 rpicam-vid --list-cameras
@@ -151,10 +161,11 @@ rpicam-vid --camera 0 --width 1280 --height 720 --framerate 30 --timeout 5000 --
 **Solutions:**
 
 1. **Adjust Camera Settings**
+
    ```bash
    # Edit camera configuration
    sudo nano /opt/ezrec-backend/config/settings.py
-   
+
    # Increase quality settings
    recording_width: 1920
    recording_height: 1080
@@ -162,6 +173,7 @@ rpicam-vid --camera 0 --width 1280 --height 720 --framerate 30 --timeout 5000 --
    ```
 
 2. **Check Lighting Conditions**
+
    - Ensure adequate lighting
    - Avoid direct sunlight
    - Use consistent lighting
@@ -177,11 +189,13 @@ rpicam-vid --camera 0 --width 1280 --height 720 --framerate 30 --timeout 5000 --
 ### **Problem: Service Won't Start**
 
 **Symptoms:**
+
 - `systemctl status` shows "failed"
 - Service exits immediately
 - No logs generated
 
 **Diagnosis:**
+
 ```bash
 # Check service status
 sudo systemctl status dual_recorder.service
@@ -196,19 +210,21 @@ sudo systemctl cat dual_recorder.service
 **Solutions:**
 
 1. **Check Service File**
+
    ```bash
    # Verify service file exists and is correct
    sudo systemctl cat dual_recorder.service
-   
+
    # Reload systemd
    sudo systemctl daemon-reload
    ```
 
 2. **Check Dependencies**
+
    ```bash
    # Verify Python environment
    sudo -u root /opt/ezrec-backend/venv/bin/python3 -c "import sys; print(sys.path)"
-   
+
    # Check file permissions
    ls -la /opt/ezrec-backend/backend/dual_recorder.py
    ```
@@ -222,11 +238,13 @@ sudo systemctl cat dual_recorder.service
 ### **Problem: Service Keeps Restarting**
 
 **Symptoms:**
+
 - Service status shows "activating"
 - Frequent restarts in logs
 - High CPU usage
 
 **Diagnosis:**
+
 ```bash
 # Check restart count
 sudo systemctl show dual_recorder.service | grep RestartCount
@@ -238,22 +256,24 @@ sudo journalctl -u dual_recorder.service --since "1 hour ago" | grep -E "(error|
 **Solutions:**
 
 1. **Check for Resource Issues**
+
    ```bash
    # Check memory usage
    free -h
-   
+
    # Check disk space
    df -h
-   
+
    # Check CPU usage
    top
    ```
 
 2. **Increase Restart Delay**
+
    ```bash
    # Edit service file
    sudo systemctl edit dual_recorder.service
-   
+
    # Add:
    [Service]
    RestartSec=10
@@ -273,11 +293,13 @@ sudo journalctl -u dual_recorder.service --since "1 hour ago" | grep -E "(error|
 ### **Problem: Recording Files Not Created**
 
 **Symptoms:**
+
 - No video files in recordings directory
 - Service logs show recording started but no files
 - Disk space available but no output
 
 **Diagnosis:**
+
 ```bash
 # Check recordings directory
 ls -la /opt/ezrec-backend/recordings/
@@ -292,6 +314,7 @@ ls -la /opt/ezrec-backend/recordings/
 **Solutions:**
 
 1. **Check Directory Permissions**
+
    ```bash
    # Fix permissions
    sudo chown -R root:root /opt/ezrec-backend/recordings/
@@ -299,10 +322,11 @@ ls -la /opt/ezrec-backend/recordings/
    ```
 
 2. **Check Disk Space**
+
    ```bash
    # Clean up old files
    sudo find /opt/ezrec-backend/recordings/ -name "*.mp4" -mtime +7 -delete
-   
+
    # Check available space
    df -h
    ```
@@ -317,11 +341,13 @@ ls -la /opt/ezrec-backend/recordings/
 ### **Problem: Recording Stops Prematurely**
 
 **Symptoms:**
+
 - Recording starts but stops before booking end time
 - Partial video files created
 - Service logs show unexpected termination
 
 **Diagnosis:**
+
 ```bash
 # Check service logs
 sudo journalctl -u dual_recorder.service --since "1 hour ago"
@@ -336,28 +362,31 @@ free -h
 **Solutions:**
 
 1. **Check System Resources**
+
    ```bash
    # Monitor memory usage
    watch -n 1 free -h
-   
+
    # Check for memory leaks
    sudo journalctl -u dual_recorder.service | grep -i memory
    ```
 
 2. **Increase Timeout Settings**
+
    ```bash
    # Edit camera configuration
    sudo nano /opt/ezrec-backend/config/settings.py
-   
+
    # Increase timeout
    recording_timeout: 600000  # 10 minutes
    ```
 
 3. **Check for Interference**
+
    ```bash
    # Check for other processes using cameras
    lsof /dev/video*
-   
+
    # Kill interfering processes
    sudo pkill -f v4l2
    ```
@@ -367,11 +396,13 @@ free -h
 ### **Problem: S3 Upload Fails**
 
 **Symptoms:**
+
 - Videos recorded but not uploaded
 - Error messages about AWS credentials
 - Upload timeout errors
 
 **Diagnosis:**
+
 ```bash
 # Check AWS credentials
 aws configure list
@@ -386,28 +417,31 @@ ping s3.amazonaws.com
 **Solutions:**
 
 1. **Verify AWS Credentials**
+
    ```bash
    # Check environment variables
    sudo cat /opt/ezrec-backend/.env | grep AWS
-   
+
    # Test credentials
    aws sts get-caller-identity
    ```
 
 2. **Check Network Connectivity**
+
    ```bash
    # Test internet connection
    curl -I https://s3.amazonaws.com
-   
+
    # Check DNS resolution
    nslookup s3.amazonaws.com
    ```
 
 3. **Check S3 Bucket Configuration**
+
    ```bash
    # Verify bucket exists and is accessible
    aws s3 ls s3://your-bucket-name
-   
+
    # Check bucket permissions
    aws s3api get-bucket-acl --bucket your-bucket-name
    ```
@@ -415,11 +449,13 @@ ping s3.amazonaws.com
 ### **Problem: Upload Timeout**
 
 **Symptoms:**
+
 - Upload starts but never completes
 - Large files fail to upload
 - Network timeout errors
 
 **Diagnosis:**
+
 ```bash
 # Check network speed
 speedtest-cli
@@ -431,29 +467,32 @@ sudo journalctl -u video_worker.service | grep -i upload
 **Solutions:**
 
 1. **Optimize Upload Settings**
+
    ```bash
    # Edit upload configuration
    sudo nano /opt/ezrec-backend/services/upload_manager.py
-   
+
    # Increase timeout
    timeout=600  # 10 minutes
    ```
 
 2. **Compress Videos Before Upload**
+
    ```bash
    # Enable video compression
    sudo nano /opt/ezrec-backend/config/settings.py
-   
+
    # Add compression settings
    video_compression: true
    compression_quality: "medium"
    ```
 
 3. **Use Multipart Upload**
+
    ```bash
    # Enable multipart upload for large files
    sudo nano /opt/ezrec-backend/services/upload_manager.py
-   
+
    # Add multipart settings
    multipart_threshold: 100 * 1024 * 1024  # 100MB
    ```
@@ -463,11 +502,13 @@ sudo journalctl -u video_worker.service | grep -i upload
 ### **Problem: High CPU Usage**
 
 **Symptoms:**
+
 - System becomes unresponsive
 - High CPU usage during recording
 - Slow video processing
 
 **Diagnosis:**
+
 ```bash
 # Check CPU usage
 top
@@ -483,10 +524,11 @@ uptime
 **Solutions:**
 
 1. **Optimize Recording Settings**
+
    ```bash
    # Reduce recording quality
    sudo nano /opt/ezrec-backend/config/settings.py
-   
+
    # Lower settings
    recording_width: 1280
    recording_height: 720
@@ -494,6 +536,7 @@ uptime
    ```
 
 2. **Limit Background Processes**
+
    ```bash
    # Disable unnecessary services
    sudo systemctl disable bluetooth
@@ -510,11 +553,13 @@ uptime
 ### **Problem: High Memory Usage**
 
 **Symptoms:**
+
 - System runs out of memory
 - Services killed by OOM killer
 - Slow system performance
 
 **Diagnosis:**
+
 ```bash
 # Check memory usage
 free -h
@@ -527,31 +572,34 @@ sudo journalctl -u dual_recorder.service | grep -i memory
 **Solutions:**
 
 1. **Increase Swap Space**
+
    ```bash
    # Create swap file
    sudo fallocate -l 2G /swapfile
    sudo chmod 600 /swapfile
    sudo mkswap /swapfile
    sudo swapon /swapfile
-   
+
    # Make permanent
    echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
    ```
 
 2. **Optimize Memory Usage**
+
    ```bash
    # Edit service configuration
    sudo nano /opt/ezrec-backend/config/settings.py
-   
+
    # Reduce buffer sizes
    buffer_size: 1024 * 1024  # 1MB
    ```
 
 3. **Monitor Memory Usage**
+
    ```bash
    # Add memory monitoring
    sudo crontab -e
-   
+
    # Add:
    */5 * * * * /usr/bin/free -h >> /opt/ezrec-backend/logs/memory.log
    ```
@@ -561,11 +609,13 @@ sudo journalctl -u dual_recorder.service | grep -i memory
 ### **Problem: API Not Accessible**
 
 **Symptoms:**
+
 - Cannot access API endpoints
 - Connection refused errors
 - Service running but not responding
 
 **Diagnosis:**
+
 ```bash
 # Check if API service is running
 sudo systemctl status ezrec-api.service
@@ -580,28 +630,31 @@ curl http://localhost:8000/health
 **Solutions:**
 
 1. **Check Firewall Settings**
+
    ```bash
    # Check firewall status
    sudo ufw status
-   
+
    # Allow API port
    sudo ufw allow 8000/tcp
    ```
 
 2. **Check Service Configuration**
+
    ```bash
    # Check service file
    sudo systemctl cat ezrec-api.service
-   
+
    # Restart service
    sudo systemctl restart ezrec-api.service
    ```
 
 3. **Check Network Interface**
+
    ```bash
    # Check network configuration
    ip addr show
-   
+
    # Check routing
    ip route show
    ```
@@ -609,11 +662,13 @@ curl http://localhost:8000/health
 ### **Problem: Slow Network Performance**
 
 **Symptoms:**
+
 - Slow upload speeds
 - Timeout errors
 - Intermittent connectivity
 
 **Diagnosis:**
+
 ```bash
 # Test network speed
 speedtest-cli
@@ -628,10 +683,11 @@ ping -c 100 google.com
 **Solutions:**
 
 1. **Optimize Network Settings**
+
    ```bash
    # Edit network configuration
    sudo nano /etc/dhcpcd.conf
-   
+
    # Add network optimizations
    interface eth0
    static ip_address=192.168.1.100/24
@@ -640,19 +696,21 @@ ping -c 100 google.com
    ```
 
 2. **Check Network Hardware**
+
    ```bash
    # Check network interface status
    sudo ethtool eth0
-   
+
    # Check for errors
    cat /proc/net/dev
    ```
 
 3. **Optimize Upload Settings**
+
    ```bash
    # Edit upload configuration
    sudo nano /opt/ezrec-backend/services/upload_manager.py
-   
+
    # Add network optimizations
    max_concurrency: 2
    chunk_size: 8 * 1024 * 1024  # 8MB
@@ -663,11 +721,13 @@ ping -c 100 google.com
 ### **Problem: Environment Variables Not Loaded**
 
 **Symptoms:**
+
 - Services fail to start
 - Database connection errors
 - Missing configuration values
 
 **Diagnosis:**
+
 ```bash
 # Check environment file
 sudo cat /opt/ezrec-backend/.env
@@ -683,15 +743,17 @@ print('AWS_ACCESS_KEY_ID:', os.getenv('AWS_ACCESS_KEY_ID'))
 **Solutions:**
 
 1. **Verify Environment File**
+
    ```bash
    # Check file permissions
    ls -la /opt/ezrec-backend/.env
-   
+
    # Check file content
    sudo cat /opt/ezrec-backend/.env
    ```
 
 2. **Reload Environment**
+
    ```bash
    # Restart services to reload environment
    sudo systemctl restart dual_recorder.service
@@ -712,11 +774,13 @@ print('AWS_ACCESS_KEY_ID:', os.getenv('AWS_ACCESS_KEY_ID'))
 ### **Problem: Service Configuration Errors**
 
 **Symptoms:**
+
 - Services fail to start
 - Configuration validation errors
 - Incorrect service behavior
 
 **Diagnosis:**
+
 ```bash
 # Check service files
 sudo systemctl cat dual_recorder.service
@@ -730,6 +794,7 @@ sudo cat /opt/ezrec-backend/config/settings.py
 **Solutions:**
 
 1. **Validate Service Files**
+
    ```bash
    # Check service file syntax
    sudo systemctl daemon-reload
@@ -737,6 +802,7 @@ sudo cat /opt/ezrec-backend/config/settings.py
    ```
 
 2. **Check File Permissions**
+
    ```bash
    # Fix permissions
    sudo chown -R root:root /opt/ezrec-backend
@@ -745,10 +811,11 @@ sudo cat /opt/ezrec-backend/config/settings.py
    ```
 
 3. **Restore Default Configuration**
+
    ```bash
    # Restore from backup
    sudo cp /opt/ezrec-backend/config/settings.py.backup /opt/ezrec-backend/config/settings.py
-   
+
    # Or recreate from template
    sudo cp /opt/ezrec-backend/env.example /opt/ezrec-backend/.env
    ```
@@ -758,13 +825,14 @@ sudo cat /opt/ezrec-backend/config/settings.py
 ### **Understanding Log Messages**
 
 #### **Service Logs**
+
 ```bash
 # View service logs
 sudo journalctl -u dual_recorder.service -f
 
 # Common log patterns:
 # ✅ Success messages
-# ⚠️ Warning messages  
+# ⚠️ Warning messages
 # ❌ Error messages
 # 🔧 Configuration messages
 # 📷 Camera-related messages
@@ -772,6 +840,7 @@ sudo journalctl -u dual_recorder.service -f
 ```
 
 #### **Error Patterns**
+
 ```bash
 # Find error messages
 sudo journalctl -u dual_recorder.service | grep -E "(ERROR|CRITICAL|Exception)"

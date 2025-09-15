@@ -44,12 +44,14 @@
 ### **1. Camera Installation**
 
 1. **Connect Cameras to CSI Ports**
+
    ```
    Camera 1 → CSI0 (closest to power/USB)
    Camera 2 → CSI1 (farthest from power/USB)
    ```
 
 2. **Enable Camera Interface**
+
    ```bash
    sudo raspi-config
    # Navigate to: Interface Options > Camera > Enable
@@ -57,10 +59,11 @@
    ```
 
 3. **Verify Camera Detection**
+
    ```bash
    # Check camera devices
    v4l2-ctl --list-devices
-   
+
    # Expected output:
    # bcm2835-codec-decode (platform:bcm2835-codec):
    #     /dev/video10
@@ -81,6 +84,7 @@
 ### **2. Storage Setup**
 
 1. **Check Available Storage**
+
    ```bash
    df -h
    # Ensure at least 10GB free space
@@ -95,9 +99,10 @@
 ### **3. Network Configuration**
 
 1. **Configure Static IP (Recommended)**
+
    ```bash
    sudo nano /etc/dhcpcd.conf
-   
+
    # Add at the end:
    interface eth0
    static ip_address=192.168.1.100/24
@@ -158,6 +163,7 @@ sudo ./deployment.sh
 ```
 
 The deployment script will:
+
 - Install all Python dependencies
 - Create virtual environments
 - Set up systemd services
@@ -169,27 +175,29 @@ The deployment script will:
 ### **1. Environment Variables**
 
 1. **Create Environment File**
+
    ```bash
    sudo cp env.example /opt/ezrec-backend/.env
    sudo nano /opt/ezrec-backend/.env
    ```
 
 2. **Configure Required Variables**
+
    ```bash
    # Supabase Configuration
    SUPABASE_URL=https://your-project.supabase.co
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key_here
-   
+
    # AWS S3 Configuration
    AWS_ACCESS_KEY_ID=your_access_key_here
    AWS_SECRET_ACCESS_KEY=your_secret_key_here
    AWS_DEFAULT_REGION=us-east-1
    S3_BUCKET=your-bucket-name
-   
+
    # User Configuration
    USER_ID=your-user-id
    CAMERA_ID=your-camera-id
-   
+
    # Optional: Email Configuration
    EMAIL_HOST=smtp.gmail.com
    EMAIL_PORT=587
@@ -202,11 +210,13 @@ The deployment script will:
 ### **2. Supabase Setup**
 
 1. **Create Supabase Project**
+
    - Go to [supabase.com](https://supabase.com)
    - Create new project
    - Note the URL and service role key
 
 2. **Create Database Tables**
+
    ```sql
    -- Create bookings table
    CREATE TABLE bookings (
@@ -219,7 +229,7 @@ The deployment script will:
      created_at TIMESTAMPTZ DEFAULT NOW(),
      updated_at TIMESTAMPTZ DEFAULT NOW()
    );
-   
+
    -- Create recordings table
    CREATE TABLE recordings (
      id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -235,9 +245,11 @@ The deployment script will:
 ### **3. AWS S3 Setup**
 
 1. **Create S3 Bucket**
+
    - Go to AWS S3 Console
    - Create new bucket
    - Configure CORS policy:
+
    ```json
    [
      {
@@ -276,6 +288,7 @@ The deployment script will:
 ### **4. Service Configuration**
 
 1. **Verify Service Status**
+
    ```bash
    sudo systemctl status dual_recorder.service
    sudo systemctl status video_worker.service
@@ -299,6 +312,7 @@ sudo python3 test.py
 ```
 
 Expected output:
+
 ```
 🧪 EZREC Complete System Test
 ==================================================
@@ -402,12 +416,14 @@ sudo journalctl -u dual_recorder.service -f
 ### **1. Security Hardening**
 
 1. **Change Default Passwords**
+
    ```bash
    sudo passwd pi
    sudo passwd root
    ```
 
 2. **Configure Firewall**
+
    ```bash
    sudo ufw enable
    sudo ufw allow ssh
@@ -425,6 +441,7 @@ sudo journalctl -u dual_recorder.service -f
 ### **2. SSL/TLS Configuration**
 
 1. **Install Certbot**
+
    ```bash
    sudo apt install certbot python3-certbot-nginx
    ```
@@ -437,14 +454,16 @@ sudo journalctl -u dual_recorder.service -f
 ### **3. Monitoring Setup**
 
 1. **Install Monitoring Tools**
+
    ```bash
    sudo apt install htop iotop nethogs
    ```
 
 2. **Set Up Log Rotation**
+
    ```bash
    sudo nano /etc/logrotate.d/ezrec
-   
+
    # Add:
    /opt/ezrec-backend/logs/*.log {
        daily
@@ -460,31 +479,33 @@ sudo journalctl -u dual_recorder.service -f
 ### **4. Backup Configuration**
 
 1. **Create Backup Script**
+
    ```bash
    sudo nano /opt/ezrec-backend/backup.sh
-   
+
    # Add:
    #!/bin/bash
    BACKUP_DIR="/opt/ezrec-backend/backups"
    DATE=$(date +%Y%m%d_%H%M%S)
-   
+
    mkdir -p $BACKUP_DIR
-   
+
    # Backup configuration
    tar -czf $BACKUP_DIR/config_$DATE.tar.gz /opt/ezrec-backend/.env
-   
+
    # Backup recordings (last 7 days)
    find /opt/ezrec-backend/recordings -name "*.mp4" -mtime -7 -exec tar -czf $BACKUP_DIR/recordings_$DATE.tar.gz {} +
-   
+
    # Cleanup old backups (keep 30 days)
    find $BACKUP_DIR -name "*.tar.gz" -mtime +30 -delete
    ```
 
 2. **Schedule Backup**
+
    ```bash
    sudo chmod +x /opt/ezrec-backend/backup.sh
    sudo crontab -e
-   
+
    # Add:
    0 2 * * * /opt/ezrec-backend/backup.sh
    ```
@@ -494,12 +515,14 @@ sudo journalctl -u dual_recorder.service -f
 ### **1. Regular Maintenance Tasks**
 
 1. **System Updates**
+
    ```bash
    # Weekly system updates
    sudo apt update && sudo apt upgrade -y
    ```
 
 2. **Log Cleanup**
+
    ```bash
    # Clean old logs
    sudo find /opt/ezrec-backend/logs -name "*.log" -mtime +30 -delete
@@ -514,6 +537,7 @@ sudo journalctl -u dual_recorder.service -f
 ### **2. Health Monitoring**
 
 1. **Daily Health Check**
+
    ```bash
    # Add to crontab
    0 6 * * * /usr/bin/python3 /opt/ezrec-backend/test.py >> /opt/ezrec-backend/logs/health_check.log 2>&1
@@ -528,13 +552,14 @@ sudo journalctl -u dual_recorder.service -f
 ### **3. Performance Optimization**
 
 1. **Monitor Resource Usage**
+
    ```bash
    # Check CPU and memory usage
    htop
-   
+
    # Check disk usage
    df -h
-   
+
    # Check network usage
    iftop
    ```
@@ -548,16 +573,18 @@ sudo journalctl -u dual_recorder.service -f
 ### **4. Troubleshooting**
 
 1. **Common Issues**
+
    - Camera not detected: Check connections and enable camera interface
    - Service not starting: Check logs with `journalctl -u service-name`
    - Recording failures: Check disk space and permissions
    - Upload issues: Verify AWS credentials and network connectivity
 
 2. **Log Analysis**
+
    ```bash
    # View recent errors
    sudo journalctl -u dual_recorder.service --since "1 hour ago" | grep ERROR
-   
+
    # Monitor real-time logs
    sudo journalctl -u dual_recorder.service -f
    ```
@@ -565,6 +592,7 @@ sudo journalctl -u dual_recorder.service -f
 ## Support
 
 For additional support:
+
 - Check the troubleshooting section in the main README
 - Review system logs for error messages
 - Create an issue on GitHub with detailed information
