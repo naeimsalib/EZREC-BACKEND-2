@@ -180,19 +180,37 @@ class SimpleDualRecorder:
     
     def is_recording(self):
         """Check if currently recording"""
-        return len(self.recording_processes) > 0 and all(p.poll() is None for p in self.recording_processes)
+        if not self.recording_processes:
+            return False
+        
+        # Check if all processes are still running
+        for process in self.recording_processes:
+            if process.poll() is not None:
+                # Process has ended
+                return False
+        
+        return True
     
     def check_and_handle_bookings(self):
         """Check for active bookings and handle recording"""
         try:
             active_booking = self.find_active_booking()
+            currently_recording = self.is_recording()
             
-            if active_booking and not self.is_recording():
+            logger.info(f"📊 Status: Active booking: {active_booking is not None}, Recording: {currently_recording}")
+            
+            if active_booking and not currently_recording:
                 # Start recording for active booking
+                logger.info("🚀 Starting new recording session")
                 self.start_recording(active_booking)
-            elif not active_booking and self.is_recording():
+            elif not active_booking and currently_recording:
                 # Stop recording if no active booking
+                logger.info("🛑 Stopping recording - no active booking")
                 self.stop_recording()
+            elif active_booking and currently_recording:
+                logger.info("✅ Recording in progress for active booking")
+            else:
+                logger.info("⏸️ No active booking, no recording")
                 
         except Exception as e:
             logger.error(f"❌ Error in check_and_handle_bookings: {e}")
