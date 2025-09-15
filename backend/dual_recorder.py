@@ -121,13 +121,15 @@ class SimpleDualRecorder:
                 output = result.stdout
                 camera_count = 0
                 
-                # Look for camera entries in the output
+                # Look for camera entries in the output - improved parsing
                 lines = output.split('\n')
                 for line in lines:
-                    if ':' in line and ('imx477' in line or 'camera' in line.lower()):
+                    # Look for lines that start with a number followed by a colon (camera index)
+                    if line.strip() and ':' in line and line.strip()[0].isdigit():
                         camera_count += 1
                 
                 logger.info(f"✅ Detected {camera_count} camera(s)")
+                logger.info(f"📋 Camera detection output: {output.strip()}")
                 return camera_count
             else:
                 logger.warning("⚠️ No cameras detected")
@@ -177,6 +179,7 @@ class SimpleDualRecorder:
             
             cmd = [
                 'rpicam-vid',
+                '--camera', '0',  # Explicitly specify camera 0
                 '--width', '1280',
                 '--height', '720',
                 '--framerate', '25',
@@ -212,7 +215,7 @@ class SimpleDualRecorder:
             return False
     
     def _start_dual_camera_recording(self, booking, session_dir):
-        """Start recording with dual cameras"""
+        """Start recording with dual cameras simultaneously"""
         try:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
@@ -220,6 +223,7 @@ class SimpleDualRecorder:
             output_file_0 = session_dir / f"camera_0_{timestamp}.mp4"
             cmd_0 = [
                 'rpicam-vid',
+                '--camera', '0',  # Explicitly specify camera 0
                 '--width', '1280',
                 '--height', '720',
                 '--framerate', '25',
@@ -229,10 +233,11 @@ class SimpleDualRecorder:
                 '--bitrate', '5000000'  # 5 Mbps
             ]
             
-            # Camera 1 - Secondary camera (if available)
+            # Camera 1 - Secondary camera
             output_file_1 = session_dir / f"camera_1_{timestamp}.mp4"
             cmd_1 = [
                 'rpicam-vid',
+                '--camera', '1',  # Explicitly specify camera 1
                 '--width', '1280',
                 '--height', '720',
                 '--framerate', '25',
@@ -242,47 +247,43 @@ class SimpleDualRecorder:
                 '--bitrate', '5000000'  # 5 Mbps
             ]
             
-            logger.info("🎥 Starting Camera 0...")
-            process_0 = subprocess.Popen(cmd_0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            time.sleep(3)  # Wait for first camera to initialize
+            logger.info("🎥 Starting BOTH cameras simultaneously...")
             
-            # Check if Camera 0 started successfully
-            if process_0.poll() is not None:
+            # Start both cameras at the same time
+            process_0 = subprocess.Popen(cmd_0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # Wait for both cameras to initialize
+            time.sleep(5)  # Give both cameras time to start
+            
+            # Check if both cameras started successfully
+            camera_0_success = process_0.poll() is None
+            camera_1_success = process_1.poll() is None
+            
+            if not camera_0_success:
                 logger.error(f"❌ Camera 0 failed to start (exit code: {process_0.returncode})")
                 stderr_output = process_0.stderr.read().decode() if process_0.stderr else 'No error output'
                 logger.error(f"❌ Camera 0 error: {stderr_output}")
+                # Clean up failed process
+                if camera_1_success:
+                    process_1.terminate()
                 return False
             
-            logger.info("✅ Camera 0 started successfully")
-            
-            # Try to start Camera 1
-            logger.info("🎥 Starting Camera 1...")
-            process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            time.sleep(3)  # Wait for second camera to initialize
-            
-            # Check if Camera 1 started successfully
-            if process_1.poll() is not None:
-                logger.warning(f"⚠️ Camera 1 failed to start (exit code: {process_1.returncode})")
+            if not camera_1_success:
+                logger.error(f"❌ Camera 1 failed to start (exit code: {process_1.returncode})")
                 stderr_output = process_1.stderr.read().decode() if process_1.stderr else 'No error output'
-                logger.warning(f"⚠️ Camera 1 error: {stderr_output}")
-                logger.info("🔄 Falling back to single camera recording")
-                # Clean up failed process and continue with single camera
-                process_1 = None
-            else:
-                logger.info("✅ Camera 1 started successfully")
+                logger.error(f"❌ Camera 1 error: {stderr_output}")
+                # Clean up failed process
+                process_0.terminate()
+                return False
             
-            # Store successful processes
-            if process_1 is not None:
-                self.recording_processes = [process_0, process_1]
-                logger.info(f"🎉 DUAL CAMERA RECORDING STARTED SUCCESSFULLY!")
-                logger.info(f"📁 Camera 0: {output_file_0.name}")
-                logger.info(f"📁 Camera 1: {output_file_1.name}")
-            else:
-                self.recording_processes = [process_0]
-                logger.info(f"🎉 SINGLE CAMERA RECORDING STARTED SUCCESSFULLY!")
-                logger.info(f"📁 Recording to: {output_file_0.name}")
-            
+            # Both cameras started successfully
+            self.recording_processes = [process_0, process_1]
             self.current_booking = booking
+            
+            logger.info(f"🎉 DUAL CAMERA RECORDING STARTED SUCCESSFULLY!")
+            logger.info(f"📁 Camera 0: {output_file_0.name}")
+            logger.info(f"📁 Camera 1: {output_file_1.name}")
             logger.info(f"⏱️ Recording duration: 5 minutes")
             
             return True
