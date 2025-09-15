@@ -341,6 +341,50 @@ def get_recordings():
                 recordings.append({"filename": f.name, "path": str(f)})
     return recordings
 
+# API prefixed endpoints for frontend compatibility
+@app.get("/api/bookings")
+def get_api_bookings():
+    """Get bookings with /api/ prefix for frontend compatibility"""
+    return get_bookings()
+
+@app.get("/api/cameras")
+def get_api_cameras():
+    """Get camera information with /api/ prefix"""
+    try:
+        # Check camera availability
+        import subprocess
+        result = subprocess.run(['rpicam-vid', '--list-cameras'], 
+                              capture_output=True, text=True, timeout=10)
+        
+        cameras = []
+        if result.returncode == 0:
+            # Parse camera information from output
+            lines = result.stdout.split('\n')
+            for line in lines:
+                if 'imx477' in line.lower() or 'camera' in line.lower():
+                    cameras.append({
+                        "id": f"camera_{len(cameras)}",
+                        "name": line.strip(),
+                        "status": "available"
+                    })
+        
+        # If no cameras detected, return default info
+        if not cameras:
+            cameras = [
+                {"id": "camera_0", "name": "Camera 0", "status": "unknown"},
+                {"id": "camera_1", "name": "Camera 1", "status": "unknown"}
+            ]
+        
+        return {"cameras": cameras, "count": len(cameras)}
+    except Exception as e:
+        logger.error(f"Failed to get camera info: {e}")
+        return {"cameras": [], "count": 0, "error": str(e)}
+
+@app.get("/api/recordings")
+def get_api_recordings():
+    """Get recordings with /api/ prefix for frontend compatibility"""
+    return get_recordings()
+
 @app.post("/system")
 def update_system_settings(settings: SystemSettings):
     try:

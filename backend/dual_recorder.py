@@ -124,31 +124,54 @@ class SimpleDualRecorder:
             # Start recording for both cameras
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # Camera 0
+            # Camera 0 - Use simpler parameters for better compatibility
             output_file_0 = session_dir / f"camera_0_{timestamp}.mp4"
             cmd_0 = [
                 'rpicam-vid',
-                '--width', '1920',
-                '--height', '1080',
-                '--framerate', '30',
+                '--width', '1280',
+                '--height', '720',
+                '--framerate', '25',
                 '--output', str(output_file_0),
                 '--timeout', '300000'  # 5 minutes
             ]
             
-            # Camera 1
+            # Camera 1 - Use simpler parameters for better compatibility
             output_file_1 = session_dir / f"camera_1_{timestamp}.mp4"
             cmd_1 = [
                 'rpicam-vid',
-                '--width', '1920',
-                '--height', '1080',
-                '--framerate', '30',
+                '--width', '1280',
+                '--height', '720',
+                '--framerate', '25',
                 '--output', str(output_file_1),
                 '--timeout', '300000'  # 5 minutes
             ]
             
+            # Test camera availability first
+            logger.info("🔍 Testing camera availability...")
+            test_result = subprocess.run(['rpicam-vid', '--list-cameras'], 
+                                       capture_output=True, text=True, timeout=10)
+            if test_result.returncode != 0:
+                logger.error(f"❌ Camera test failed: {test_result.stderr}")
+                return False
+            
+            logger.info("✅ Cameras available, starting recording...")
+            
             # Start recording processes
             process_0 = subprocess.Popen(cmd_0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            # Wait a moment and check if processes started successfully
+            time.sleep(2)
+            
+            if process_0.poll() is not None:
+                logger.error(f"❌ Camera 0 process failed immediately (exit code: {process_0.returncode})")
+                logger.error(f"❌ Camera 0 stderr: {process_0.stderr.read().decode() if process_0.stderr else 'No error output'}")
+                return False
+                
+            if process_1.poll() is not None:
+                logger.error(f"❌ Camera 1 process failed immediately (exit code: {process_1.returncode})")
+                logger.error(f"❌ Camera 1 stderr: {process_1.stderr.read().decode() if process_1.stderr else 'No error output'}")
+                return False
             
             self.recording_processes = [process_0, process_1]
             self.current_booking = booking
