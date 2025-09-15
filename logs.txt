@@ -1,46 +1,12 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a new booking that starts NOW and lasts 10 minutes
-python3 -c "
-import json
-import time
-from datetime import datetime, timedelta
-import pytz
-
-# Calculate booking times (start now, end in 10 minutes)
-now = datetime.now(pytz.timezone('America/New_York'))
-start_time = now
-end_time = now + timedelta(minutes=10)
-
-# Create test booking
-test_booking = {
-    'id': f'test-booking-{int(time.time())}',
-    'user_id': 'test-user-123',
-    'start_time': start_time.isoformat(),
-    'end_time': end_time.isoformat(),
-    'date': now.strftime('%Y-%m-%d'),
-    'camera_id': 'test-camera-456',
-    'recording_id': f'rec-{int(time.time())}',
-    'status': None,
-    'email': None,
-    'created_at': now.isoformat(),
-    'updated_at': now.isoformat()
-}
-
-# Save booking
-with open('/opt/ezrec-backend/api/local_data/bookings.json', 'w') as f:
-    json.dump([test_booking], f, indent=2)
-
-print(f'✅ New booking created:')
-print(f'   ID: {test_booking[\"id\"]}')
-print(f'   Start: {start_time}')
-print(f'   End: {end_time}')
-print(f'   Duration: 10 minutes')
-"
-
-# Create the FINAL working recorder using rpicam-vid
-sudo tee /opt/ezrec-backend/backend/dual_recorder.py > /dev/null << 'EOF'
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ ls
+api  backend  debug_camera_issue.py  deployment.sh  env.example  logs.txt  README.md  requirements.txt  systemd  test.py
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cat backend/dual_recorder
+dual_recorder_minimal.py  dual_recorder.py          dual_recorder_simple.py   dual_recorder_working.py  
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cat backend/dual_recorder.py
 #!/usr/bin/env python3
 """
-FINAL WORKING RECORDER - Uses rpicam-vid which is available on your system
+DEFINITIVE FIX - Uses rpicam-vid directly to bypass Picamera2 transform issues
+This version completely bypasses Picamera2 and uses the native rpicam-vid command
 """
 
 import os
@@ -48,6 +14,7 @@ import sys
 import time
 import logging
 import subprocess
+import threading
 from pathlib import Path
 from datetime import datetime
 import pytz
@@ -63,10 +30,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-class FinalWorkingRecorder:
+class DefinitiveRecorder:
     def __init__(self):
         self.recording = False
         self.recording_processes = {}
+        self.recording_threads = {}
         
     def detect_cameras(self):
         """Detect available cameras using rpicam-vid"""
@@ -74,376 +42,468 @@ class FinalWorkingRecorder:
         
         for index in range(2):
             try:
-                # Test camera using rpicam-vid
+                # Test camera with rpicam-vid
                 result = subprocess.run([
-                    'rpicam-vid', 
-                    '--camera', str(index),
-                    '--timeout', '1000',
-                    '--output', '/dev/null'
-                ], capture_output=True, timeout=3)
+                    'rpicam-vid', '--camera', str(index), '--timeout', '1000', '--output', '/dev/null'
+                ], capture_output=True, text=True, timeout=5)
                 
-sudo journalctl -u dual_recorder.service -fel_recorder.pyg recording")e_booking['id']}"))0'))
-✅ New booking created:
-   ID: test-booking-1757891292
-   Start: 2025-09-14 19:08:12.450529-04:00
-   End: 2025-09-14 19:18:12.450529-04:00
-   Duration: 10 minutes
-Sep 14 19:07:58 raspberrypi python3[584223]: 2025-09-14 19:07:58,872 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:07:58.872409-04:00
-Sep 14 19:07:58 raspberrypi python3[584223]: 2025-09-14 19:07:58,872 - INFO - 🔍 Booking test-booking-1757890887: 2025-09-14 19:01:27.342005-04:00 - 2025-09-14 19:06:27.342005-04:00
-Sep 14 19:07:58 raspberrypi python3[584223]: 2025-09-14 19:07:58,872 - INFO -    Now: 2025-09-14 19:07:58.872409-04:00
-Sep 14 19:07:58 raspberrypi python3[584223]: 2025-09-14 19:07:58,872 - INFO - ❌ No active booking found
-Sep 14 19:08:03 raspberrypi python3[584223]: 2025-09-14 19:08:03,872 - INFO - 📋 Loaded 0 bookings from cache
-Sep 14 19:08:08 raspberrypi python3[584223]: 2025-09-14 19:08:08,873 - INFO - 📋 Loaded 0 bookings from cache
-Sep 14 19:08:12 raspberrypi systemd[1]: Stopping dual_recorder.service - EZREC Dual Camera Recorder Service...
-Sep 14 19:08:12 raspberrypi systemd[1]: dual_recorder.service: Deactivated successfully.
-Sep 14 19:08:12 raspberrypi systemd[1]: Stopped dual_recorder.service - EZREC Dual Camera Recorder Service.
-Sep 14 19:08:12 raspberrypi systemd[1]: Started dual_recorder.service - EZREC Dual Camera Recorder Service.
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,572 - INFO - 🎥 FINAL WORKING Dual Recorder Service Starting
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,574 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:08:12.575230-04:00
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO - 🔍 Booking test-booking-1757891292: 2025-09-14 19:08:12.450529-04:00 - 2025-09-14 19:18:12.450529-04:00
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO -    Now: 2025-09-14 19:08:12.575230-04:00
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO - 🎯 Active booking found: test-booking-1757891292
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO - 🎬 Starting recording for booking: test-booking-1757891292
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO - 🎬 Starting recording session for booking: test-booking-1757891292
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,575 - INFO - 🔍 Detecting cameras...
-Sep 14 19:08:12 raspberrypi python3[584329]: 2025-09-14 19:08:12,948 - WARNING - ⚠️ Camera 0 not available
-Sep 14 19:08:13 raspberrypi python3[584329]: 2025-09-14 19:08:13,189 - WARNING - ⚠️ Camera 1 not available
-Sep 14 19:08:13 raspberrypi python3[584329]: 2025-09-14 19:08:13,190 - INFO - 📷 Available cameras: []
-Sep 14 19:08:13 raspberrypi python3[584329]: 2025-09-14 19:08:13,190 - ERROR - ❌ No cameras available
-Sep 14 19:08:13 raspberrypi python3[584329]: 2025-09-14 19:08:13,190 - ERROR - ❌ Failed to start recording
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:08:18.190465-04:00
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 🔍 Booking test-booking-1757891292: 2025-09-14 19:08:12.450529-04:00 - 2025-09-14 19:18:12.450529-04:00
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO -    Now: 2025-09-14 19:08:18.190465-04:00
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 🎯 Active booking found: test-booking-1757891292
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 🎬 Starting recording for booking: test-booking-1757891292
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 🎬 Starting recording session for booking: test-booking-1757891292
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,190 - INFO - 🔍 Detecting cameras...
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,429 - WARNING - ⚠️ Camera 0 not available
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,667 - WARNING - ⚠️ Camera 1 not available
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,667 - INFO - 📷 Available cameras: []
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,668 - ERROR - ❌ No cameras available
-Sep 14 19:08:18 raspberrypi python3[584329]: 2025-09-14 19:08:18,668 - ERROR - ❌ Failed to start recording
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:08:23.668372-04:00
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 🔍 Booking test-booking-1757891292: 2025-09-14 19:08:12.450529-04:00 - 2025-09-14 19:18:12.450529-04:00
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO -    Now: 2025-09-14 19:08:23.668372-04:00
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 🎯 Active booking found: test-booking-1757891292
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 🎬 Starting recording for booking: test-booking-1757891292
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 🎬 Starting recording session for booking: test-booking-1757891292
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,668 - INFO - 🔍 Detecting cameras...
-Sep 14 19:08:23 raspberrypi python3[584329]: 2025-09-14 19:08:23,909 - WARNING - ⚠️ Camera 0 not available
-Sep 14 19:08:24 raspberrypi python3[584329]: 2025-09-14 19:08:24,149 - WARNING - ⚠️ Camera 1 not available
-Sep 14 19:08:24 raspberrypi python3[584329]: 2025-09-14 19:08:24,149 - INFO - 📷 Available cameras: []
-Sep 14 19:08:24 raspberrypi python3[584329]: 2025-09-14 19:08:24,149 - ERROR - ❌ No cameras available
-Sep 14 19:08:24 raspberrypi python3[584329]: 2025-09-14 19:08:24,149 - ERROR - ❌ Failed to start recording
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:08:29.149643-04:00
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 🔍 Booking test-booking-1757891292: 2025-09-14 19:08:12.450529-04:00 - 2025-09-14 19:18:12.450529-04:00
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO -    Now: 2025-09-14 19:08:29.149643-04:00
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 🎯 Active booking found: test-booking-1757891292
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 🎬 Starting recording for booking: test-booking-1757891292
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 🎬 Starting recording session for booking: test-booking-1757891292
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,149 - INFO - 🔍 Detecting cameras...
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,418 - WARNING - ⚠️ Camera 0 not available
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,697 - WARNING - ⚠️ Camera 1 not available
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,697 - INFO - 📷 Available cameras: []
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,697 - ERROR - ❌ No cameras available
-Sep 14 19:08:29 raspberrypi python3[584329]: 2025-09-14 19:08:29,697 - ERROR - ❌ Failed to start recording
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:08:34.698264-04:00
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 🔍 Booking test-booking-1757891292: 2025-09-14 19:08:12.450529-04:00 - 2025-09-14 19:18:12.450529-04:00
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO -    Now: 2025-09-14 19:08:34.698264-04:00
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 🎯 Active booking found: test-booking-1757891292
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 🎬 Starting recording for booking: test-booking-1757891292
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 🎬 Starting recording session for booking: test-booking-1757891292
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,698 - INFO - 🔍 Detecting cameras...
-Sep 14 19:08:34 raspberrypi python3[584329]: 2025-09-14 19:08:34,972 - WARNING - ⚠️ Camera 0 not available
-Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,232 - WARNING - ⚠️ Camera 1 not available
-Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,233 - INFO - 📷 Available cameras: []
-Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,233 - ERROR - ❌ No cameras available
-Sep 14 19:08:35 raspberrypi python3[584329]: 2025-09-14 19:08:35,233 - ERROR - ❌ Failed to start recording
+                if result.returncode == 0 or "Available cameras" in result.stderr:
+                    available_cameras.append(index)
+                    logger.info(f"✅ Camera {index} detected")
+                else:
+                    logger.warning(f"⚠️ Camera {index} not available")
+            except Exception as e:
+                logger.warning(f"⚠️ Camera {index} not available: {e}")
+        
+        logger.info(f"📷 Available cameras: {available_cameras}")
+        return available_cameras
+    
+    def record_camera(self, camera_index, output_file, booking_id):
+        """Record from a single camera using rpicam-vid"""
+        try:
+            logger.info(f"🔧 Starting recording for camera {camera_index}")
+            
+            # Use rpicam-vid directly
+            cmd = [
+                'rpicam-vid',
+                '--camera', str(camera_index),
+                '--width', '1280',
+                '--height', '720',
+                '--framerate', '30',
+                '--output', str(output_file),
+                '--timeout', '300000'  # 5 minutes
+            ]
+            
+            logger.info(f"🎬 Running command: {' '.join(cmd)}")
+            
+            # Start recording process
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.recording_processes[camera_index] = process
+            
+            logger.info(f"✅ Camera {camera_index} started recording to {output_file}")
+            
+            # Wait for process to complete or be stopped
+            while self.recording and process.poll() is None:
+                time.sleep(1)
+            
+            # Stop the process if still running
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=5)
+            
+            logger.info(f"✅ Camera {camera_index} finished recording")
+            
+        except Exception as e:
+            logger.error(f"❌ Camera {camera_index} recording failed: {e}")
+    
+    def start_recording_session(self, booking):
+        """Start recording session using rpicam-vid"""
+        logger.info(f"🎬 Starting recording session for booking: {booking['id']}")
+        
+        # Detect cameras
+        logger.info("🔍 Detecting cameras...")
+        available_cameras = self.detect_cameras()
+        
+        if not available_cameras:
+            logger.error("❌ No cameras available")
+            return False
+        
+        # Create recordings directory
+        today = datetime.now().strftime("%Y-%m-%d")
+        session_dir = RECORDINGS_DIR / today / f"session_{booking['id']}"
+        session_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Start recording using threads
+        self.recording = True
+        
+        for camera_index in available_cameras:
+            output_file = session_dir / f"camera_{camera_index}.mp4"
+            
+            # Start recording in a separate thread
+            thread = threading.Thread(
+                target=self.record_camera,
+                args=(camera_index, output_file, booking['id'])
+            )
+            thread.daemon = True
+            thread.start()
+            
+            self.recording_threads[camera_index] = thread
+        
+        logger.info("✅ Recording started successfully")
+        return True
+    
+    def stop_recording_session(self):
+        """Stop recording session"""
+        if not self.recording:
+            return
+        
+        logger.info("🛑 Stopping recording session")
+        self.recording = False
+        
+        # Stop all recording processes
+        for camera_index, process in self.recording_processes.items():
+            try:
+                if process.poll() is None:
+                    process.terminate()
+                    process.wait(timeout=5)
+                logger.info(f"✅ Camera {camera_index} process stopped")
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {camera_index} process: {e}")
+        
+        # Wait for threads to finish
+        for camera_index, thread in self.recording_threads.items():
+            try:
+                thread.join(timeout=5)
+                logger.info(f"✅ Camera {camera_index} thread finished")
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {camera_index} thread: {e}")
+        
+        self.recording_processes.clear()
+        self.recording_threads.clear()
+        logger.info("✅ Recording stopped")
+    
+    def is_recording(self):
+        """Check if currently recording"""
+        return self.recording
 
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # 1. Pull the latest changes
-git pull origin main
+def load_bookings():
+    """Load bookings from the bookings file"""
+    try:
+        if BOOKINGS_FILE.exists():
+            import json
+            with open(BOOKINGS_FILE, 'r') as f:
+                bookings = json.load(f)
+            logger.info(f"📋 Loaded {len(bookings)} bookings from cache")
+            return bookings
+        else:
+            logger.warning("⚠️ No bookings file found")
+            return []
+    except Exception as e:
+        logger.error(f"❌ Failed to load bookings: {e}")
+        return []
 
-# 2. Run the deployment script
-sudo ./deployment.sh
+def find_active_booking(bookings):
+    """Find an active booking that should be recording now"""
+    if not bookings:
+        return None
+    
+    now = datetime.now(pytz.timezone('America/New_York'))
+    logger.info(f"🔍 Checking {len(bookings)} bookings at {now}")
+    
+    for booking in bookings:
+        try:
+            start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
+            end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
+            
+            logger.info(f"🔍 Booking {booking['id']}: {start_time} - {end_time}")
+            logger.info(f"   Now: {now}")
+            
+            if start_time <= now <= end_time:
+                logger.info(f"🎯 Active booking found: {booking['id']}")
+                return booking
+        except Exception as e:
+            logger.error(f"❌ Error parsing booking {booking.get('id', 'unknown')}: {e}")
+            continue
+    
+    logger.info("❌ No active booking found")
+    return None
 
-# 3. Create a fresh booking
-python3 -c "
-import json
+def main():
+    """Main service function - runs continuously"""
+    logger.info("🎥 DEFINITIVE Dual Recorder Service Starting")
+    
+    # Create recorder
+    recorder = DefinitiveRecorder()
+    current_booking = None
+    
+    try:
+        while True:
+            # Load bookings
+            bookings = load_bookings()
+            
+            # Find active booking
+            active_booking = find_active_booking(bookings)
+            
+            if active_booking and not recorder.is_recording():
+                # Start recording for active booking
+                logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
+                if recorder.start_recording_session(active_booking):
+                    current_booking = active_booking
+                    logger.info("✅ Recording started successfully")
+                else:
+                    logger.error("❌ Failed to start recording")
+            
+            elif not active_booking and recorder.is_recording():
+                # Stop recording if no active booking
+                logger.info("🛑 No active booking, stopping recording")
+                recorder.stop_recording_session()
+                current_booking = None
+            
+            # Wait before checking again
+            time.sleep(5)
+            
+    except KeyboardInterrupt:
+        logger.info("🛑 Service interrupted by user")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
+    except Exception as e:
+        logger.error(f"❌ Service error: {e}")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
+
+if __name__ == "__main__":
+    main()
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cat /opt/ezrec-backend/backend/dual_recorder
+dual_recorder_minimal.py  dual_recorder.py          dual_recorder.py.backup   dual_recorder_simple.py   dual_recorder_working.py  
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ cat /opt/ezrec-backend/backend/dual_recorder.py
+#!/usr/bin/env python3
+"""
+DEFINITIVE FIX - Uses rpicam-vid directly to bypass Picamera2 transform issues
+This version completely bypasses Picamera2 and uses the native rpicam-vid command
+"""
+
+import os
+import sys
 import time
-from datetime import datetime, timedelta
+import logging
+import subprocess
+import threading
+from pathlib import Path
+from datetime import datetime
 import pytz
 
-now = datetime.now(pytz.timezone('America/New_York'))
-start_time = now
-end_time = now + timedelta(minutes=10)
+# Configuration
+RECORDINGS_DIR = Path("/opt/ezrec-backend/recordings")
+BOOKINGS_FILE = Path("/opt/ezrec-backend/api/local_data/bookings.json")
 
-test_booking = {
-    'id': f'test-booking-{int(time.time())}',
-    'user_id': 'test-user-123',
-    'start_time': start_time.isoformat(),
-    'end_time': end_time.isoformat(),
-    'date': now.strftime('%Y-%m-%d'),
-    'camera_id': 'test-camera-456',
-    'recording_id': f'rec-{int(time.time())}',
-    'status': None,
-    'email': None,
-    'created_at': now.isoformat(),
-    'updated_at': now.isoformat()
-}
+# Set up logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
-with open('/opt/ezrec-backend/api/local_data/bookings.json', 'w') as f:
-    json.dump([test_booking], f, indent=2)
+class DefinitiveRecorder:
+    def __init__(self):
+        self.recording = False
+        self.recording_processes = {}
+        self.recording_threads = {}
+        
+    def detect_cameras(self):
+        """Detect available cameras using rpicam-vid"""
+        available_cameras = []
+        
+        for index in range(2):
+            try:
+                # Test camera with rpicam-vid
+                result = subprocess.run([
+                    'rpicam-vid', '--camera', str(index), '--timeout', '1000', '--output', '/dev/null'
+                ], capture_output=True, text=True, timeout=5)
+                
+                if result.returncode == 0 or "Available cameras" in result.stderr:
+                    available_cameras.append(index)
+                    logger.info(f"✅ Camera {index} detected")
+                else:
+                    logger.warning(f"⚠️ Camera {index} not available")
+            except Exception as e:
+                logger.warning(f"⚠️ Camera {index} not available: {e}")
+        
+        logger.info(f"📷 Available cameras: {available_cameras}")
+        return available_cameras
+    
+    def record_camera(self, camera_index, output_file, booking_id):
+        """Record from a single camera using rpicam-vid"""
+        try:
+            logger.info(f"🔧 Starting recording for camera {camera_index}")
+            
+            # Use rpicam-vid directly
+            cmd = [
+                'rpicam-vid',
+                '--camera', str(camera_index),
+                '--width', '1280',
+                '--height', '720',
+                '--framerate', '30',
+                '--output', str(output_file),
+                '--timeout', '300000'  # 5 minutes
+            ]
+            
+            logger.info(f"🎬 Running command: {' '.join(cmd)}")
+            
+            # Start recording process
+            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.recording_processes[camera_index] = process
+            
+            logger.info(f"✅ Camera {camera_index} started recording to {output_file}")
+            
+            # Wait for process to complete or be stopped
+            while self.recording and process.poll() is None:
+                time.sleep(1)
+            
+            # Stop the process if still running
+            if process.poll() is None:
+                process.terminate()
+                process.wait(timeout=5)
+            
+            logger.info(f"✅ Camera {camera_index} finished recording")
+            
+        except Exception as e:
+            logger.error(f"❌ Camera {camera_index} recording failed: {e}")
+    
+    def start_recording_session(self, booking):
+        """Start recording session using rpicam-vid"""
+        logger.info(f"🎬 Starting recording session for booking: {booking['id']}")
+        
+        # Detect cameras
+        logger.info("🔍 Detecting cameras...")
+        available_cameras = self.detect_cameras()
+        
+        if not available_cameras:
+            logger.error("❌ No cameras available")
+            return False
+        
+        # Create recordings directory
+        today = datetime.now().strftime("%Y-%m-%d")
+        session_dir = RECORDINGS_DIR / today / f"session_{booking['id']}"
+        session_dir.mkdir(parents=True, exist_ok=True)
+        
+        # Start recording using threads
+        self.recording = True
+        
+        for camera_index in available_cameras:
+            output_file = session_dir / f"camera_{camera_index}.mp4"
+            
+            # Start recording in a separate thread
+            thread = threading.Thread(
+                target=self.record_camera,
+                args=(camera_index, output_file, booking['id'])
+            )
+            thread.daemon = True
+            thread.start()
+            
+            self.recording_threads[camera_index] = thread
+        
+        logger.info("✅ Recording started successfully")
+        return True
+    
+    def stop_recording_session(self):
+        """Stop recording session"""
+        if not self.recording:
+            return
+        
+        logger.info("🛑 Stopping recording session")
+        self.recording = False
+        
+        # Stop all recording processes
+        for camera_index, process in self.recording_processes.items():
+            try:
+                if process.poll() is None:
+                    process.terminate()
+                    process.wait(timeout=5)
+                logger.info(f"✅ Camera {camera_index} process stopped")
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {camera_index} process: {e}")
+        
+        # Wait for threads to finish
+        for camera_index, thread in self.recording_threads.items():
+            try:
+                thread.join(timeout=5)
+                logger.info(f"✅ Camera {camera_index} thread finished")
+            except Exception as e:
+                logger.error(f"❌ Error stopping camera {camera_index} thread: {e}")
+        
+        self.recording_processes.clear()
+        self.recording_threads.clear()
+        logger.info("✅ Recording stopped")
+    
+    def is_recording(self):
+        """Check if currently recording"""
+        return self.recording
 
-print(f'✅ New booking created: {test_booking[\"id\"]}')
-"
+def load_bookings():
+    """Load bookings from the bookings file"""
+    try:
+        if BOOKINGS_FILE.exists():
+            import json
+            with open(BOOKINGS_FILE, 'r') as f:
+                bookings = json.load(f)
+            logger.info(f"📋 Loaded {len(bookings)} bookings from cache")
+            return bookings
+        else:
+            logger.warning("⚠️ No bookings file found")
+            return []
+    except Exception as e:
+        logger.error(f"❌ Failed to load bookings: {e}")
+        return []
 
-# 4. Monitor the logs
-sudo journalctl -u dual_recorder.service -f
-remote: Enumerating objects: 10, done.
-remote: Counting objects: 100% (10/10), done.
-remote: Compressing objects: 100% (3/3), done.
-remote: Total 6 (delta 3), reused 6 (delta 3), pack-reused 0 (from 0)
-Unpacking objects: 100% (6/6), 5.28 KiB | 1.76 MiB/s, done.
-From https://github.com/naeimsalib/EZREC-BACKEND-2
- * branch            main       -> FETCH_HEAD
-   aa9be0b..01038bc  main       -> origin/main
-Updating aa9be0b..01038bc
-error: Your local changes to the following files would be overwritten by merge:
-        logs.txt
-Please commit your changes or stash them before you merge.
-Aborting
-[19:10:23] Starting EZREC deployment as user: root
-[19:10:23] STEP: 1. Applying comprehensive system fixes
-[19:10:23] 🔧 Fixing port conflicts with comprehensive cleanup...
-[19:10:23] 🛑 Stopping all EZREC services...
-[19:10:24] 🧹 Comprehensive port cleanup...
-[19:10:24] 🧹 Killing processes by name...
-[19:10:24] 🧹 Killing any remaining Python service processes...
-[19:10:26] 🧹 Force killing any remaining processes on ports 8000 and 9000...
-[19:10:29] ✅ Port 8000 is now free
-[19:10:29] ✅ Port 9000 is now free
-[19:10:29] ✅ Comprehensive port conflict resolution completed
-[19:10:29] 🔧 Installing psutil in all virtual environments...
-[19:10:29] 📦 Installing psutil in backend virtual environment...
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[19:10:31] ✅ psutil installed successfully in backend venv
-[19:10:31] 📦 Installing psutil in API virtual environment...
-Looking in indexes: https://pypi.org/simple, https://www.piwheels.org/simple
-Requirement already satisfied: psutil in /home/michomanoly14892/.local/lib/python3.11/site-packages (5.9.5)
-WARNING: Error parsing dependencies of send2trash: Expected matching RIGHT_PARENTHESIS for LEFT_PARENTHESIS, after version specifier
-    sys-platform (=="darwin") ; extra == 'objc'
-                 ~^
-[19:10:32] ✅ psutil installed successfully in API venv
-[19:10:32] 🧪 Testing psutil imports...
-✅ psutil imported successfully in backend
-[19:10:32] ✅ psutil import test passed in backend
-✅ psutil imported successfully in API
-[19:10:32] ✅ psutil import test passed in API
-[19:10:32] ✅ psutil installed and tested successfully in all environments
-[19:10:32] 📁 Copying all project files to deployment directory...
-[19:10:33] 📄 Copying backend files...
-[19:10:33] ✅ Backend files copied successfully
-[19:10:33] 📄 Copying API files...
-[19:10:33] ✅ API files copied successfully
-[19:10:33] 📄 Copying systemd service files...
-[19:10:33] ✅ Systemd service files copied and reloaded
-[19:10:33] WARNING: ⚠️ No .env file found - you may need to create one manually
-[19:10:33] ✅ All project files copied successfully
-[19:10:33] 🔧 Fixing camera initialization issues...
-[19:10:33] 📷 Checking camera accessibility...
-[19:10:33] 🔐 Ensuring camera permissions...
-[19:10:33] ✅ Camera device /dev/video0 found
-[19:10:33] ✅ Camera device /dev/video1 found
-[19:10:33] ✅ Camera initialization fixes applied
-[19:10:33] 🔄 Replacing dual_recorder with simplified version...
-[19:10:33] 📁 Backed up original dual_recorder.py
-[19:10:33] ✅ Replaced dual_recorder.py with simplified version
-[19:10:33] ✅ Made dual_recorder.py executable
-[19:10:33] ✅ Dual recorder replacement completed
-[19:10:33] 🔧 Ensuring all required files and directories exist...
-[19:10:33] 📁 Creating logs directory...
-[19:10:33] ✅ Logs directory created with proper permissions
-[19:10:33] 📄 Creating system_status.log file...
-[19:10:33] ✅ system_status.log file created with proper permissions
-[19:10:33] 📄 Copying system_status.py to deployment directory...
-[19:10:33] ✅ system_status.py copied with proper permissions
-[19:10:33] 📄 Creating all required log files...
-[19:10:33] ✅ Fixed permissions for existing video_worker.log
-[19:10:33] ✅ Fixed permissions for existing dual_recorder.log
-[19:10:33] ✅ Fixed permissions for existing api_server.log
-[19:10:33] ✅ Fixed permissions for existing health_check.log
-[19:10:33] ✅ Fixed permissions for existing service_monitor.log
-[19:10:33] ✅ All required files and directories created with proper permissions
-[19:10:33] 🔧 Handling service restart issues...
-[19:10:33] 🛑 Stopping all services to break restart loops...
-[19:10:38] 🧹 Killing any remaining service processes...
-[19:10:41] ✅ Service restart issues handled
-[19:10:41] 🔧 Ensuring all services are properly enabled...
-[19:10:41] 🔧 Enabling dual_recorder.service for auto-start...
-[19:10:42] ✅ dual_recorder.service enabled successfully
-[19:10:42] 🔧 Enabling video_worker.service for auto-start...
-[19:10:42] ✅ video_worker.service enabled successfully
-[19:10:42] 🔧 Enabling ezrec-api.service for auto-start...
-[19:10:42] ✅ ezrec-api.service enabled successfully
-[19:10:42] 🔧 Enabling system_status.service for auto-start...
-[19:10:42] ✅ system_status.service enabled successfully
-[19:10:42] 🔧 Enabling system_status.timer for auto-start...
-[19:10:42] ✅ system_status.timer enabled successfully
-[19:10:42] 🔍 Verifying services are enabled...
-[19:10:42] ✅ dual_recorder.service is enabled
-[19:10:42] ✅ video_worker.service is enabled
-[19:10:42] ✅ ezrec-api.service is enabled
-[19:10:42] ✅ system_status.service is enabled
-[19:10:42] ✅ All services properly enabled for auto-start
-[19:10:42] STEP: 2. Starting all services safely
-[19:10:42] 🔧 Starting all services safely with port conflict prevention...
-[19:10:42] 🔧 Fixing port conflicts with comprehensive cleanup...
-[19:10:42] 🛑 Stopping all EZREC services...
-[19:10:43] 🧹 Comprehensive port cleanup...
-[19:10:43] 🧹 Killing processes by name...
-[19:10:43] 🧹 Killing any remaining Python service processes...
-[19:10:45] 🧹 Force killing any remaining processes on ports 8000 and 9000...
-[19:10:48] ✅ Port 8000 is now free
-[19:10:48] ✅ Port 9000 is now free
-[19:10:48] ✅ Comprehensive port conflict resolution completed
-[19:10:48] 🚀 Starting ezrec-api.service...
-[19:10:48] 🔧 Special handling for API service...
-[19:10:48] ✅ ezrec-api.service started successfully
-[19:10:48] ⏳ Waiting for API service to be ready...
-[19:10:58] ✅ API service is responding
-[19:11:01] 🚀 Starting dual_recorder.service...
-[19:11:01] ✅ dual_recorder.service started successfully
-[19:11:01] ⏳ Waiting longer for dual_recorder to fully initialize...
-[19:11:11] 🚀 Starting video_worker.service...
-[19:11:11] ✅ video_worker.service started successfully
-[19:11:11] ⏳ Waiting longer for video_worker to fully initialize...
-[19:11:21] 🚀 Starting system_status.service...
-[19:11:21] 🔧 Special handling for system_status service...
-[19:11:21] ✅ system_status.log file exists and is writable
-[19:11:24] ✅ system_status.service started successfully
-[19:11:27] 🚀 Starting system_status.timer...
-[19:11:27] ✅ system_status.timer started successfully
-[19:11:27] ✅ All services started safely
-[19:11:27] ⏳ Waiting for all services to fully initialize...
-[19:11:42] STEP: 3. Verifying system completely
-[19:11:42] 🔍 Performing comprehensive system verification...
-[19:11:42] 🧪 Checking all services are running...
-[19:11:42] ✅ dual_recorder.service is running
-[19:11:42] ✅ video_worker.service is running
-[19:11:42] ✅ ezrec-api.service is running
-[19:11:42] ✅ system_status.service is running
-[19:11:42] 🧪 Testing API endpoints...
-[19:11:42] ✅ API /test-alive endpoint is responding
-[19:11:42] ✅ API /status endpoint is responding
-[19:11:42] 🧪 Testing Python imports...
-✅ Backend imports working
-[19:11:42] ✅ Backend Python imports are working
-✅ API imports working
-[19:11:42] ✅ API Python imports are working
-[19:11:42] 🧪 Testing Cloudflare tunnel...
-[19:11:42] ✅ Cloudflare tunnel is running
-[19:11:42] 🎉 All system verification checks passed!
-[19:11:42] ⏳ Waiting for services to settle before final status check...
-[19:11:47] STEP: 4. Final system status
+def find_active_booking(bookings):
+    """Find an active booking that should be recording now"""
+    if not bookings:
+        return None
+    
+    now = datetime.now(pytz.timezone('America/New_York'))
+    logger.info(f"🔍 Checking {len(bookings)} bookings at {now}")
+    
+    for booking in bookings:
+        try:
+            start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
+            end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
+            
+            logger.info(f"🔍 Booking {booking['id']}: {start_time} - {end_time}")
+            logger.info(f"   Now: {now}")
+            
+            if start_time <= now <= end_time:
+                logger.info(f"🎯 Active booking found: {booking['id']}")
+                return booking
+        except Exception as e:
+            logger.error(f"❌ Error parsing booking {booking.get('id', 'unknown')}: {e}")
+            continue
+    
+    logger.info("❌ No active booking found")
+    return None
 
-=== FINAL SYSTEM STATUS ===
-✅ dual_recorder.service: RUNNING
-✅ video_worker.service: RUNNING
-✅ ezrec-api.service: RUNNING
-✅ system_status.service: RUNNING
-✅ cloudflared.service: RUNNING
-✅ External API: ACCESSIBLE
-[19:11:48] 🎉 Deployment completed successfully!
-[19:11:48] ✅ All services are running and responding correctly
-[19:11:48] ✅ External API is accessible via Cloudflare tunnel
-[19:11:48] ✅ System is ready for frontend testing
-✅ New booking created: test-booking-1757891508
-Sep 14 19:11:47 raspberrypi python3[585473]: [103:00:44.839282597] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - Camera __init__ sequence did not complete.
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - INFO - Initialization successful.
-Sep 14 19:11:47 raspberrypi python3[585473]: [103:00:44.839675264] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - Camera __init__ sequence did not complete.
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - INFO - 📷 Available cameras: []
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - ❌ No cameras available
-Sep 14 19:11:47 raspberrypi python3[585473]: 2025-09-14 19:11:47,897 - ERROR - ❌ Failed to start recording
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:11:52.898331-04:00
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🔍 Booking test-booking-1757891508: 2025-09-14 19:11:48.133649-04:00 - 2025-09-14 19:21:48.133649-04:00
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO -    Now: 2025-09-14 19:11:52.898331-04:00
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🎯 Active booking found: test-booking-1757891508
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🎬 Starting recording for booking: test-booking-1757891508
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🎬 Starting recording session for booking: test-booking-1757891508
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,898 - INFO - 🔍 Detecting cameras...
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,899 - INFO - Camera closed successfully.
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,923 - INFO - Camera closed successfully.
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,924 - INFO - Initialization successful.
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,924 - INFO - Camera now open.
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,925 - WARNING - ⚠️ Camera 0 not available: 0
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,925 - INFO - Initialization successful.
-Sep 14 19:11:52 raspberrypi python3[585473]: 2025-09-14 19:11:52,925 - INFO - Camera now open.
-Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,125 - INFO - Camera closed successfully.
-Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - INFO - ✅ Camera 1 detected
-Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - INFO - 📷 Available cameras: [1]
-Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - ERROR - ❌ No cameras started recording successfully
-Sep 14 19:11:53 raspberrypi python3[585473]: 2025-09-14 19:11:53,126 - ERROR - ❌ Failed to start recording
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:11:58.126564-04:00
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🔍 Booking test-booking-1757891508: 2025-09-14 19:11:48.133649-04:00 - 2025-09-14 19:21:48.133649-04:00
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO -    Now: 2025-09-14 19:11:58.126564-04:00
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🎯 Active booking found: test-booking-1757891508
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🎬 Starting recording for booking: test-booking-1757891508
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🎬 Starting recording session for booking: test-booking-1757891508
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,126 - INFO - 🔍 Detecting cameras...
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,127 - INFO - Initialization successful.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,128 - INFO - Camera now open.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,327 - INFO - Camera closed successfully.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,327 - INFO - ✅ Camera 0 detected
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,328 - INFO - Initialization successful.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,329 - INFO - Camera now open.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,528 - INFO - Camera closed successfully.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - ✅ Camera 1 detected
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - 📷 Available cameras: [0, 1]
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - 🔧 Initializing left camera (index 0)
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - Initialization successful.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,529 - INFO - Camera now open.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - INFO - 📷 Using default config for left: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - ERROR - ❌ left camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - ERROR - ❌ Camera 0 initialization failed
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - INFO - 🔧 Initializing right camera (index 1)
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,531 - INFO - Initialization successful.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,532 - INFO - Camera now open.
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - INFO - 📷 Using default config for right: {'use_case': 'video', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'Rec709'>, 'buffer_count': 6, 'queue': True, 'main': {'format': 'XBGR8888', 'size': (1280, 720)}, 'lores': None, 'raw': {'format': 'SRGGB12_CSI2P', 'size': (1280, 720)}, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Fast: 1>, 'FrameDurationLimits': (33333, 33333)}, 'display': 'main', 'encode': 'main'}
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ right camera initialization failed: 'libcamera._libcamera.CameraConfiguration' object has no attribute 'transform'
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ Camera 1 initialization failed
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ No cameras started recording successfully
-Sep 14 19:11:58 raspberrypi python3[585473]: 2025-09-14 19:11:58,533 - ERROR - ❌ Failed to start recording
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,533 - INFO - 📋 Loaded 1 bookings from cache
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🔍 Checking 1 bookings at 2025-09-14 19:12:03.533954-04:00
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🔍 Booking test-booking-1757891508: 2025-09-14 19:11:48.133649-04:00 - 2025-09-14 19:21:48.133649-04:00
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO -    Now: 2025-09-14 19:12:03.533954-04:00
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🎯 Active booking found: test-booking-1757891508
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🎬 Starting recording for booking: test-booking-1757891508
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🎬 Starting recording session for booking: test-booking-1757891508
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,534 - INFO - 🔍 Detecting cameras...
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - INFO - Initialization successful.
-Sep 14 19:12:03 raspberrypi python3[585473]: [103:01:00.477106894] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - ERROR - Camera __init__ sequence did not complete.
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - WARNING - ⚠️ Camera 0 not available: Camera __init__ sequence did not complete.
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - INFO - Initialization successful.
-Sep 14 19:12:03 raspberrypi python3[585473]: [103:01:00.477777118] [585473] ERROR Camera camera.cpp:693 Camera in Acquired state trying acquire() requiring state Available
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,535 - ERROR - Camera __init__ sequence did not complete.
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - WARNING - ⚠️ Camera 1 not available: Camera __init__ sequence did not complete.
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - INFO - 📷 Available cameras: []
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - ERROR - ❌ No cameras available
-Sep 14 19:12:03 raspberrypi python3[585473]: 2025-09-14 19:12:03,536 - ERROR - ❌ Failed to start recording
+def main():
+    """Main service function - runs continuously"""
+    logger.info("🎥 DEFINITIVE Dual Recorder Service Starting")
+    
+    # Create recorder
+    recorder = DefinitiveRecorder()
+    current_booking = None
+    
+    try:
+        while True:
+            # Load bookings
+            bookings = load_bookings()
+            
+            # Find active booking
+            active_booking = find_active_booking(bookings)
+            
+            if active_booking and not recorder.is_recording():
+                # Start recording for active booking
+                logger.info(f"🎬 Starting recording for booking: {active_booking['id']}")
+                if recorder.start_recording_session(active_booking):
+                    current_booking = active_booking
+                    logger.info("✅ Recording started successfully")
+                else:
+                    logger.error("❌ Failed to start recording")
+            
+            elif not active_booking and recorder.is_recording():
+                # Stop recording if no active booking
+                logger.info("🛑 No active booking, stopping recording")
+                recorder.stop_recording_session()
+                current_booking = None
+            
+            # Wait before checking again
+            time.sleep(5)
+            
+    except KeyboardInterrupt:
+        logger.info("🛑 Service interrupted by user")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
+    except Exception as e:
+        logger.error(f"❌ Service error: {e}")
+        if recorder.is_recording():
+            recorder.stop_recording_session()
+
+if __name__ == "__main__":
+    main()
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
