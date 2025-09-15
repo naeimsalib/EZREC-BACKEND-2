@@ -78,7 +78,7 @@ LOG_FILE = "/opt/ezrec-backend/logs/system_status.log"
 STATUS_FILE = "/opt/ezrec-backend/status.json"
 
 # Required environment variables
-REQUIRED_VARS = ["SUPABASE_URL", "SUPABASE_ANON_KEY", "USER_ID", "CAMERA_ID"]
+REQUIRED_VARS = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID"]
 missing_vars = [var for var in REQUIRED_VARS if not os.getenv(var)]
 if missing_vars:
     print(f"❌ Missing required environment variables: {missing_vars}")
@@ -91,7 +91,7 @@ SUPABASE_RATE_LIMIT_SECONDS = int(os.getenv("SUPABASE_RATE_LIMIT_SECONDS", "300"
 # Initialize Supabase client
 supabase = create_client(
     os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_ANON_KEY")
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
 )
 
 # Setup logging

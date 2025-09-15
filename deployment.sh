@@ -636,6 +636,17 @@ copy_project_files() {
         return 1
     fi
     
+    # Copy updated system_status.py
+    log_info "📄 Copying updated system_status.py..."
+    if [[ -f "backend/system_status.py" ]]; then
+        sudo cp backend/system_status.py "$DEPLOY_PATH/backend/system_status.py"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/backend/system_status.py"
+        sudo chmod +x "$DEPLOY_PATH/backend/system_status.py"
+        log_info "✅ system_status.py updated successfully"
+    else
+        log_warn "⚠️ system_status.py not found"
+    fi
+    
     # Copy services directory (new architecture)
     log_info "📄 Copying services directory..."
     if [[ -d "services" ]]; then
