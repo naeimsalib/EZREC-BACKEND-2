@@ -1,497 +1,515 @@
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ python3 test_dual_cameras.py
-🎬 Creating test booking for dual camera recording...
-✅ Test booking created:
-   ID: test-1757945664
-   Start: 2025-09-15T10:14:24
-   End: 2025-09-15T10:16:24
-   Duration: 2 minutes
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Create a test booking that starts in 1 minute
+python3 -c "
+import json
+from datetime import datetime, timedelta
+import os
 
-📋 The dual_recorder service should detect this booking and start recording.
-📁 Check /opt/ezrec-backend/recordings/ for the output files.
-⏱️ Recording will run for 2 minutes.
-michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo journalctl -u dual_recorder.service -f
-Sep 15 10:14:33 raspberrypi python3[654668]: [118:03:27.178634890] [655024]  INFO RPI pisp.cpp:1179 Registered camera /base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a to CFE device /dev/media1 and ISP device /dev/media4 using PiSP variant BCM2712_D0
-Sep 15 10:14:33 raspberrypi python3[654668]: Made X/EGL preview window
-Sep 15 10:14:33 raspberrypi python3[654668]: Made DRM preview window
-Sep 15 10:14:33 raspberrypi python3[654668]: Preview window unavailable
-Sep 15 10:14:33 raspberrypi python3[654668]: [118:03:27.193367764] [655021]  INFO Camera camera.cpp:1011 Pipeline handler in use by another process
-Sep 15 10:14:33 raspberrypi python3[654668]: ERROR: *** failed to acquire camera /base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a ***
-Sep 15 10:14:33 raspberrypi python3[654668]: 2025-09-15 10:14:33,197 - dual_recorder - INFO - 🔄 Falling back to single camera recording
-Sep 15 10:14:33 raspberrypi python3[654668]: 2025-09-15 10:14:33,197 - dual_recorder - INFO - 🎉 SINGLE CAMERA RECORDING STARTED SUCCESSFULLY!
-Sep 15 10:14:33 raspberrypi python3[654668]: 2025-09-15 10:14:33,197 - dual_recorder - INFO - 📁 Recording to: camera_0_20250915_101427.mp4
-Sep 15 10:14:33 raspberrypi python3[654668]: 2025-09-15 10:14:33,197 - dual_recorder - INFO - ⏱️ Recording duration: 5 minutes
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,198 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,198 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:14:38.198804 (local time)
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,198 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,198 - dual_recorder - INFO -    Now: 2025-09-15 10:14:38.198804
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,198 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,198 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,199 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:14:38 raspberrypi python3[654668]: 2025-09-15 10:14:38,199 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:14:43.199433 (local time)
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO -    Now: 2025-09-15 10:14:43.199433
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:14:43 raspberrypi python3[654668]: 2025-09-15 10:14:43,199 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,199 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,199 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:14:48.199975 (local time)
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,200 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,200 - dual_recorder - INFO -    Now: 2025-09-15 10:14:48.199975
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,200 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,200 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,200 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:14:48 raspberrypi python3[654668]: 2025-09-15 10:14:48,200 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:14:53.200544 (local time)
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO -    Now: 2025-09-15 10:14:53.200544
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:14:53 raspberrypi python3[654668]: 2025-09-15 10:14:53,200 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,200 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:14:58.201098 (local time)
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO -    Now: 2025-09-15 10:14:58.201098
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:14:58 raspberrypi python3[654668]: 2025-09-15 10:14:58,201 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:03.201627 (local time)
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO -    Now: 2025-09-15 10:15:03.201627
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:03 raspberrypi python3[654668]: 2025-09-15 10:15:03,201 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:08.202163 (local time)
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO -    Now: 2025-09-15 10:15:08.202163
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:08 raspberrypi python3[654668]: 2025-09-15 10:15:08,202 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:13.202702 (local time)
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO -    Now: 2025-09-15 10:15:13.202702
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:13 raspberrypi python3[654668]: 2025-09-15 10:15:13,202 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:18.203258 (local time)
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO -    Now: 2025-09-15 10:15:18.203258
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:18 raspberrypi python3[654668]: 2025-09-15 10:15:18,203 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:23.206428 (local time)
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO -    Now: 2025-09-15 10:15:23.206428
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:23 raspberrypi python3[654668]: 2025-09-15 10:15:23,206 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,206 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:28.207023 (local time)
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO -    Now: 2025-09-15 10:15:28.207023
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:28 raspberrypi python3[654668]: 2025-09-15 10:15:28,207 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:33.207579 (local time)
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO -    Now: 2025-09-15 10:15:33.207579
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:33 raspberrypi python3[654668]: 2025-09-15 10:15:33,207 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:38.208098 (local time)
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO -    Now: 2025-09-15 10:15:38.208098
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:38 raspberrypi python3[654668]: 2025-09-15 10:15:38,208 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:43.208652 (local time)
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO -    Now: 2025-09-15 10:15:43.208652
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:43 raspberrypi python3[654668]: 2025-09-15 10:15:43,208 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:48.209178 (local time)
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO -    Now: 2025-09-15 10:15:48.209178
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:48 raspberrypi python3[654668]: 2025-09-15 10:15:48,209 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,209 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,209 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:53.209660 (local time)
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,209 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,209 - dual_recorder - INFO -    Now: 2025-09-15 10:15:53.209660
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,209 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,209 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,210 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:53 raspberrypi python3[654668]: 2025-09-15 10:15:53,210 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:15:58.210571 (local time)
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO -    Now: 2025-09-15 10:15:58.210571
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:15:58 raspberrypi python3[654668]: 2025-09-15 10:15:58,210 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,210 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:03.211090 (local time)
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO -    Now: 2025-09-15 10:16:03.211090
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:16:03 raspberrypi python3[654668]: 2025-09-15 10:16:03,211 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:08.211645 (local time)
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO -    Now: 2025-09-15 10:16:08.211645
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:16:08 raspberrypi python3[654668]: 2025-09-15 10:16:08,211 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:13.214348 (local time)
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO -    Now: 2025-09-15 10:16:13.214348
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:16:13 raspberrypi python3[654668]: 2025-09-15 10:16:13,214 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,214 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,214 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:18.214893 (local time)
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,214 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,214 - dual_recorder - INFO -    Now: 2025-09-15 10:16:18.214893
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,215 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,215 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,215 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:16:18 raspberrypi python3[654668]: 2025-09-15 10:16:18,215 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:23.215473 (local time)
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO -    Now: 2025-09-15 10:16:23.215473
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - 🎯 Active booking found: test-1757945664
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
-Sep 15 10:16:23 raspberrypi python3[654668]: 2025-09-15 10:16:23,215 - dual_recorder - INFO - ✅ Recording in progress for active booking
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,215 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:28.216011 (local time)
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO -    Now: 2025-09-15 10:16:28.216011
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - 📊 Recording status: 1/1 cameras active
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: True
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - 🛑 Stopping recording - no active booking
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,216 - dual_recorder - INFO - 🛑 Stopping recording
-Sep 15 10:16:28 raspberrypi python3[654668]: 2025-09-15 10:16:28,231 - dual_recorder - INFO - ✅ Recording stopped
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,231 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,232 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:33.232010 (local time)
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,232 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,232 - dual_recorder - INFO -    Now: 2025-09-15 10:16:33.232010
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,232 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,232 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:16:33 raspberrypi python3[654668]: 2025-09-15 10:16:33,232 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:38.232536 (local time)
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO -    Now: 2025-09-15 10:16:38.232536
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:16:38 raspberrypi python3[654668]: 2025-09-15 10:16:38,232 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,232 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,233 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:43.233060 (local time)
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,233 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,233 - dual_recorder - INFO -    Now: 2025-09-15 10:16:43.233060
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,233 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,233 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:16:43 raspberrypi python3[654668]: 2025-09-15 10:16:43,233 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:48.233515 (local time)
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO -    Now: 2025-09-15 10:16:48.233515
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:16:48 raspberrypi python3[654668]: 2025-09-15 10:16:48,233 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,233 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,233 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:53.233980 (local time)
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,234 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,234 - dual_recorder - INFO -    Now: 2025-09-15 10:16:53.233980
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,234 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,234 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:16:53 raspberrypi python3[654668]: 2025-09-15 10:16:53,234 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:16:58.234505 (local time)
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO -    Now: 2025-09-15 10:16:58.234505
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:16:58 raspberrypi python3[654668]: 2025-09-15 10:16:58,234 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,234 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,235 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:03.235029 (local time)
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,235 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,235 - dual_recorder - INFO -    Now: 2025-09-15 10:17:03.235029
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,235 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,235 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:03 raspberrypi python3[654668]: 2025-09-15 10:17:03,235 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:08.235563 (local time)
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO -    Now: 2025-09-15 10:17:08.235563
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:08 raspberrypi python3[654668]: 2025-09-15 10:17:08,235 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,235 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,236 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:13.236016 (local time)
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,236 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,236 - dual_recorder - INFO -    Now: 2025-09-15 10:17:13.236016
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,236 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,236 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:13 raspberrypi python3[654668]: 2025-09-15 10:17:13,236 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:18.236467 (local time)
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO -    Now: 2025-09-15 10:17:18.236467
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:18 raspberrypi python3[654668]: 2025-09-15 10:17:18,236 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,236 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,237 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:23.237018 (local time)
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,237 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,237 - dual_recorder - INFO -    Now: 2025-09-15 10:17:23.237018
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,237 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,237 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:23 raspberrypi python3[654668]: 2025-09-15 10:17:23,237 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:28.237550 (local time)
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO -    Now: 2025-09-15 10:17:28.237550
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:28 raspberrypi python3[654668]: 2025-09-15 10:17:28,237 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,237 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,238 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:33.238000 (local time)
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,238 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,238 - dual_recorder - INFO -    Now: 2025-09-15 10:17:33.238000
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,238 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,238 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:33 raspberrypi python3[654668]: 2025-09-15 10:17:33,238 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:38.238468 (local time)
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO -    Now: 2025-09-15 10:17:38.238468
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:38 raspberrypi python3[654668]: 2025-09-15 10:17:38,238 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,238 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,238 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:43.238952 (local time)
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,239 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,239 - dual_recorder - INFO -    Now: 2025-09-15 10:17:43.238952
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,239 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,239 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:43 raspberrypi python3[654668]: 2025-09-15 10:17:43,239 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:48.239481 (local time)
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO -    Now: 2025-09-15 10:17:48.239481
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:48 raspberrypi python3[654668]: 2025-09-15 10:17:48,239 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,239 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,240 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:53.240009 (local time)
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,240 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,240 - dual_recorder - INFO -    Now: 2025-09-15 10:17:53.240009
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,240 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,240 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:53 raspberrypi python3[654668]: 2025-09-15 10:17:53,240 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:17:58.240459 (local time)
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO -    Now: 2025-09-15 10:17:58.240459
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:17:58 raspberrypi python3[654668]: 2025-09-15 10:17:58,240 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,240 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,240 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:03.240907 (local time)
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,240 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,240 - dual_recorder - INFO -    Now: 2025-09-15 10:18:03.240907
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,241 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,241 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:03 raspberrypi python3[654668]: 2025-09-15 10:18:03,241 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:08.241332 (local time)
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO -    Now: 2025-09-15 10:18:08.241332
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:08 raspberrypi python3[654668]: 2025-09-15 10:18:08,241 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,241 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,241 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:13.241848 (local time)
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,241 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,241 - dual_recorder - INFO -    Now: 2025-09-15 10:18:13.241848
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,241 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,242 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:13 raspberrypi python3[654668]: 2025-09-15 10:18:13,242 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:18.242366 (local time)
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO -    Now: 2025-09-15 10:18:18.242366
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:18 raspberrypi python3[654668]: 2025-09-15 10:18:18,242 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:23.242813 (local time)
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO -    Now: 2025-09-15 10:18:23.242813
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:23 raspberrypi python3[654668]: 2025-09-15 10:18:23,242 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:28.243272 (local time)
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO -    Now: 2025-09-15 10:18:28.243272
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:28 raspberrypi python3[654668]: 2025-09-15 10:18:28,243 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:33.243734 (local time)
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO -    Now: 2025-09-15 10:18:33.243734
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:33 raspberrypi python3[654668]: 2025-09-15 10:18:33,243 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:38.244264 (local time)
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO -    Now: 2025-09-15 10:18:38.244264
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:38 raspberrypi python3[654668]: 2025-09-15 10:18:38,244 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:43.244796 (local time)
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO -    Now: 2025-09-15 10:18:43.244796
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:43 raspberrypi python3[654668]: 2025-09-15 10:18:43,244 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:48.245240 (local time)
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO -    Now: 2025-09-15 10:18:48.245240
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:48 raspberrypi python3[654668]: 2025-09-15 10:18:48,245 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:53.245683 (local time)
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO -    Now: 2025-09-15 10:18:53.245683
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:53 raspberrypi python3[654668]: 2025-09-15 10:18:53,245 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:18:58.246134 (local time)
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO -    Now: 2025-09-15 10:18:58.246134
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:18:58 raspberrypi python3[654668]: 2025-09-15 10:18:58,246 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:03.246657 (local time)
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO -    Now: 2025-09-15 10:19:03.246657
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:03 raspberrypi python3[654668]: 2025-09-15 10:19:03,246 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:08.247185 (local time)
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO -    Now: 2025-09-15 10:19:08.247185
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:08 raspberrypi python3[654668]: 2025-09-15 10:19:08,247 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:13.247634 (local time)
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO -    Now: 2025-09-15 10:19:13.247634
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:13 raspberrypi python3[654668]: 2025-09-15 10:19:13,247 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,247 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,248 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:18.248078 (local time)
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,248 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,248 - dual_recorder - INFO -    Now: 2025-09-15 10:19:18.248078
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,248 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,248 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:18 raspberrypi python3[654668]: 2025-09-15 10:19:18,248 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:23.248534 (local time)
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO -    Now: 2025-09-15 10:19:23.248534
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:23 raspberrypi python3[654668]: 2025-09-15 10:19:23,248 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,248 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,249 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:28.249052 (local time)
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,249 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,249 - dual_recorder - INFO -    Now: 2025-09-15 10:19:28.249052
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,249 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,249 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:28 raspberrypi python3[654668]: 2025-09-15 10:19:28,249 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:33.249574 (local time)
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO -    Now: 2025-09-15 10:19:33.249574
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:33 raspberrypi python3[654668]: 2025-09-15 10:19:33,249 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,249 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,250 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:38.250015 (local time)
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,250 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,250 - dual_recorder - INFO -    Now: 2025-09-15 10:19:38.250015
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,250 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,250 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:38 raspberrypi python3[654668]: 2025-09-15 10:19:38,250 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:43.250477 (local time)
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO -    Now: 2025-09-15 10:19:43.250477
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:43 raspberrypi python3[654668]: 2025-09-15 10:19:43,250 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,250 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,250 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:48.250916 (local time)
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,250 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,250 - dual_recorder - INFO -    Now: 2025-09-15 10:19:48.250916
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,251 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,251 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:48 raspberrypi python3[654668]: 2025-09-15 10:19:48,251 - dual_recorder - INFO - ⏸️ No active booking, no recording
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:19:53.251428 (local time)
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO - 🔍 Booking test-1757945664: 2025-09-15 10:14:24 - 2025-09-15 10:16:24
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO -    Now: 2025-09-15 10:19:53.251428
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO - ❌ No active booking found
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
-Sep 15 10:19:53 raspberrypi python3[654668]: 2025-09-15 10:19:53,251 - dual_recorder - INFO - ⏸️ No active booking, no recording
-^C
+# Calculate start time (1 minute from now)
+start_time = datetime.now() + timedelta(minutes=1)
+end_time = start_time + timedelta(minutes=2)  # 2-minute recording
+
+booking = {
+    'id': f'test-dual-{int(datetime.now().timestamp())}',
+    'start_time': start_time.strftime('%Y-%m-%dT%H:%M:%S'),
+    'end_time': end_time.strftime('%Y-%m-%dT%H:%M:%S'),
+    'status': 'scheduled'
+}
+
+# Create bookings file
+bookings_file = '/opt/ezrec-backend/api/local_data/bookings.json'
+os.makedirs(os.path.dirname(bookings_file), exist_ok=True)
+
+with open(bookings_file, 'w') as f:
+    json.dump([booking], f, indent=2)
+
+print(f'✅ Test booking created:')
+print(f'   ID: {booking[\"id\"]}')
+print(f'   Start: {booking[\"start_time\"]}')
+print(f'   End: {booking[\"end_time\"]}')
+print(f'   Duration: 2 minutes')
+print(f'📁 Booking saved to: {bookings_file}')
+"
+✅ Test booking created:
+   ID: test-dual-1757947044
+   Start: 2025-09-15T10:38:24
+   End: 2025-09-15T10:40:24
+   Duration: 2 minutes
+📁 Booking saved to: /opt/ezrec-backend/api/local_data/bookings.json
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Monitor the dual_recorder service logs in real-time
+sudo journalctl -u dual_recorder.service -f
+Sep 15 10:37:21 raspberrypi python3[657209]: 2025-09-15 10:37:21,689 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:21 raspberrypi python3[657209]: 2025-09-15 10:37:21,690 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:21 raspberrypi python3[657209]: 2025-09-15 10:37:21,690 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:26.690332 (local time)
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO -    Now: 2025-09-15 10:37:26.690332
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:26 raspberrypi python3[657209]: 2025-09-15 10:37:26,690 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:31.690768 (local time)
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO -    Now: 2025-09-15 10:37:31.690768
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:31 raspberrypi python3[657209]: 2025-09-15 10:37:31,690 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:36.691217 (local time)
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO -    Now: 2025-09-15 10:37:36.691217
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:36 raspberrypi python3[657209]: 2025-09-15 10:37:36,691 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:41.691724 (local time)
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO -    Now: 2025-09-15 10:37:41.691724
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:41 raspberrypi python3[657209]: 2025-09-15 10:37:41,691 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:46.692245 (local time)
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO -    Now: 2025-09-15 10:37:46.692245
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:46 raspberrypi python3[657209]: 2025-09-15 10:37:46,692 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:51.692679 (local time)
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO -    Now: 2025-09-15 10:37:51.692679
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:51 raspberrypi python3[657209]: 2025-09-15 10:37:51,692 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:37:56.693121 (local time)
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO -    Now: 2025-09-15 10:37:56.693121
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:37:56 raspberrypi python3[657209]: 2025-09-15 10:37:56,693 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:01.693553 (local time)
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO -    Now: 2025-09-15 10:38:01.693553
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:38:01 raspberrypi python3[657209]: 2025-09-15 10:38:01,693 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,693 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,694 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:06.694053 (local time)
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,694 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,694 - dual_recorder - INFO -    Now: 2025-09-15 10:38:06.694053
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,694 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,694 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:38:06 raspberrypi python3[657209]: 2025-09-15 10:38:06,694 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:11.694606 (local time)
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO -    Now: 2025-09-15 10:38:11.694606
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:38:11 raspberrypi python3[657209]: 2025-09-15 10:38:11,694 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,694 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,695 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:16.695055 (local time)
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,695 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,695 - dual_recorder - INFO -    Now: 2025-09-15 10:38:16.695055
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,695 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,695 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:38:16 raspberrypi python3[657209]: 2025-09-15 10:38:16,695 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:21.695495 (local time)
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO -    Now: 2025-09-15 10:38:21.695495
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:38:21 raspberrypi python3[657209]: 2025-09-15 10:38:21,695 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,695 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,695 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:26.695929 (local time)
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,695 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,696 - dual_recorder - INFO -    Now: 2025-09-15 10:38:26.695929
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,696 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,696 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: False
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,696 - dual_recorder - INFO - 🚀 Starting new recording session
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,696 - dual_recorder - INFO - 🎬 Starting recording for booking: test-dual-1757947044
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,696 - dual_recorder - INFO - 🧹 Cleaning up zombie rpicam-vid processes...
+Sep 15 10:38:26 raspberrypi python3[657209]: 2025-09-15 10:38:26,711 - dual_recorder - INFO - ℹ️ No zombie processes found
+Sep 15 10:38:28 raspberrypi python3[657209]: 2025-09-15 10:38:28,754 - dual_recorder - INFO - ✅ Detected 2 camera(s)
+Sep 15 10:38:28 raspberrypi python3[657209]: 2025-09-15 10:38:28,754 - dual_recorder - INFO - 📋 Camera detection output: Available cameras
+Sep 15 10:38:28 raspberrypi python3[657209]: -----------------
+Sep 15 10:38:28 raspberrypi python3[657209]: 0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+Sep 15 10:38:28 raspberrypi python3[657209]:     Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]:            'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]:                              2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]:                              4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]: 1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
+Sep 15 10:38:28 raspberrypi python3[657209]:     Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]:            'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]:                              2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]:                              4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+Sep 15 10:38:28 raspberrypi python3[657209]: 2025-09-15 10:38:28,754 - dual_recorder - INFO - 📷 2 cameras detected - starting dual camera recording
+Sep 15 10:38:28 raspberrypi python3[657209]: 2025-09-15 10:38:28,754 - dual_recorder - INFO - 🎥 Starting BOTH cameras simultaneously...
+Sep 15 10:38:33 raspberrypi python3[657209]: 2025-09-15 10:38:33,758 - dual_recorder - INFO - 🎉 DUAL CAMERA RECORDING STARTED SUCCESSFULLY!
+Sep 15 10:38:33 raspberrypi python3[657209]: 2025-09-15 10:38:33,758 - dual_recorder - INFO - 📁 Camera 0: camera_0_20250915_103828.mp4
+Sep 15 10:38:33 raspberrypi python3[657209]: 2025-09-15 10:38:33,758 - dual_recorder - INFO - 📁 Camera 1: camera_1_20250915_103828.mp4
+Sep 15 10:38:33 raspberrypi python3[657209]: 2025-09-15 10:38:33,758 - dual_recorder - INFO - ⏱️ Recording duration: 5 minutes
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,758 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,758 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:38.758863 (local time)
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,758 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,758 - dual_recorder - INFO -    Now: 2025-09-15 10:38:38.758863
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,758 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,759 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,759 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:38:38 raspberrypi python3[657209]: 2025-09-15 10:38:38,759 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:43.759429 (local time)
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO -    Now: 2025-09-15 10:38:43.759429
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:38:43 raspberrypi python3[657209]: 2025-09-15 10:38:43,759 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,759 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:48.760029 (local time)
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO -    Now: 2025-09-15 10:38:48.760029
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:38:48 raspberrypi python3[657209]: 2025-09-15 10:38:48,760 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:53.760618 (local time)
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO -    Now: 2025-09-15 10:38:53.760618
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:38:53 raspberrypi python3[657209]: 2025-09-15 10:38:53,760 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:38:58.761190 (local time)
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO -    Now: 2025-09-15 10:38:58.761190
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:38:58 raspberrypi python3[657209]: 2025-09-15 10:38:58,761 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:03.761762 (local time)
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO -    Now: 2025-09-15 10:39:03.761762
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:03 raspberrypi python3[657209]: 2025-09-15 10:39:03,761 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:08.762333 (local time)
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO -    Now: 2025-09-15 10:39:08.762333
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:08 raspberrypi python3[657209]: 2025-09-15 10:39:08,762 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,762 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:13.763061 (local time)
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO -    Now: 2025-09-15 10:39:13.763061
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:13 raspberrypi python3[657209]: 2025-09-15 10:39:13,763 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:18.766418 (local time)
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO -    Now: 2025-09-15 10:39:18.766418
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:18 raspberrypi python3[657209]: 2025-09-15 10:39:18,766 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,766 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,766 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:23.766971 (local time)
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,767 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,767 - dual_recorder - INFO -    Now: 2025-09-15 10:39:23.766971
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,767 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,767 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,767 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:23 raspberrypi python3[657209]: 2025-09-15 10:39:23,767 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:28.767491 (local time)
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO -    Now: 2025-09-15 10:39:28.767491
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:28 raspberrypi python3[657209]: 2025-09-15 10:39:28,767 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,767 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:33.768022 (local time)
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO -    Now: 2025-09-15 10:39:33.768022
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:33 raspberrypi python3[657209]: 2025-09-15 10:39:33,768 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:38.768497 (local time)
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO -    Now: 2025-09-15 10:39:38.768497
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:38 raspberrypi python3[657209]: 2025-09-15 10:39:38,768 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,768 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:43.769039 (local time)
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO -    Now: 2025-09-15 10:39:43.769039
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:43 raspberrypi python3[657209]: 2025-09-15 10:39:43,769 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:48.769562 (local time)
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO -    Now: 2025-09-15 10:39:48.769562
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:48 raspberrypi python3[657209]: 2025-09-15 10:39:48,769 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,769 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:53.770404 (local time)
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO -    Now: 2025-09-15 10:39:53.770404
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:53 raspberrypi python3[657209]: 2025-09-15 10:39:53,770 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,771 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,771 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:39:58.771646 (local time)
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,771 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,771 - dual_recorder - INFO -    Now: 2025-09-15 10:39:58.771646
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,771 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,772 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,772 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:39:58 raspberrypi python3[657209]: 2025-09-15 10:39:58,772 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:03.772604 (local time)
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO -    Now: 2025-09-15 10:40:03.772604
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:40:03 raspberrypi python3[657209]: 2025-09-15 10:40:03,772 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:08.773304 (local time)
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO -    Now: 2025-09-15 10:40:08.773304
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:40:08 raspberrypi python3[657209]: 2025-09-15 10:40:08,773 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,773 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,773 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:13.773969 (local time)
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,774 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,774 - dual_recorder - INFO -    Now: 2025-09-15 10:40:13.773969
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,774 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,774 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,774 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:40:13 raspberrypi python3[657209]: 2025-09-15 10:40:13,774 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,774 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,775 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:18.775442 (local time)
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,775 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,775 - dual_recorder - INFO -    Now: 2025-09-15 10:40:18.775442
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,776 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,776 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,776 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:40:18 raspberrypi python3[657209]: 2025-09-15 10:40:18,776 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,776 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,776 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:23.776929 (local time)
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,777 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,777 - dual_recorder - INFO -    Now: 2025-09-15 10:40:23.776929
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,777 - dual_recorder - INFO - 🎯 Active booking found: test-dual-1757947044
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,777 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,777 - dual_recorder - INFO - 📊 Status: Active booking: True, Recording: True
+Sep 15 10:40:23 raspberrypi python3[657209]: 2025-09-15 10:40:23,777 - dual_recorder - INFO - ✅ Recording in progress for active booking
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:28.777777 (local time)
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO -    Now: 2025-09-15 10:40:28.777777
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 📊 Recording status: 2/2 cameras active
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: True
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 🛑 Stopping recording - no active booking
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,777 - dual_recorder - INFO - 🛑 Stopping recording
+Sep 15 10:40:28 raspberrypi python3[657209]: 2025-09-15 10:40:28,808 - dual_recorder - INFO - ✅ Recording stopped
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:33.809235 (local time)
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO -    Now: 2025-09-15 10:40:33.809235
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:40:33 raspberrypi python3[657209]: 2025-09-15 10:40:33,809 - dual_recorder - INFO - ⏸️ No active booking, no recording
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO - 📋 Loaded 1 bookings from cache
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO - 🔍 Checking 1 bookings at 2025-09-15 10:40:38.809788 (local time)
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO - 🔍 Booking test-dual-1757947044: 2025-09-15 10:38:24 - 2025-09-15 10:40:24
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO -    Now: 2025-09-15 10:40:38.809788
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO - ❌ No active booking found
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO - 📊 Status: Active booking: False, Recording: False
+Sep 15 10:40:38 raspberrypi python3[657209]: 2025-09-15 10:40:38,809 - dual_recorder - INFO - ⏸️ No active booking, no recording
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Test camera detection
+rpicam-vid --list-cameras
+Available cameras
+-----------------
+0 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@88000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+
+1 : imx477 [4056x3040 12-bit RGGB] (/base/axi/pcie@1000120000/rp1/i2c@80000/imx477@1a)
+    Modes: 'SRGGB10_CSI2P' : 1332x990 [120.05 fps - (696, 528)/2664x1980 crop]
+           'SRGGB12_CSI2P' : 2028x1080 [50.03 fps - (0, 440)/4056x2160 crop]
+                             2028x1520 [40.01 fps - (0, 0)/4056x3040 crop]
+                             4056x3040 [10.00 fps - (0, 0)/4056x3040 crop]
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2
+
+
+Every 2.0s: ls -la /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/se...  raspberrypi: Mon Sep 15 10:42:05 2025
+
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/:
+total 25132
+drwxr-xr-x 2 michomanoly14892 video    4096 Sep 15 10:02 .
+drwxr-xr-x 5 michomanoly14892 video    4096 Sep 15 10:38 ..
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:00 camera_0_20250915_100031.mp4
+-rw-r--r-- 1 michomanoly14892 video 2621488 Sep 15 10:00 camera_0_20250915_100044.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100057.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100110.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100123.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100136.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100150.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:02 camera_0_20250915_100203.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:02 camera_0_20250915_100216.mp4
+
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757945664/:
+total 73488
+drwxr-xr-x 2 michomanoly14892 video     4096 Sep 15 10:14 .
+drwxr-xr-x 5 michomanoly14892 video     4096 Sep 15 10:38 ..
+-rw-r--r-- 1 michomanoly14892 video 75235376 Sep 15 10:16 camera_0_20250915_101427.mp4
+
+/opt/ezrec-backend/recordings/2025-09-15/session_test-dual-1757947044/:
+total 145688
+drwxr-xr-x 2 michomanoly14892 video     4096 Sep 15 10:38 .
+drwxr-xr-x 5 michomanoly14892 video     4096 Sep 15 10:38 ..
+-rw-r--r-- 1 michomanoly14892 video 74448944 Sep 15 10:40 camera_0_20250915_103828.mp4
+-rw-r--r-- 1 michomanoly14892 video 74711088 Sep 15 10:40 camera_1_20250915_103828.mp4
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ sudo systemctl status dual_recorder.service video_worker.service ezrec-api.service system_status.service
+● dual_recorder.service - EZREC Dual Camera Recorder Service
+     Loaded: loaded (/etc/systemd/system/dual_recorder.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-09-15 10:35:46 EDT; 6min ago
+   Main PID: 657209 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 1min 50.994s
+     CGroup: /system.slice/dual_recorder.service
+             └─657209 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/dual_recorder.py
+
+Sep 15 10:42:08 raspberrypi python3[657209]: 2025-09-15 10:42:08,818 - dual_recorder - INFO - ❌ No active boo>
+Sep 15 10:42:08 raspberrypi python3[657209]: 2025-09-15 10:42:08,818 - dual_recorder - INFO - 📊 Status: Activ>
+Sep 15 10:42:08 raspberrypi python3[657209]: 2025-09-15 10:42:08,818 - dual_recorder - INFO - ⏸️ No active book>
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO - 📋 Loaded 1 book>
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO - 🔍 Checking 1 bo>
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO - 🔍 Booking test->
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO -    Now: 2025-09->
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO - ❌ No active boo>
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO - 📊 Status: Activ>
+Sep 15 10:42:13 raspberrypi python3[657209]: 2025-09-15 10:42:13,818 - dual_recorder - INFO - ⏸️ No active book>
+
+● video_worker.service - EZREC Video Processing Worker Service
+     Loaded: loaded (/etc/systemd/system/video_worker.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-09-15 10:35:56 EDT; 6min ago
+   Main PID: 657236 (python3)
+      Tasks: 1 (limit: 9572)
+        CPU: 631ms
+     CGroup: /system.slice/video_worker.service
+             └─657236 /opt/ezrec-backend/backend/venv/bin/python3 /opt/ezrec-backend/backend/video_worker.py
+
+Sep 15 10:41:58 raspberrypi python3[657236]: 2025-09-15 10:41:58,169 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:41:58 raspberrypi python3[657236]: 2025-09-15 10:41:58,169 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:41:58 raspberrypi python3[657236]: 2025-09-15 10:41:58,169 [INFO] 📊 Disk usage: 8.5% used, 101.0 GB>
+Sep 15 10:41:58 raspberrypi python3[657236]: 2025-09-15 10:41:58,169 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:41:58 raspberrypi python3[657236]: 2025-09-15 10:41:58,169 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:42:13 raspberrypi python3[657236]: 2025-09-15 10:42:13,207 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:42:13 raspberrypi python3[657236]: 2025-09-15 10:42:13,207 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:42:13 raspberrypi python3[657236]: 2025-09-15 10:42:13,207 [INFO] 📊 Disk usage: 8.5% used, 101.0 GB>
+Sep 15 10:42:13 raspberrypi python3[657236]: 2025-09-15 10:42:13,207 [INFO] Scanning directory: /opt/ezrec-bac>
+Sep 15 10:42:13 raspberrypi python3[657236]: 2025-09-15 10:42:13,207 [INFO] Scanning directory: /opt/ezrec-bac>
+
+● ezrec-api.service - EZREC FastAPI Backend
+     Loaded: loaded (/etc/systemd/system/ezrec-api.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2025-09-15 10:35:33 EDT; 6min ago
+   Main PID: 657178 (uvicorn)
+      Tasks: 10 (limit: 9572)
+        CPU: 1.466s
+     CGroup: /system.slice/ezrec-api.service
+             └─657178 /opt/ezrec-backend/api/venv/bin/python3 /opt/ezrec-backend/api/venv/bin/uvicorn api_serv>
+
+Sep 15 10:35:34 raspberrypi uvicorn[657178]: 2025-09-15 10:35:34,326 [INFO] ✅ Supabase client initialized suc>
+Sep 15 10:35:34 raspberrypi uvicorn[657178]: 2025-09-15 10:35:34,326 [INFO] ✅ Using camera ID: d217e751-dfa5->
+Sep 15 10:35:34 raspberrypi uvicorn[657178]: INFO:     Started server process [657178]
+Sep 15 10:35:34 raspberrypi uvicorn[657178]: INFO:     Waiting for application startup.
+Sep 15 10:35:34 raspberrypi uvicorn[657178]: INFO:     Application startup complete.
+Sep 15 10:35:34 raspberrypi uvicorn[657178]: INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to>
+Sep 15 10:35:43 raspberrypi uvicorn[657178]: INFO:     127.0.0.1:40256 - "GET /test-alive HTTP/1.1" 200 OK
+Sep 15 10:36:27 raspberrypi uvicorn[657178]: INFO:     127.0.0.1:50330 - "GET /test-alive HTTP/1.1" 200 OK
+Sep 15 10:36:27 raspberrypi uvicorn[657178]: INFO:     127.0.0.1:50346 - "GET /status HTTP/1.1" 200 OK
+Sep 15 10:36:33 raspberrypi uvicorn[657178]: INFO:     97.100.138.40:0 - "GET /status HTTP/1.1" 200 OK
+
+● system_status.service - EZREC System Status Monitor
+
 michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ # Check the recording files
+ls -la /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/session_*/
+
+# Check file sizes
+du -h /opt/ezrec-backend/recordings/$(date +%Y-%m-%d)/session_*/*.mp4
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/:
+total 25132
+drwxr-xr-x 2 michomanoly14892 video    4096 Sep 15 10:02 .
+drwxr-xr-x 5 michomanoly14892 video    4096 Sep 15 10:38 ..
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:00 camera_0_20250915_100031.mp4
+-rw-r--r-- 1 michomanoly14892 video 2621488 Sep 15 10:00 camera_0_20250915_100044.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100057.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100110.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100123.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100136.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:01 camera_0_20250915_100150.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:02 camera_0_20250915_100203.mp4
+-rw-r--r-- 1 michomanoly14892 video 2883632 Sep 15 10:02 camera_0_20250915_100216.mp4
+
+/opt/ezrec-backend/recordings/2025-09-15/session_test-1757945664/:
+total 73488
+drwxr-xr-x 2 michomanoly14892 video     4096 Sep 15 10:14 .
+drwxr-xr-x 5 michomanoly14892 video     4096 Sep 15 10:38 ..
+-rw-r--r-- 1 michomanoly14892 video 75235376 Sep 15 10:16 camera_0_20250915_101427.mp4
+
+/opt/ezrec-backend/recordings/2025-09-15/session_test-dual-1757947044/:
+total 145688
+drwxr-xr-x 2 michomanoly14892 video     4096 Sep 15 10:38 .
+drwxr-xr-x 5 michomanoly14892 video     4096 Sep 15 10:38 ..
+-rw-r--r-- 1 michomanoly14892 video 74448944 Sep 15 10:40 camera_0_20250915_103828.mp4
+-rw-r--r-- 1 michomanoly14892 video 74711088 Sep 15 10:40 camera_1_20250915_103828.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100031.mp4
+2.6M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100044.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100057.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100110.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100123.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100136.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100150.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100203.mp4
+2.8M    /opt/ezrec-backend/recordings/2025-09-15/session_test-1757944826/camera_0_20250915_100216.mp4
+72M     /opt/ezrec-backend/recordings/2025-09-15/session_test-1757945664/camera_0_20250915_101427.mp4
+72M     /opt/ezrec-backend/recordings/2025-09-15/session_test-dual-1757947044/camera_0_20250915_103828.mp4
+72M     /opt/ezrec-backend/recordings/2025-09-15/session_test-dual-1757947044/camera_1_20250915_103828.mp4
+michomanoly14892@raspberrypi:~/EZREC-BACKEND-2 $ 
+
+
