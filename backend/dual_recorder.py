@@ -153,7 +153,8 @@ class SimpleDualRecorder:
             self.recording_processes = [process_0, process_1]
             self.current_booking = booking
             
-            logger.info("✅ Recording started successfully for both cameras")
+            logger.info(f"✅ Recording started successfully for both cameras")
+            logger.info(f"📁 Output files: {output_file_0.name}, {output_file_1.name}")
             return True
             
         except Exception as e:
@@ -186,7 +187,10 @@ class SimpleDualRecorder:
         # Check if all processes are still running
         for process in self.recording_processes:
             if process.poll() is not None:
-                # Process has ended
+                # Process has ended, clean up
+                logger.info(f"🔄 Recording process ended (exit code: {process.returncode})")
+                self.recording_processes = []
+                self.current_booking = None
                 return False
         
         return True
