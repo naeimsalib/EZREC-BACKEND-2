@@ -57,23 +57,34 @@ class SimpleDualRecorder:
         if not bookings:
             return None
         
-        # Get current time in UTC for comparison
-        now_utc = datetime.now(pytz.UTC)
-        now_local = datetime.now(pytz.timezone('America/New_York'))
-        logger.info(f"🔍 Checking {len(bookings)} bookings at {now_local} (UTC: {now_utc})")
+        # Get current local time (system timezone)
+        now_local = datetime.now()
+        logger.info(f"🔍 Checking {len(bookings)} bookings at {now_local} (local time)")
         
         for booking in bookings:
             try:
-                # Parse booking times as UTC
-                start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
-                end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
+                # Parse booking times - handle both UTC and local time formats
+                start_time_str = booking['start_time']
+                end_time_str = booking['end_time']
+                
+                # If times end with 'Z', treat as UTC and convert to local
+                if start_time_str.endswith('Z'):
+                    start_time_utc = datetime.fromisoformat(start_time_str.replace('Z', '+00:00'))
+                    end_time_utc = datetime.fromisoformat(end_time_str.replace('Z', '+00:00'))
+                    
+                    # Convert UTC to local time
+                    start_time = start_time_utc.replace(tzinfo=None) + (now_local - datetime.utcnow())
+                    end_time = end_time_utc.replace(tzinfo=None) + (now_local - datetime.utcnow())
+                else:
+                    # Assume local time format
+                    start_time = datetime.fromisoformat(start_time_str.replace('Z', ''))
+                    end_time = datetime.fromisoformat(end_time_str.replace('Z', ''))
                 
                 logger.info(f"🔍 Booking {booking['id']}: {start_time} - {end_time}")
-                logger.info(f"   Now UTC: {now_utc}")
-                logger.info(f"   Now Local: {now_local}")
+                logger.info(f"   Now: {now_local}")
                 
-                # Compare in UTC
-                if start_time <= now_utc <= end_time:
+                # Compare in local time
+                if start_time <= now_local <= end_time:
                     logger.info(f"🎯 Active booking found: {booking['id']}")
                     return booking
             except Exception as e:
