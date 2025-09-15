@@ -34,7 +34,23 @@ class SimpleDualRecorder:
         self.recordings_path.mkdir(parents=True, exist_ok=True)
         self.bookings_path.parent.mkdir(parents=True, exist_ok=True)
         
+        # Clean up any zombie processes on startup
+        self.cleanup_zombie_processes()
+        
         logger.info("🎥 Simple Dual Recorder Service initialized")
+    
+    def cleanup_zombie_processes(self):
+        """Clean up any zombie rpicam-vid processes on startup"""
+        try:
+            logger.info("🧹 Cleaning up zombie rpicam-vid processes...")
+            result = subprocess.run(['pkill', '-f', 'rpicam-vid'], 
+                                  capture_output=True, text=True)
+            if result.returncode == 0:
+                logger.info("✅ Zombie processes cleaned up")
+            else:
+                logger.info("ℹ️ No zombie processes found")
+        except Exception as e:
+            logger.warning(f"⚠️ Failed to cleanup zombie processes: {e}")
     
     def load_bookings(self):
         """Load bookings from file"""
@@ -209,13 +225,21 @@ class SimpleDualRecorder:
             return False
         
         # Check if all processes are still running
+        active_processes = []
         for process in self.recording_processes:
             if process.poll() is not None:
                 # Process has ended, clean up
                 logger.info(f"🔄 Recording process ended (exit code: {process.returncode})")
-                self.recording_processes = []
-                self.current_booking = None
-                return False
+            else:
+                active_processes.append(process)
+        
+        # Update the recording processes list
+        self.recording_processes = active_processes
+        
+        # If no active processes, clear current booking
+        if not self.recording_processes:
+            self.current_booking = None
+            return False
         
         return True
     
