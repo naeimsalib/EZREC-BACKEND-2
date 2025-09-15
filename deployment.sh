@@ -680,7 +680,7 @@ copy_project_files() {
         log_warn "⚠️ Utils directory not found - new architecture may not work"
     fi
     
-    # Copy environment file if it exists
+    # Copy environment file if it exists, or create a basic one
     if [[ -f ".env" ]]; then
         log_info "📄 Copying environment file..."
         sudo cp .env "$DEPLOY_PATH/.env"
@@ -688,7 +688,39 @@ copy_project_files() {
         sudo chmod 600 "$DEPLOY_PATH/.env"
         log_info "✅ Environment file copied"
     else
-        log_warn "⚠️ No .env file found - you may need to create one manually"
+        log_warn "⚠️ No .env file found - creating basic configuration..."
+        
+        # Create a basic .env file with minimal required variables
+        cat > /tmp/basic.env << 'EOF'
+# Basic EZREC Configuration
+# Add your actual credentials here
+
+# User Configuration (Required)
+USER_ID=default-user
+CAMERA_ID=default-camera
+
+# Supabase Configuration (Optional - leave empty if not using)
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+
+# AWS S3 Configuration (Optional - leave empty if not using)
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+S3_BUCKET=
+
+# Timezone
+LOCAL_TIMEZONE=UTC
+
+# Logging
+LOG_LEVEL=INFO
+DEBUG=false
+EOF
+        
+        sudo cp /tmp/basic.env "$DEPLOY_PATH/.env"
+        sudo chown $DEPLOY_USER:$DEPLOY_USER "$DEPLOY_PATH/.env"
+        sudo chmod 600 "$DEPLOY_PATH/.env"
+        log_info "✅ Basic environment file created - please update with your actual credentials"
     fi
     
     log_info "✅ All project files copied successfully"

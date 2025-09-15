@@ -22,7 +22,10 @@ class DatabaseConfig:
     
     def validate(self) -> bool:
         """Validate database configuration"""
-        return bool(self.supabase_url and self.supabase_key)
+        # Database is optional - only validate if any database credentials are provided
+        if self.supabase_url or self.supabase_key:
+            return bool(self.supabase_url and self.supabase_key)
+        return True  # No database configured is valid
 
 @dataclass
 class StorageConfig:
@@ -34,7 +37,10 @@ class StorageConfig:
     
     def validate(self) -> bool:
         """Validate storage configuration"""
-        return bool(self.aws_access_key and self.aws_secret_key and self.s3_bucket)
+        # Storage is optional - only validate if any storage credentials are provided
+        if self.aws_access_key or self.aws_secret_key or self.s3_bucket:
+            return bool(self.aws_access_key and self.aws_secret_key and self.s3_bucket)
+        return True  # No storage configured is valid
 
 @dataclass
 class CameraConfig:

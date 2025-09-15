@@ -78,21 +78,31 @@ LOG_FILE = "/opt/ezrec-backend/logs/system_status.log"
 STATUS_FILE = "/opt/ezrec-backend/status.json"
 
 # Required environment variables
-REQUIRED_VARS = ["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "USER_ID", "CAMERA_ID"]
+REQUIRED_VARS = ["USER_ID", "CAMERA_ID"]
 missing_vars = [var for var in REQUIRED_VARS if not os.getenv(var)]
 if missing_vars:
     print(f"❌ Missing required environment variables: {missing_vars}")
     sys.exit(1)
 
+# Optional environment variables for Supabase
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
 # Optional configuration
 STATUS_TABLE = os.getenv("STATUS_TABLE", "cameras")
 SUPABASE_RATE_LIMIT_SECONDS = int(os.getenv("SUPABASE_RATE_LIMIT_SECONDS", "300"))  # 5 minutes
 
-# Initialize Supabase client
-supabase = create_client(
-    os.getenv("SUPABASE_URL"),
-    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
-)
+# Initialize Supabase client (only if credentials are available)
+supabase = None
+if SUPABASE_URL and SUPABASE_KEY:
+    try:
+        supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
+        print("✅ Supabase client initialized successfully")
+    except Exception as e:
+        print(f"⚠️ Failed to initialize Supabase client: {e}")
+        supabase = None
+else:
+    print("⚠️ Supabase credentials not configured - running in local mode only")
 
 # Setup logging
 logging.basicConfig(
@@ -522,18 +532,21 @@ class SystemStatusMonitor:
             }
             
             # Update Supabase using the global client with better error handling
-            try:
-                response = supabase.table("cameras").update(basic_data).eq("id", camera_id).execute()
-                
-                if hasattr(response, 'data') and response.data:
-                    logger.info("✅ Camera status updated in Supabase")
-                else:
-                    logger.warning("⚠️ No data returned from Supabase update")
+            if supabase:
+                try:
+                    response = supabase.table("cameras").update(basic_data).eq("id", camera_id).execute()
                     
-            except Exception as supabase_error:
-                logger.error(f"❌ Supabase connection error: {supabase_error}")
-                # Don't fail the entire health check due to Supabase issues
-                return
+                    if hasattr(response, 'data') and response.data:
+                        logger.info("✅ Camera status updated in Supabase")
+                    else:
+                        logger.warning("⚠️ No data returned from Supabase update")
+                        
+                except Exception as supabase_error:
+                    logger.error(f"❌ Supabase connection error: {supabase_error}")
+                    # Don't fail the entire health check due to Supabase issues
+                    return
+            else:
+                logger.info("ℹ️ Supabase not configured - skipping database update")
                 
         except Exception as e:
             logger.error(f"❌ Error updating Supabase status: {e}")
