@@ -1,108 +1,196 @@
 #!/usr/bin/env python3
 """
-EZREC Dual Camera Recorder Service
-Uses the new service architecture for clean separation of concerns
+EZREC Dual Camera Recorder Service - SIMPLIFIED VERSION
+Direct implementation without complex service architecture
 """
 
 import os
 import sys
 import time
+import json
 import logging
+import subprocess
 from pathlib import Path
-
-# Add project root to path
-project_root = Path(__file__).parent.parent
-sys.path.append(str(project_root))
-
-# Import services and utilities
-from services.camera_service import CameraService
-from services.booking_service import BookingService
-from utils.logger import setup_service_logging
-from utils.exceptions import handle_exception
+from datetime import datetime
+import pytz
 
 # Set up logging
-logger = setup_service_logging("dual_recorder")
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger("dual_recorder")
 
-class DualRecorderService:
-    """Main dual recorder service using the new architecture"""
+class SimpleDualRecorder:
+    """Simplified dual recorder service"""
     
     def __init__(self):
-        self.camera_service = CameraService()
-        self.booking_service = BookingService()
+        self.recordings_path = Path("/opt/ezrec-backend/recordings")
+        self.bookings_path = Path("/opt/ezrec-backend/api/local_data/bookings.json")
         self.current_booking = None
-        logger.info("🎥 Dual Recorder Service initialized")
+        self.recording_processes = []
+        
+        # Ensure directories exist
+        self.recordings_path.mkdir(parents=True, exist_ok=True)
+        self.bookings_path.parent.mkdir(parents=True, exist_ok=True)
+        
+        logger.info("🎥 Simple Dual Recorder Service initialized")
     
-    @handle_exception
-    def start_recording_for_booking(self, booking: dict) -> bool:
-        """Start recording for a specific booking"""
+    def load_bookings(self):
+        """Load bookings from file"""
+        try:
+            if self.bookings_path.exists():
+                with open(self.bookings_path, 'r') as f:
+                    bookings = json.load(f)
+                logger.info(f"📋 Loaded {len(bookings)} bookings from cache")
+                return bookings
+            else:
+                logger.info("📋 No bookings file found")
+                return []
+        except Exception as e:
+            logger.error(f"❌ Failed to load bookings: {e}")
+            return []
+    
+    def find_active_booking(self):
+        """Find an active booking that should be recording now"""
+        bookings = self.load_bookings()
+        if not bookings:
+            return None
+        
+        now = datetime.now(pytz.timezone('America/New_York'))
+        logger.info(f"🔍 Checking {len(bookings)} bookings at {now}")
+        
+        for booking in bookings:
+            try:
+                start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
+                end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
+                
+                logger.info(f"🔍 Booking {booking['id']}: {start_time} - {end_time}")
+                logger.info(f"   Now: {now}")
+                
+                if start_time <= now <= end_time:
+                    logger.info(f"🎯 Active booking found: {booking['id']}")
+                    return booking
+            except Exception as e:
+                logger.error(f"❌ Error parsing booking {booking.get('id', 'unknown')}: {e}")
+                continue
+        
+        logger.info("❌ No active booking found")
+        return None
+    
+    def detect_cameras(self):
+        """Detect available cameras"""
+        try:
+            result = subprocess.run(['rpicam-vid', '--output', '/dev/null'], 
+                                  capture_output=True, text=True, timeout=10)
+            
+            # Check stderr for camera information
+            if 'Available cameras' in result.stderr or 'imx477' in result.stderr:
+                logger.info("✅ Cameras detected successfully")
+                return True
+            else:
+                logger.warning("⚠️ No cameras detected")
+                return False
+        except Exception as e:
+            logger.error(f"❌ Camera detection failed: {e}")
+            return False
+    
+    def start_recording(self, booking):
+        """Start recording for a booking"""
         try:
             logger.info(f"🎬 Starting recording for booking: {booking['id']}")
             
-            # Update booking status
-            self.booking_service.update_booking_status(booking['id'], 'recording')
+            # Create recording directory
+            today = datetime.now().strftime("%Y-%m-%d")
+            session_dir = self.recordings_path / today / f"session_{booking['id']}"
+            session_dir.mkdir(parents=True, exist_ok=True)
             
-            # Start recording session
-            success = self.camera_service.start_recording_session(booking['id'])
+            # Start recording for both cameras
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            if success:
-                self.current_booking = booking
-                logger.info("✅ Recording started successfully")
-                return True
-            else:
-                self.booking_service.update_booking_status(booking['id'], 'failed')
-                logger.error("❌ Failed to start recording")
-                return False
-                
+            # Camera 0
+            output_file_0 = session_dir / f"camera_0_{timestamp}.mp4"
+            cmd_0 = [
+                'rpicam-vid',
+                '--width', '1920',
+                '--height', '1080',
+                '--framerate', '30',
+                '--output', str(output_file_0),
+                '--timeout', '300000'  # 5 minutes
+            ]
+            
+            # Camera 1
+            output_file_1 = session_dir / f"camera_1_{timestamp}.mp4"
+            cmd_1 = [
+                'rpicam-vid',
+                '--width', '1920',
+                '--height', '1080',
+                '--framerate', '30',
+                '--output', str(output_file_1),
+                '--timeout', '300000'  # 5 minutes
+            ]
+            
+            # Start recording processes
+            process_0 = subprocess.Popen(cmd_0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            self.recording_processes = [process_0, process_1]
+            self.current_booking = booking
+            
+            logger.info("✅ Recording started successfully for both cameras")
+            return True
+            
         except Exception as e:
-            logger.error(f"❌ Error starting recording: {e}")
-            self.booking_service.update_booking_status(booking['id'], 'failed')
+            logger.error(f"❌ Failed to start recording: {e}")
             return False
     
-    @handle_exception
     def stop_recording(self):
-        """Stop current recording session"""
-        if not self.camera_service.is_recording():
+        """Stop current recording"""
+        if not self.recording_processes:
             return
         
-        logger.info("🛑 Stopping recording session")
+        logger.info("🛑 Stopping recording")
         
-        # Stop camera recording
-        self.camera_service.stop_recording_session()
+        for process in self.recording_processes:
+            try:
+                process.terminate()
+                process.wait(timeout=5)
+            except:
+                process.kill()
         
-        # Update booking status
-        if self.current_booking:
-            self.booking_service.update_booking_status(self.current_booking['id'], 'completed')
-            self.current_booking = None
-        
+        self.recording_processes = []
+        self.current_booking = None
         logger.info("✅ Recording stopped")
     
-    @handle_exception
+    def is_recording(self):
+        """Check if currently recording"""
+        return len(self.recording_processes) > 0 and all(p.poll() is None for p in self.recording_processes)
+    
     def check_and_handle_bookings(self):
         """Check for active bookings and handle recording"""
-        # Find active booking
-        active_booking = self.booking_service.find_active_booking()
-        
-        if active_booking and not self.camera_service.is_recording():
-            # Start recording for active booking
-            self.start_recording_for_booking(active_booking)
-        elif not active_booking and self.camera_service.is_recording():
-            # Stop recording if no active booking
-            self.stop_recording()
-    
-    def get_status(self) -> dict:
-        """Get current service status"""
-        return {
-            'recording': self.camera_service.is_recording(),
-            'current_booking': self.current_booking['id'] if self.current_booking else None,
-            'camera_status': self.camera_service.get_recording_status()
-        }
+        try:
+            active_booking = self.find_active_booking()
+            
+            if active_booking and not self.is_recording():
+                # Start recording for active booking
+                self.start_recording(active_booking)
+            elif not active_booking and self.is_recording():
+                # Stop recording if no active booking
+                self.stop_recording()
+                
+        except Exception as e:
+            logger.error(f"❌ Error in check_and_handle_bookings: {e}")
 
 def main():
     """Main service function - runs continuously"""
-    logger.info("🎥 EZREC Dual Recorder Service Starting")
+    logger.info("🎥 EZREC Simple Dual Recorder Service Starting")
     
     # Create service
-    recorder = DualRecorderService()
+    recorder = SimpleDualRecorder()
+    
+    # Test camera detection
+    if not recorder.detect_cameras():
+        logger.warning("⚠️ Camera detection failed, but continuing...")
     
     try:
         while True:
@@ -114,12 +202,10 @@ def main():
             
     except KeyboardInterrupt:
         logger.info("🛑 Service interrupted by user")
-        if recorder.camera_service.is_recording():
-            recorder.stop_recording()
+        recorder.stop_recording()
     except Exception as e:
         logger.error(f"❌ Service error: {e}")
-        if recorder.camera_service.is_recording():
-            recorder.stop_recording()
+        recorder.stop_recording()
 
 if __name__ == "__main__":
     main()
