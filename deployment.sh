@@ -109,9 +109,9 @@ test_python_import() {
 # COMPREHENSIVE FIXES
 # =============================================================================
 
-# Fix port conflicts aggressively with comprehensive cleanup
-fix_port_conflicts_comprehensive() {
-    log_info "🔧 Fixing port conflicts with comprehensive cleanup..."
+# Comprehensive system cleanup including cameras and booking cache
+comprehensive_system_cleanup() {
+    log_info "🧹 Performing comprehensive system cleanup..."
     
     # Stop all EZREC services first
     log_info "🛑 Stopping all EZREC services..."
@@ -119,6 +119,129 @@ fix_port_conflicts_comprehensive() {
     sudo systemctl stop video_worker.service 2>/dev/null || true
     sudo systemctl stop dual_recorder.service 2>/dev/null || true
     sudo systemctl stop system_status.service 2>/dev/null || true
+    
+    # Kill all camera-related processes
+    log_info "📷 Killing all camera-related processes..."
+    sudo pkill -f "rpicam-vid" 2>/dev/null || true
+    sudo pkill -f "libcamera" 2>/dev/null || true
+    sudo pkill -f "picamera2" 2>/dev/null || true
+    sudo pkill -f "camera" 2>/dev/null || true
+    sudo pkill -f "imx477" 2>/dev/null || true
+    sudo pkill -f "video" 2>/dev/null || true
+    
+    # Kill all Python processes that might be using cameras
+    log_info "🐍 Killing Python camera processes..."
+    sudo pkill -f "python.*camera" 2>/dev/null || true
+    sudo pkill -f "python.*recorder" 2>/dev/null || true
+    sudo pkill -f "python.*video" 2>/dev/null || true
+    
+    # Clear camera device locks
+    log_info "🔓 Clearing camera device locks..."
+    for device in /dev/video*; do
+        if [[ -e "$device" ]]; then
+            sudo fuser -k "$device" 2>/dev/null || true
+        fi
+    done
+    
+    # Clear booking cache
+    log_info "🗑️ Clearing booking cache..."
+    local booking_cache_files=(
+        "/opt/ezrec-backend/backend/bookings.json"
+        "/opt/ezrec-backend/backend/bookings_cache.json"
+        "/opt/ezrec-backend/backend/.bookings_cache"
+        "/opt/ezrec-backend/bookings.json"
+        "/opt/ezrec-backend/bookings_cache.json"
+        "/opt/ezrec-backend/.bookings_cache"
+    )
+    
+    for cache_file in "${booking_cache_files[@]}"; do
+        if [[ -f "$cache_file" ]]; then
+            log_info "🗑️ Removing booking cache: $cache_file"
+            sudo rm -f "$cache_file"
+        fi
+    done
+    
+    # Clear any temporary recording files
+    log_info "🗑️ Clearing temporary recording files..."
+    sudo find /opt/ezrec-backend/recordings -name "*.tmp" -delete 2>/dev/null || true
+    sudo find /opt/ezrec-backend/recordings -name "*.partial" -delete 2>/dev/null || true
+    sudo find /tmp -name "*ezrec*" -delete 2>/dev/null || true
+    sudo find /tmp -name "*camera*" -delete 2>/dev/null || true
+    
+    # Reset camera devices (if possible)
+    log_info "🔄 Resetting camera devices..."
+    for device in /dev/video0 /dev/video1; do
+        if [[ -e "$device" ]]; then
+            sudo chmod 666 "$device" 2>/dev/null || true
+        fi
+    done
+    
+    sleep 3
+    log_info "✅ Comprehensive system cleanup completed"
+}
+
+# Clear old recordings and temporary files
+clear_old_recordings() {
+    log_info "🗑️ Clearing old recordings and temporary files..."
+    
+    # Clear recordings older than 7 days (optional - uncomment if needed)
+    # log_info "🗑️ Removing recordings older than 7 days..."
+    # sudo find /opt/ezrec-backend/recordings -type f -name "*.mp4" -mtime +7 -delete 2>/dev/null || true
+    
+    # Clear temporary files
+    log_info "🗑️ Clearing temporary files..."
+    sudo find /opt/ezrec-backend -name "*.tmp" -delete 2>/dev/null || true
+    sudo find /opt/ezrec-backend -name "*.partial" -delete 2>/dev/null || true
+    sudo find /opt/ezrec-backend -name "*.lock" -delete 2>/dev/null || true
+    sudo find /opt/ezrec-backend -name ".DS_Store" -delete 2>/dev/null || true
+    
+    # Clear log files older than 30 days
+    log_info "🗑️ Clearing old log files..."
+    sudo find /opt/ezrec-backend/logs -name "*.log" -mtime +30 -delete 2>/dev/null || true
+    
+    # Clear systemd journal logs older than 7 days
+    log_info "🗑️ Clearing old systemd journal logs..."
+    sudo journalctl --vacuum-time=7d 2>/dev/null || true
+    
+    log_info "✅ Old recordings and temporary files cleared"
+}
+
+# Initialize fresh booking cache
+initialize_booking_cache() {
+    log_info "📋 Initializing fresh booking cache..."
+    
+    # Create a fresh, empty booking cache file
+    local booking_cache_file="/opt/ezrec-backend/backend/bookings.json"
+    
+    # Create the backend directory if it doesn't exist
+    sudo mkdir -p "$(dirname "$booking_cache_file")"
+    
+    # Create a fresh booking cache with empty array
+    cat > /tmp/fresh_bookings.json << 'EOF'
+{
+  "bookings": [],
+  "last_updated": null,
+  "cache_version": "1.0"
+}
+EOF
+    
+    # Copy to deployment directory
+    sudo cp /tmp/fresh_bookings.json "$booking_cache_file"
+    sudo chown $DEPLOY_USER:$DEPLOY_USER "$booking_cache_file"
+    sudo chmod 644 "$booking_cache_file"
+    
+    # Clean up temp file
+    rm -f /tmp/fresh_bookings.json
+    
+    log_info "✅ Fresh booking cache initialized"
+}
+
+# Fix port conflicts aggressively with comprehensive cleanup
+fix_port_conflicts_comprehensive() {
+    log_info "🔧 Fixing port conflicts with comprehensive cleanup..."
+    
+    # First run comprehensive cleanup
+    comprehensive_system_cleanup
     
     # Kill any processes using our ports with multiple strategies
     log_info "🧹 Comprehensive port cleanup..."
@@ -1079,8 +1202,14 @@ main() {
     # 1. Apply comprehensive fixes first
     log_step "1. Applying comprehensive system fixes"
     
-    # Fix port conflicts
+    # Fix port conflicts (includes comprehensive cleanup)
     fix_port_conflicts_comprehensive
+    
+    # Clear old recordings and temporary files
+    clear_old_recordings
+    
+    # Initialize fresh booking cache
+    initialize_booking_cache
     
     # Install psutil everywhere
     install_psutil_everywhere
