@@ -1,4 +1,0 @@
-# OpenCV stitching dependencies for EZREC panoramic video system
-opencv-python>=4.8.0
-opencv-contrib-python>=4.8.0
-numpy>=1.21.0 

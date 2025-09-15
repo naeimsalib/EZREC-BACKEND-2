@@ -24,7 +24,8 @@ API_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../api'))
 if API_DIR not in sys.path:
     sys.path.append(API_DIR)
 
-from booking_utils import update_booking_status
+# Import Supabase for direct database operations
+from supabase import create_client
 
 class BookingStatus(Enum):
     SCHEDULED = "scheduled"
@@ -85,6 +86,69 @@ class EnhancedBooking:
         if 'status' in data and isinstance(data['status'], str):
             data['status'] = BookingStatus(data['status'])
         return cls(**data)
+
+class SupabaseBookingClient:
+    """Handles direct Supabase operations for bookings"""
+    
+    def __init__(self):
+        self.supabase_url = os.getenv("SUPABASE_URL")
+        self.supabase_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+        self._client = None
+    
+    @property
+    def client(self):
+        """Lazy initialization of Supabase client"""
+        if self._client is None:
+            if not self.supabase_url or not self.supabase_key:
+                raise ValueError("Supabase credentials not configured")
+            self._client = create_client(self.supabase_url, self.supabase_key)
+        return self._client
+    
+    def update_booking_status(self, booking_id: str, status: str) -> bool:
+        """Update booking status in Supabase"""
+        try:
+            result = self.client.table("bookings").update({
+                "status": status,
+                "updated_at": "now()"
+            }).eq("id", booking_id).execute()
+            
+            if result.data:
+                logger.info(f"✅ Updated booking {booking_id} status to {status}")
+                return True
+            else:
+                logger.warning(f"⚠️ No booking found with ID {booking_id}")
+                return False
+        except Exception as e:
+            logger.error(f"❌ Failed to update booking {booking_id} status: {e}")
+            return False
+    
+    def get_booking_by_id(self, booking_id: str) -> Optional[dict]:
+        """Get booking details by ID"""
+        try:
+            result = self.client.table("bookings").select("*").eq("id", booking_id).single().execute()
+            if result.data:
+                return result.data
+            else:
+                logger.warning(f"⚠️ No booking found with ID {booking_id}")
+                return None
+        except Exception as e:
+            logger.error(f"❌ Failed to get booking {booking_id}: {e}")
+            return None
+    
+    def create_booking(self, booking_data: dict) -> Optional[str]:
+        """Create a new booking in Supabase"""
+        try:
+            result = self.client.table("bookings").insert(booking_data).execute()
+            if result.data:
+                booking_id = result.data[0].get("id")
+                logger.info(f"✅ Created booking {booking_id}")
+                return booking_id
+            else:
+                logger.error("❌ Failed to create booking")
+                return None
+        except Exception as e:
+            logger.error(f"❌ Failed to create booking: {e}")
+            return None
 
 class BookingManager:
     """Manages enhanced bookings with status tracking and retry logic"""
