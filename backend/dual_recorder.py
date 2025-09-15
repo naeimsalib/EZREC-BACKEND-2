@@ -128,19 +128,23 @@ class SimpleDualRecorder:
             return False
     
     def start_recording(self, booking):
-        """Start recording for a booking"""
+        """Start recording for a booking with robust dual camera handling"""
         try:
-            logger.info(f"🎬 Starting recording for booking: {booking['id']}")
+            logger.info(f"🎬 Starting dual camera recording for booking: {booking['id']}")
             
             # Create recording directory
             today = datetime.now().strftime("%Y-%m-%d")
             session_dir = self.recordings_path / today / f"session_{booking['id']}"
             session_dir.mkdir(parents=True, exist_ok=True)
             
+            # Clean up any existing processes first
+            self.cleanup_zombie_processes()
+            time.sleep(2)  # Wait for cleanup to complete
+            
             # Start recording for both cameras
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             
-            # Camera 0 - Use simpler parameters for better compatibility
+            # Camera 0 - Primary camera with optimized settings
             output_file_0 = session_dir / f"camera_0_{timestamp}.mp4"
             cmd_0 = [
                 'rpicam-vid',
@@ -148,10 +152,12 @@ class SimpleDualRecorder:
                 '--height', '720',
                 '--framerate', '25',
                 '--output', str(output_file_0),
-                '--timeout', '300000'  # 5 minutes
+                '--timeout', '300000',  # 5 minutes
+                '--codec', 'h264',
+                '--bitrate', '5000000'  # 5 Mbps
             ]
             
-            # Camera 1 - Use simpler parameters for better compatibility
+            # Camera 1 - Secondary camera with different settings to avoid conflicts
             output_file_1 = session_dir / f"camera_1_{timestamp}.mp4"
             cmd_1 = [
                 'rpicam-vid',
@@ -159,46 +165,74 @@ class SimpleDualRecorder:
                 '--height', '720',
                 '--framerate', '25',
                 '--output', str(output_file_1),
-                '--timeout', '300000'  # 5 minutes
+                '--timeout', '300000',  # 5 minutes
+                '--codec', 'h264',
+                '--bitrate', '5000000'  # 5 Mbps
             ]
             
             # Test camera availability first
             logger.info("🔍 Testing camera availability...")
             test_result = subprocess.run(['rpicam-vid', '--list-cameras'], 
-                                       capture_output=True, text=True, timeout=10)
+                                       capture_output=True, text=True, timeout=15)
             if test_result.returncode != 0:
                 logger.error(f"❌ Camera test failed: {test_result.stderr}")
                 return False
             
-            logger.info("✅ Cameras available, starting recording...")
+            logger.info("✅ Cameras available, starting dual recording...")
             
-            # Start recording processes with staggered timing to avoid conflicts
+            # Start Camera 0 first
+            logger.info("🎥 Starting Camera 0...")
             process_0 = subprocess.Popen(cmd_0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            time.sleep(1)  # Wait 1 second between camera starts
-            process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(3)  # Wait longer for first camera to initialize
             
-            # Wait a moment and check if processes started successfully
-            time.sleep(3)
-            
+            # Check if Camera 0 started successfully
             if process_0.poll() is not None:
-                logger.error(f"❌ Camera 0 process failed immediately (exit code: {process_0.returncode})")
-                logger.error(f"❌ Camera 0 stderr: {process_0.stderr.read().decode() if process_0.stderr else 'No error output'}")
-                return False
-                
-            if process_1.poll() is not None:
-                logger.error(f"❌ Camera 1 process failed immediately (exit code: {process_1.returncode})")
-                logger.error(f"❌ Camera 1 stderr: {process_1.stderr.read().decode() if process_1.stderr else 'No error output'}")
+                logger.error(f"❌ Camera 0 failed to start (exit code: {process_0.returncode})")
+                stderr_output = process_0.stderr.read().decode() if process_0.stderr else 'No error output'
+                logger.error(f"❌ Camera 0 error: {stderr_output}")
                 return False
             
+            logger.info("✅ Camera 0 started successfully")
+            
+            # Start Camera 1 with longer delay
+            logger.info("🎥 Starting Camera 1...")
+            process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(3)  # Wait for second camera to initialize
+            
+            # Check if Camera 1 started successfully
+            if process_1.poll() is not None:
+                logger.error(f"❌ Camera 1 failed to start (exit code: {process_1.returncode})")
+                stderr_output = process_1.stderr.read().decode() if process_1.stderr else 'No error output'
+                logger.error(f"❌ Camera 1 error: {stderr_output}")
+                # Clean up Camera 0 if Camera 1 fails
+                process_0.terminate()
+                return False
+            
+            logger.info("✅ Camera 1 started successfully")
+            
+            # Final validation - both processes should be running
+            time.sleep(2)
+            if process_0.poll() is not None or process_1.poll() is not None:
+                logger.error("❌ One or both cameras failed after startup")
+                if process_0.poll() is not None:
+                    logger.error(f"❌ Camera 0 failed (exit code: {process_0.returncode})")
+                if process_1.poll() is not None:
+                    logger.error(f"❌ Camera 1 failed (exit code: {process_1.returncode})")
+                return False
+            
+            # Store successful processes
             self.recording_processes = [process_0, process_1]
             self.current_booking = booking
             
-            logger.info(f"✅ Recording started successfully for both cameras")
-            logger.info(f"📁 Output files: {output_file_0.name}, {output_file_1.name}")
+            logger.info(f"🎉 DUAL CAMERA RECORDING STARTED SUCCESSFULLY!")
+            logger.info(f"📁 Camera 0: {output_file_0.name}")
+            logger.info(f"📁 Camera 1: {output_file_1.name}")
+            logger.info(f"⏱️ Recording duration: 5 minutes")
+            
             return True
             
         except Exception as e:
-            logger.error(f"❌ Failed to start recording: {e}")
+            logger.error(f"❌ Failed to start dual camera recording: {e}")
             return False
     
     def stop_recording(self):
@@ -220,26 +254,35 @@ class SimpleDualRecorder:
         logger.info("✅ Recording stopped")
     
     def is_recording(self):
-        """Check if currently recording"""
+        """Check if currently recording with detailed status"""
         if not self.recording_processes:
             return False
         
-        # Check if all processes are still running
+        # Check each process individually
         active_processes = []
-        for process in self.recording_processes:
+        for i, process in enumerate(self.recording_processes):
             if process.poll() is not None:
-                # Process has ended, clean up
-                logger.info(f"🔄 Recording process ended (exit code: {process.returncode})")
+                # Process has ended
+                exit_code = process.returncode
+                logger.info(f"🔄 Camera {i} process ended (exit code: {exit_code})")
+                if exit_code != 0:
+                    logger.warning(f"⚠️ Camera {i} exited with error code: {exit_code}")
             else:
                 active_processes.append(process)
+                logger.debug(f"✅ Camera {i} still recording")
         
         # Update the recording processes list
         self.recording_processes = active_processes
         
         # If no active processes, clear current booking
         if not self.recording_processes:
+            logger.info("🛑 All recording processes ended - clearing current booking")
             self.current_booking = None
             return False
+        
+        # Log current status
+        active_count = len(self.recording_processes)
+        logger.info(f"📊 Recording status: {active_count}/2 cameras active")
         
         return True
     
