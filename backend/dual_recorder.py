@@ -57,18 +57,23 @@ class SimpleDualRecorder:
         if not bookings:
             return None
         
-        now = datetime.now(pytz.timezone('America/New_York'))
-        logger.info(f"🔍 Checking {len(bookings)} bookings at {now}")
+        # Get current time in UTC for comparison
+        now_utc = datetime.now(pytz.UTC)
+        now_local = datetime.now(pytz.timezone('America/New_York'))
+        logger.info(f"🔍 Checking {len(bookings)} bookings at {now_local} (UTC: {now_utc})")
         
         for booking in bookings:
             try:
+                # Parse booking times as UTC
                 start_time = datetime.fromisoformat(booking['start_time'].replace('Z', '+00:00'))
                 end_time = datetime.fromisoformat(booking['end_time'].replace('Z', '+00:00'))
                 
                 logger.info(f"🔍 Booking {booking['id']}: {start_time} - {end_time}")
-                logger.info(f"   Now: {now}")
+                logger.info(f"   Now UTC: {now_utc}")
+                logger.info(f"   Now Local: {now_local}")
                 
-                if start_time <= now <= end_time:
+                # Compare in UTC
+                if start_time <= now_utc <= end_time:
                     logger.info(f"🎯 Active booking found: {booking['id']}")
                     return booking
             except Exception as e:
