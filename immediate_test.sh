@@ -1,7 +1,7 @@
 #!/bin/bash
 
-echo "🚀 EZREC Quick System Test"
-echo "=========================="
+echo "🚀 EZREC Immediate Recording Test"
+echo "================================="
 
 # Create test start marker
 touch /tmp/test_start
@@ -35,16 +35,16 @@ ls -la /dev/video* 2>/dev/null || echo "    No camera devices found"
 echo "  rpicam-vid test:"
 timeout 30 rpicam-vid --list-cameras 2>&1 | head -5 || echo "    Camera detection failed or timed out"
 
-# Test 4: Create Test Booking
-echo "4️⃣ Creating Test Booking..."
-START_TIME=$(date -d "+1 minute" "+%Y-%m-%dT%H:%M:%S")
-END_TIME=$(date -d "+3 minutes" "+%Y-%m-%dT%H:%M:%S")
-BOOKING_ID="test-$(date +%s)"
+# Test 4: Create Immediate Test Booking
+echo "4️⃣ Creating Immediate Test Booking..."
+START_TIME=$(date "+%Y-%m-%dT%H:%M:%S")
+END_TIME=$(date -d "+2 minutes" "+%Y-%m-%dT%H:%M:%S")
+BOOKING_ID="immediate-test-$(date +%s)"
 CURRENT_DATE=$(date +%Y-%m-%d)
 CURRENT_DATETIME=$(date +%Y-%m-%dT%H:%M:%S)
 
 echo "  Booking ID: $BOOKING_ID"
-echo "  Start: $START_TIME"
+echo "  Start: $START_TIME (NOW)"
 echo "  End: $END_TIME"
 
 sudo tee /opt/ezrec-backend/api/local_data/bookings.json > /dev/null << BOOKING_EOF
@@ -67,17 +67,11 @@ BOOKING_EOF
 
 echo "  ✅ Booking created"
 
-# Test 5: Monitor Recording
-echo "5️⃣ Monitoring Recording (waiting for booking to start)..."
-wait_seconds=$(( $(date -d "$START_TIME" +%s) - $(date +%s) ))
-if [ $wait_seconds -gt 0 ]; then
-    echo "  ⏳ Waiting $wait_seconds seconds for booking to start..."
-    sleep $wait_seconds
-fi
-
+# Test 5: Monitor Recording Immediately
+echo "5️⃣ Monitoring Recording (should start immediately)..."
 echo "  🎬 Starting recording monitoring..."
-for i in {1..20}; do
-    echo "  --- Check $i/20 ---"
+for i in {1..15}; do
+    echo "  --- Check $i/15 ---"
     
     # Check dual_recorder logs
     echo "    Dual Recorder:"
@@ -91,7 +85,13 @@ for i in {1..20}; do
     new_files=$(find /opt/ezrec-backend/recordings -name "*.mp4" -newer /tmp/test_start 2>/dev/null | wc -l)
     echo "    New recording files: $new_files"
     
-    sleep 15
+    # Show any rpicam-vid processes
+    if [ $processes -gt 0 ]; then
+        echo "    Active rpicam-vid processes:"
+        ps aux | grep rpicam-vid | grep -v grep | head -3
+    fi
+    
+    sleep 10
 done
 
-echo "✅ Quick test completed"
+echo "✅ Immediate test completed"

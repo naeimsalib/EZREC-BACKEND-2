@@ -156,12 +156,13 @@ class SimpleDualRecorder:
             
             logger.info("✅ Cameras available, starting recording...")
             
-            # Start recording processes
+            # Start recording processes with staggered timing to avoid conflicts
             process_0 = subprocess.Popen(cmd_0, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            time.sleep(1)  # Wait 1 second between camera starts
             process_1 = subprocess.Popen(cmd_1, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
             # Wait a moment and check if processes started successfully
-            time.sleep(2)
+            time.sleep(3)
             
             if process_0.poll() is not None:
                 logger.error(f"❌ Camera 0 process failed immediately (exit code: {process_0.returncode})")
